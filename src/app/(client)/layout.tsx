@@ -62,16 +62,16 @@ export default function ClientLayout({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
-              <span className="font-display text-2xl font-bold tracking-widest text-accent">
+              <span className="font-display text-2xl font-bold tracking-widest text-white">
                 URBAN VENTURES
               </span>
-              <p className="mt-4 text-sm text-gray-400 max-w-md">
+              <p className="mt-4 text-sm text-blue-100 max-w-md">
                 Next-generation, AI-driven real estate investment advisory for Hyderabad's fastest-growing micro-markets. Providing institutional-grade data to retail investors.
               </p>
             </div>
             <div>
-              <h4 className="text-xs font-semibold uppercase tracking-widest text-accent">Quick Links</h4>
-              <ul className="mt-4 space-y-2 text-sm text-gray-400">
+              <h4 className="text-xs font-semibold uppercase tracking-widest text-white">Quick Links</h4>
+              <ul className="mt-4 space-y-2 text-sm text-blue-100">
                 <li>
                   <Link href="/research" className="hover:text-surface transition-colors">AI Investment Analysis</Link>
                 </li>
@@ -84,13 +84,13 @@ export default function ClientLayout({
               </ul>
             </div>
             <div>
-              <h4 className="text-xs font-semibold uppercase tracking-widest text-accent">Disclaimer</h4>
-              <p className="mt-4 text-xs text-gray-400 leading-relaxed">
+              <h4 className="text-xs font-semibold uppercase tracking-widest text-white">Disclaimer</h4>
+              <p className="mt-4 text-xs text-blue-100/90 leading-relaxed">
                 All recommendations are generated using AI-assisted calculations based on historical market trends and infrastructure plans. Past performance does not guarantee future results. Please perform independent legal due diligence before making investments.
               </p>
             </div>
           </div>
-          <div className="mt-12 pt-8 border-t border-primary-light text-center text-xs text-gray-500 flex flex-col sm:flex-row justify-between items-center gap-4">
+          <div className="mt-12 pt-8 border-t border-primary-light text-center text-xs text-blue-200 flex flex-col sm:flex-row justify-between items-center gap-4">
             <p>&copy; {new Date().getFullYear()} Urban Ventures Real Estate Advisory. All rights reserved.</p>
             <p className="tracking-wide">Hyderabad · Telangana</p>
           </div>
