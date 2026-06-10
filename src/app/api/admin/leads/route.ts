@@ -143,6 +143,20 @@ export async function POST(req: Request) {
       console.error("Failed to initialize lead roadmap:", roadmapErr);
     }
 
+    // Trigger Persona, Score, and Matches calculations for the new lead
+    try {
+      const { classifyLeadPersona } = await import("@/lib/persona-engine");
+      const { calculateLeadScore } = await import("@/lib/lead-scorer");
+      const { runMatchingForLead } = await import("@/lib/matching-engine");
+
+      await classifyLeadPersona(lead.id);
+      await calculateLeadScore(lead.id);
+      await runMatchingForLead(lead.id);
+      console.log(`Successfully classified, scored, and matched new manually created lead: ${lead.id}`);
+    } catch (engineErr) {
+      console.error("Failed to execute intelligence engines for manually created lead:", engineErr);
+    }
+
     return NextResponse.json({ success: true, lead });
   } catch (error: any) {
     console.error("Error in POST /api/admin/leads:", error);

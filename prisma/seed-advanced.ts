@@ -278,6 +278,29 @@ async function main() {
     });
   }
 
+  // 4. Run classification, scoring, and matching for all leads
+  console.log("Running persona classification, lead scoring, and smart matching for all leads...");
+  const leads = await prisma.lead.findMany({ select: { id: true } });
+  
+  const { classifyLeadPersona } = await import("../src/lib/persona-engine");
+  const { calculateLeadScore } = await import("../src/lib/lead-scorer");
+  const { runAllMatching } = await import("../src/lib/matching-engine");
+
+  for (const lead of leads) {
+    try {
+      await classifyLeadPersona(lead.id);
+      await calculateLeadScore(lead.id);
+    } catch (e) {
+      console.error(`Failed to classify/score lead ${lead.id}:`, e);
+    }
+  }
+
+  try {
+    await runAllMatching();
+  } catch (e) {
+    console.error("Failed to run matching engine:", e);
+  }
+
   console.log("Advanced features seeding completed successfully!");
 }
 
