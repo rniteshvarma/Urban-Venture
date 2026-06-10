@@ -171,17 +171,22 @@ async function main() {
 
   try {
     console.log("Cleaning up database...");
+    await prisma.actionItem.deleteMany();
+    await prisma.roadmapStage.deleteMany();
+    await prisma.leadRoadmap.deleteMany();
+    await prisma.projectLeadMatch.deleteMany();
+    await prisma.whatsAppLog.deleteMany();
     await prisma.lead.deleteMany();
     await prisma.search.deleteMany();
     await prisma.project.deleteMany();
     await prisma.user.deleteMany();
 
     console.log("Seeding Admin user...");
-    const hashedPassword = await bcrypt.hash("Admin@123", 10);
+    const hashedPassword = await bcrypt.hash("12345678", 10);
     const adminUser = await prisma.user.create({
       data: {
-        email: "admin@realestate.com",
-        name: "Aura Admin",
+        email: "uv@gmail.com",
+        name: "Urban Ventures Admin",
         phone: "+919999999999",
         password: hashedPassword,
         role: "ADMIN",

@@ -70,7 +70,7 @@ export default function AdminLoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full bg-luxury-bg border border-luxury px-3.5 py-2.5 rounded-input text-sm text-text-primary focus:outline-none focus:border-accent"
-                placeholder="admin@realestate.com"
+                placeholder="uv@gmail.com"
               />
             </div>
             
