@@ -1,0 +1,288 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String   @id @default(cuid())
+  name          String?
+  email         String   @unique
+  password      String?  // Admin/Client credentials password
+  phone         String?
+  role          Role     @default(CLIENT)
+  createdAt     DateTime @default(now())
+  leads         Lead[]
+  searches      Search[]
+}
+
+enum Role {
+  CLIENT
+  ADMIN
+}
+
+model Project {
+  id                String   @id @default(cuid())
+  name              String
+  developer         String
+  corridor          String   // e.g., "Shadnagar", "Pharma City", "Sangareddy"
+  city              String   @default("Hyderabad")
+  minBudgetLakhs    Float
+  maxBudgetLakhs    Float
+  minHorizonYears   Int
+  maxHorizonYears   Int
+  riskLevel         RiskLevel
+  propertyType      String   // Residential, Commercial, Plots, Villa
+  infraHighlights   String[] // Array of infra tags
+  exitOpportunities String[]
+  comparables       String[]
+  description       String
+  brochureUrl       String?
+  imageUrls         String[]
+  status            ProjectStatus @default(ACTIVE)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  leads             Lead[]
+  matches           ProjectLeadMatch[]
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum ProjectStatus {
+  ACTIVE
+  SOLD_OUT
+  UPCOMING
+  ARCHIVED
+}
+
+model Lead {
+  id              String   @id @default(cuid())
+  userId          String?
+  user            User?    @relation(fields: [userId], references: [id])
+  projectId       String?
+  project         Project? @relation(fields: [projectId], references: [id])
+  name            String
+  email           String
+  phone           String
+  budget          Float    // in Lakhs
+  horizon         Int      // years
+  city            String
+  notes           String?
+  status          LeadStatus @default(NEW)
+  source          String   @default("portal") // portal, manual, import
+  assignedTo      String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  roadmap         LeadRoadmap?
+  
+  // Advanced Features Additions
+  persona            BuyerPersona?
+  personaScore       Int?
+  personaUpdatedAt   DateTime?
+  personaReason      String?
+  leadScore          Int?                @default(0)
+  leadScoreGrade     ScoreGrade?
+  leadScoreUpdatedAt DateTime?
+  leadScoreFactors   Json?
+  matches            ProjectLeadMatch[]
+  whatsAppLogs       WhatsAppLog[]
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  INTERESTED
+  NEGOTIATING
+  CONVERTED
+  LOST
+}
+
+model Search {
+  id         String   @id @default(cuid())
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id])
+  budget     Float
+  horizon    Int
+  city       String
+  aiResponse Json     // Store full AI recommendation response
+  createdAt  DateTime @default(now())
+}
+
+model LeadRoadmap {
+  id              String          @id @default(cuid())
+  leadId          String          @unique
+  lead            Lead            @relation(fields: [leadId], references: [id])
+  targetCloseDate DateTime?
+  estimatedValue  Float?      // Deal value in Lakhs
+  probability     Int         // 0-100 percentage
+  assignedTo      String?
+  stages          RoadmapStage[]
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+}
+
+model RoadmapStage {
+  id           String       @id @default(cuid())
+  roadmapId    String
+  roadmap      LeadRoadmap  @relation(fields: [roadmapId], references: [id])
+  stageKey     StageKey
+  status       StageStatus  @default(PENDING)
+  scheduledAt  DateTime?
+  completedAt  DateTime?
+  notes        String?
+  actionItems  ActionItem[]
+  order        Int
+}
+
+model ActionItem {
+  id           String       @id @default(cuid())
+  stageId      String
+  stage        RoadmapStage @relation(fields: [stageId], references: [id])
+  title        String
+  dueDate      DateTime?
+  completed    Boolean      @default(false)
+  completedAt  DateTime?
+}
+
+enum StageKey {
+  INITIAL_CONTACT
+  NEEDS_ASSESSMENT
+  SITE_VISIT
+  PROPOSAL_SENT
+  NEGOTIATION
+  LEGAL_REVIEW
+  BOOKING_AMOUNT
+  AGREEMENT_SIGNED
+  CLOSURE
+}
+
+enum StageStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  SKIPPED
+}
+
+enum BuyerPersona {
+  FIRST_TIME_BUYER
+  NRI_INVESTOR
+  LAND_SPECULATOR
+  RETIREMENT_PLANNER
+  HNI_PORTFOLIO_BUILDER
+  PROFESSIONAL_FIRST_HOME
+}
+
+enum ScoreGrade {
+  A
+  B
+  C
+  D
+}
+
+enum WATrigger {
+  LEAD_CREATED
+  STAGE_INITIAL_CONTACT
+  STAGE_NEEDS_ASSESSMENT
+  SITE_VISIT_REMINDER
+  SITE_VISIT_FOLLOWUP
+  PROPOSAL_SENT
+  NEGOTIATION_START
+  STALE_LEAD_7DAYS
+  STALE_LEAD_14DAYS
+  PROJECT_MATCH_FOUND
+  CUSTOM
+}
+
+enum WAStatus {
+  PENDING
+  SENT
+  DELIVERED
+  READ
+  FAILED
+}
+
+model PersonaConfig {
+  id              String       @id @default(cuid())
+  persona         BuyerPersona @unique
+  displayName     String
+  description     String
+  minBudgetLakhs  Float?
+  maxBudgetLakhs  Float?
+  minHorizon      Int?
+  maxHorizon      Int?
+  riskLevels      RiskLevel[]
+  color           String       // hex color for UI badge
+  icon            String       // emoji or icon name
+  defaultProjects String[]     // project IDs most suitable for this persona
+  createdAt       DateTime     @default(now())
+}
+
+model ProjectLeadMatch {
+  id            String   @id @default(cuid())
+  projectId     String
+  project       Project  @relation(fields: [projectId], references: [id])
+  leadId        String
+  lead          Lead     @relation(fields: [leadId], references: [id])
+  matchScore    Int      // 0-100
+  matchReasons  String[] // e.g. ["Budget fits", "Corridor in AI search history"]
+  isManualTag   Boolean  @default(false)
+  isDismissed   Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([projectId, leadId])
+}
+
+model WhatsAppTemplate {
+  id          String          @id @default(cuid())
+  name        String          @unique
+  trigger     WATrigger
+  message     String          // Template with {{merge_tags}}
+  isActive    Boolean         @default(true)
+  sentCount   Int             @default(0)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  logs        WhatsAppLog[]
+}
+
+model WhatsAppLog {
+  id          String          @id @default(cuid())
+  leadId      String
+  lead        Lead            @relation(fields: [leadId], references: [id])
+  templateId  String
+  template    WhatsAppTemplate @relation(fields: [templateId], references: [id])
+  message     String          // Final message after merge tags filled
+  status      WAStatus        @default(PENDING)
+  waMessageId String?         // Message ID from WATI
+  sentAt      DateTime?
+  deliveredAt DateTime?
+  readAt      DateTime?
+  createdAt   DateTime        @default(now())
+}
+
+model CorridorMetrics {
+  id                    String   @id @default(cuid())
+  corridor              String   @unique
+  city                  String   @default("Hyderabad")
+  historicalCAGR        Float    // e.g. 12.5 (percent)
+  projectedCAGRMin      Float    // Conservative estimate
+  projectedCAGRMax      Float    // Optimistic estimate
+  rentalYieldMin        Float    // e.g. 3.5
+  rentalYieldMax        Float    // e.g. 5.5
+  infraScore            Int      // 1-10 admin-assigned
+  demandScore           Int      // 1-10 admin-assigned
+  riskLevel             RiskLevel
+  lastUpdated           DateTime @updatedAt
+  updatedBy             String?
+}
+
+
