@@ -163,7 +163,7 @@ export default function ReportCard({
         {/* Luxury Watermark Header (Only visible on print/PDF) */}
         <div className="hidden print:flex justify-between items-center border-b border-luxury pb-6 mb-8">
           <div>
-            <span className="font-display text-3xl font-bold tracking-widest text-primary">A U R A</span>
+            <span className="font-display text-2xl font-bold tracking-widest text-primary">URBAN VENTURES</span>
             <span className="text-xs text-accent font-semibold ml-2 uppercase tracking-widest">Investment Report</span>
           </div>
           <div className="text-right text-xs text-text-secondary">

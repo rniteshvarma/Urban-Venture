@@ -46,8 +46,8 @@ export default function AdminLoginPage() {
         
         {/* Header Branding */}
         <div className="text-center">
-          <span className="font-display text-4xl font-bold tracking-widest text-primary">
-            A U R A
+          <span className="font-display text-2xl font-bold tracking-widest text-primary">
+            URBAN VENTURES
           </span>
           <h2 className="mt-6 text-xl font-bold text-primary uppercase tracking-wider">
             CRM Portal Login

@@ -111,7 +111,7 @@ export default function Sidebar() {
       {/* Mobile Top Nav (visible only on mobile) */}
       <div className="md:hidden flex items-center justify-between bg-white border-b border-slate-200 text-slate-900 px-4 py-3 sticky top-0 z-50">
         <div className="flex items-center gap-2">
-          <span className="font-sans text-lg font-bold tracking-wider text-blue-600">AURA</span>
+          <span className="font-sans text-sm font-bold tracking-wider text-blue-650">URBAN VENTURES</span>
           <span className="text-[9px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">CRM</span>
         </div>
         <button 
@@ -131,8 +131,8 @@ export default function Sidebar() {
         <div>
           {/* Logo Section */}
           <div className="hidden md:flex items-center gap-2 px-6 py-6 border-b border-slate-200/60">
-            <span className="font-sans text-xl font-bold tracking-wider text-blue-600">
-              AURA
+            <span className="font-sans text-sm font-bold tracking-wider text-blue-650">
+              URBAN VENTURES
             </span>
             <span className="text-[9px] font-bold text-slate-500 bg-slate-200/60 px-1.5 py-0.5 rounded uppercase tracking-wider ml-1">
               CRM

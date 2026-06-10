@@ -14,7 +14,7 @@ export default function ClientLayout({
           <div className="flex items-center gap-8">
             <Link href="/" className="flex items-center gap-2">
               <span className="font-display text-2xl font-bold tracking-widest text-primary">
-                A U R A
+                URBAN VENTURES
               </span>
               <span className="text-xs font-semibold text-accent uppercase tracking-wider border-l border-luxury pl-2">
                 Advisory
@@ -63,7 +63,7 @@ export default function ClientLayout({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
               <span className="font-display text-2xl font-bold tracking-widest text-accent">
-                A U R A
+                URBAN VENTURES
               </span>
               <p className="mt-4 text-sm text-gray-400 max-w-md">
                 Next-generation, AI-driven real estate investment advisory for Hyderabad's fastest-growing micro-markets. Providing institutional-grade data to retail investors.
@@ -91,7 +91,7 @@ export default function ClientLayout({
             </div>
           </div>
           <div className="mt-12 pt-8 border-t border-primary-light text-center text-xs text-gray-500 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <p>&copy; {new Date().getFullYear()} Aura Real Estate Advisory. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} Urban Ventures Real Estate Advisory. All rights reserved.</p>
             <p className="tracking-wide">Hyderabad · Telangana</p>
           </div>
         </div>

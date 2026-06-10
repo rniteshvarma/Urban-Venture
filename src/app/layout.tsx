@@ -14,7 +14,7 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Aura Real Estate | AI Investment Advisory",
+  title: "Urban Ventures | AI Investment Advisory",
   description: "AI-Powered Real Estate Investment Research Portal for Hyderabad's fastest-growing corridors.",
 };
 
