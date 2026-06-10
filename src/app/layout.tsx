@@ -27,8 +27,9 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${playfair.variable} ${dmSans.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col font-sans bg-luxury-bg text-text-primary">
+      <body className="min-h-full flex flex-col font-sans bg-luxury-bg text-text-primary" suppressHydrationWarning>
         <Providers>{children}</Providers>
       </body>
     </html>
