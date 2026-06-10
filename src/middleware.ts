@@ -23,6 +23,7 @@ export default withAuth(
       // Let it pass through to the middleware function where we handle checks manually
       authorized: () => true,
     },
+    secret: process.env.NEXTAUTH_SECRET || "urban-venture-fallback-super-secret-key-12345-aura-luxury",
   }
 );
 
