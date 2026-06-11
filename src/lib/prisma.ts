@@ -16,14 +16,25 @@ if (!connectionString) {
 
 const dbUrl = connectionString || 'postgresql://dummy:dummy@localhost:5432/dummy';
 
+const useSsl = dbUrl.includes('sslmode=') || 
+               dbUrl.includes('.postgres.database.azure.com') ||
+               dbUrl.includes('supabase') || 
+               dbUrl.includes('neon.tech') ||
+               (process.env.NODE_ENV === 'production' && !dbUrl.includes('localhost') && !dbUrl.includes('127.0.0.1'));
+
+const poolConfig: any = { connectionString: dbUrl };
+if (useSsl) {
+  poolConfig.ssl = { rejectUnauthorized: false };
+}
+
 if (process.env.NODE_ENV === 'production') {
-  const pool = new pg.Pool({ connectionString: dbUrl });
+  const pool = new pg.Pool(poolConfig);
   const adapter = new PrismaPg(pool);
   prisma = new PrismaClient({ adapter });
 } else {
   // Prevent multiple instances of Prisma Client in development due to hot reloading
   if (!(global as any).globalPrisma) {
-    const pool = new pg.Pool({ connectionString: dbUrl });
+    const pool = new pg.Pool(poolConfig);
     const adapter = new PrismaPg(pool);
     (global as any).globalPrisma = new PrismaClient({ adapter });
   }
