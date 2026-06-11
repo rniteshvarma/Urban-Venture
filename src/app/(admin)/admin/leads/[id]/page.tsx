@@ -393,7 +393,7 @@ export default function LeadDetailPage({ params }: PageProps) {
                           <p className="text-[10px] text-text-secondary mt-0.5">{p.developer} · {p.corridor}</p>
                         </div>
                         <div className="mt-3 flex items-center justify-between">
-                          <span className="text-[9px] bg-primary text-accent px-2 py-0.5 rounded font-semibold">
+                          <span className="text-[9px] bg-primary text-white px-2 py-0.5 rounded font-semibold">
                             {p.propertyType}
                           </span>
                           <span className="text-xs font-bold text-primary">

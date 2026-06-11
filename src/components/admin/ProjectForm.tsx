@@ -439,7 +439,7 @@ export default function ProjectForm({ initialData, isEdit = false }: ProjectForm
           {imageUrls.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-2">
               {imageUrls.map((url, i) => (
-                <span key={i} className="text-[9px] bg-primary text-accent px-2 py-0.5 rounded-tag truncate max-w-[150px]">
+                <span key={i} className="text-[9px] bg-primary text-white px-2 py-0.5 rounded-tag truncate max-w-[150px]">
                   Image {i+1}
                 </span>
               ))}

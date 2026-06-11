@@ -68,7 +68,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
         )}
         
         {/* Status Badge */}
-        <span className="absolute top-3 left-3 bg-primary/95 text-accent text-[9px] font-bold px-2 py-0.5 rounded-tag border border-accent/20 uppercase tracking-widest">
+        <span className="absolute top-3 left-3 bg-primary/95 text-white text-[9px] font-bold px-2 py-0.5 rounded-tag border border-accent/20 uppercase tracking-widest">
           {project.status.replace("_", " ")}
         </span>
 

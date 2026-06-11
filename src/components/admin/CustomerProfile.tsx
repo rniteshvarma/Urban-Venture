@@ -214,7 +214,7 @@ export default function CustomerProfile({
                       </p>
                       <div className="flex flex-wrap gap-1 pt-1">
                         {corridors.map((c: any, i: number) => (
-                          <span key={i} className="text-[8px] font-semibold bg-primary text-accent px-1.5 py-0.5 rounded">
+                          <span key={i} className="text-[8px] font-semibold bg-primary text-white px-1.5 py-0.5 rounded">
                             {c.name} ({c.matchScore}%)
                           </span>
                         ))}
