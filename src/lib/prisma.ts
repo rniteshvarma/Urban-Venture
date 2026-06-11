@@ -27,6 +27,16 @@ if (useSsl) {
   poolConfig.ssl = { rejectUnauthorized: false };
 }
 
+// Diagnostic logs (safe and masked)
+console.log("🔌 Prisma Init - Connection string present:", !!connectionString);
+console.log("🔌 Prisma Init - SSL configured:", useSsl);
+try {
+  const maskedUrl = dbUrl.replace(/:[^:@]+@/, ':****@');
+  console.log("🔌 Prisma Init - Target Host:", maskedUrl.split('@')[1] || "unknown");
+} catch (e) {
+  // ignore
+}
+
 if (process.env.NODE_ENV === 'production') {
   const pool = new pg.Pool(poolConfig);
   const adapter = new PrismaPg(pool);
