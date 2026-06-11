@@ -4,10 +4,14 @@ import pg from 'pg';
 
 let prisma: PrismaClient;
 
-const connectionString = process.env.DATABASE_URL;
+const connectionString = 
+  process.env.DATABASE_URL || 
+  process.env.POSTGRES_PRISMA_URL || 
+  process.env.POSTGRES_URL || 
+  process.env.POSTGRES_URL_NON_POOLING;
 
 if (!connectionString) {
-  console.warn('⚠️ WARNING: DATABASE_URL is not defined in environment variables. Using a fallback dummy connection string for build-time compilation.');
+  console.warn('⚠️ WARNING: DATABASE_URL (or POSTGRES_PRISMA_URL) is not defined in environment variables. Using a fallback dummy connection string for build-time compilation.');
 }
 
 const dbUrl = connectionString || 'postgresql://dummy:dummy@localhost:5432/dummy';
