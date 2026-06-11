@@ -48,8 +48,8 @@ export default function CustomerProfile({
     try {
       await onUpdateCustomer(customer.id, { name, email, phone });
       setIsEditing(false);
-    } catch (err) {
-      alert("Failed to update customer info.");
+    } catch (err: any) {
+      alert(`Failed to update customer info: ${err.message || "Unknown error"}${err.details ? " - " + err.details : ""}`);
     } finally {
       setIsSaving(false);
     }

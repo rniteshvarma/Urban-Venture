@@ -83,11 +83,12 @@ export default function ProjectForm({ initialData, isEdit = false }: ProjectForm
           setBrochureUrl(data.url);
         }
       } else {
-        alert("Upload failed.");
+        const errData = await res.json().catch(() => ({}));
+        alert(`Upload failed: ${errData.error || "Server error"}${errData.details ? " - " + errData.details : ""}`);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Error uploading file.");
+      alert(`Error uploading file: ${err.message || "Connection failed"}`);
     } finally {
       setIsUploadingImage(false);
       setIsUploadingPdf(false);
@@ -132,12 +133,12 @@ export default function ProjectForm({ initialData, isEdit = false }: ProjectForm
         router.push("/admin/projects");
         router.refresh();
       } else {
-        const errData = await res.json();
-        alert(errData.error || "Failed to save project.");
+        const errData = await res.json().catch(() => ({}));
+        alert(`Failed to save project: ${errData.error || "Failed to save project."}${errData.details ? " - " + errData.details : ""}`);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("An error occurred.");
+      alert(`An error occurred: ${err.message || "Connection failed"}`);
     } finally {
       setIsLoading(false);
     }

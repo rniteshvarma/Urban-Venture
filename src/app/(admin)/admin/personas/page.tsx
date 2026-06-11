@@ -53,11 +53,12 @@ export default function AdminPersonasPage() {
         alert("Bulk persona reclassification complete!");
         loadStats();
       } else {
-        alert("Failed to reclassify leads.");
+        const data = await res.json();
+        alert(`Failed to reclassify leads: ${data.error || "Server Error"}${data.details ? " - " + data.details : ""}`);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Error executing bulk classification.");
+      alert(`Error executing bulk classification: ${err.message || "Connection failed"}`);
     } finally {
       setIsReclassifying(false);
     }

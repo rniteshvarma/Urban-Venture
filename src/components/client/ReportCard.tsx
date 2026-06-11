@@ -118,10 +118,11 @@ export default function ReportCard({
       if (data.success) {
         setSaveSuccess(true);
       } else {
-        setErrorMsg(data.error || "Failed to save report.");
+        setErrorMsg(data.details ? `${data.error}: ${data.details}` : (data.error || "Failed to save report."));
       }
     } catch (err: any) {
-      setErrorMsg("An error occurred. Please try again.");
+      console.error("Save report exception:", err);
+      setErrorMsg(err.message ? `Connection error: ${err.message}` : "An error occurred. Please try again.");
     } finally {
       setIsSubmitting(false);
     }

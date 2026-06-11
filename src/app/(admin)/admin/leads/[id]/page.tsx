@@ -90,11 +90,12 @@ export default function LeadDetailPage({ params }: PageProps) {
         setRoadmap(data.roadmap);
         loadData();
       } else {
-        alert("Failed to initialize roadmap");
+        const data = await res.json();
+        alert(`Failed to initialize roadmap: ${data.error || "Server Error"}${data.details ? " - " + data.details : ""}`);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Error initializing roadmap");
+      alert(`Error initializing roadmap: ${err.message || "Connection failed"}`);
     } finally {
       setIsInitializingRoadmap(false);
     }
@@ -128,11 +129,12 @@ export default function LeadDetailPage({ params }: PageProps) {
           setLead(leadData.lead);
         }
       } else {
-        alert("Failed to save note");
+        const data = await res.json();
+        alert(`Failed to save note: ${data.error || "Server Error"}${data.details ? " - " + data.details : ""}`);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Error saving note");
+      alert(`Error saving note: ${err.message || "Connection failed"}`);
     } finally {
       setIsSavingNote(false);
     }

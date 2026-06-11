@@ -162,11 +162,12 @@ export default function AdminWhatsAppPage() {
         setNewTemplateTrigger("CUSTOM");
         loadTemplates();
       } else {
-        const err = await res.json();
-        alert(err.error || "Failed to create template.");
+        const errData = await res.json().catch(() => ({}));
+        alert(`Failed to create template: ${errData.error || "Failed to create template."}${errData.details ? " - " + errData.details : ""}`);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      alert(`Error creating template: ${err.message || "Connection failed"}`);
     } finally {
       setIsSaving(false);
     }

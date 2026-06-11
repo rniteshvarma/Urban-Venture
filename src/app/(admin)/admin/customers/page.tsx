@@ -62,13 +62,18 @@ export default function AdminCustomersPage() {
         body: JSON.stringify(updatedData),
       });
 
-      if (res.ok) {
-        setCustomers((prev) =>
-          prev.map((c) => (c.id === customerId ? { ...c, ...updatedData } : c))
-        );
-        if (activeCustomer && activeCustomer.id === customerId) {
-          setActiveCustomer((prev: any) => ({ ...prev, ...updatedData }));
-        }
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        const errObj = new Error(errorData.error || "Failed to update customer info.");
+        (errObj as any).details = errorData.details;
+        throw errObj;
+      }
+
+      setCustomers((prev) =>
+        prev.map((c) => (c.id === customerId ? { ...c, ...updatedData } : c))
+      );
+      if (activeCustomer && activeCustomer.id === customerId) {
+        setActiveCustomer((prev: any) => ({ ...prev, ...updatedData }));
       }
     } catch (err) {
       console.error("Failed to update customer info", err);

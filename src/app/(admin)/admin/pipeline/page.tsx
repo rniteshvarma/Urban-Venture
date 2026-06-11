@@ -258,14 +258,15 @@ export default function AdminPipelinePage() {
       });
 
       if (!res.ok) {
-        throw new Error("Failed to save movement");
+        const data = await res.json();
+        throw new Error(data.details ? `${data.error}: ${data.details}` : (data.error || "Failed to save movement"));
       }
       
       // Reload fresh calculations (e.g. probability changes, stale days, progressPercent)
       loadPipelineData();
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to move card in pipeline", err);
-      alert("Failed to update lead stage. Reverting layout.");
+      alert(`Failed to update lead stage: ${err.message || "Reverting layout."}`);
       loadPipelineData(); // Revert by reloading
     }
   };

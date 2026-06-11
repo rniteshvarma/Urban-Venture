@@ -188,10 +188,12 @@ export default function AdminProjectsPage() {
       if (res.ok) {
         setCorridors((prev) => prev.filter((c) => c.id !== id));
       } else {
-        alert("Failed to delete record.");
+        const errData = await res.json().catch(() => ({}));
+        alert(`Failed to delete record: ${errData.error || "Server error"}${errData.details ? " - " + errData.details : ""}`);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      alert(`Error deleting record: ${err.message || "Connection failed"}`);
     }
   };
 
@@ -229,11 +231,12 @@ export default function AdminProjectsPage() {
         setShowCorridorModal(false);
         loadCorridors();
       } else {
-        const err = await res.json();
-        alert(err.error || "Failed to save corridor metric.");
+        const err = await res.json().catch(() => ({}));
+        alert(`Failed to save corridor metric: ${err.error || "Failed to save corridor metric."}${err.details ? " - " + err.details : ""}`);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      alert(`Error saving corridor metric: ${err.message || "Connection failed"}`);
     } finally {
       setIsSavingCorridor(false);
     }

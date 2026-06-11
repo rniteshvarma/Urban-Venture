@@ -163,10 +163,12 @@ function CalculatorContent() {
       if (res.ok) {
         setLeadSubmitted(true);
       } else {
-        alert("Failed to submit inquiry. Please try again.");
+        const errData = await res.json().catch(() => ({}));
+        alert(`Failed to submit inquiry: ${errData.error || "Failed to submit inquiry. Please try again."}${errData.details ? " - " + errData.details : ""}`);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      alert(`Error submitting inquiry: ${err.message || "Connection failed"}`);
     } finally {
       setIsSubmittingLead(false);
     }

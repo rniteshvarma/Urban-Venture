@@ -170,9 +170,13 @@ export default function LeadDetailPanel({
       if (res.ok) {
         if (onRefresh) onRefresh();
         alert("Persona successfully reclassified by AI Engine!");
+      } else {
+        const data = await res.json();
+        alert(`Failed to reclassify: ${data.error || "Server Error"}${data.details ? " - " + data.details : ""}`);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      alert(`Error reclassifying: ${err.message || "Connection failed"}`);
     } finally {
       setIsReclassifying(false);
     }
@@ -185,9 +189,13 @@ export default function LeadDetailPanel({
       if (res.ok) {
         if (onRefresh) onRefresh();
         alert("Conversion score successfully recalculated!");
+      } else {
+        const data = await res.json();
+        alert(`Failed to recalculate: ${data.error || "Server Error"}${data.details ? " - " + data.details : ""}`);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      alert(`Error recalculating: ${err.message || "Connection failed"}`);
     } finally {
       setIsRescoring(false);
     }
@@ -200,11 +208,12 @@ export default function LeadDetailPanel({
       if (res.ok) {
         setMatchedProjects((prev) => prev.filter((m) => m.id !== matchId));
       } else {
-        alert("Failed to dismiss match");
+        const data = await res.json();
+        alert(`Failed to dismiss match: ${data.error || "Server Error"}${data.details ? " - " + data.details : ""}`);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Error dismissing match");
+      alert(`Error dismissing match: ${err.message || "Connection failed"}`);
     }
   };
 
@@ -215,11 +224,12 @@ export default function LeadDetailPanel({
         const data = await res.json();
         window.open(data.whatsappUrl, "_blank");
       } else {
-        alert("Failed to generate pitch");
+        const data = await res.json();
+        alert(`Failed to generate pitch: ${data.error || "Server Error"}${data.details ? " - " + data.details : ""}`);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Error generating pitch");
+      alert(`Error generating pitch: ${err.message || "Connection failed"}`);
     }
   };
 
@@ -248,11 +258,11 @@ export default function LeadDetailPanel({
         }
       } else {
         const err = await res.json();
-        alert(err.error || "Failed to send message.");
+        alert(`Failed to send message: ${err.error || "Server Error"}${err.details ? " - " + err.details : ""}`);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Error sending WhatsApp message.");
+      alert(`Error sending WhatsApp message: ${err.message || "Connection failed"}`);
     } finally {
       setIsSendingWa(false);
     }
@@ -272,8 +282,8 @@ export default function LeadDetailPanel({
       await onUpdateNotes(lead.id, formattedNote);
       lead.notes = formattedNote;
       setNewNote("");
-    } catch (err) {
-      alert("Failed to save note.");
+    } catch (err: any) {
+      alert(`Failed to save note: ${err.message || "Connection failed"}`);
     } finally {
       setIsSavingNote(false);
     }

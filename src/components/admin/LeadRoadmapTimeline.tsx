@@ -126,11 +126,12 @@ export default function LeadRoadmapTimeline({ roadmap, onRefresh }: LeadRoadmapT
       if (res.ok) {
         onRefresh();
       } else {
-        alert("Failed to update stage status");
+        const errorData = await res.json().catch(() => ({}));
+        alert(`Failed to update stage status: ${errorData.error || "Server Error"}${errorData.details ? " - " + errorData.details : ""}`);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Error occurred updating status");
+      alert(`Error occurred updating status: ${err.message || "Connection failed"}`);
     } finally {
       setSavingStageId(null);
     }
@@ -147,11 +148,12 @@ export default function LeadRoadmapTimeline({ roadmap, onRefresh }: LeadRoadmapT
       if (res.ok) {
         onRefresh();
       } else {
-        alert("Failed to save stage notes");
+        const errorData = await res.json().catch(() => ({}));
+        alert(`Failed to save stage notes: ${errorData.error || "Server Error"}${errorData.details ? " - " + errorData.details : ""}`);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Error occurred saving notes");
+      alert(`Error occurred saving notes: ${err.message || "Connection failed"}`);
     } finally {
       setSavingStageId(null);
     }

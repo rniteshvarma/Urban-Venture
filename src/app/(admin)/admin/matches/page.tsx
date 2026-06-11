@@ -117,11 +117,12 @@ export default function AdminMatchesPage() {
         alert("Matching matrices updated successfully!");
         loadMatches();
       } else {
-        alert("Failed to run matching engine.");
+        const data = await res.json();
+        alert(`Failed to run matching engine: ${data.error || "Server Error"}${data.details ? " - " + data.details : ""}`);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Error executing matches engine.");
+      alert(`Error executing matches engine: ${err.message || "Connection failed"}`);
     } finally {
       setIsRecalculating(false);
     }
@@ -134,10 +135,12 @@ export default function AdminMatchesPage() {
       if (res.ok) {
         setMatches((prev) => prev.filter((m) => m.id !== matchId));
       } else {
-        alert("Failed to dismiss match");
+        const data = await res.json();
+        alert(`Failed to dismiss match: ${data.error || "Server Error"}${data.details ? " - " + data.details : ""}`);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      alert(`Error dismissing match: ${err.message || "Connection failed"}`);
     }
   };
 
@@ -148,10 +151,12 @@ export default function AdminMatchesPage() {
         const data = await res.json();
         window.open(data.whatsappUrl, "_blank");
       } else {
-        alert("Failed to generate pitch details.");
+        const data = await res.json();
+        alert(`Failed to generate pitch details: ${data.error || "Server Error"}${data.details ? " - " + data.details : ""}`);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      alert(`Error generating pitch: ${err.message || "Connection failed"}`);
     }
   };
 

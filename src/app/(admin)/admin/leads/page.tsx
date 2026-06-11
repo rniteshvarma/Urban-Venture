@@ -259,11 +259,11 @@ function LeadsPageContent() {
         loadLeads(); // Reload table
       } else {
         const errData = await res.json();
-        alert(errData.error || "Failed to create lead.");
+        alert(`Failed to create lead: ${errData.error || "Server Error"}${errData.details ? " - " + errData.details : ""}`);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("An error occurred.");
+      alert(`An error occurred: ${err.message || "Connection failed"}`);
     } finally {
       setIsCreating(false);
     }
