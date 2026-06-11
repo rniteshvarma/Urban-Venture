@@ -25,9 +25,15 @@ const useSsl = dbUrl.includes('sslmode=') ||
 let cleanDbUrl = dbUrl;
 if (useSsl) {
   // Strip sslmode from the connection string to prevent pg-connection-string from overriding our ssl options
-  cleanDbUrl = dbUrl.replace(/[\?&]sslmode=[^&]+/g, '');
-  if (cleanDbUrl.endsWith('?') || cleanDbUrl.endsWith('&')) {
-    cleanDbUrl = cleanDbUrl.slice(0, -1);
+  try {
+    const parsedUrl = new URL(dbUrl);
+    parsedUrl.searchParams.delete('sslmode');
+    cleanDbUrl = parsedUrl.toString();
+  } catch (e) {
+    cleanDbUrl = dbUrl.replace(/[\?&]sslmode=[^&]+/g, '');
+    if (cleanDbUrl.endsWith('?') || cleanDbUrl.endsWith('&')) {
+      cleanDbUrl = cleanDbUrl.slice(0, -1);
+    }
   }
 }
 

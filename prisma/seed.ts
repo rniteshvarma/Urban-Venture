@@ -164,8 +164,33 @@ async function main() {
     throw new Error('DATABASE_URL is not set');
   }
 
+  const useSsl = connectionString.includes('sslmode=') || 
+                 connectionString.includes('.postgres.database.azure.com') ||
+                 connectionString.includes('supabase') || 
+                 connectionString.includes('neon.tech') ||
+                 (process.env.NODE_ENV === 'production' && !connectionString.includes('localhost') && !connectionString.includes('127.0.0.1'));
+
+  let cleanDbUrl = connectionString;
+  if (useSsl) {
+    try {
+      const parsedUrl = new URL(connectionString);
+      parsedUrl.searchParams.delete('sslmode');
+      cleanDbUrl = parsedUrl.toString();
+    } catch (e) {
+      cleanDbUrl = connectionString.replace(/[\?&]sslmode=[^&]+/g, '');
+      if (cleanDbUrl.endsWith('?') || cleanDbUrl.endsWith('&')) {
+        cleanDbUrl = cleanDbUrl.slice(0, -1);
+      }
+    }
+  }
+
+  const poolConfig: any = { connectionString: cleanDbUrl };
+  if (useSsl) {
+    poolConfig.ssl = { rejectUnauthorized: false };
+  }
+
   console.log("Initializing database connection...");
-  const pool = new pg.Pool({ connectionString });
+  const pool = new pg.Pool(poolConfig);
   const adapter = new PrismaPg(pool);
   const prisma = new PrismaClient({ adapter });
 
