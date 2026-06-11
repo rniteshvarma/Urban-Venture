@@ -269,7 +269,7 @@ export default function ReportCard({
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <span className="text-xs bg-primary text-accent border border-accent/20 font-bold px-2 py-0.5 rounded-tag uppercase tracking-wider">
+                      <span className="text-xs bg-primary text-white border border-white/20 font-bold px-2.5 py-0.5 rounded-tag uppercase tracking-wider inline-flex items-center justify-center text-center">
                         {corridor.matchScore}% Match
                       </span>
                       <span className={`text-xs border px-2 py-0.5 rounded-tag font-semibold uppercase tracking-wider ${getRiskColor(corridor.riskLevel)}`}>
