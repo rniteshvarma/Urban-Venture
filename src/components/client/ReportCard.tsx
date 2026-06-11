@@ -363,9 +363,9 @@ export default function ReportCard({
         {/* Portfolio Risk Assessment */}
         <section className="border border-luxury rounded-card p-6 bg-primary text-surface grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
           <div className="text-center md:text-left">
-            <span className="text-[10px] text-accent font-bold uppercase tracking-widest">Risk Analysis</span>
+            <span className="text-[10px] text-white/80 font-bold uppercase tracking-widest">Risk Analysis</span>
             <h3 className="font-display text-xl font-bold mb-2">Overall Portfolio Risk</h3>
-            <p className="text-xs text-gray-400">Calculated based on investment parameters and corridor allocations.</p>
+            <p className="text-xs text-gray-300">Calculated based on investment parameters and corridor allocations.</p>
           </div>
 
           <div className="flex flex-col items-center justify-center">
@@ -381,7 +381,7 @@ export default function ReportCard({
           </div>
 
           <div className="text-xs text-gray-300 space-y-2 leading-relaxed">
-            <h4 className="font-bold text-accent uppercase tracking-wider">Risk Rationale</h4>
+            <h4 className="font-bold text-white uppercase tracking-wider">Risk Rationale</h4>
             <p>{report.riskRationale}</p>
           </div>
         </section>
