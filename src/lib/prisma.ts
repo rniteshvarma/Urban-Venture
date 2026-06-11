@@ -22,7 +22,16 @@ const useSsl = dbUrl.includes('sslmode=') ||
                dbUrl.includes('neon.tech') ||
                (process.env.NODE_ENV === 'production' && !dbUrl.includes('localhost') && !dbUrl.includes('127.0.0.1'));
 
-const poolConfig: any = { connectionString: dbUrl };
+let cleanDbUrl = dbUrl;
+if (useSsl) {
+  // Strip sslmode from the connection string to prevent pg-connection-string from overriding our ssl options
+  cleanDbUrl = dbUrl.replace(/[\?&]sslmode=[^&]+/g, '');
+  if (cleanDbUrl.endsWith('?') || cleanDbUrl.endsWith('&')) {
+    cleanDbUrl = cleanDbUrl.slice(0, -1);
+  }
+}
+
+const poolConfig: any = { connectionString: cleanDbUrl };
 if (useSsl) {
   poolConfig.ssl = { rejectUnauthorized: false };
 }
