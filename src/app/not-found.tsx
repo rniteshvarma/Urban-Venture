@@ -15,7 +15,7 @@ export default function NotFound() {
       </p>
       <Link
         href="/"
-        className="px-6 py-3 bg-primary text-surface text-xs font-semibold uppercase tracking-widest rounded-tag shadow-sm hover:bg-primary-light transition-colors"
+        className="px-6 py-3 bg-primary text-surface text-xs font-semibold uppercase tracking-widest rounded-tag shadow-sm hover:bg-blue-700 transition-colors"
       >
         Back to Portal Home
       </Link>

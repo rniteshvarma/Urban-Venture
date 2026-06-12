@@ -712,7 +712,7 @@ export default function LeadDetailPanel({
                 <button
                   type="submit"
                   disabled={isSavingNote || !newNote.trim()}
-                  className="px-4 py-2 bg-primary hover:bg-primary-light text-surface text-[10px] font-bold uppercase tracking-wider rounded transition-colors disabled:opacity-50"
+                  className="px-4 py-2 bg-primary hover:bg-blue-700 text-surface text-[10px] font-bold uppercase tracking-wider rounded transition-colors disabled:opacity-50"
                 >
                   {isSavingNote ? "Saving..." : "Add Update Note"}
                 </button>

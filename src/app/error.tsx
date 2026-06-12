@@ -24,7 +24,7 @@ export default function GlobalErrorPage({
       </p>
       <button
         onClick={() => reset()}
-        className="px-6 py-3 bg-primary text-surface text-xs font-semibold uppercase tracking-widest rounded-tag shadow-sm hover:bg-primary-light transition-colors"
+        className="px-6 py-3 bg-primary text-surface text-xs font-semibold uppercase tracking-widest rounded-tag shadow-sm hover:bg-blue-700 transition-colors"
       >
         Reload Page
       </button>

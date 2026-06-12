@@ -414,7 +414,7 @@ export default function LeadRoadmapTimeline({ roadmap, onRefresh }: LeadRoadmapT
                         <button
                           type="submit"
                           disabled={addingActionStageId !== null}
-                          className="px-3 bg-primary hover:bg-primary-light text-surface text-xs font-semibold rounded-[4px] transition-colors"
+                          className="px-3 bg-primary hover:bg-blue-700 text-surface text-xs font-semibold rounded-[4px] transition-colors"
                         >
                           Add
                         </button>

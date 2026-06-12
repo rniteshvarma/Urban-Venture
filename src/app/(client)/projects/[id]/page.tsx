@@ -331,7 +331,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full py-3 bg-primary hover:bg-primary-light text-surface text-xs font-semibold uppercase tracking-widest rounded-[4px] disabled:opacity-50 transition-colors shadow-sm"
+                    className="w-full py-3 bg-primary hover:bg-blue-700 text-surface text-xs font-semibold uppercase tracking-widest rounded-[4px] disabled:opacity-50 transition-colors shadow-sm"
                   >
                     {isSubmitting ? "Submitting..." : "Submit Inquiry"}
                   </button>

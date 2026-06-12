@@ -202,7 +202,7 @@ export default function ResearchForm({ onSubmit, isLoading }: ResearchFormProps)
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full flex items-center justify-center py-4 bg-primary hover:bg-primary-light text-surface text-sm font-semibold uppercase tracking-widest rounded-[4px] shadow-luxury disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            className="w-full flex items-center justify-center py-4 bg-primary hover:bg-blue-700 text-surface text-sm font-semibold uppercase tracking-widest rounded-[4px] shadow-luxury disabled:opacity-50 disabled:cursor-not-allowed transition-all"
           >
             {isLoading ? (
               <span className="flex items-center gap-2">

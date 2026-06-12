@@ -40,7 +40,7 @@ export default function ClientLayout({
           <div className="flex items-center gap-4">
             <Link 
               href="/research" 
-              className="hidden sm:inline-flex items-center justify-center px-4 py-2 text-xs font-semibold uppercase tracking-wider text-surface bg-primary hover:bg-primary-light transition-all rounded-[4px]"
+              className="hidden sm:inline-flex items-center justify-center px-4 py-2 text-xs font-semibold uppercase tracking-wider text-surface bg-primary hover:bg-blue-700 transition-all rounded-[4px]"
             >
               Start Analysis
             </Link>

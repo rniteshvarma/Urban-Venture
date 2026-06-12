@@ -339,7 +339,7 @@ export default function LeadDetailPage({ params }: PageProps) {
                 <button
                   onClick={handleInitializeRoadmap}
                   disabled={isInitializingRoadmap}
-                  className="px-5 py-2.5 bg-primary hover:bg-primary-light text-surface text-xs font-semibold uppercase tracking-wider rounded-tag transition-colors disabled:opacity-50"
+                  className="px-5 py-2.5 bg-primary hover:bg-blue-700 text-surface text-xs font-semibold uppercase tracking-wider rounded-tag transition-colors disabled:opacity-50"
                 >
                   {isInitializingRoadmap ? "Initializing..." : "Initialize Closure Roadmap"}
                 </button>
@@ -475,7 +475,7 @@ export default function LeadDetailPage({ params }: PageProps) {
                   <button
                     type="submit"
                     disabled={isSavingNote || !newNoteText.trim()}
-                    className="w-full py-2 bg-primary hover:bg-primary-light text-surface text-xs font-bold uppercase tracking-wider rounded-tag transition-colors disabled:opacity-50"
+                    className="w-full py-2 bg-primary hover:bg-blue-700 text-surface text-xs font-bold uppercase tracking-wider rounded-tag transition-colors disabled:opacity-50"
                   >
                     {isSavingNote ? "Saving Note..." : "Add Update Note"}
                   </button>

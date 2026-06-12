@@ -261,7 +261,7 @@ export default function AdminProjectsPage() {
           <div>
             <Link
               href="/admin/projects/new"
-              className="px-4 py-2 bg-primary hover:bg-primary-light text-surface text-xs font-semibold uppercase tracking-wider rounded-tag transition-colors shadow-sm animate-fade-in"
+              className="px-4 py-2 bg-primary hover:bg-blue-700 text-surface text-xs font-semibold uppercase tracking-wider rounded-tag transition-colors shadow-sm animate-fade-in"
             >
               ➕ Add New Project
             </Link>
@@ -318,7 +318,7 @@ export default function AdminProjectsPage() {
               />
               <button
                 onClick={loadProjects}
-                className="bg-primary hover:bg-primary-light px-4 rounded-input text-xs text-surface uppercase font-semibold tracking-wider transition-colors"
+                className="bg-primary hover:bg-blue-700 px-4 rounded-input text-xs text-surface uppercase font-semibold tracking-wider transition-colors"
               >
                 Search
               </button>

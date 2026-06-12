@@ -158,7 +158,7 @@ export default function AdminCustomersPage() {
         />
         <button
           onClick={loadCustomers}
-          className="bg-primary hover:bg-primary-light px-4 rounded-input text-xs text-surface uppercase font-semibold tracking-wider transition-colors"
+          className="bg-primary hover:bg-blue-700 px-4 rounded-input text-xs text-surface uppercase font-semibold tracking-wider transition-colors"
         >
           Search
         </button>

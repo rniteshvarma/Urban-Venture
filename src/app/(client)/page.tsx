@@ -45,7 +45,7 @@ export default function ClientLandingPage() {
         <div className="mb-16">
           <Link
             href="/research"
-            className="group inline-flex items-center justify-center px-8 py-4 text-sm font-semibold uppercase tracking-widest text-surface bg-primary hover:bg-primary-light transition-all rounded-[4px] shadow-luxury"
+            className="group inline-flex items-center justify-center px-8 py-4 text-sm font-semibold uppercase tracking-widest text-surface bg-primary hover:bg-blue-700 transition-all rounded-[4px] shadow-luxury"
           >
             Start Your Analysis
             <span className="ml-2 group-hover:translate-x-1 transition-transform inline-block">→</span>

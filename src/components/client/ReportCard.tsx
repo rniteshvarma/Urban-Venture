@@ -458,7 +458,7 @@ export default function ReportCard({
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full py-3 bg-primary hover:bg-primary-light text-surface text-xs font-semibold uppercase tracking-widest rounded-[4px] disabled:opacity-50 transition-all"
+                className="w-full py-3 bg-primary hover:bg-blue-700 text-surface text-xs font-semibold uppercase tracking-widest rounded-[4px] disabled:opacity-50 transition-all"
               >
                 {isSubmitting ? "Saving Report..." : "Save Report & Schedule Consultation"}
               </button>

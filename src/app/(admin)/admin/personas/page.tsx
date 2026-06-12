@@ -88,7 +88,7 @@ export default function AdminPersonasPage() {
         <button
           onClick={handleReclassifyAll}
           disabled={isReclassifying}
-          className="flex items-center gap-1.5 px-4 py-2 bg-primary hover:bg-primary-light text-surface text-xs font-bold uppercase tracking-wider rounded transition-colors disabled:opacity-50"
+          className="flex items-center gap-1.5 px-4 py-2 bg-primary hover:bg-blue-700 text-surface text-xs font-bold uppercase tracking-wider rounded transition-colors disabled:opacity-50"
         >
           <RefreshCw size={14} className={isReclassifying ? "animate-spin" : ""} />
           {isReclassifying ? "Reclassifying..." : "Reclassify All Leads"}

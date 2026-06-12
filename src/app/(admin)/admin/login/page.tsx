@@ -99,7 +99,7 @@ export default function AdminLoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full flex justify-center py-3 px-4 bg-primary hover:bg-primary-light text-surface text-xs font-bold uppercase tracking-widest rounded-[4px] shadow-luxury transition-all disabled:opacity-50"
+              className="w-full flex justify-center py-3 px-4 bg-primary hover:bg-blue-700 text-surface text-xs font-bold uppercase tracking-widest rounded-[4px] shadow-luxury transition-all disabled:opacity-50"
             >
               {isLoading ? "Authenticating..." : "Sign In to Console"}
             </button>

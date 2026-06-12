@@ -289,7 +289,7 @@ function LeadsPageContent() {
           
           <button
             onClick={() => setShowAddModal(true)}
-            className="px-4 py-2 bg-primary hover:bg-primary-light text-surface text-xs font-semibold uppercase tracking-wider rounded-tag transition-colors shadow-sm"
+            className="px-4 py-2 bg-primary hover:bg-blue-700 text-surface text-xs font-semibold uppercase tracking-wider rounded-tag transition-colors shadow-sm"
           >
             ➕ Add Lead Manually
           </button>
@@ -346,7 +346,7 @@ function LeadsPageContent() {
           />
           <button
             onClick={() => { setPage(1); loadLeads(); }}
-            className="bg-primary hover:bg-primary-light px-3.5 rounded-input text-xs text-surface uppercase font-semibold tracking-wider transition-colors"
+            className="bg-primary hover:bg-blue-700 px-3.5 rounded-input text-xs text-surface uppercase font-semibold tracking-wider transition-colors"
           >
             Search
           </button>
@@ -586,7 +586,7 @@ function LeadsPageContent() {
                 <button
                   type="submit"
                   disabled={isCreating}
-                  className="px-5 py-2 bg-primary hover:bg-primary-light text-surface font-semibold rounded-[4px] disabled:opacity-50"
+                  className="px-5 py-2 bg-primary hover:bg-blue-700 text-surface font-semibold rounded-[4px] disabled:opacity-50"
                 >
                   {isCreating ? "Creating..." : "Save CRM Lead"}
                 </button>

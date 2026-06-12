@@ -460,7 +460,7 @@ export default function ProjectForm({ initialData, isEdit = false }: ProjectForm
         <button
           type="submit"
           disabled={isLoading}
-          className="px-6 py-2 bg-primary hover:bg-primary-light text-surface font-semibold rounded-[4px] disabled:opacity-50"
+          className="px-6 py-2 bg-primary hover:bg-blue-700 text-surface font-semibold rounded-[4px] disabled:opacity-50"
         >
           {isLoading ? "Saving..." : "Save Project"}
         </button>
