@@ -16,7 +16,8 @@ import {
   X,
   Sparkles,
   Compass,
-  MessageSquare
+  MessageSquare,
+  Megaphone
 } from "lucide-react";
 
 export default function Sidebar() {
@@ -77,6 +78,11 @@ export default function Sidebar() {
       name: "WhatsApp",
       path: "/admin/whatsapp",
       icon: <MessageSquare size={16} />,
+    },
+    {
+      name: "Broadcasts",
+      path: "/admin/broadcasts",
+      icon: <Megaphone size={16} />,
     },
     {
       name: "Pipeline",

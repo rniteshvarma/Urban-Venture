@@ -11,7 +11,8 @@ import {
   Filter, 
   TrendingUp, 
   Award, 
-  ChevronRight 
+  ChevronRight,
+  Megaphone
 } from "lucide-react";
 
 interface Match {
@@ -184,14 +185,25 @@ export default function AdminMatchesPage() {
           </h1>
         </div>
 
-        <button
-          onClick={handleRecalculateAll}
-          disabled={isRecalculating}
-          className="flex items-center gap-1.5 px-4 py-2 bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-bold uppercase tracking-wider rounded transition-colors disabled:opacity-50 shadow-sm"
-        >
-          <RefreshCw size={14} className={isRecalculating ? "animate-spin" : ""} />
-          {isRecalculating ? "Recalculating..." : "Run Matching Engine"}
-        </button>
+        <div className="flex gap-2">
+          {selectedProjectId !== "ALL" && (
+            <Link
+              href={`/admin/broadcasts/new?groupType=CORRIDOR_INTEREST&corridor=${encodeURIComponent(projects.find(p => p.id === selectedProjectId)?.corridor || "")}`}
+              className="flex items-center gap-1.5 px-4 py-2 bg-[#D97706] hover:bg-amber-700 text-white text-xs font-bold uppercase tracking-wider rounded transition-colors shadow-sm"
+            >
+              <Megaphone size={14} /> Broadcast to Matches
+            </Link>
+          )}
+
+          <button
+            onClick={handleRecalculateAll}
+            disabled={isRecalculating}
+            className="flex items-center gap-1.5 px-4 py-2 bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-bold uppercase tracking-wider rounded transition-colors disabled:opacity-50 shadow-sm"
+          >
+            <RefreshCw size={14} className={isRecalculating ? "animate-spin" : ""} />
+            {isRecalculating ? "Recalculating..." : "Run Matching Engine"}
+          </button>
+        </div>
       </div>
 
       {/* KPI Stats Blocks */}

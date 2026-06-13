@@ -4,6 +4,8 @@ import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import LeadsTable from "@/components/admin/LeadsTable";
 import LeadDetailPanel from "@/components/admin/LeadDetailPanel";
+import Link from "next/link";
+import { Megaphone, ArrowRight } from "lucide-react";
 
 interface Lead {
   id: string;
@@ -433,6 +435,25 @@ function LeadsPageContent() {
           </div>
         )}
       </div>
+
+      {/* Floating Bulk Broadcast bar */}
+      {selectedIds.length > 0 && (
+        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-40 bg-slate-900/95 text-white border border-slate-700/80 px-6 py-4 rounded-xl shadow-2xl flex items-center gap-6 animate-slide-in backdrop-blur-md">
+          <div className="flex items-center gap-2 text-xs">
+            <span className="p-1.5 bg-blue-600 rounded-lg"><Megaphone size={14} /></span>
+            <div>
+              <span className="font-bold block">{selectedIds.length} Leads Selected</span>
+              <span className="text-slate-400 text-[10px]">Create a bulk broadcast for these leads</span>
+            </div>
+          </div>
+          <Link
+            href={`/admin/broadcasts/new?groupType=MANUAL_PICK&leadIds=${selectedIds.join(",")}`}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold uppercase tracking-wider rounded text-[10px] transition-all flex items-center gap-1 shadow-md"
+          >
+            Broadcast Campaign <ArrowRight size={12} />
+          </Link>
+        </div>
+      )}
 
       {/* Lead details panel sidebar drawer */}
       {activeLead && (

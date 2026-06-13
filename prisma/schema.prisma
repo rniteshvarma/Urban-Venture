@@ -95,6 +95,9 @@ model Lead {
   leadScoreFactors   Json?
   matches            ProjectLeadMatch[]
   whatsAppLogs       WhatsAppLog[]
+  emailOptOut        Boolean             @default(false)
+  whatsappOptOut     Boolean             @default(false)
+  broadcastRecipients BroadcastRecipient[]
 }
 
 enum LeadStatus {
@@ -283,6 +286,87 @@ model CorridorMetrics {
   riskLevel             RiskLevel
   lastUpdated           DateTime @updatedAt
   updatedBy             String?
+}
+
+model Broadcast {
+  id              String          @id @default(cuid())
+  name            String          // Admin-given name e.g. "Diwali Offer - NRI Investors"
+  channel         BroadcastChannel // WHATSAPP or EMAIL or BOTH
+  templateId      String?
+  emailSubject    String?
+  emailBody       String?
+  whatsappMessage String?
+  groupType       GroupType       // How the recipients were selected
+  groupFilters    Json            // Snapshot of filters used
+  recipientCount  Int             @default(0)
+  status          BroadcastStatus @default(DRAFT)
+  scheduledAt     DateTime?       // null = send immediately
+  sentAt          DateTime?
+  createdBy       String
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  recipients      BroadcastRecipient[]
+}
+
+model BroadcastRecipient {
+  id              String          @id @default(cuid())
+  broadcastId     String
+  broadcast       Broadcast       @relation(fields: [broadcastId], references: [id], onDelete: Cascade)
+  leadId          String
+  lead            Lead            @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  whatsappStatus  WAStatus?
+  emailStatus     EmailStatus?
+  whatsappSentAt  DateTime?
+  emailSentAt     DateTime?
+  emailMessageId  String?
+  whatsappMessageId String?
+  errorMessage    String?
+}
+
+model EmailTemplate {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  subject     String
+  body        String   // HTML email body with {{merge_tags}}
+  isActive    Boolean  @default(true)
+  sentCount   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum BroadcastChannel {
+  WHATSAPP
+  EMAIL
+  BOTH
+}
+
+enum BroadcastStatus {
+  DRAFT
+  SENDING
+  SENT
+  FAILED
+  SCHEDULED
+}
+
+enum GroupType {
+  PERSONA           // All leads of a specific buyer persona
+  LEAD_STATUS       // All leads at a specific CRM status
+  PIPELINE_STAGE    // All leads at a specific pipeline stage
+  SCORE_GRADE       // All leads with a specific score grade (A/B/C/D)
+  CORRIDOR_INTEREST // All leads who searched a specific corridor
+  BUDGET_RANGE      // All leads within a budget range
+  MANUAL_PICK       // Admin hand-picked individual leads
+  ALL_LEADS         // Everyone in the database
+}
+
+enum EmailStatus {
+  PENDING
+  SENT
+  DELIVERED
+  OPENED
+  CLICKED
+  FAILED
+  BOUNCED
 }
 
 

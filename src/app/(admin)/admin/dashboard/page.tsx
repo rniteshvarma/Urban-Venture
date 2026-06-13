@@ -7,7 +7,7 @@ import BudgetDistribution from "@/components/admin/charts/BudgetDistribution";
 import CorridorHeatmap from "@/components/admin/charts/CorridorHeatmap";
 import ConversionFunnel from "@/components/admin/charts/ConversionFunnel";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts";
-import { Flame, Phone, ArrowRight, User } from "lucide-react";
+import { Flame, Phone, ArrowRight, User, Megaphone } from "lucide-react";
 
 interface DashboardData {
   leadsByStatus: any[];
@@ -29,6 +29,7 @@ interface DashboardData {
 export default function AdminDashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [staleCount, setStaleCount] = useState(0);
+  const [recentBroadcasts, setRecentBroadcasts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -44,6 +45,12 @@ export default function AdminDashboardPage() {
         if (pipelineRes.ok) {
           const pipelineData = await pipelineRes.json();
           setStaleCount(pipelineData.staleCount || 0);
+        }
+
+        const broadcastsRes = await fetch("/api/admin/broadcasts?limit=3");
+        if (broadcastsRes.ok) {
+          const broadcastsData = await broadcastsRes.json();
+          setRecentBroadcasts(broadcastsData.broadcasts || []);
         }
       } catch (err) {
         console.error("Failed to load dashboard data:", err);
@@ -138,82 +145,169 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* Hot Leads Today */}
-      <div className="bg-surface border border-luxury p-5 sm:p-6 rounded-card shadow-sm">
-        <div className="flex items-center justify-between mb-4 border-b border-luxury pb-3">
-          <div className="flex items-center gap-2">
-            <Flame className="w-5 h-5 text-red-500 fill-red-500 animate-pulse" />
-            <div>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-primary">
-                🔥 Hot Leads Today
-              </h3>
-              <p className="text-[10px] text-text-secondary">
-                Top 5 active leads with Grade-A score (&gt;75) requiring immediate attention
-              </p>
+      {/* Hot Leads & Broadcasts Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Hot Leads Today */}
+        <div className="bg-surface border border-luxury p-5 sm:p-6 rounded-card shadow-sm flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-4 border-b border-luxury pb-3">
+              <div className="flex items-center gap-2">
+                <Flame className="w-5 h-5 text-red-500 fill-red-500 animate-pulse" />
+                <div>
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-primary">
+                    🔥 Hot Leads Today
+                  </h3>
+                  <p className="text-[10px] text-text-secondary">
+                    Top 5 active leads with Grade-A score (&gt;75) requiring immediate attention
+                  </p>
+                </div>
+              </div>
+              <Link
+                href="/admin/leads"
+                className="text-[10px] uppercase font-bold tracking-wider text-accent hover:underline flex items-center gap-1"
+              >
+                All Leads <ArrowRight className="w-3 h-3" />
+              </Link>
             </div>
+
+            {data.hotLeads && data.hotLeads.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="border-b border-luxury text-text-secondary font-semibold uppercase tracking-wider text-[10px]">
+                      <th className="py-2 pb-3">Name</th>
+                      <th className="py-2 pb-3">Buyer Persona</th>
+                      <th className="py-2 pb-3">Status</th>
+                      <th className="py-2 pb-3 text-right">Score</th>
+                      <th className="py-2 pb-3 text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-luxury">
+                    {data.hotLeads.map((lead: any) => (
+                      <tr key={lead.id} className="hover:bg-luxury-bg/50 transition-colors">
+                        <td className="py-3 font-semibold text-primary">
+                          <Link href={`/admin/leads?id=${lead.id}`} className="hover:underline flex items-center gap-2">
+                            <User className="w-3.5 h-3.5 text-text-secondary" />
+                            {lead.name}
+                          </Link>
+                        </td>
+                        <td className="py-3">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                            {lead.persona ? lead.persona.replace(/_/g, " ") : "Not Segmented"}
+                          </span>
+                        </td>
+                        <td className="py-3">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-700">
+                            {lead.status}
+                          </span>
+                        </td>
+                        <td className="py-3 text-right font-bold text-green-600">
+                          <span className="px-2 py-0.5 rounded bg-green-50 border border-green-200">
+                            {lead.leadScore} pts
+                          </span>
+                        </td>
+                        <td className="py-3 text-right">
+                          <a
+                            href={`tel:${lead.phone}`}
+                            className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#2563EB] hover:bg-blue-700 text-white font-bold uppercase tracking-wider rounded text-[10px] transition-colors shadow-sm"
+                          >
+                            <Phone className="w-3 h-3" /> Call
+                          </a>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="py-8 text-center text-text-secondary text-xs">
+                 No Grade-A hot leads found today. All caught up!
+              </div>
+            )}
           </div>
-          <Link
-            href="/admin/leads"
-            className="text-[10px] uppercase font-bold tracking-wider text-accent hover:underline flex items-center gap-1"
-          >
-            All Leads <ArrowRight className="w-3 h-3" />
-          </Link>
         </div>
 
-        {data.hotLeads && data.hotLeads.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr className="border-b border-luxury text-text-secondary font-semibold uppercase tracking-wider text-[10px]">
-                  <th className="py-2 pb-3">Name</th>
-                  <th className="py-2 pb-3">Buyer Persona</th>
-                  <th className="py-2 pb-3">Status</th>
-                  <th className="py-2 pb-3 text-right">Score</th>
-                  <th className="py-2 pb-3 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-luxury">
-                {data.hotLeads.map((lead: any) => (
-                  <tr key={lead.id} className="hover:bg-luxury-bg/50 transition-colors">
-                    <td className="py-3 font-semibold text-primary">
-                      <Link href={`/admin/leads?id=${lead.id}`} className="hover:underline flex items-center gap-2">
-                        <User className="w-3.5 h-3.5 text-text-secondary" />
-                        {lead.name}
-                      </Link>
-                    </td>
-                    <td className="py-3">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue-50 text-blue-700 border border-blue-200">
-                        {lead.persona ? lead.persona.replace(/_/g, " ") : "Not Segmented"}
-                      </span>
-                    </td>
-                    <td className="py-3">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-700">
-                        {lead.status}
-                      </span>
-                    </td>
-                    <td className="py-3 text-right font-bold text-green-600">
-                      <span className="px-2 py-0.5 rounded bg-green-50 border border-green-200">
-                        {lead.leadScore} pts
-                      </span>
-                    </td>
-                    <td className="py-3 text-right">
-                      <a
-                        href={`tel:${lead.phone}`}
-                        className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#2563EB] hover:bg-blue-700 text-white font-bold uppercase tracking-wider rounded text-[10px] transition-colors shadow-sm"
-                      >
-                        <Phone className="w-3 h-3" /> Call
-                      </a>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        {/* Campaign Broadcasts Overview */}
+        <div className="bg-surface border border-luxury p-5 sm:p-6 rounded-card shadow-sm flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-4 border-b border-luxury pb-3">
+              <div className="flex items-center gap-2">
+                <Megaphone className="w-5 h-5 text-blue-600" />
+                <div>
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-primary">
+                    📣 Broadcast Campaigns Overview
+                  </h3>
+                  <p className="text-[10px] text-text-secondary">
+                    Recent bulk campaign dispatches and delivery performance
+                  </p>
+                </div>
+              </div>
+              <Link
+                href="/admin/broadcasts"
+                className="text-[10px] uppercase font-bold tracking-wider text-accent hover:underline flex items-center gap-1"
+              >
+                All Campaigns <ArrowRight className="w-3 h-3" />
+              </Link>
+            </div>
+
+            {recentBroadcasts && recentBroadcasts.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="border-b border-luxury text-text-secondary font-semibold uppercase tracking-wider text-[10px]">
+                      <th className="py-2 pb-3">Campaign Name</th>
+                      <th className="py-2 pb-3">Channel</th>
+                      <th className="py-2 pb-3">Recipients</th>
+                      <th className="py-2 pb-3 text-right">Performance</th>
+                      <th className="py-2 pb-3 text-right">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-luxury">
+                    {recentBroadcasts.map((b: any) => (
+                      <tr key={b.id} className="hover:bg-luxury-bg/50 transition-colors">
+                        <td className="py-3 font-semibold text-primary">
+                          <Link href={`/admin/broadcasts/history/${b.id}`} className="hover:underline">
+                            {b.name}
+                          </Link>
+                        </td>
+                        <td className="py-3">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-700">
+                            {b.channel}
+                          </span>
+                        </td>
+                        <td className="py-3 font-medium text-slate-600">
+                          {b.recipientCount} leads
+                        </td>
+                        <td className="py-3 text-right text-[10px] text-slate-500 font-medium">
+                          {b.channel !== "EMAIL" && (
+                            <div>WA Deliv: <strong className="text-slate-800">{b.stats.waDeliveredRate}%</strong></div>
+                          )}
+                          {b.channel !== "WHATSAPP" && (
+                            <div>Email Open: <strong className="text-slate-800">{b.stats.emailOpenRate}%</strong></div>
+                          )}
+                        </td>
+                        <td className="py-3 text-right">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${
+                            b.status === "SENT" ? "bg-green-50 text-green-700 border border-green-200" :
+                            b.status === "SENDING" ? "bg-blue-50 text-blue-700 border border-blue-200" :
+                            b.status === "FAILED" ? "bg-red-50 text-red-700 border border-red-200" :
+                            "bg-slate-50 text-slate-500 border border-slate-200"
+                          }`}>
+                            {b.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="py-8 text-center text-text-secondary text-xs">
+                No recent broadcast campaigns found.
+              </div>
+            )}
           </div>
-        ) : (
-          <div className="py-8 text-center text-text-secondary text-xs">
-             No Grade-A hot leads found today. All caught up!
-          </div>
-        )}
+        </div>
       </div>
 
       {/* Charts Grid */}

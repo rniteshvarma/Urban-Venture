@@ -178,12 +178,18 @@ export default function AdminPersonasPage() {
             </div>
 
             {/* Card Action Link */}
-            <div className="p-4 bg-slate-50 border-t border-slate-100 text-center">
+            <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-between items-center px-5 text-xs font-bold uppercase tracking-wider">
               <Link
                 href={`/admin/leads?persona=${p.persona}`}
-                className="inline-block text-xs font-bold text-blue-600 hover:text-blue-800 transition-colors uppercase tracking-wider"
+                className="text-blue-600 hover:text-blue-800 transition-colors"
               >
-                View Segment Leads →
+                View Leads →
+              </Link>
+              <Link
+                href={`/admin/broadcasts/new?groupType=PERSONA&persona=${p.persona}`}
+                className="text-[#D97706] hover:text-amber-700 transition-colors flex items-center gap-0.5"
+              >
+                Broadcast 📣
               </Link>
             </div>
           </div>
