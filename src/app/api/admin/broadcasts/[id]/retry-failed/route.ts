@@ -23,8 +23,8 @@ export async function POST(
       return NextResponse.json({ error: "Broadcast not found" }, { status: 404 });
     }
 
-    if (broadcast.status !== "FAILED" && broadcast.status !== "SENT") {
-      return NextResponse.json({ error: "Only completed or failed broadcasts can be retried." }, { status: 400 });
+    if (broadcast.status === "DRAFT" || broadcast.status === "SCHEDULED") {
+      return NextResponse.json({ error: "Only dispatched, completed, or failed broadcasts can be retried." }, { status: 400 });
     }
 
     // Trigger background process
