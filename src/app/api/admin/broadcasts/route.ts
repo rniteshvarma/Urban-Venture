@@ -130,7 +130,7 @@ export async function POST(req: Request) {
 
     // Trigger sending immediately if not scheduled
     if (!scheduledAt) {
-      processBroadcastSend(broadcast.id).catch((err) => {
+      await processBroadcastSend(broadcast.id).catch((err) => {
         console.error(`[Background Send Trigger Error] Broadcast ${broadcast.id}:`, err);
       });
     }

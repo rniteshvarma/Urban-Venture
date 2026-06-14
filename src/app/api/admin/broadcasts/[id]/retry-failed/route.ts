@@ -28,7 +28,7 @@ export async function POST(
     }
 
     // Trigger background process
-    processBroadcastRetry(id).catch((err) => {
+    await processBroadcastRetry(id).catch((err) => {
       console.error(`[Background Retry Trigger Error] Broadcast ${id}:`, err);
     });
 
