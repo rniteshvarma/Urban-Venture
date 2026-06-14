@@ -34,7 +34,7 @@ export async function sendBroadcastEmail(params: {
 
   try {
     const response = await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL || 'Your Company <noreply@yourdomain.com>',
+      from: process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev',
       to: params.to,
       subject: params.subject,
       html: finalHtml,
