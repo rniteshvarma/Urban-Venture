@@ -32,6 +32,43 @@ export default function AdminDashboardPage() {
   const [recentBroadcasts, setRecentBroadcasts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const [intelSummary, setIntelSummary] = useState<{
+    projectCount: number;
+    highestScoreCorridor: string;
+    highestScore: number;
+    bullishCorridors: string[];
+    lastComputed: string | null;
+  } | null>(null);
+  const [isRecomputing, setIsRecomputing] = useState(false);
+
+  const loadIntelSummary = async () => {
+    try {
+      const corridorsRes = await fetch("/api/market/corridors");
+      const projectsRes = await fetch("/api/admin/infra-projects");
+      if (corridorsRes.ok && projectsRes.ok) {
+        const corridors = await corridorsRes.json();
+        const projects = await projectsRes.json();
+        
+        const highest = corridors.length > 0 ? corridors[0] : null;
+        const bullish = corridors
+          .filter((c: any) => c.investorSentiment === "BULLISH")
+          .map((c: any) => c.corridor);
+          
+        const lastComp = corridors.find((c: any) => c.lastComputedAt)?.lastComputedAt || null;
+
+        setIntelSummary({
+          projectCount: projects.length,
+          highestScoreCorridor: highest ? highest.corridor : "None",
+          highestScore: highest ? highest.overallScore : 0,
+          bullishCorridors: bullish,
+          lastComputed: lastComp
+        });
+      }
+    } catch (intelErr) {
+      console.error("Failed to load intelligence summary on dashboard:", intelErr);
+    }
+  };
+
   useEffect(() => {
     async function loadDashboardData() {
       try {
@@ -52,6 +89,8 @@ export default function AdminDashboardPage() {
           const broadcastsData = await broadcastsRes.json();
           setRecentBroadcasts(broadcastsData.broadcasts || []);
         }
+
+        await loadIntelSummary();
       } catch (err) {
         console.error("Failed to load dashboard data:", err);
       } finally {
@@ -60,6 +99,28 @@ export default function AdminDashboardPage() {
     }
     loadDashboardData();
   }, []);
+
+  const handleRecompute = async () => {
+    setIsRecomputing(true);
+    try {
+      const res = await fetch("/api/admin/intelligence/recompute", {
+        method: "POST"
+      });
+      if (res.ok) {
+        const resultData = await res.json();
+        alert(resultData.message || "Successfully recomputed scores!");
+        await loadIntelSummary();
+      } else {
+        const errorData = await res.json().catch(() => ({}));
+        alert(`Failed to recompute: ${errorData.error || "Unknown error"}`);
+      }
+    } catch (err: any) {
+      console.error(err);
+      alert(`Error recomputing: ${err.message || "Request failed"}`);
+    } finally {
+      setIsRecomputing(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -309,6 +370,85 @@ export default function AdminDashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Market Intelligence Summary Section */}
+      {intelSummary && (
+        <div className="bg-surface border border-luxury p-5 sm:p-6 rounded-card shadow-sm space-y-4">
+          <div className="flex items-center justify-between border-b border-luxury pb-3">
+            <div>
+              <h3 className="text-xs font-bold uppercase tracking-wider text-primary">
+                📊 Market Intelligence & Corridor Scoring Summary
+              </h3>
+              <p className="text-[10px] text-text-secondary">
+                Tracked infrastructure status, leading investment zones, and automated recomputation triggers
+              </p>
+            </div>
+            <Link
+              href="/admin/infrastructure/intelligence"
+              className="text-[10px] uppercase font-bold tracking-wider text-accent hover:underline flex items-center gap-1"
+            >
+              Intelligence Console <ArrowRight className="w-3 h-3" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <div className="bg-luxury-bg/30 p-4 rounded-xl space-y-1">
+              <span className="text-[10px] text-text-secondary uppercase tracking-wider block">Tracked Projects</span>
+              <div className="flex items-baseline justify-between">
+                <span className="text-2xl font-bold text-primary">{intelSummary.projectCount}</span>
+                <Link
+                  href="/admin/infrastructure/projects"
+                  className="text-[9px] text-[#2563EB] hover:underline font-bold uppercase tracking-wider"
+                >
+                  Manage →
+                </Link>
+              </div>
+            </div>
+
+            <div className="bg-luxury-bg/30 p-4 rounded-xl space-y-1">
+              <span className="text-[10px] text-text-secondary uppercase tracking-wider block">Leading Growth Corridor</span>
+              <div>
+                <span className="text-sm font-bold text-primary block truncate">{intelSummary.highestScoreCorridor}</span>
+                <span className="text-[10px] text-green-600 font-bold">
+                  Score: {intelSummary.highestScore}/100
+                </span>
+              </div>
+            </div>
+
+            <div className="bg-luxury-bg/30 p-4 rounded-xl space-y-1">
+              <span className="text-[10px] text-text-secondary uppercase tracking-wider block">Bullish Zones</span>
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {intelSummary.bullishCorridors.length > 0 ? (
+                  intelSummary.bullishCorridors.map((c, idx) => (
+                    <span key={idx} className="bg-emerald-50 text-emerald-700 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider border border-emerald-100">
+                      {c}
+                    </span>
+                  ))
+                ) : (
+                  <span className="text-[10px] text-text-secondary">None</span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row justify-between items-center pt-2 text-[10px] text-text-secondary gap-3 border-t border-luxury/50">
+            <span>
+              Last Intelligence Recomputation: <strong className="text-primary">{intelSummary.lastComputed ? new Date(intelSummary.lastComputed).toLocaleString('en-IN') : "Never"}</strong>
+            </span>
+            <button
+              onClick={handleRecompute}
+              disabled={isRecomputing}
+              className={`px-4 py-2 font-bold uppercase tracking-wider text-[10px] rounded transition-all text-white shadow-sm flex items-center gap-1.5 ${
+                isRecomputing 
+                  ? "bg-slate-400 cursor-not-allowed animate-pulse" 
+                  : "bg-accent hover:bg-accent/90 active:scale-95 cursor-pointer"
+              }`}
+            >
+              {isRecomputing ? "Recomputing..." : "Recompute Now ⚡"}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

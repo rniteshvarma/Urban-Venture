@@ -369,4 +369,180 @@ enum EmailStatus {
   BOUNCED
 }
 
+// ── GOVERNMENT INFRASTRUCTURE PROJECTS ──────────────────────────────────────
+
+model InfraProject {
+  id                String          @id @default(cuid())
+  name              String          // "Regional Ring Road - Northern Corridor"
+  shortName         String          // "RRR North"
+  category          InfraCategory
+  subCategory       String?         // "Expressway", "Metro", "SEZ", "Industrial Park"
+  description       String
+  status            InfraStatus
+  completionPct     Int             @default(0)   // 0-100
+  estimatedCompletion String?       // "Q3 2027"
+  totalInvestmentCr Float?          // Investment in Crores
+  expectedJobs      Int?
+  affectedCorridors String[]        // corridor names this project impacts
+  impactRadius      Float           // km radius of real estate impact
+  latitude          Float?
+  longitude         Float?
+  sourceUrl         String?         // Official government URL
+  sourceGO          String?         // Government Order number e.g. "G.O.Ms.No.68"
+  tags              String[]        // ["HMDA", "NHAI", "Bharatmala", "TSIIC"]
+  approvalAuthority String?         // "HMDA", "DTCP", "NHAI", "TSIIC", "GoT"
+  reImpactScore     Int             @default(0)   // 1-10 admin-rated RE impact
+  isPublished       Boolean         @default(false)
+  milestones        InfraMilestone[]
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+}
+
+model InfraMilestone {
+  id            String       @id @default(cuid())
+  projectId     String
+  project       InfraProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title         String       // "Land Acquisition 94% Complete"
+  date          DateTime?
+  status        MilestoneStatus @default(UPCOMING)
+  description   String?
+  sourceUrl     String?
+}
+
+enum InfraCategory {
+  ROAD_HIGHWAY        // RRR, ORR, NH expansions, flyovers
+  METRO_RAIL          // Metro extensions, new corridors
+  INDUSTRIAL_ZONE     // TSIIC industrial parks, SEZs
+  PHARMA_BIOTECH      // Pharma City, Genome Valley
+  LOGISTICS_PARK      // Warehousing hubs, dry ports, freight terminals
+  AIRPORT_AVIATION    // RGIA expansion, cargo terminals, aerospace SEZ
+  GOVT_APPROVAL       // HMDA layout approvals, DTCP approvals
+  TOWNSHIP            // Satellite townships, master plan zones
+  IT_TECH_PARK        // IT corridors, hardware parks
+  UTILITY             // Water supply, power grid, sewage
+}
+
+enum InfraStatus {
+  ANNOUNCED           // Government announcement only
+  APPROVED            // Government order issued
+  LAND_ACQUISITION    // Land acquisition in progress
+  UNDER_CONSTRUCTION  // Active construction
+  PARTIALLY_COMPLETE  // Some phases done
+  COMPLETE            // Fully operational
+  DELAYED             // Official delay announced
+  CANCELLED           // Cancelled or stalled
+}
+
+enum MilestoneStatus {
+  COMPLETED
+  IN_PROGRESS
+  UPCOMING
+}
+
+// ── AREA APPRECIATION HISTORY ─────────────────────────────────────────────────
+
+model AppreciationHistory {
+  id           String   @id @default(cuid())
+  corridor     String   // Must match CorridorMetrics.corridor
+  year         Int
+  quarter      Int?     // 1-4, null = annual
+  pricePerSqFt Float    // Average price per sq ft in ₹
+  pricePerSqYd Float?   // For plot markets
+  yoyChange    Float    // Year-over-year % change
+  qoqChange    Float?   // Quarter-over-quarter % change
+  sampleSize   Int?     // Number of transactions this is based on
+  source       String?  // "RERA Data", "Market Research", "Admin Estimate"
+  notes        String?
+  createdAt    DateTime @default(now())
+}
+
+// ── DEMAND TREND DATA ─────────────────────────────────────────────────────────
+
+model DemandTrend {
+  id              String   @id @default(cuid())
+  corridor        String
+  month           Int      // 1-12
+  year            Int
+  searchVolume    Int?     // Portal search count for this corridor
+  inquiryCount    Int?     // Leads who expressed interest
+  siteVisits      Int?     // Site visits arranged
+  newListings     Int?     // New projects listed
+  inventoryUnits  Int?     // Total units available
+  soldUnits       Int?     // Units sold/booked this month
+  absorptionRate  Float?   // % of inventory absorbed
+  medianDaysOnMkt Int?     // Median days project stays on market
+  createdAt       DateTime @default(now())
+
+  @@unique([corridor, month, year])
+}
+
+// ── HMDA / DTCP APPROVAL TRACKER ─────────────────────────────────────────────
+
+model ApprovalRecord {
+  id              String         @id @default(cuid())
+  projectName     String
+  developerName   String?
+  approvalType    ApprovalType
+  authority       ApprovalAuth   // HMDA, DTCP, GHMC, RERA
+  approvalNumber  String?        // LP number, RERA number, GO number
+  approvalDate    DateTime?
+  corridor        String?
+  areaAcres       Float?
+  surveyNumbers   String[]
+  status          ApprovalStatus @default(APPROVED)
+  reraNumber      String?
+  reraUrl         String?
+  notes           String?
+  isPublished     Boolean        @default(true)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+enum ApprovalType {
+  LAYOUT_APPROVAL
+  BUILDING_PERMISSION
+  RERA_REGISTRATION
+  ENVIRONMENTAL_CLEARANCE
+  SEZ_APPROVAL
+  INDUSTRIAL_ALLOTMENT
+  TOWNSHIP_APPROVAL
+}
+
+enum ApprovalAuth {
+  HMDA
+  DTCP
+  GHMC
+  RERA_TELANGANA
+  TSIIC
+  NHAI
+  MOEF     // Ministry of Environment
+  GOT      // Government of Telangana
+}
+
+enum ApprovalStatus {
+  APPROVED
+  PENDING
+  REVOKED
+  EXPIRED
+}
+
+// ── CORRIDOR INTELLIGENCE SCORE ───────────────────────────────────────────────
+
+model CorridorIntelligence {
+  id                   String   @id @default(cuid())
+  corridor             String   @unique
+  overallScore         Int      // 1-100 computed
+  infraScore           Int      // 1-25: proximity to govt infra projects
+  approvalScore        Int      // 1-25: HMDA/DTCP/RERA approvals in zone
+  demandScore          Int      // 1-25: search + inquiry trends
+  appreciationScore    Int      // 1-25: historical price growth
+  investorSentiment    String   // "BULLISH" | "NEUTRAL" | "CAUTIOUS"
+  adminNote            String?  // Admin commentary shown to clients
+  keyDrivers           String[] // Top 3 reasons for the score
+  keyRisks             String[] // Top 2 risks
+  bestFor              String[] // Persona types this corridor suits
+  lastComputedAt       DateTime @default(now())
+}
+
+
 

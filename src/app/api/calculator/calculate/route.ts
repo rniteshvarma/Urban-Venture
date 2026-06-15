@@ -26,6 +26,8 @@ export async function POST(req: Request) {
     let rentMin = customRentMin !== undefined ? parseFloat(customRentMin) : 2;
     let rentMax = customRentMax !== undefined ? parseFloat(customRentMax) : 4;
 
+    let infrastructureTailwinds: any[] = [];
+
     if (corridorId && corridorId !== "CUSTOM") {
       const corridorMetrics = await prisma.corridorMetrics.findUnique({
         where: { id: corridorId }
@@ -36,6 +38,39 @@ export async function POST(req: Request) {
         cagrMax = corridorMetrics.projectedCAGRMax;
         rentMin = corridorMetrics.rentalYieldMin;
         rentMax = corridorMetrics.rentalYieldMax;
+
+        // Query upcoming infra projects to boost CAGR and list tailwinds
+        try {
+          const upcomingInfra = await prisma.infraProject.findMany({
+            where: {
+              affectedCorridors: {
+                has: corridorMetrics.corridor
+              },
+              isPublished: true,
+              NOT: {
+                status: {
+                  in: ["COMPLETE", "CANCELLED"]
+                }
+              }
+            },
+            orderBy: {
+              reImpactScore: "desc"
+            }
+          });
+
+          // cagrMax boost: +0.2% per project, cap at +1.5%
+          const cagrBoost = Math.min(1.5, upcomingInfra.length * 0.2);
+          cagrMax = parseFloat((cagrMax + cagrBoost).toFixed(2));
+
+          infrastructureTailwinds = upcomingInfra.slice(0, 2).map(p => ({
+            name: p.name,
+            status: p.status,
+            reImpactScore: p.reImpactScore,
+            estimatedCompletion: p.estimatedCompletion
+          }));
+        } catch (dbErr) {
+          console.error("Failed to query upcoming infra for calculator", dbErr);
+        }
       }
     }
 
@@ -111,7 +146,8 @@ Do not return markdown, do not return codeblocks.`;
       success: true,
       summary,
       takeaways,
-      corridorName
+      corridorName,
+      infrastructureTailwinds
     });
   } catch (error: any) {
     console.error("Error in POST /api/calculator/calculate:", error);

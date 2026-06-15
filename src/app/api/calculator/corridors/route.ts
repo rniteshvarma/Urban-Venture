@@ -6,8 +6,17 @@ export async function GET() {
     const corridors = await prisma.corridorMetrics.findMany({
       orderBy: { corridor: "asc" }
     });
+    const intelligence = await prisma.corridorIntelligence.findMany();
 
-    return NextResponse.json({ success: true, corridors });
+    const merged = corridors.map(c => {
+      const intel = intelligence.find(i => i.corridor.toLowerCase() === c.corridor.toLowerCase());
+      return {
+        ...c,
+        overallScore: intel?.overallScore || 0
+      };
+    });
+
+    return NextResponse.json({ success: true, corridors: merged });
   } catch (error: any) {
     console.error("Error in GET /api/calculator/corridors:", error);
     return NextResponse.json({ error: "Internal Server Error", details: error.message }, { status: 500 });

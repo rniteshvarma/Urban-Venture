@@ -17,7 +17,12 @@ import {
   Sparkles,
   Compass,
   MessageSquare,
-  Megaphone
+  Megaphone,
+  Hammer,
+  FileCheck,
+  TrendingUp,
+  TrendingDown,
+  Brain
 } from "lucide-react";
 
 export default function Sidebar() {
@@ -108,6 +113,34 @@ export default function Sidebar() {
     },
   ];
 
+  const marketItems = [
+    {
+      name: "Infra Projects",
+      path: "/admin/infrastructure/projects",
+      icon: <Hammer size={16} />,
+    },
+    {
+      name: "Approvals",
+      path: "/admin/infrastructure/approvals",
+      icon: <FileCheck size={16} />,
+    },
+    {
+      name: "Price History",
+      path: "/admin/infrastructure/appreciation",
+      icon: <TrendingUp size={16} />,
+    },
+    {
+      name: "Demand Trends",
+      path: "/admin/infrastructure/demand",
+      icon: <TrendingDown size={16} />,
+    },
+    {
+      name: "Intelligence Scores",
+      path: "/admin/infrastructure/intelligence",
+      icon: <Brain size={16} />,
+    },
+  ];
+
   const handleLogout = () => {
     signOut({ callbackUrl: "/admin/login" });
   };
@@ -176,6 +209,32 @@ export default function Sidebar() {
                       {item.badge} {item.badgeType === "stale" ? "stale" : "new"}
                     </span>
                   )}
+                </Link>
+              );
+            })}
+
+            {/* Market Data Section */}
+            <div className="pt-4 pb-1 px-3">
+              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Market Data</span>
+            </div>
+            {marketItems.map((item) => {
+              const isActive = pathname === item.path || pathname?.startsWith(`${item.path}/`);
+              return (
+                <Link
+                  key={item.name}
+                  href={item.path}
+                  className={`flex items-center justify-between px-3 py-2 text-xs font-semibold rounded transition-all ${
+                    isActive
+                      ? "bg-slate-200/60 text-slate-900 font-bold border-l-2 border-blue-600 pl-2"
+                      : "text-slate-600 hover:bg-slate-200/30 hover:text-slate-900"
+                  }`}
+                >
+                  <span className="flex items-center gap-2.5">
+                    <span className={isActive ? "text-blue-600" : "text-slate-400"}>
+                      {item.icon}
+                    </span>
+                    <span>{item.name}</span>
+                  </span>
                 </Link>
               );
             })}

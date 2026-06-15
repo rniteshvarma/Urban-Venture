@@ -9,6 +9,7 @@ interface ScoreBreakdown {
   recency: number;
   source: number;
   completeness: number;
+  corridorBonus?: number;
 }
 
 export async function calculateLeadScore(leadId: string): Promise<{
@@ -23,7 +24,8 @@ export async function calculateLeadScore(leadId: string): Promise<{
         include: {
           searches: true
         }
-      }
+      },
+      project: true
     }
   });
 
@@ -85,8 +87,38 @@ export async function calculateLeadScore(leadId: string): Promise<{
   const isComplete = lead.phone && lead.email && lead.budget && lead.horizon;
   const completenessScore = isComplete ? 5 : 2;
 
+  // 8. Corridor Intelligence Bonus (Up to +8pts)
+  // +5 for score > 75, +3 for BULLISH sentiment corridor
+  let corridorScoreBonus = 0;
+  try {
+    const corridorIntels = await prisma.corridorIntelligence.findMany();
+    let matchedIntel = null;
+
+    if (lead.project?.corridor) {
+      const projCorridor = lead.project.corridor.toLowerCase();
+      matchedIntel = corridorIntels.find(
+        c => c.corridor.toLowerCase() === projCorridor
+      );
+    }
+
+    if (!matchedIntel && lead.notes) {
+      const notesLower = lead.notes.toLowerCase();
+      // Find a corridor name inside lead notes
+      matchedIntel = corridorIntels.find(
+        c => notesLower.includes(c.corridor.toLowerCase())
+      );
+    }
+
+    if (matchedIntel) {
+      if (matchedIntel.overallScore > 75) corridorScoreBonus += 5;
+      if (matchedIntel.investorSentiment === "BULLISH") corridorScoreBonus += 3;
+    }
+  } catch (error) {
+    console.error("Failed to calculate corridor score bonus in lead scorer", error);
+  }
+
   // Sum total score
-  const totalScore = budgetScore + horizonScore + searchScore + stageScore + recencyScore + sourceScore + completenessScore;
+  const totalScore = budgetScore + horizonScore + searchScore + stageScore + recencyScore + sourceScore + completenessScore + corridorScoreBonus;
 
   // Calculate Grade cutoffs
   let grade: ScoreGrade = ScoreGrade.D;
@@ -101,7 +133,8 @@ export async function calculateLeadScore(leadId: string): Promise<{
     stage: stageScore,
     recency: recencyScore,
     source: sourceScore,
-    completeness: completenessScore
+    completeness: completenessScore,
+    corridorBonus: corridorScoreBonus
   };
 
   // Update Lead in database

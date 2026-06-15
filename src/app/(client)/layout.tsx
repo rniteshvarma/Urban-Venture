@@ -28,11 +28,34 @@ export default function ClientLayout({
               >
                 AI Research Tool
               </Link>
+              
+              {/* Market Intelligence Hover Dropdown */}
+              <div className="relative group py-2">
+                <button className="text-sm font-medium text-text-primary hover:text-accent transition-colors flex items-center gap-1 cursor-pointer">
+                  Market Intelligence
+                  <svg className="w-3 h-3 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                  </svg>
+                </button>
+                <div className="absolute left-0 mt-2 w-48 bg-white border border-slate-200 rounded-[4px] shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 py-1.5 z-50 text-slate-800">
+                  <Link href="/market" className="block px-4 py-2 text-xs font-bold hover:bg-slate-100 hover:text-blue-650 transition-colors">Corridor Overview</Link>
+                  <Link href="/market" className="block px-4 py-2 text-xs font-bold hover:bg-slate-100 hover:text-blue-650 transition-colors">Infrastructure Map</Link>
+                  <Link href="/market/approvals" className="block px-4 py-2 text-xs font-bold hover:bg-slate-100 hover:text-blue-650 transition-colors">Approval Records</Link>
+                  <Link href="/market/compare" className="block px-4 py-2 text-xs font-bold hover:bg-slate-100 hover:text-blue-650 transition-colors">Compare Corridors</Link>
+                </div>
+              </div>
+
               <Link 
                 href="/projects" 
                 className="text-sm font-medium text-text-primary hover:text-accent transition-colors"
               >
                 Premium Projects
+              </Link>
+              <Link 
+                href="/calculator" 
+                className="text-sm font-medium text-text-primary hover:text-accent transition-colors"
+              >
+                ROI Calculator
               </Link>
             </nav>
           </div>
@@ -76,7 +99,16 @@ export default function ClientLayout({
                   <Link href="/research" className="hover:text-surface transition-colors">AI Investment Analysis</Link>
                 </li>
                 <li>
+                  <Link href="/market" className="hover:text-surface transition-colors">Market Intelligence Hub</Link>
+                </li>
+                <li>
+                  <Link href="/market/approvals" className="hover:text-surface transition-colors">Layout Approvals Database</Link>
+                </li>
+                <li>
                   <Link href="/projects" className="hover:text-surface transition-colors">Corridor Projects</Link>
+                </li>
+                <li>
+                  <Link href="/calculator" className="hover:text-surface transition-colors">ROI Calculator</Link>
                 </li>
                 <li>
                   <Link href="/admin/login" className="hover:text-surface transition-colors">Partner/CRM Access</Link>

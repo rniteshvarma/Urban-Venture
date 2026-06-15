@@ -1,4 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
+import prisma from "./prisma";
 
 // Tailored recommendations generator for local dev fallback
 function getMockRecommendation(budget: number, horizon: number, city: string) {
@@ -138,6 +139,37 @@ export async function getInvestmentRecommendations(budget: number, horizon: numb
   }
 
   try {
+    let infraContext = "";
+    if (city.toLowerCase() === "hyderabad") {
+      try {
+        const projects = await prisma.infraProject.findMany({
+          where: { isPublished: true },
+          take: 8
+        });
+        const approvals = await prisma.approvalRecord.findMany({
+          where: { isPublished: true },
+          orderBy: { approvalDate: "desc" },
+          take: 6
+        });
+        const scores = await prisma.corridorIntelligence.findMany();
+
+        infraContext = `
+Additional infrastructure context for Hyderabad:
+
+Active Infrastructure Projects:
+${projects.map(p => `- ${p.name} (${p.shortName}): Status: ${p.status}, Completion: ${p.completionPct}%, Affected Corridors: ${p.affectedCorridors.join(", ")}, RE Impact Score: ${p.reImpactScore}/10`).join("\n")}
+
+Recent layout approvals:
+${approvals.map(a => `- ${a.projectName} (${a.authority}): Type: ${a.approvalType}, Corridor: ${a.corridor || "N/A"}, Status: ${a.status}`).join("\n")}
+
+Corridor Intelligence Ratings:
+${scores.map(s => `- ${s.corridor}: Overall Score: ${s.overallScore}/100, Sentiment: ${s.investorSentiment}, Key Drivers: ${s.keyDrivers.slice(0, 2).join(", ")}`).join("\n")}
+        `;
+      } catch (dbErr) {
+        console.error("Failed to query DB for AI recommendations context", dbErr);
+      }
+    }
+
     const anthropic = new Anthropic({ apiKey });
     const systemPrompt = `You are an expert real estate investment advisor specializing in Indian real estate markets, particularly Hyderabad and Telangana. You provide data-driven, corridor-specific investment recommendations. Always respond in valid JSON only, no markdown.`;
     
@@ -146,6 +178,8 @@ export async function getInvestmentRecommendations(budget: number, horizon: numb
 Budget: ₹${budget} Lakhs
 Investment Horizon: ${horizon} years
 Preferred City: ${city}
+
+${infraContext}
 
 Respond with a JSON object in this exact structure:
 {

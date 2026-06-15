@@ -37,6 +37,7 @@ interface Corridor {
   infraScore: number;
   demandScore: number;
   riskLevel: string;
+  overallScore?: number;
 }
 
 function CalculatorContent() {
@@ -122,7 +123,10 @@ function CalculatorContent() {
 
       if (res.ok) {
         const data = await res.json();
-        setCalculationData(data.summary);
+        setCalculationData({
+          ...data.summary,
+          infrastructureTailwinds: data.infrastructureTailwinds
+        });
         setTakeaways(data.takeaways || []);
       }
     } catch (err) {
@@ -290,7 +294,7 @@ function CalculatorContent() {
               <option value="CUSTOM">Custom Parameters (Configure Below)</option>
               {corridors.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.corridor} ({c.projectedCAGRMin}-{c.projectedCAGRMax}% CAGR)
+                  {c.corridor} (Rating: {c.overallScore || 0}/100) ({c.projectedCAGRMin}-{c.projectedCAGRMax}% CAGR)
                 </option>
               ))}
             </select>
@@ -548,6 +552,33 @@ function CalculatorContent() {
               </div>
             )}
           </div>
+
+          {/* Infrastructure Tailwind Boosts Card */}
+          {calculationData?.infrastructureTailwinds && calculationData.infrastructureTailwinds.length > 0 && (
+            <div className="bg-emerald-50/20 border border-emerald-200/50 p-5 rounded-2xl space-y-3 animate-fade-in shadow-sm">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-700 flex items-center gap-1.5">
+                <TrendingUp className="w-4 h-4 text-emerald-600 animate-pulse" /> Infrastructure Tailwind Boosts
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {calculationData.infrastructureTailwinds.map((project: any, idx: number) => (
+                  <div key={idx} className="bg-white border border-emerald-100/70 p-3.5 rounded-xl space-y-2">
+                    <div className="flex justify-between items-start gap-2">
+                      <span className="text-xs font-bold text-slate-800 leading-tight">{project.name}</span>
+                      <span className="text-[9px] bg-emerald-50 text-emerald-700 font-bold px-2 py-0.5 rounded-full whitespace-nowrap uppercase tracking-wider">
+                        {project.status.replace(/_/g, ' ')}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1 border-t border-slate-50">
+                      <span>Est. Completion: <span className="font-semibold text-slate-700">{project.estimatedCompletion || "N/A"}</span></span>
+                      <span className="flex items-center gap-1">
+                        Impact: <span className="font-bold text-emerald-600">+{project.reImpactScore ? (project.reImpactScore * 0.15).toFixed(1) : "0.5"}% CAGR</span>
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* AI Takeaways Block */}
           {takeaways.length > 0 && (
