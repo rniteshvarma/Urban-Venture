@@ -7,52 +7,74 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
     const { slug } = await params;
     const decodedSlug = decodeURIComponent(slug);
 
-    // Find metric by corridor name (case-insensitive)
-    const metric = await prisma.corridorMetrics.findFirst({
+    // Find by slug, name, or shortName (case-insensitive)
+    const corridor = await prisma.corridorProfile.findFirst({
       where: {
-        corridor: {
-          equals: decodedSlug,
-          mode: "insensitive"
-        }
+        OR: [
+          { slug: { equals: decodedSlug, mode: "insensitive" } },
+          { name: { equals: decodedSlug, mode: "insensitive" } },
+          { shortName: { equals: decodedSlug, mode: "insensitive" } }
+        ]
       }
     });
 
-    if (!metric) {
+    if (!corridor) {
       return NextResponse.json({ error: "Corridor not found" }, { status: 404 });
     }
 
-    const intel = await prisma.corridorIntelligence.findFirst({
-      where: {
-        corridor: {
-          equals: metric.corridor,
-          mode: "insensitive"
-        }
-      }
-    });
-
     return NextResponse.json({
-      corridor: metric.corridor,
-      city: metric.city,
-      historicalCAGR: metric.historicalCAGR,
-      projectedCAGRMin: metric.projectedCAGRMin,
-      projectedCAGRMax: metric.projectedCAGRMax,
-      rentalYieldMin: metric.rentalYieldMin,
-      rentalYieldMax: metric.rentalYieldMax,
-      riskLevel: metric.riskLevel,
-      overallScore: intel?.overallScore || 0,
-      infraScore: intel?.infraScore || 0,
-      approvalScore: intel?.approvalScore || 0,
-      demandScore: intel?.demandScore || 0,
-      appreciationScore: intel?.appreciationScore || 0,
-      investorSentiment: intel?.investorSentiment || "NEUTRAL",
-      adminNote: intel?.adminNote || "",
-      keyDrivers: intel?.keyDrivers || [],
-      keyRisks: intel?.keyRisks || [],
-      bestFor: intel?.bestFor || [],
-      lastComputedAt: intel?.lastComputedAt || null
+      corridor: corridor.slug, // Maintain key compatibility
+      name: corridor.name,
+      shortName: corridor.shortName,
+      direction: corridor.direction,
+      zone: corridor.zone,
+      district: corridor.district,
+      description: corridor.description,
+      heatRating: corridor.heatRating,
+      investmentCycle: corridor.investmentCycle,
+      ghmc2025: corridor.ghmc2025,
+      hmdaJurisdiction: corridor.hmdaJurisdiction,
+      fcdaZone: corridor.fcdaZone,
+      rrrAlignment: corridor.rrrAlignment,
+      plotPriceMinSqYd: corridor.plotPriceMinSqYd,
+      plotPriceMidSqYd: corridor.plotPriceMidSqYd,
+      plotPriceMaxSqYd: corridor.plotPriceMaxSqYd,
+      aptPriceMinSqFt: corridor.aptPriceMinSqFt,
+      aptPriceMaxSqFt: corridor.aptPriceMaxSqFt,
+      price2020SqYd: corridor.price2020SqYd,
+      price2022SqYd: corridor.price2022SqYd,
+      price2024SqYd: corridor.price2024SqYd,
+      price2026SqYd: corridor.price2026SqYd,
+      appreciationSince2020: corridor.appreciationSince2020,
+      historicalCAGR: corridor.historicalCAGR,
+      projectedCAGRMin: corridor.projectedCAGRMin,
+      projectedCAGRMax: corridor.projectedCAGRMax,
+      rentalYieldMin: corridor.rentalYieldMin,
+      rentalYieldMax: corridor.rentalYieldMax,
+      riskLevel: corridor.riskLevel,
+      overallScore: corridor.overallScore || 0,
+      infraScore: corridor.infraScore || 0,
+      approvalScore: corridor.approvalScore || 0,
+      demandScore: corridor.demandScore || 0,
+      appreciationScore: corridor.appreciationScore || 0,
+      investorSentiment: corridor.sentiment || "NEUTRAL",
+      adminNote: corridor.adminNote || "",
+      keyDrivers: corridor.keyDrivers || [],
+      keyRisks: corridor.keyRisks || [],
+      bestFor: corridor.bestFor || [],
+      subAreas: corridor.subAreas || [],
+      forecast3yrMin: corridor.forecast3yrMin,
+      forecast3yrMax: corridor.forecast3yrMax,
+      forecast5yrMin: corridor.forecast5yrMin,
+      forecast5yrMax: corridor.forecast5yrMax,
+      forecast10yrMin: corridor.forecast10yrMin,
+      forecast10yrMax: corridor.forecast10yrMax,
+      priceIndex2031: corridor.priceIndex2031,
+      lastComputedAt: corridor.updatedAt
     });
   } catch (error: any) {
     console.error("Error in GET /api/market/corridors/[slug]:", error);
     return NextResponse.json({ error: "Internal Server Error", details: error.message }, { status: 500 });
   }
 }
+

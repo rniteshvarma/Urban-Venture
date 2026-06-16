@@ -7,9 +7,13 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
     const { slug } = await params;
     const decodedSlug = decodeURIComponent(slug);
 
-    const metric = await prisma.corridorMetrics.findFirst({
+    const metric = await prisma.corridorProfile.findFirst({
       where: {
-        corridor: { equals: decodedSlug, mode: "insensitive" }
+        OR: [
+          { slug: { equals: decodedSlug, mode: "insensitive" } },
+          { name: { equals: decodedSlug, mode: "insensitive" } },
+          { shortName: { equals: decodedSlug, mode: "insensitive" } }
+        ]
       }
     });
 
@@ -19,7 +23,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
 
     const approvals = await prisma.approvalRecord.findMany({
       where: {
-        corridor: { equals: metric.corridor, mode: "insensitive" },
+        corridor: { equals: metric.slug, mode: "insensitive" },
         isPublished: true
       },
       orderBy: {
@@ -33,7 +37,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
     const pendingCount = approvals.filter(a => a.status === "PENDING").length;
 
     return NextResponse.json({
-      corridor: metric.corridor,
+      corridor: metric.slug,
       approvals,
       totalHmda,
       totalRera,

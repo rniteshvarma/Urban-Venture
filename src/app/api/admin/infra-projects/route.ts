@@ -52,9 +52,20 @@ export async function GET(req: Request) {
     }
 
     if (corridor && corridor !== "ALL") {
-      where.affectedCorridors = {
-        has: corridor
-      };
+      const profile = await prisma.corridorProfile.findFirst({
+        where: {
+          OR: [
+            { slug: { equals: corridor, mode: "insensitive" } },
+            { name: { equals: corridor, mode: "insensitive" } },
+            { shortName: { equals: corridor, mode: "insensitive" } }
+          ]
+        }
+      });
+      const targetCorridor = profile ? profile.slug : corridor.toLowerCase().replace(/\s+/g, "-");
+      where.OR = [
+        { affectedCorridorSlugs: { has: targetCorridor } },
+        { affectedCorridors: { has: targetCorridor } }
+      ];
     }
 
     const projects = await prisma.infraProject.findMany({
@@ -92,8 +103,39 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid input data", details: parse.error.format() }, { status: 400 });
     }
 
+    const { affectedCorridors, ...rest } = parse.data;
+    
+    // Resolve all corridors to their slugs
+    const resolvedProfiles = await prisma.corridorProfile.findMany({
+      where: {
+        OR: [
+          { slug: { in: affectedCorridors, mode: "insensitive" } },
+          { name: { in: affectedCorridors, mode: "insensitive" } },
+          { shortName: { in: affectedCorridors, mode: "insensitive" } }
+        ]
+      }
+    });
+    
+    const resolvedSlugs = resolvedProfiles.map(p => p.slug);
+    const missing = affectedCorridors.filter(c => 
+      !resolvedProfiles.some(p => 
+        p.slug.toLowerCase() === c.toLowerCase() ||
+        p.name.toLowerCase() === c.toLowerCase() ||
+        p.shortName.toLowerCase() === c.toLowerCase()
+      )
+    ).map(c => c.toLowerCase().replace(/\s+/g, "-"));
+    
+    const finalSlugs = Array.from(new Set([...resolvedSlugs, ...missing]));
+
     const project = await prisma.infraProject.create({
-      data: parse.data
+      data: {
+        ...rest,
+        affectedCorridors: finalSlugs,
+        affectedCorridorSlugs: finalSlugs,
+        corridors: {
+          connect: finalSlugs.map(slug => ({ slug }))
+        }
+      }
     });
 
     return NextResponse.json({ success: true, project });

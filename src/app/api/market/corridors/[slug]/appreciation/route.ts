@@ -7,10 +7,14 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
     const { slug } = await params;
     const decodedSlug = decodeURIComponent(slug);
 
-    // Resolve case-sensitive name first from metrics
-    const metric = await prisma.corridorMetrics.findFirst({
+    // Resolve case-sensitive name first from CorridorProfile
+    const metric = await prisma.corridorProfile.findFirst({
       where: {
-        corridor: { equals: decodedSlug, mode: "insensitive" }
+        OR: [
+          { slug: { equals: decodedSlug, mode: "insensitive" } },
+          { name: { equals: decodedSlug, mode: "insensitive" } },
+          { shortName: { equals: decodedSlug, mode: "insensitive" } }
+        ]
       }
     });
 
@@ -20,7 +24,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
 
     const pricePoints = await prisma.appreciationHistory.findMany({
       where: {
-        corridor: { equals: metric.corridor, mode: "insensitive" }
+        corridor: { equals: metric.slug, mode: "insensitive" }
       },
       orderBy: [
         { year: "asc" },
@@ -47,7 +51,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
     });
 
     return NextResponse.json({
-      corridor: metric.corridor,
+      corridor: metric.slug,
       pricePoints,
       hyderabadAverages
     });

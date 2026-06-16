@@ -4,41 +4,57 @@ import prisma from "@/lib/prisma";
 // GET /api/market/corridors - Public list of all corridors with their intelligence scores and metrics
 export async function GET(req: Request) {
   try {
-    const metrics = await prisma.corridorMetrics.findMany();
-    const intelligence = await prisma.corridorIntelligence.findMany();
-
-    // Join them by corridor name
-    const combined = metrics.map(metric => {
-      const intel = intelligence.find(i => i.corridor.toLowerCase() === metric.corridor.toLowerCase());
-      return {
-        corridor: metric.corridor,
-        city: metric.city,
-        historicalCAGR: metric.historicalCAGR,
-        projectedCAGRMin: metric.projectedCAGRMin,
-        projectedCAGRMax: metric.projectedCAGRMax,
-        rentalYieldMin: metric.rentalYieldMin,
-        rentalYieldMax: metric.rentalYieldMax,
-        riskLevel: metric.riskLevel,
-        overallScore: intel?.overallScore || 0,
-        infraScore: intel?.infraScore || 0,
-        approvalScore: intel?.approvalScore || 0,
-        demandScore: intel?.demandScore || 0,
-        appreciationScore: intel?.appreciationScore || 0,
-        investorSentiment: intel?.investorSentiment || "NEUTRAL",
-        adminNote: intel?.adminNote || "",
-        keyDrivers: intel?.keyDrivers || [],
-        keyRisks: intel?.keyRisks || [],
-        bestFor: intel?.bestFor || [],
-        lastComputedAt: intel?.lastComputedAt || null
-      };
+    const corridors = await prisma.corridorProfile.findMany({
+      where: { isPublished: true }
     });
 
-    // Sort by overallScore descending
-    combined.sort((a, b) => b.overallScore - a.overallScore);
+    // Format response to look exactly like the old combined JSON for backward compatibility
+    const response = corridors.map(c => ({
+      corridor: c.slug, // Maintain "corridor" as the slug for routing / queries
+      name: c.name,
+      shortName: c.shortName,
+      direction: c.direction,
+      zone: c.zone,
+      district: c.district,
+      description: c.description,
+      heatRating: c.heatRating,
+      investmentCycle: c.investmentCycle,
+      plotPriceMinSqYd: c.plotPriceMinSqYd,
+      plotPriceMidSqYd: c.plotPriceMidSqYd,
+      plotPriceMaxSqYd: c.plotPriceMaxSqYd,
+      aptPriceMinSqFt: c.aptPriceMinSqFt,
+      aptPriceMaxSqFt: c.aptPriceMaxSqFt,
+      price2020SqYd: c.price2020SqYd,
+      price2022SqYd: c.price2022SqYd,
+      price2024SqYd: c.price2024SqYd,
+      price2026SqYd: c.price2026SqYd,
+      appreciationSince2020: c.appreciationSince2020,
+      historicalCAGR: c.historicalCAGR,
+      projectedCAGRMin: c.projectedCAGRMin,
+      projectedCAGRMax: c.projectedCAGRMax,
+      rentalYieldMin: c.rentalYieldMin,
+      rentalYieldMax: c.rentalYieldMax,
+      riskLevel: c.riskLevel,
+      overallScore: c.overallScore || 0,
+      infraScore: c.infraScore || 0,
+      approvalScore: c.approvalScore || 0,
+      demandScore: c.demandScore || 0,
+      appreciationScore: c.appreciationScore || 0,
+      investorSentiment: c.sentiment || "NEUTRAL",
+      adminNote: c.adminNote || "",
+      keyDrivers: c.keyDrivers || [],
+      keyRisks: c.keyRisks || [],
+      bestFor: c.bestFor || [],
+      lastComputedAt: c.updatedAt
+    }));
 
-    return NextResponse.json(combined);
+    // Sort by overallScore descending
+    response.sort((a, b) => b.overallScore - a.overallScore);
+
+    return NextResponse.json(response);
   } catch (error: any) {
     console.error("Error in GET /api/market/corridors:", error);
     return NextResponse.json({ error: "Internal Server Error", details: error.message }, { status: 500 });
   }
 }
+

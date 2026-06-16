@@ -39,6 +39,19 @@ export async function PUT(
 
     const { newListings, inventoryUnits, soldUnits, medianDaysOnMkt } = parse.data;
 
+    // Resolve Corridor Profile slug
+    const profile = await prisma.corridorProfile.findFirst({
+      where: {
+        OR: [
+          { slug: { equals: decodedCorridor, mode: "insensitive" } },
+          { name: { equals: decodedCorridor, mode: "insensitive" } },
+          { shortName: { equals: decodedCorridor, mode: "insensitive" } }
+        ]
+      }
+    });
+
+    const targetCorridor = profile ? profile.slug : decodedCorridor.toLowerCase().replace(/\s+/g, "-");
+
     // 1. Calculate absorption rate
     let absorptionRate: number | null = null;
     if (inventoryUnits && soldUnits && inventoryUnits > 0) {
@@ -60,7 +73,7 @@ export async function PUT(
     });
     const searchVolume = searches.filter(s => {
       const jsonStr = JSON.stringify(s.aiResponse);
-      return jsonStr.toLowerCase().includes(decodedCorridor.toLowerCase());
+      return jsonStr.toLowerCase().includes(targetCorridor.toLowerCase());
     }).length;
 
     // Auto-populate inquiryCount (leads created in this month matching a project in this corridor)
@@ -71,7 +84,7 @@ export async function PUT(
           lt: endDate
         },
         project: {
-          corridor: decodedCorridor
+          corridor: { equals: targetCorridor, mode: "insensitive" }
         }
       }
     });
@@ -88,7 +101,7 @@ export async function PUT(
         roadmap: {
           lead: {
             project: {
-              corridor: decodedCorridor
+              corridor: { equals: targetCorridor, mode: "insensitive" }
             }
           }
         }
@@ -98,7 +111,7 @@ export async function PUT(
     // 3. Upsert into database
     const existing = await prisma.demandTrend.findFirst({
       where: {
-        corridor: decodedCorridor,
+        corridor: { equals: targetCorridor, mode: "insensitive" },
         month,
         year
       }
@@ -109,6 +122,8 @@ export async function PUT(
       result = await prisma.demandTrend.update({
         where: { id: existing.id },
         data: {
+          corridor: targetCorridor,
+          corridorProfileSlug: profile ? profile.slug : null,
           newListings: newListings !== undefined ? newListings : existing.newListings,
           inventoryUnits: inventoryUnits !== undefined ? inventoryUnits : existing.inventoryUnits,
           soldUnits: soldUnits !== undefined ? soldUnits : existing.soldUnits,
@@ -122,7 +137,8 @@ export async function PUT(
     } else {
       result = await prisma.demandTrend.create({
         data: {
-          corridor: decodedCorridor,
+          corridor: targetCorridor,
+          corridorProfileSlug: profile ? profile.slug : null,
           month,
           year,
           newListings: newListings || 0,

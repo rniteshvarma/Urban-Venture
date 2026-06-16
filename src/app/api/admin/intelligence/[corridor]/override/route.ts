@@ -47,6 +47,22 @@ export async function PUT(req: Request, { params }: { params: Promise<{ corridor
       }
     });
 
+    // Sync to CorridorProfile
+    try {
+      await prisma.corridorProfile.update({
+        where: { slug: decodedCorridor },
+        data: {
+          sentiment: parse.data.investorSentiment ? (parse.data.investorSentiment as any) : undefined,
+          adminNote: parse.data.adminNote !== undefined ? parse.data.adminNote : undefined,
+          keyDrivers: parse.data.keyDrivers || undefined,
+          keyRisks: parse.data.keyRisks || undefined,
+          bestFor: parse.data.bestFor || undefined,
+        }
+      });
+    } catch (e) {
+      console.warn("Could not sync overrides to CorridorProfile:", e);
+    }
+
     return NextResponse.json({ success: true, intelligence: updated });
   } catch (error: any) {
     console.error("Error in PUT /api/admin/intelligence/[corridor]/override:", error);

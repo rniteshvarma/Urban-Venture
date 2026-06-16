@@ -14,14 +14,33 @@ import {
 } from "lucide-react";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 
-const CORRIDORS = ["Shadnagar", "Pharma City", "Sangareddy", "Kokapet", "Shamshabad", "Yadadri", "Kompally", "Adibatla"];
-
 export default function AppreciationPage() {
-  const [selectedCorridor, setSelectedCorridor] = useState("Shadnagar");
+  const [selectedCorridor, setSelectedCorridor] = useState("shadnagar");
+  const [corridorList, setCorridorList] = useState<any[]>([]);
   const [points, setPoints] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+
+  useEffect(() => {
+    async function loadCorridors() {
+      try {
+        const res = await fetch("/api/admin/corridors");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.corridors) {
+            setCorridorList(data.corridors);
+            if (data.corridors.length > 0) {
+              setSelectedCorridor(data.corridors[0].corridor);
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load corridors", err);
+      }
+    }
+    loadCorridors();
+  }, []);
 
   // Form Fields
   const [year, setYear] = useState<number>(new Date().getFullYear());
@@ -168,6 +187,8 @@ export default function AppreciationPage() {
     yoy: pt.yoyChange
   }));
 
+  const currentCorridorName = corridorList.find(c => c.corridor === selectedCorridor)?.shortName || selectedCorridor;
+
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6 text-slate-800">
       {/* Header */}
@@ -201,17 +222,17 @@ export default function AppreciationPage() {
         <div className="bg-slate-50 border border-slate-200 rounded p-4 flex flex-col gap-3">
           <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Selected Corridor</label>
           <div className="space-y-1.5">
-            {CORRIDORS.map(c => (
+            {corridorList.map(c => (
               <button
-                key={c}
-                onClick={() => setSelectedCorridor(c)}
+                key={c.corridor}
+                onClick={() => setSelectedCorridor(c.corridor)}
                 className={`w-full text-left px-3 py-2 text-xs font-semibold rounded border transition-all cursor-pointer ${
-                  selectedCorridor === c 
+                  selectedCorridor === c.corridor 
                     ? "bg-blue-650 border-blue-650 text-white shadow-sm font-bold" 
                     : "bg-white border-slate-200 text-slate-700 hover:bg-slate-100"
                 }`}
               >
-                {c}
+                {c.shortName || c.name || c.corridor}
               </button>
             ))}
           </div>
@@ -220,7 +241,7 @@ export default function AppreciationPage() {
         {/* Chart Preview */}
         <div className="lg:col-span-2 bg-white border border-slate-200 rounded p-4 flex flex-col">
           <h2 className="text-xs font-bold text-slate-900 border-b border-slate-150 pb-2 mb-3">
-            Price Appreciation Trend: {selectedCorridor}
+            Price Appreciation Trend: {currentCorridorName}
           </h2>
           {loading ? (
             <div className="flex-1 flex items-center justify-center min-h-[200px]">
@@ -249,7 +270,7 @@ export default function AppreciationPage() {
       {/* Pricing Data Grid Table */}
       <div className="bg-white border border-slate-200 rounded overflow-hidden shadow-sm">
         <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-          <span className="text-xs font-bold text-slate-900">Historical Valuations ({selectedCorridor})</span>
+          <span className="text-xs font-bold text-slate-900">Historical Valuations ({currentCorridorName})</span>
           <span className="text-[10px] text-slate-400 font-semibold">{points.length} records active</span>
         </div>
 

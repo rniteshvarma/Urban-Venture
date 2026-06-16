@@ -72,9 +72,40 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       return NextResponse.json({ error: "Invalid input data", details: parse.error.format() }, { status: 400 });
     }
 
+    const { affectedCorridors, ...rest } = parse.data;
+    
+    // Resolve all corridors to their slugs
+    const resolvedProfiles = await prisma.corridorProfile.findMany({
+      where: {
+        OR: [
+          { slug: { in: affectedCorridors, mode: "insensitive" } },
+          { name: { in: affectedCorridors, mode: "insensitive" } },
+          { shortName: { in: affectedCorridors, mode: "insensitive" } }
+        ]
+      }
+    });
+    
+    const resolvedSlugs = resolvedProfiles.map(p => p.slug);
+    const missing = affectedCorridors.filter(c => 
+      !resolvedProfiles.some(p => 
+        p.slug.toLowerCase() === c.toLowerCase() ||
+        p.name.toLowerCase() === c.toLowerCase() ||
+        p.shortName.toLowerCase() === c.toLowerCase()
+      )
+    ).map(c => c.toLowerCase().replace(/\s+/g, "-"));
+    
+    const finalSlugs = Array.from(new Set([...resolvedSlugs, ...missing]));
+
     const updated = await prisma.infraProject.update({
       where: { id },
-      data: parse.data
+      data: {
+        ...rest,
+        affectedCorridors: finalSlugs,
+        affectedCorridorSlugs: finalSlugs,
+        corridors: {
+          set: finalSlugs.map(slug => ({ slug }))
+        }
+      }
     });
 
     return NextResponse.json({ success: true, project: updated });

@@ -15,9 +15,21 @@ export async function GET(req: Request, { params }: { params: Promise<{ corridor
     // Decodes %20 or other URL-encoded characters
     const decodedCorridor = decodeURIComponent(corridor);
 
+    const profile = await prisma.corridorProfile.findFirst({
+      where: {
+        OR: [
+          { slug: { equals: decodedCorridor, mode: "insensitive" } },
+          { name: { equals: decodedCorridor, mode: "insensitive" } },
+          { shortName: { equals: decodedCorridor, mode: "insensitive" } }
+        ]
+      }
+    });
+
+    const targetCorridor = profile ? profile.slug : decodedCorridor.toLowerCase().replace(/\s+/g, "-");
+
     const points = await prisma.appreciationHistory.findMany({
       where: {
-        corridor: decodedCorridor
+        corridor: { equals: targetCorridor, mode: "insensitive" }
       },
       orderBy: [
         { year: "asc" },

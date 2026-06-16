@@ -20,6 +20,27 @@
   --radius-tag: 4px;
   
   --shadow-luxury: 0 1px 3px rgba(0,0,0,0.05), 0 4px 12px rgba(0,0,0,0.03);
+
+  /* Deep Research Edition Theme Tokens mapped to Old Theme */
+  --color-warm-paper: #F8FAFC;
+  --color-warm-card: #FFFFFF;
+  --color-warm-border: #E2E8F0;
+  --color-accent-gold: #2563EB;
+  --color-teal-metric: #3B82F6;
+  --color-rust-warning: #EF4444;
+
+  --font-space-grotesk: var(--font-dm-sans), sans-serif;
+  --font-dm-serif: var(--font-playfair), serif;
+  --font-jetbrains-mono: var(--font-dm-sans), sans-serif;
+
+  /* Custom Admin and UI Colors */
+  --color-blue-650: #2563EB;
+  --color-blue-750: #1D4ED8;
+  --color-red-650: #DC2626;
+  --color-slate-150: #E2E8F0;
+  --color-slate-250: #CBD5E1;
+  --color-slate-450: #64748B;
+  --color-slate-650: #334155;
 }
 
 :root {
@@ -30,6 +51,7 @@
 body {
   background-color: var(--background);
   color: var(--foreground);
+  font-family: var(--font-sans), sans-serif;
 }
 
 /* Custom Utilities or Styles */
@@ -46,3 +68,4 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
+

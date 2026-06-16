@@ -16,30 +16,23 @@ export async function GET(req: Request) {
     const corridorNames = [a, b];
     if (c) corridorNames.push(c);
 
-    // Resolve case-insensitive names and retrieve metrics
-    const metrics = await prisma.corridorMetrics.findMany({
+    // Resolve case-insensitive names and retrieve profiles
+    const profiles = await prisma.corridorProfile.findMany({
       where: {
-        corridor: {
-          in: corridorNames,
-          mode: "insensitive"
-        }
+        OR: [
+          { slug: { in: corridorNames, mode: "insensitive" } },
+          { name: { in: corridorNames, mode: "insensitive" } },
+          { shortName: { in: corridorNames, mode: "insensitive" } }
+        ]
       }
     });
 
-    const resolvedNames = metrics.map(m => m.corridor);
-
-    const intelligence = await prisma.corridorIntelligence.findMany({
-      where: {
-        corridor: {
-          in: resolvedNames
-        }
-      }
-    });
+    const resolvedSlugs = profiles.map(p => p.slug);
 
     const priceHistories = await prisma.appreciationHistory.findMany({
       where: {
         corridor: {
-          in: resolvedNames
+          in: resolvedSlugs
         }
       },
       orderBy: [
@@ -55,32 +48,39 @@ export async function GET(req: Request) {
     });
 
     // Assemble comparisons
-    const comparisons = metrics.map(metric => {
-      const intel = intelligence.find(i => i.corridor.toLowerCase() === metric.corridor.toLowerCase());
-      const history = priceHistories.filter(h => h.corridor.toLowerCase() === metric.corridor.toLowerCase());
+    const comparisons = profiles.map(profile => {
+      const history = priceHistories.filter(h => h.corridor.toLowerCase() === profile.slug.toLowerCase());
       const affectingProjects = infraProjects.filter(ip => 
-        ip.affectedCorridors.some(ac => ac.toLowerCase() === metric.corridor.toLowerCase())
+        ip.affectedCorridorSlugs.some(ac => ac.toLowerCase() === profile.slug.toLowerCase()) ||
+        ip.affectedCorridors.some(ac => ac.toLowerCase() === profile.name.toLowerCase())
       );
 
       return {
-        corridor: metric.corridor,
-        city: metric.city,
-        historicalCAGR: metric.historicalCAGR,
-        projectedCAGRMin: metric.projectedCAGRMin,
-        projectedCAGRMax: metric.projectedCAGRMax,
-        rentalYieldMin: metric.rentalYieldMin,
-        rentalYieldMax: metric.rentalYieldMax,
-        riskLevel: metric.riskLevel,
-        overallScore: intel?.overallScore || 0,
-        infraScore: intel?.infraScore || 0,
-        approvalScore: intel?.approvalScore || 0,
-        demandScore: intel?.demandScore || 0,
-        appreciationScore: intel?.appreciationScore || 0,
-        investorSentiment: intel?.investorSentiment || "NEUTRAL",
-        adminNote: intel?.adminNote || "",
-        keyDrivers: intel?.keyDrivers || [],
-        keyRisks: intel?.keyRisks || [],
-        bestFor: intel?.bestFor || [],
+        corridor: profile.slug, // Keep key compatible
+        name: profile.name,
+        shortName: profile.shortName,
+        direction: profile.direction,
+        zone: profile.zone,
+        district: profile.district,
+        description: profile.description,
+        heatRating: profile.heatRating,
+        investmentCycle: profile.investmentCycle,
+        historicalCAGR: profile.historicalCAGR,
+        projectedCAGRMin: profile.projectedCAGRMin,
+        projectedCAGRMax: profile.projectedCAGRMax,
+        rentalYieldMin: profile.rentalYieldMin,
+        rentalYieldMax: profile.rentalYieldMax,
+        riskLevel: profile.riskLevel,
+        overallScore: profile.overallScore || 0,
+        infraScore: profile.infraScore || 0,
+        approvalScore: profile.approvalScore || 0,
+        demandScore: profile.demandScore || 0,
+        appreciationScore: profile.appreciationScore || 0,
+        investorSentiment: profile.sentiment || "NEUTRAL",
+        adminNote: profile.adminNote || "",
+        keyDrivers: profile.keyDrivers || [],
+        keyRisks: profile.keyRisks || [],
+        bestFor: profile.bestFor || [],
         priceHistory: history,
         infraProjects: affectingProjects.map(p => ({
           name: p.name,

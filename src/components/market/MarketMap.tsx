@@ -6,23 +6,28 @@ import L from "leaflet";
 // Map leaflet CSS
 const LEAFLET_CSS_URL = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
 
-// Approximate coordinates for corridors
+// Accurate coordinates for the 12 growth corridors using their slugs as keys
 const CORRIDOR_COORDS: Record<string, [number, number]> = {
-  "Shadnagar": [17.06, 78.20],
-  "Pharma City": [17.05, 78.60],
-  "Sangareddy": [17.62, 78.09],
-  "Kokapet": [17.40, 78.33],
-  "Shamshabad": [17.24, 78.43],
-  "Yadadri": [17.52, 78.90],
-  "Kompally": [17.54, 78.47],
-  "Adibatla": [17.23, 78.58],
+  "adibatla": [17.23, 78.58],
+  "tukkuguda-shamshabad": [17.24, 78.43],
+  "kadthal-fcda": [17.02, 78.49],
+  "maheshwaram-pharma-city": [17.13, 78.43],
+  "shadnagar": [17.06, 78.20],
+  "shankarpally-mokila": [17.38, 78.18],
+  "sangareddy-industrial": [17.62, 78.09],
+  "kompally-bachupally": [17.54, 78.47],
+  "medchal-dundigal": [17.63, 78.41],
+  "ghatkesar-peerzadiguda": [17.44, 78.68],
+  "bibinagar-bhongir": [17.52, 78.90],
+  "kokapet-neopolis": [17.40, 78.33]
 };
 
 interface MarketMapProps {
   projects: any[];
+  corridors?: any[];
 }
 
-export default function MarketMap({ projects }: MarketMapProps) {
+export default function MarketMap({ projects, corridors = [] }: MarketMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
 
@@ -75,21 +80,57 @@ export default function MarketMap({ projects }: MarketMapProps) {
     }).addTo(map).bindPopup("<b>Regional Ring Road (RRR)</b><br/>45km radius proposed ring expressway ( Northern & Southern Corridors ).");
 
     // Render Corridor Boundaries (transparent circles for visualization)
-    Object.entries(CORRIDOR_COORDS).forEach(([name, coords]) => {
+    const corridorsList = corridors && corridors.length > 0
+      ? corridors
+      : Object.keys(CORRIDOR_COORDS).map(slug => ({ slug, name: slug }));
+
+    corridorsList.forEach(corr => {
+      const slug = corr.slug || corr.corridor;
+      const coords = CORRIDOR_COORDS[slug];
+      if (!coords) return;
+
+      const name = corr.name || corr.shortName || slug;
+
+      const popupHtml = corr.overallScore
+        ? `
+          <div style="font-family: sans-serif; width: 220px; padding: 2px;">
+            <div style="font-weight: bold; font-size: 13px; color: #0f172a; margin-bottom: 2px;">${name}</div>
+            <div style="font-size: 10px; font-weight: 700; color: #2563eb; text-transform: uppercase; margin-bottom: 8px; tracking-wide">Hyderabad Corridor</div>
+            <div style="display: flex; gap: 8px; margin-bottom: 8px; align-items: center;">
+              <span style="background: #2563eb; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold;">
+                Score: ${corr.overallScore}/100
+              </span>
+              <span style="background: ${corr.sentiment === 'BULLISH' ? '#10b981' : corr.sentiment === 'CAUTIOUS' ? '#ef4444' : '#f59e0b'}; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; text-transform: uppercase;">
+                ${corr.sentiment || 'NEUTRAL'}
+              </span>
+            </div>
+            <div style="font-size: 11px; color: #334155; margin-bottom: 4px;"><b>Projected CAGR:</b> ${corr.projectedCAGRMin || 12}% - ${corr.projectedCAGRMax || 18}%</div>
+            <div style="font-size: 11px; color: #334155; margin-bottom: 4px;"><b>Avg Plot Price:</b> ₹${(corr.plotPriceMidSqYd || 25000).toLocaleString()}/sqyd</div>
+            <div style="font-size: 11px; color: #334155; margin-bottom: 6px;"><b>Zone:</b> ${corr.zone || 'Hyderabad Suburbs'}</div>
+            <div style="border-top: 1px solid #e2e8f0; padding-top: 6px; margin-top: 6px;">
+              <a href="/market/${slug}" style="font-size: 11px; font-weight: bold; color: #2563eb; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+                Open Deep Dive Audit &rarr;
+              </a>
+            </div>
+          </div>
+        `
+        : `<b>${name} Corridor Zone</b>`;
+
       L.circle(coords, {
         color: "#d97706", // Gold/Amber
         fillColor: "#d97706",
         fillOpacity: 0.08,
-        weight: 1,
+        weight: 1.5,
         radius: 4000
-      }).addTo(map).bindPopup(`<b>${name} Corridor Zone</b>`);
+      }).addTo(map).bindPopup(popupHtml);
     });
 
     // Plot Infrastructure projects
     projects.forEach(proj => {
       // Fallback coordinate if missing
-      const lat = proj.latitude || CORRIDOR_COORDS[proj.affectedCorridors[0]]?.[0] || 17.3850;
-      const lng = proj.longitude || CORRIDOR_COORDS[proj.affectedCorridors[0]]?.[1] || 78.4867;
+      const corridorKey = proj.affectedCorridorSlugs?.[0] || proj.affectedCorridors?.[0];
+      const lat = proj.latitude || CORRIDOR_COORDS[corridorKey]?.[0] || 17.3850;
+      const lng = proj.longitude || CORRIDOR_COORDS[corridorKey]?.[1] || 78.4867;
 
       // Color mapping
       let color = "#ef4444"; // default red
@@ -124,8 +165,8 @@ export default function MarketMap({ projects }: MarketMapProps) {
           <div style="font-size: 10px; font-weight: 600; color: #2563eb; text-transform: uppercase; margin-bottom: 6px;">${proj.category.replace("_", " ")}</div>
           <div style="font-size: 10px; color: #334155; margin-bottom: 4px;"><b>Status:</b> ${proj.status.replace("_", " ")} (${proj.completionPct}%)</div>
           <div style="font-size: 10px; color: #334155; margin-bottom: 4px;"><b>Impact Score:</b> <span style="font-weight: bold; color: #d97706;">${proj.reImpactScore}/10</span></div>
-          <div style="font-size: 10px; color: #334155; margin-bottom: 4px;"><b>Radius:</b> ${proj.impactRadius} km</div>
-          <div style="font-size: 10px; color: #334155; margin-bottom: 4px;"><b>Impacts:</b> ${proj.affectedCorridors.join(", ")}</div>
+          <div style="font-size: 10px; color: #334155; margin-bottom: 4px;"><b>Radius:</b> ${proj.impactRadiusKm || proj.impactRadius} km</div>
+          <div style="font-size: 10px; color: #334155; margin-bottom: 4px;"><b>Impacts:</b> ${(proj.affectedCorridorSlugs || proj.affectedCorridors || []).join(", ")}</div>
           ${msHtml}
         </div>
       `);

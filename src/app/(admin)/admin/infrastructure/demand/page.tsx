@@ -12,19 +12,39 @@ import {
   Save
 } from "lucide-react";
 
-const CORRIDORS = ["Shadnagar", "Pharma City", "Sangareddy", "Kokapet", "Shamshabad", "Yadadri", "Kompally", "Adibatla"];
 const MONTH_NAMES = [
   "January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December"
 ];
 
 export default function DemandTrendsPage() {
-  const [selectedCorridor, setSelectedCorridor] = useState("Shadnagar");
+  const [selectedCorridor, setSelectedCorridor] = useState("shadnagar");
+  const [corridorList, setCorridorList] = useState<any[]>([]);
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [trends, setTrends] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingMonth, setEditingMonth] = useState<any>(null);
+
+  useEffect(() => {
+    async function loadCorridors() {
+      try {
+        const res = await fetch("/api/admin/corridors");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.corridors) {
+            setCorridorList(data.corridors);
+            if (data.corridors.length > 0) {
+              setSelectedCorridor(data.corridors[0].corridor);
+            }
+          }
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    loadCorridors();
+  }, []);
 
   // Form Fields for single month edit
   const [month, setMonth] = useState<number>(1);
@@ -115,6 +135,8 @@ export default function DemandTrendsPage() {
     }
   };
 
+  const currentCorridorName = corridorList.find(c => c.corridor === selectedCorridor)?.shortName || selectedCorridor;
+
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6 text-slate-800">
       {/* Header */}
@@ -137,8 +159,10 @@ export default function DemandTrendsPage() {
             onChange={(e) => setSelectedCorridor(e.target.value)}
             className="border border-slate-200 rounded px-2.5 py-1.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-650"
           >
-            {CORRIDORS.map(c => (
-              <option key={c} value={c}>{c}</option>
+            {corridorList.map(c => (
+              <option key={c.corridor} value={c.corridor}>
+                {c.shortName || c.name || c.corridor}
+              </option>
             ))}
           </select>
         </div>
@@ -165,7 +189,7 @@ export default function DemandTrendsPage() {
       ) : (
         <div className="bg-white border border-slate-200 rounded overflow-hidden shadow-sm">
           <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-900">Monthly Demand Logs ({selectedCorridor} — {selectedYear})</span>
+            <span className="text-xs font-bold text-slate-900">Monthly Demand Logs ({currentCorridorName} — {selectedYear})</span>
             <span className="text-[10px] text-slate-400 font-semibold">🔍 Search & Inquiry counts are auto-calculated from portal logs</span>
           </div>
 

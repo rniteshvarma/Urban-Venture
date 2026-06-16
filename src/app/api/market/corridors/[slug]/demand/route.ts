@@ -7,9 +7,13 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
     const { slug } = await params;
     const decodedSlug = decodeURIComponent(slug);
 
-    const metric = await prisma.corridorMetrics.findFirst({
+    const metric = await prisma.corridorProfile.findFirst({
       where: {
-        corridor: { equals: decodedSlug, mode: "insensitive" }
+        OR: [
+          { slug: { equals: decodedSlug, mode: "insensitive" } },
+          { name: { equals: decodedSlug, mode: "insensitive" } },
+          { shortName: { equals: decodedSlug, mode: "insensitive" } }
+        ]
       }
     });
 
@@ -19,7 +23,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
 
     const trends = await prisma.demandTrend.findMany({
       where: {
-        corridor: { equals: metric.corridor, mode: "insensitive" }
+        corridor: { equals: metric.slug, mode: "insensitive" }
       },
       orderBy: [
         { year: "asc" },
@@ -59,10 +63,10 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
     const growthTrendWord = yoyInquiryGrowth >= 0 ? "increase" : "decrease";
     const absoluteGrowth = Math.abs(yoyInquiryGrowth);
     
-    const contextParagraph = `${metric.corridor} has seen a ${absoluteGrowth}% ${growthTrendWord} in buyer inquiries over the past 12 months, driven by the announcement of regional infrastructure projects and layout approvals. The current absorption rate of ${currentAbsorptionRate}% is healthy, showing stable sales momentum. Projects spend a median of ${avgDaysOnMkt} days on market, indicating high developer transaction velocity.`;
+    const contextParagraph = `${metric.name} has seen a ${absoluteGrowth}% ${growthTrendWord} in buyer inquiries over the past 12 months, driven by the announcement of regional infrastructure projects and layout approvals. The current absorption rate of ${currentAbsorptionRate}% is healthy, showing stable sales momentum. Projects spend a median of ${avgDaysOnMkt} days on market, indicating high developer transaction velocity.`;
 
     return NextResponse.json({
-      corridor: metric.corridor,
+      corridor: metric.slug,
       trends,
       currentAbsorptionRate,
       avgDaysOnMkt,

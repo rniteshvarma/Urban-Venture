@@ -272,20 +272,123 @@ model WhatsAppLog {
   createdAt   DateTime        @default(now())
 }
 
-model CorridorMetrics {
+model CorridorProfile {
   id                    String   @id @default(cuid())
-  corridor              String   @unique
-  city                  String   @default("Hyderabad")
-  historicalCAGR        Float    // e.g. 12.5 (percent)
-  projectedCAGRMin      Float    // Conservative estimate
-  projectedCAGRMax      Float    // Optimistic estimate
-  rentalYieldMin        Float    // e.g. 3.5
-  rentalYieldMax        Float    // e.g. 5.5
-  infraScore            Int      // 1-10 admin-assigned
-  demandScore           Int      // 1-10 admin-assigned
+  slug                  String   @unique  // "adibatla", "kadthal-fcda" etc.
+  name                  String            // "Adibatla IT & Aerospace Corridor"
+  shortName             String            // "Adibatla"
+  direction             Direction         // WEST, SOUTH, NORTH, EAST, NORTHWEST, SOUTHEAST
+  zone                  String            // "SE Beyond ORR"
+  district              String            // "Ranga Reddy", "Sangareddy" etc.
+  description           String            // 2-3 sentence description
+  heatRating            HeatRating        // FIRE, VERY_HOT, HOT, WARM, EMERGING, EARLY
+  investmentCycle       InvCycle          // NOW, MID_CYCLE, WATCH, PATIENT_CAPITAL
+  ghmc2025              Boolean           @default(false)  // Included in Dec 2025 GHMC expansion
+  hmdaJurisdiction      Boolean           @default(true)
+  fcdaZone              Boolean           @default(false)  // Inside FCDA Future City boundary
+  rrrAlignment          RRRAlignment?     // NORTH_CORRIDOR, SOUTH_CORRIDOR, BOTH, NONE
+  
+  // Price data 2026
+  plotPriceMinSqYd      Float?
+  plotPriceMidSqYd      Float?
+  plotPriceMaxSqYd      Float?
+  aptPriceMinSqFt       Float?
+  aptPriceMaxSqFt       Float?
+  
+  // Historical prices for chart seeding
+  price2020SqYd         Float?
+  price2022SqYd         Float?
+  price2024SqYd         Float?
+  price2026SqYd         Float?
+  appreciationSince2020 Float?   // percentage e.g. 125.0
+  
+  // Investment metrics
+  historicalCAGR        Float?
+  projectedCAGRMin      Float?
+  projectedCAGRMax      Float?
+  rentalYieldMin        Float?
+  rentalYieldMax        Float?
+  bestHorizonYearsMin   Int?
+  bestHorizonYearsMax   Int?
   riskLevel             RiskLevel
-  lastUpdated           DateTime @updatedAt
-  updatedBy             String?
+  
+  // Forecast
+  forecast3yrMin        Float?   // % appreciation
+  forecast3yrMax        Float?
+  forecast5yrMin        Float?
+  forecast5yrMax        Float?
+  forecast10yrMin       Float?
+  forecast10yrMax       Float?
+  priceIndex2031        Int?     // e.g. 210 (2026=100)
+  
+  // Intelligence score components (auto-computed)
+  overallScore          Int?
+  infraScore            Int?
+  approvalScore         Int?
+  demandScore           Int?
+  appreciationScore     Int?
+  sentiment             Sentiment?  // BULLISH, NEUTRAL, CAUTIOUS
+  
+  // Content
+  keyDrivers            String[]   // Top 3 appreciation drivers
+  keyRisks              String[]   // Top 2 risks
+  bestFor               String[]   // Persona types
+  historicalAnalog      String?    // "Similar to Kompally in 2009"
+  adminNote             String?    // Admin editorial commentary
+  
+  // Sub-areas / micro-localities within this corridor
+  subAreas              String[]   // ["Tukkuguda", "Maheshwaram", "Mucherla"]
+  
+  // Relationships
+  infraProjects         InfraProject[]
+  appreciationHistory   AppreciationHistory[]
+  demandTrends          DemandTrend[]
+  approvalRecords       ApprovalRecord[]
+  intelligence          CorridorIntelligence?
+  
+  isPublished           Boolean  @default(false)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+enum Direction {
+  WEST
+  NORTHWEST
+  NORTH
+  NORTHEAST
+  EAST
+  SOUTHEAST
+  SOUTH
+  SOUTHWEST
+}
+
+enum HeatRating {
+  FIRE              // 🔥🔥 Actively moving, entry window closing
+  VERY_HOT          // 🔥 Strong momentum, still good entry
+  HOT               // Strong fundamentals, pre-trigger
+  WARM              // Identified but catalysts still pending
+  EMERGING          // Early signals, confirmed infrastructure
+  EARLY             // Patient capital, 7-10 year horizon
+}
+
+enum InvCycle {
+  ACT_NOW           // 2026-2028 pre-construction window
+  MID_CYCLE         // Construction-active, still upside
+  WATCH_AND_BUY     // 2028-2031
+  PATIENT_CAPITAL   // 2031-2035
+}
+
+enum RRRAlignment {
+  NORTH_CORRIDOR    // On/near RRR North (Sangareddy→Bhongir)
+  SOUTH_CORRIDOR    // On/near RRR South (Sangareddy→Kandukur)
+  BOTH
+  NONE
+}
+
+enum Sentiment {
+  BULLISH
+  NEUTRAL
+  CAUTIOUS
 }
 
 model Broadcast {
@@ -372,30 +475,49 @@ enum EmailStatus {
 // ── GOVERNMENT INFRASTRUCTURE PROJECTS ──────────────────────────────────────
 
 model InfraProject {
-  id                String          @id @default(cuid())
-  name              String          // "Regional Ring Road - Northern Corridor"
-  shortName         String          // "RRR North"
-  category          InfraCategory
-  subCategory       String?         // "Expressway", "Metro", "SEZ", "Industrial Park"
-  description       String
-  status            InfraStatus
-  completionPct     Int             @default(0)   // 0-100
-  estimatedCompletion String?       // "Q3 2027"
-  totalInvestmentCr Float?          // Investment in Crores
-  expectedJobs      Int?
-  affectedCorridors String[]        // corridor names this project impacts
-  impactRadius      Float           // km radius of real estate impact
-  latitude          Float?
-  longitude         Float?
-  sourceUrl         String?         // Official government URL
-  sourceGO          String?         // Government Order number e.g. "G.O.Ms.No.68"
-  tags              String[]        // ["HMDA", "NHAI", "Bharatmala", "TSIIC"]
-  approvalAuthority String?         // "HMDA", "DTCP", "NHAI", "TSIIC", "GoT"
-  reImpactScore     Int             @default(0)   // 1-10 admin-rated RE impact
-  isPublished       Boolean         @default(false)
-  milestones        InfraMilestone[]
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
+  id                    String         @id @default(cuid())
+  name                  String
+  shortName             String
+  category              InfraCategory
+  subCategory           String?
+  description           String
+  status                InfraStatus
+  completionPct         Int            @default(0)
+  estimatedCompletion   String?        // "FY 2026-27", "Q3 2029"
+  totalLengthKm         Float?
+  totalInvestmentCr     Float?
+  fundingModel          String?        // "HAM", "EPC", "PPP", "JICA"
+  expectedJobs          Int?
+  
+  // Official reference data
+  sourceGO              String?        // "G.O.Ms.No.68 MA&UD dt.12-03-2025"
+  sourceTender          String?        // "NHAI Tender Jan 16, 2026"
+  sourceAuthority       String?        // "NHAI", "HMRL", "TSIIC"
+  sourceUrl             String?
+  lastVerifiedDate      DateTime?
+  lastVerifiedSource    String?
+  
+  // Geography
+  routeDescription      String?        // "Sangareddy → Toopran → Bhongir"
+  affectedCorridorSlugs String[]       // references CorridorProfile.slug
+  impactRadiusKm        Float          @default(10)
+  latitude              Float?
+  longitude             Float?
+  coordinates           Json?          // Array of [lat,lng] for route polylines
+  
+  // Impact
+  reImpactScore         Int            @default(0)  // 1-10
+  reImpactNarrative     String?        // "Expected 25-40% appreciation in 5km radius"
+  historicalAnalog      String?        // "Similar to ORR effect on Kompally (2009)"
+  
+  isPublished           Boolean        @default(true)
+  milestones            InfraMilestone[]
+  corridors             CorridorProfile[]
+  
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+  affectedCorridors     String[]       // keeping for backward compatibility
+  impactRadius          Float          @default(10) // keeping for backward compatibility
 }
 
 model InfraMilestone {
@@ -442,36 +564,42 @@ enum MilestoneStatus {
 // ── AREA APPRECIATION HISTORY ─────────────────────────────────────────────────
 
 model AppreciationHistory {
-  id           String   @id @default(cuid())
-  corridor     String   // Must match CorridorMetrics.corridor
-  year         Int
-  quarter      Int?     // 1-4, null = annual
-  pricePerSqFt Float    // Average price per sq ft in ₹
-  pricePerSqYd Float?   // For plot markets
-  yoyChange    Float    // Year-over-year % change
-  qoqChange    Float?   // Quarter-over-quarter % change
-  sampleSize   Int?     // Number of transactions this is based on
-  source       String?  // "RERA Data", "Market Research", "Admin Estimate"
-  notes        String?
-  createdAt    DateTime @default(now())
+  id                  String   @id @default(cuid())
+  corridor            String   // Must match CorridorProfile.slug or shortName
+  year                Int
+  quarter             Int?     // 1-4, null = annual
+  pricePerSqFt        Float    // Average price per sq ft in ₹
+  pricePerSqYd        Float?   // For plot markets
+  yoyChange           Float    // Year-over-year % change
+  qoqChange           Float?   // Quarter-over-quarter % change
+  sampleSize          Int?     // Number of transactions this is based on
+  source              String?  // "RERA Data", "Market Research", "Admin Estimate"
+  notes               String?
+  createdAt           DateTime @default(now())
+  
+  corridorProfileSlug String?
+  corridorProfile     CorridorProfile? @relation(fields: [corridorProfileSlug], references: [slug])
 }
 
 // ── DEMAND TREND DATA ─────────────────────────────────────────────────────────
 
 model DemandTrend {
-  id              String   @id @default(cuid())
-  corridor        String
-  month           Int      // 1-12
-  year            Int
-  searchVolume    Int?     // Portal search count for this corridor
-  inquiryCount    Int?     // Leads who expressed interest
-  siteVisits      Int?     // Site visits arranged
-  newListings     Int?     // New projects listed
-  inventoryUnits  Int?     // Total units available
-  soldUnits       Int?     // Units sold/booked this month
-  absorptionRate  Float?   // % of inventory absorbed
-  medianDaysOnMkt Int?     // Median days project stays on market
-  createdAt       DateTime @default(now())
+  id                  String   @id @default(cuid())
+  corridor            String
+  month               Int      // 1-12
+  year                Int
+  searchVolume        Int?     // Portal search count for this corridor
+  inquiryCount        Int?     // Leads who expressed interest
+  siteVisits          Int?     // Site visits arranged
+  newListings         Int?     // New projects listed
+  inventoryUnits      Int?     // Total units available
+  soldUnits           Int?     // Units sold/booked this month
+  absorptionRate      Float?   // % of inventory absorbed
+  medianDaysOnMkt     Int?     // Median days project stays on market
+  createdAt           DateTime @default(now())
+  
+  corridorProfileSlug String?
+  corridorProfile     CorridorProfile? @relation(fields: [corridorProfileSlug], references: [slug])
 
   @@unique([corridor, month, year])
 }
@@ -479,23 +607,26 @@ model DemandTrend {
 // ── HMDA / DTCP APPROVAL TRACKER ─────────────────────────────────────────────
 
 model ApprovalRecord {
-  id              String         @id @default(cuid())
-  projectName     String
-  developerName   String?
-  approvalType    ApprovalType
-  authority       ApprovalAuth   // HMDA, DTCP, GHMC, RERA
-  approvalNumber  String?        // LP number, RERA number, GO number
-  approvalDate    DateTime?
-  corridor        String?
-  areaAcres       Float?
-  surveyNumbers   String[]
-  status          ApprovalStatus @default(APPROVED)
-  reraNumber      String?
-  reraUrl         String?
-  notes           String?
-  isPublished     Boolean        @default(true)
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  id                  String         @id @default(cuid())
+  projectName         String
+  developerName       String?
+  approvalType        ApprovalType
+  authority           ApprovalAuth   // HMDA, DTCP, GHMC, RERA
+  approvalNumber      String?        // LP number, RERA number, GO number
+  approvalDate        DateTime?
+  corridor            String?
+  areaAcres           Float?
+  surveyNumbers       String[]
+  status              ApprovalStatus @default(APPROVED)
+  reraNumber          String?
+  reraUrl             String?
+  notes               String?
+  isPublished         Boolean        @default(true)
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+  
+  corridorProfileSlug String?
+  corridorProfile     CorridorProfile? @relation(fields: [corridorProfileSlug], references: [slug])
 }
 
 enum ApprovalType {
@@ -542,6 +673,62 @@ model CorridorIntelligence {
   keyRisks             String[] // Top 2 risks
   bestFor              String[] // Persona types this corridor suits
   lastComputedAt       DateTime @default(now())
+  
+  corridorProfileSlug String?          @unique
+  corridorProfile     CorridorProfile? @relation(fields: [corridorProfileSlug], references: [slug])
+}
+
+// ── LEGAL RISK DATABASE ────────────────────────────────────────────────────
+
+model LegalRisk {
+  id            String        @id @default(cuid())
+  title         String        // "Section 22-A RRR Acquisition Trap"
+  severity      RiskSeverity  // RED, YELLOW, ORANGE, GREEN
+  category      LegalCategory
+  description   String        // Full explanation
+  affectedZones String[]      // Which corridors/areas this applies to
+  checkUrl      String?       // "bhubharati.telangana.gov.in"
+  checkMethod   String?       // How to verify
+  govReference  String?       // "Telangana Bhu Bharati Act, 2025"
+  isActive      Boolean       @default(true)
+  createdAt     DateTime      @default(now())
+}
+
+enum RiskSeverity {
+  RED
+  ORANGE
+  YELLOW
+  GREEN
+}
+
+enum LegalCategory {
+  LAND_RECORDS      // Bhu Bharati, Section 22-A
+  APPROVALS         // HMDA, DTCP, layout LP number
+  RERA              // RERA registration, QPR compliance
+  ENCUMBRANCE       // EC, mortgage, lien
+  RESTRICTIONS      // GO 111, Lake FTL, Air Funnel
+  STAMP_DUTY        // Registration costs, circle rates
+  AGRICULTURAL      // NALA conversion
+  FRAUD_PATTERN     // Common scam types
+}
+
+// ── MARKET PULSE DATA ─────────────────────────────────────────────────────
+
+model MarketPulse {
+  id                    String   @id @default(cuid())
+  period                String   // "FY2025-26", "Q1 2026"
+  totalRegistrations    Int?     // 51,089
+  totalValueCr          Float?   // 34,420
+  yoyGrowthPct          Float?   // 40.0
+  avgAskingPriceSqFt    Float?   // 9,430
+  avgGovtCircleRateSqFt Float?   // 3,654
+  gccNewCount           Int?     // 40 (new GCCs added)
+  gccTotalPct           Float?   // 20.0 (% of India's GCCs)
+  officeAbsorptionMSqFt Float?
+  gccShareOfOffice      Float?   // 50.0 %
+  source                String?
+  reportDate            DateTime
+  createdAt             DateTime @default(now())
 }
 
 

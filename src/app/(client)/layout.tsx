@@ -1,15 +1,25 @@
+"use client";
+
 import Link from "next/link";
 import React from "react";
+import { usePathname } from "next/navigation";
 
 export default function ClientLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
+
+  const isResearchActive = pathname?.startsWith("/research");
+  const isMarketActive = pathname?.startsWith("/market");
+  const isProjectsActive = pathname?.startsWith("/projects");
+  const isCalculatorActive = pathname?.startsWith("/calculator");
+
   return (
     <div className="flex flex-col min-h-screen bg-luxury-bg">
       {/* Sticky Premium Header */}
-      <header className="sticky top-0 z-40 w-full bg-surface border-b border-luxury shadow-sm">
+      <header className="sticky top-0 z-[100] w-full bg-surface border-b border-luxury shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-8">
             <Link href="/" className="flex items-center gap-2">
@@ -24,20 +34,28 @@ export default function ClientLayout({
             <nav className="hidden md:flex items-center gap-6">
               <Link 
                 href="/research" 
-                className="text-sm font-medium text-text-primary hover:text-accent transition-colors"
+                className={`text-sm font-medium transition-colors ${
+                  isResearchActive 
+                    ? "text-primary font-bold border-b-2 border-primary py-4 mt-[2px]" 
+                    : "text-text-primary hover:text-accent"
+                }`}
               >
                 AI Research Tool
               </Link>
               
               {/* Market Intelligence Hover Dropdown */}
-              <div className="relative group py-2">
-                <button className="text-sm font-medium text-text-primary hover:text-accent transition-colors flex items-center gap-1 cursor-pointer">
+              <div className="relative group py-2 z-50">
+                <button className={`text-sm font-medium transition-colors flex items-center gap-1 cursor-pointer ${
+                  isMarketActive 
+                    ? "text-primary font-bold border-b-2 border-primary py-4 mt-[2px]" 
+                    : "text-text-primary hover:text-accent"
+                }`}>
                   Market Intelligence
                   <svg className="w-3 h-3 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
                   </svg>
                 </button>
-                <div className="absolute left-0 mt-2 w-48 bg-white border border-slate-200 rounded-[4px] shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 py-1.5 z-50 text-slate-800">
+                <div className="absolute left-0 top-full mt-2 w-48 bg-white border border-slate-200 rounded-[4px] shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 py-1.5 z-50 text-slate-800">
                   <Link href="/market" className="block px-4 py-2 text-xs font-bold hover:bg-slate-100 hover:text-blue-650 transition-colors">Corridor Overview</Link>
                   <Link href="/market" className="block px-4 py-2 text-xs font-bold hover:bg-slate-100 hover:text-blue-650 transition-colors">Infrastructure Map</Link>
                   <Link href="/market/approvals" className="block px-4 py-2 text-xs font-bold hover:bg-slate-100 hover:text-blue-650 transition-colors">Approval Records</Link>
@@ -47,13 +65,21 @@ export default function ClientLayout({
 
               <Link 
                 href="/projects" 
-                className="text-sm font-medium text-text-primary hover:text-accent transition-colors"
+                className={`text-sm font-medium transition-colors ${
+                  isProjectsActive 
+                    ? "text-primary font-bold border-b-2 border-primary py-4 mt-[2px]" 
+                    : "text-text-primary hover:text-accent"
+                }`}
               >
                 Premium Projects
               </Link>
               <Link 
                 href="/calculator" 
-                className="text-sm font-medium text-text-primary hover:text-accent transition-colors"
+                className={`text-sm font-medium transition-colors ${
+                  isCalculatorActive 
+                    ? "text-primary font-bold border-b-2 border-primary py-4 mt-[2px]" 
+                    : "text-text-primary hover:text-accent"
+                }`}
               >
                 ROI Calculator
               </Link>

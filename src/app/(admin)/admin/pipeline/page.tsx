@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { DndContext, DragEndEvent, useDroppable, useDraggable } from "@dnd-kit/core";
+import { RefreshCw } from "lucide-react";
 
 interface KanbanCard {
   id: string;
@@ -316,9 +317,11 @@ export default function AdminPipelinePage() {
 
         <button
           onClick={loadPipelineData}
-          className="px-4 py-2 border border-luxury hover:bg-luxury-bg/40 text-text-primary text-xs font-semibold uppercase tracking-wider rounded-tag transition-colors self-start sm:self-center"
+          disabled={isLoading}
+          className="flex items-center gap-1.5 px-4 py-2 border border-luxury hover:bg-luxury-bg/40 text-text-primary text-xs font-semibold uppercase tracking-wider rounded-tag transition-colors self-start sm:self-center disabled:opacity-50"
         >
-          🔄 Refresh Board
+          <RefreshCw size={13} className={isLoading ? "animate-spin text-primary" : "text-text-secondary"} />
+          <span>Refresh Board</span>
         </button>
       </div>
 

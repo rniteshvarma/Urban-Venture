@@ -383,7 +383,7 @@ export async function GET() {
     await prisma.project.deleteMany();
     await prisma.user.deleteMany();
     await prisma.personaConfig.deleteMany();
-    await prisma.corridorMetrics.deleteMany();
+    await prisma.corridorProfile.deleteMany({});
     await prisma.whatsAppTemplate.deleteMany();
     console.log("🧹 Cleanup successful!");
 
@@ -408,10 +408,27 @@ export async function GET() {
       dbProjects.push(dbProj);
     }
 
-    console.log("📈 Seeding Corridor Metrics...");
+    console.log("📈 Seeding Corridor Profiles...");
     for (const c of corridorsData) {
-      await prisma.corridorMetrics.create({
-        data: c
+      await prisma.corridorProfile.create({
+        data: {
+          slug: c.corridor.toLowerCase().replace(/\s+/g, "-"),
+          name: `${c.corridor} Corridor`,
+          shortName: c.corridor,
+          direction: "SOUTH",
+          zone: "South Outer Ring Road",
+          district: "Ranga Reddy",
+          description: `Temporary seed corridor ${c.corridor}.`,
+          heatRating: "HOT",
+          investmentCycle: "ACT_NOW",
+          historicalCAGR: c.historicalCAGR,
+          projectedCAGRMin: c.projectedCAGRMin,
+          projectedCAGRMax: c.projectedCAGRMax,
+          rentalYieldMin: c.rentalYieldMin,
+          rentalYieldMax: c.rentalYieldMax,
+          riskLevel: c.riskLevel as any,
+          isPublished: true
+        }
       });
     }
 

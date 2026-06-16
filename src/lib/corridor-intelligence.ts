@@ -1,6 +1,6 @@
 import prisma from "./prisma";
 import Anthropic from "@anthropic-ai/sdk";
-import { ApprovalType } from "@prisma/client";
+import { ApprovalType, Sentiment } from "@prisma/client";
 
 // Helper to determine status weight for Infra projects
 function getInfraStatusWeight(status: string): number {
@@ -23,38 +23,114 @@ function getFallbackAIAnalysis(corridor: string, score: number) {
   else if (score < 50) sentiment = "CAUTIOUS";
 
   const driversMap: Record<string, string[]> = {
-    "Shadnagar": [
+    "adibatla": [
+      "Tata Aerospace & TCS jobs expansion driving local housing demand.",
+      "Direct connectivity to Outer Ring Road (ORR) via Exit 12.",
+      "Proximity to RRR Southern Corridor alignment."
+    ],
+    "tukkuguda-shamshabad": [
+      "Immediate adjacency to Rajiv Gandhi International Airport expansion plans.",
+      "Upcoming Metro Phase 2 Airport connectivity.",
+      "High concentration of luxury villa projects and premium layouts."
+    ],
+    "kadthal-fcda": [
+      "Gateway position to the newly planned FCDA Future City Mucherla.",
+      "Proximity to proposed Metro extension and Srisailam Highway 4-laning.",
+      "High developer acquisition and plotting layout launches."
+    ],
+    "maheshwaram-pharma-city": [
+      "Direct exposure to the massive Hyderabad Pharma City Green SEZ project.",
+      "Maheshwaram Electronic Hardware Park and Wipro SEZ employee base.",
+      "Strategic link connecting Srisailam Highway and Bangalore Highway."
+    ],
+    "shadnagar": [
       "Strategic proximity to the upcoming Regional Ring Road (RRR) Southern Corridor.",
-      "High affordability with residential plotting rates under ₹4,000/sqft.",
+      "High affordability with residential plotting rates.",
       "Rapidly rising search volume and investor inquiries on the portal."
     ],
-    "Pharma City": [
-      "Direct exposure to the massive Hyderabad Pharma City greenfield industrial development.",
-      "Proposed metro connectivity extension linking the zone to central hubs.",
-      "Strong layout sanctions and land allotments by TSIIC."
+    "shankarpally-mokila": [
+      "Premium eco-sanctuary and green zone status in West Hyderabad.",
+      "Proximity to Financial District (Gachibowli) via 4-lane roads.",
+      "Presence of elite international schools and villa layouts."
     ],
-    "Kokapet": [
+    "sangareddy-industrial": [
+      "Strong demand anchors from IIT Hyderabad and TSIIC industrial parks.",
+      "RRR Northern Arc intersection junction hub.",
+      "Excellent rental yield potential from students and staff."
+    ],
+    "kompally-bachupally": [
+      "Established residential corridor in North Hyderabad with robust lifestyle retail.",
+      "Stable rental demand driven by IT professionals and families.",
+      "Flyover and highway widening projects easing traffic bottlenecks."
+    ],
+    "medchal-dundigal": [
+      "Major logistics and warehousing hub status along NH-44.",
+      "Upcoming RRR Northern Arc connectivity catalyst.",
+      "Affordable industrial and commercial leasing demand."
+    ],
+    "ghatkesar-peerzadiguda": [
+      "Anchored by Raheja Mindspace IT Park and Infosys Pocharam campus.",
+      "Warangal Highway NH-163 widening and metro transit proposals.",
+      "Highly stable middle-income residential demand."
+    ],
+    "bibinagar-bhongir": [
+      "Growth corridor anchored by AIIMS Bibinagar Medical Hub expansion.",
+      "Warangal Highway development and RRR Northern connection.",
+      "Budget-friendly long-term land banking options."
+    ],
+    "kokapet-neopolis": [
       "Premium location in West Hyderabad close to the Financial District.",
       "High-density Neopolis commercial and residential high-rise bidding.",
       "Excellent connectivity via Outer Ring Road (ORR) Exit 1."
-    ],
-    "Kompally": [
-      "Established residential corridor in North Hyderabad with robust retail and lifestyle infrastructure.",
-      "Stable rental demand driven by IT professionals and families.",
-      "Flyover and highway widening projects easing traffic bottlenecks."
     ]
   };
 
   const risksMap: Record<string, string[]> = {
-    "Shadnagar": [
+    "adibatla": [
+      "Local water supply infrastructure lag.",
+      "Slow retail utility growth."
+    ],
+    "tukkuguda-shamshabad": [
+      "High entry ticket sizes.",
+      "Airport height restriction zone (Air Funnel) limitations."
+    ],
+    "kadthal-fcda": [
+      "Speculative pricing bubbles.",
+      "Delayed government implementation of Mucherla projects."
+    ],
+    "maheshwaram-pharma-city": [
+      "Environmental clearance delays in immediate pharma zone boundaries.",
+      "Water table contamination concerns in micro pockets."
+    ],
+    "shadnagar": [
       "Longer gestation period (5-7 years) for commercial and utility infra development.",
       "Speculative pricing bubbles in localized outer layouts."
     ],
-    "Pharma City": [
-      "Environmental clearance delays in immediate manufacturing zone boundaries.",
-      "Slow initial commercial retail establishment."
+    "shankarpally-mokila": [
+      "High land costs limiting entry for small retail investors.",
+      "Local water supply dependent on tankers."
     ],
-    "Kokapet": [
+    "sangareddy-industrial": [
+      "Industrial pollution in adjacent zones.",
+      "Heavy traffic congestions on NH-65 Mumbai highway."
+    ],
+    "kompally-bachupally": [
+      "Traffic bottleneck at Suchitra junction.",
+      "Saturated plot options forcing apartment shifts."
+    ],
+    "medchal-dundigal": [
+      "Scattered residential density.",
+      "Heavy commercial vehicle traffic congestion."
+    ],
+    "ghatkesar-peerzadiguda": [
+      "IT expansion slower than Western corridor.",
+      "Groundwater shortage during peak summer."
+    ],
+    "bibinagar-bhongir": [
+      "Delayed RRR East arc construction timelines.",
+      "Speculative unapproved layout setups."
+    ],
+    "kokapet-neopolis": [
       "Very high entry ticket size limiting retail investor participation.",
       "Potential high-density infrastructure congestion over the next decade."
     ]
@@ -71,12 +147,12 @@ function getFallbackAIAnalysis(corridor: string, score: number) {
     `Water supply and public utility grid connectivity bottlenecks.`
   ];
 
-  const keyDrivers = driversMap[corridor] || defaultDrivers;
-  const keyRisks = risksMap[corridor] || defaultRisks;
+  const keyDrivers = driversMap[corridor.toLowerCase()] || defaultDrivers;
+  const keyRisks = risksMap[corridor.toLowerCase()] || defaultRisks;
 
   let bestFor = ["NRI_INVESTOR", "LAND_SPECULATOR"];
-  if (corridor === "Kokapet") bestFor = ["NRI_INVESTOR", "HNI_PORTFOLIO_BUILDER"];
-  else if (corridor === "Kompally") bestFor = ["FIRST_TIME_BUYER", "PROFESSIONAL_FIRST_HOME"];
+  if (corridor.toLowerCase() === "kokapet-neopolis") bestFor = ["NRI_INVESTOR", "HNI_PORTFOLIO_BUILDER"];
+  else if (corridor.toLowerCase() === "kompally-bachupally") bestFor = ["FIRST_TIME_BUYER", "PROFESSIONAL_FIRST_HOME"];
 
   return {
     keyDrivers,
@@ -93,7 +169,7 @@ export async function computeCorridorScore(corridor: string) {
   // Count InfraProjects affecting this corridor, weight by status and reImpactScore
   const infraProjects = await prisma.infraProject.findMany({
     where: {
-      affectedCorridors: {
+      affectedCorridorSlugs: {
         has: corridor
       },
       isPublished: true
@@ -123,7 +199,6 @@ export async function computeCorridorScore(corridor: string) {
     }
   });
 
-  const now = new Date();
   const oneYearAgo = new Date();
   oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
 
@@ -325,6 +400,7 @@ export async function computeCorridorScore(corridor: string) {
       keyDrivers,
       keyRisks,
       bestFor,
+      corridorProfileSlug: corridor,
       lastComputedAt: new Date()
     },
     create: {
@@ -339,7 +415,25 @@ export async function computeCorridorScore(corridor: string) {
       keyDrivers,
       keyRisks,
       bestFor,
+      corridorProfileSlug: corridor,
       lastComputedAt: new Date()
+    }
+  });
+
+  // Also update CorridorProfile directly
+  await prisma.corridorProfile.update({
+    where: { slug: corridor },
+    data: {
+      overallScore,
+      infraScore,
+      approvalScore,
+      demandScore,
+      appreciationScore,
+      sentiment: investorSentiment as Sentiment,
+      keyDrivers,
+      keyRisks,
+      bestFor,
+      adminNote
     }
   });
 
@@ -347,10 +441,10 @@ export async function computeCorridorScore(corridor: string) {
 }
 
 export async function computeAllCorridorScores() {
-  // Get all unique corridors from CorridorMetrics
-  const corridors = await prisma.corridorMetrics.findMany({
+  // Get all unique corridors from CorridorProfile
+  const corridors = await prisma.corridorProfile.findMany({
     select: {
-      corridor: true
+      slug: true
     }
   });
 
@@ -358,11 +452,12 @@ export async function computeAllCorridorScores() {
   const results = [];
   for (const c of corridors) {
     try {
-      const res = await computeCorridorScore(c.corridor);
+      const res = await computeCorridorScore(c.slug);
       results.push(res);
     } catch (e) {
-      console.error(`Failed to compute score for ${c.corridor}:`, e);
+      console.error(`Failed to compute score for ${c.slug}:`, e);
     }
   }
   return results;
 }
+

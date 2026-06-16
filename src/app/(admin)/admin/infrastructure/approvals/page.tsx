@@ -41,11 +41,10 @@ const STATUSES = [
   { value: "EXPIRED", label: "Expired", color: "bg-slate-100 text-slate-500 border-slate-200" },
 ];
 
-const CORRIDORS = ["Shadnagar", "Pharma City", "Sangareddy", "Kokapet", "Shamshabad", "Yadadri", "Kompally", "Adibatla"];
-
 export default function ApprovalsPage() {
   const [approvals, setApprovals] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [corridorList, setCorridorList] = useState<any[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingApproval, setEditingApproval] = useState<any>(null);
 
@@ -56,7 +55,7 @@ export default function ApprovalsPage() {
   const [authority, setAuthority] = useState("HMDA");
   const [approvalNumber, setApprovalNumber] = useState("");
   const [approvalDate, setApprovalDate] = useState("");
-  const [corridor, setCorridor] = useState("Shadnagar");
+  const [corridor, setCorridor] = useState("shadnagar");
   const [areaAcres, setAreaAcres] = useState<number | "">("");
   const [surveyNumbersInput, setSurveyNumbersInput] = useState("");
   const [status, setStatus] = useState("APPROVED");
@@ -73,6 +72,26 @@ export default function ApprovalsPage() {
   useEffect(() => {
     fetchApprovals();
   }, [filterCorridor, filterAuthority]);
+
+  useEffect(() => {
+    async function loadCorridors() {
+      try {
+        const res = await fetch("/api/admin/corridors");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.corridors) {
+            setCorridorList(data.corridors);
+            if (data.corridors.length > 0) {
+              setCorridor(data.corridors[0].corridor);
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load corridors", err);
+      }
+    }
+    loadCorridors();
+  }, []);
 
   async function fetchApprovals() {
     setLoading(true);
@@ -231,8 +250,8 @@ export default function ApprovalsPage() {
               className="border border-slate-200 rounded px-2.5 py-1.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-650"
             >
               <option value="ALL">All Corridors</option>
-              {CORRIDORS.map(c => (
-                <option key={c} value={c}>{c}</option>
+              {corridorList.map(c => (
+                <option key={c.id} value={c.corridor}>{c.shortName || c.name}</option>
               ))}
             </select>
           </div>
@@ -449,8 +468,8 @@ export default function ApprovalsPage() {
                     onChange={(e) => setCorridor(e.target.value)}
                     className="border border-slate-250 rounded px-3 py-2 text-xs focus:ring-1 focus:ring-blue-650 focus:outline-none bg-white"
                   >
-                    {CORRIDORS.map(c => (
-                      <option key={c} value={c}>{c}</option>
+                    {corridorList.map(c => (
+                      <option key={c.id} value={c.corridor}>{c.shortName || c.name}</option>
                     ))}
                   </select>
                 </div>

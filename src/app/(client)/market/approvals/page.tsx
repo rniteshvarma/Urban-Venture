@@ -33,10 +33,11 @@ const AUTHORITIES = [
   { value: "GOT", label: "GoT (Government of Telangana)" },
 ];
 
-const CORRIDORS = ["Shadnagar", "Pharma City", "Sangareddy", "Kokapet", "Shamshabad", "Yadadri", "Kompally", "Adibatla"];
+const CORRIDORS_FALLBACK = ["Shadnagar", "Pharma City", "Sangareddy", "Kokapet", "Shamshabad", "Yadadri", "Kompally", "Adibatla"];
 
 export default function ApprovalsDirectoryPage() {
   const [approvals, setApprovals] = useState<any[]>([]);
+  const [corridors, setCorridors] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Filters state
@@ -44,6 +45,21 @@ export default function ApprovalsDirectoryPage() {
   const [corridor, setCorridor] = useState("ALL");
   const [authority, setAuthority] = useState("ALL");
   const [type, setType] = useState("ALL");
+
+  useEffect(() => {
+    async function loadCorridors() {
+      try {
+        const res = await fetch("/api/market/corridors");
+        if (res.ok) {
+          const data = await res.json();
+          setCorridors(data);
+        }
+      } catch (err) {
+        console.error("Failed to load corridors", err);
+      }
+    }
+    loadCorridors();
+  }, []);
 
   useEffect(() => {
     fetchApprovals();
@@ -71,16 +87,24 @@ export default function ApprovalsDirectoryPage() {
     }
   };
 
+  const getCorridorName = (slug: string) => {
+    if (!slug) return "—";
+    const match = corridors.find(c => c.corridor.toLowerCase() === slug.toLowerCase());
+    if (match) return match.shortName || match.name;
+    // Fallback logic for legacy naming if any
+    return slug.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+  };
+
   return (
-    <div className="bg-slate-900 text-slate-100 min-h-screen font-sans">
+    <div className="bg-luxury-bg text-text-primary min-h-screen font-sans">
       {/* Header Banner */}
-      <section className="bg-gradient-to-b from-slate-950 to-slate-900 py-12 px-6 border-b border-slate-800">
+      <section className="bg-white py-12 px-6 border-b border-luxury shadow-sm">
         <div className="max-w-7xl mx-auto space-y-4 text-center">
-          <span className="text-[10px] font-bold text-amber-500 uppercase tracking-widest block">Verifiable Registry Records</span>
-          <h1 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight leading-tight">
+          <span className="text-[10px] font-bold text-primary uppercase tracking-widest block">Verifiable Registry Records</span>
+          <h1 className="text-3xl md:text-4xl font-extrabold text-text-primary tracking-tight leading-tight">
             HMDA / DTCP & RERA Layout Directory
           </h1>
-          <p className="max-w-xl mx-auto text-slate-400 text-xs md:text-sm leading-relaxed">
+          <p className="max-w-xl mx-auto text-text-secondary text-xs md:text-sm leading-relaxed">
             Search our legally audited database of land layouts, housing projects, building permits, and RERA registration codes across major Hyderabad growth corridors.
           </p>
         </div>
@@ -89,10 +113,10 @@ export default function ApprovalsDirectoryPage() {
       <main className="max-w-7xl mx-auto py-12 px-6 space-y-8">
         
         {/* Verification Note Box */}
-        <div className="bg-slate-950 border border-slate-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center justify-between gap-4 text-xs max-w-4xl mx-auto">
+        <div className="bg-white border border-luxury p-4 rounded-lg flex flex-col md:flex-row md:items-center justify-between gap-4 text-xs max-w-4xl mx-auto shadow-sm">
           <div className="space-y-1">
-            <span className="font-bold text-white block">💡 Official Verification Disclaimer</span>
-            <p className="text-slate-400 leading-relaxed">
+            <span className="font-bold text-text-primary block">💡 Official Verification Disclaimer</span>
+            <p className="text-text-secondary leading-relaxed">
               This directory is maintained by our real estate research team. For official, legally binding verification, always check the RERA Telangana or HMDA portal directly.
             </p>
           </div>
@@ -101,7 +125,7 @@ export default function ApprovalsDirectoryPage() {
               href="https://rera.telangana.gov.in"
               target="_blank"
               rel="noopener noreferrer"
-              className="px-3 py-1.5 border border-slate-850 hover:border-slate-650 text-white font-bold rounded text-[10px] flex items-center gap-1 transition-all"
+              className="px-3 py-1.5 border border-slate-200 hover:border-slate-350 text-text-primary font-bold rounded text-[10px] flex items-center gap-1 transition-all bg-white shadow-sm"
             >
               rera.telangana.gov.in <ExternalLink size={10} />
             </a>
@@ -109,28 +133,28 @@ export default function ApprovalsDirectoryPage() {
         </div>
 
         {/* Filters Controls Panel */}
-        <div className="bg-slate-950 border border-slate-800 p-5 rounded-lg flex flex-wrap gap-4 items-center justify-between">
+        <div className="bg-white border border-luxury p-5 rounded-lg flex flex-wrap gap-4 items-center justify-between shadow-sm">
           <div className="flex flex-wrap gap-4 items-center w-full md:w-auto">
             <div className="flex flex-col gap-1 w-full sm:w-auto">
-              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Corridor Zone</label>
+              <label className="text-[10px] font-bold uppercase tracking-wider text-text-secondary">Corridor Zone</label>
               <select
                 value={corridor}
                 onChange={(e) => setCorridor(e.target.value)}
-                className="border border-slate-800 bg-slate-900 text-slate-350 rounded px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-amber-500 focus:outline-none"
+                className="border border-slate-200 bg-white text-text-primary rounded px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-primary focus:outline-none"
               >
                 <option value="ALL">All Corridors</option>
-                {CORRIDORS.map(c => (
-                  <option key={c} value={c}>{c}</option>
+                {corridors.map(c => (
+                  <option key={c.corridor} value={c.corridor}>{c.shortName || c.name}</option>
                 ))}
               </select>
             </div>
 
             <div className="flex flex-col gap-1 w-full sm:w-auto">
-              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Authority</label>
+              <label className="text-[10px] font-bold uppercase tracking-wider text-text-secondary">Authority</label>
               <select
                 value={authority}
                 onChange={(e) => setAuthority(e.target.value)}
-                className="border border-slate-800 bg-slate-900 text-slate-350 rounded px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-amber-500 focus:outline-none"
+                className="border border-slate-200 bg-white text-text-primary rounded px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-primary focus:outline-none"
               >
                 <option value="ALL">All Authorities</option>
                 {AUTHORITIES.map(a => (
@@ -140,11 +164,11 @@ export default function ApprovalsDirectoryPage() {
             </div>
 
             <div className="flex flex-col gap-1 w-full sm:w-auto">
-              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Approval Type</label>
+              <label className="text-[10px] font-bold uppercase tracking-wider text-text-secondary">Approval Type</label>
               <select
                 value={type}
                 onChange={(e) => setType(e.target.value)}
-                className="border border-slate-800 bg-slate-900 text-slate-350 rounded px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-amber-500 focus:outline-none"
+                className="border border-slate-200 bg-white text-text-primary rounded px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-primary focus:outline-none"
               >
                 <option value="ALL">All Types</option>
                 {APPROVAL_TYPES.map(t => (
@@ -155,7 +179,7 @@ export default function ApprovalsDirectoryPage() {
           </div>
 
           <div className="flex flex-col gap-1 w-full sm:w-72 mt-2 md:mt-0">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Search</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-text-secondary">Search</label>
             <div className="relative">
               <input
                 type="text"
@@ -163,9 +187,9 @@ export default function ApprovalsDirectoryPage() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 onKeyDown={handleKeyPress}
-                className="w-full border border-slate-800 bg-slate-900 text-white rounded pl-8 pr-2.5 py-1.5 text-xs focus:ring-1 focus:ring-amber-500 focus:outline-none"
+                className="w-full border border-slate-200 bg-white text-text-primary rounded pl-8 pr-2.5 py-1.5 text-xs focus:ring-1 focus:ring-primary focus:outline-none"
               />
-              <Search className="absolute left-2.5 top-2.5 text-slate-500" size={13} />
+              <Search className="absolute left-2.5 top-2.5 text-text-secondary" size={13} />
             </div>
           </div>
         </div>
@@ -173,18 +197,18 @@ export default function ApprovalsDirectoryPage() {
         {/* Results List */}
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="animate-spin text-amber-500" size={32} />
+            <Loader2 className="animate-spin text-primary" size={32} />
           </div>
         ) : approvals.length === 0 ? (
-          <div className="bg-slate-950 border border-slate-800 rounded py-12 text-center text-slate-500 text-xs italic">
+          <div className="bg-white border border-luxury rounded py-12 text-center text-text-secondary text-xs italic shadow-sm">
             No layout approval records found matching your filters.
           </div>
         ) : (
-          <div className="bg-slate-950 border border-slate-800 rounded-lg overflow-hidden shadow-xl">
+          <div className="bg-white border border-luxury rounded-lg overflow-hidden shadow-sm">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
-                  <tr className="bg-slate-900 border-b border-slate-800 text-[10px] font-bold uppercase text-slate-400">
+                  <tr className="bg-slate-50 border-b border-luxury text-[10px] font-bold uppercase text-text-secondary">
                     <th className="px-4 py-3">Project / Layout Name</th>
                     <th className="px-4 py-3">Developer</th>
                     <th className="px-4 py-3">Authority</th>
@@ -195,36 +219,36 @@ export default function ApprovalsDirectoryPage() {
                     <th className="px-4 py-3 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-850 text-slate-300">
+                <tbody className="divide-y divide-slate-100 text-text-primary">
                   {approvals.map((app) => (
-                    <tr key={app.id} className="hover:bg-slate-900/50">
-                      <td className="px-4 py-3.5 font-bold text-white">{app.projectName}</td>
-                      <td className="px-4 py-3.5 text-slate-400">{app.developerName || "—"}</td>
+                    <tr key={app.id} className="hover:bg-slate-50/50">
+                      <td className="px-4 py-3.5 font-bold text-text-primary">{app.projectName}</td>
+                      <td className="px-4 py-3.5 text-text-secondary">{app.developerName || "—"}</td>
                       <td className="px-4 py-3.5">
                         <span className={`px-2 py-0.5 rounded text-[8px] font-bold border uppercase tracking-wider ${
-                          app.authority === "HMDA" ? "bg-green-500/10 text-green-400 border-green-500/20" :
-                          app.authority === "DTCP" ? "bg-teal-500/10 text-teal-400 border-teal-500/20" :
-                          "bg-slate-800 text-slate-350 border-slate-700"
+                          app.authority === "HMDA" ? "bg-green-50 text-green-700 border-green-200" :
+                          app.authority === "DTCP" ? "bg-teal-50 text-teal-700 border-teal-200" :
+                          "bg-slate-50 text-text-secondary border-slate-200"
                         }`}>
                           {app.authority}
                         </span>
                       </td>
-                      <td className="px-4 py-3.5 text-slate-400">{app.approvalType.replace("_", " ")}</td>
-                      <td className="px-4 py-3.5 font-mono text-[10px] text-slate-400">{app.approvalNumber || "—"}</td>
-                      <td className="px-4 py-3.5 text-slate-400">
+                      <td className="px-4 py-3.5 text-text-secondary">{app.approvalType.replace(/_/g, " ")}</td>
+                      <td className="px-4 py-3.5 font-mono text-[10px] text-text-secondary">{app.approvalNumber || "—"}</td>
+                      <td className="px-4 py-3.5 text-text-secondary">
                         {app.approvalDate ? (
                           <span className="flex items-center gap-1.5">
-                            <Calendar size={11} className="text-slate-500" />
+                            <Calendar size={11} className="text-text-secondary" />
                             {new Date(app.approvalDate).toLocaleDateString()}
                           </span>
                         ) : "—"}
                       </td>
-                      <td className="px-4 py-3.5 font-semibold text-slate-300">{app.corridor || "—"}</td>
-                      <td className="px-4 py-3.5 text-right">
-                        {app.corridor ? (
+                      <td className="px-4 py-3.5 font-semibold text-text-primary">{getCorridorName(app.corridor || app.corridorProfileSlug)}</td>
+                      <td className="px-4 py-3.5 text-right font-bold text-primary">
+                        {app.corridor || app.corridorProfileSlug ? (
                           <Link
-                            href={`/market/${app.corridor.toLowerCase().replace(/\s+/g, "-")}`}
-                            className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-500 hover:text-amber-400 hover:underline cursor-pointer"
+                            href={`/market/${(app.corridor || app.corridorProfileSlug).toLowerCase()}`}
+                            className="inline-flex items-center gap-1 text-[10px] font-bold text-primary hover:text-blue-700 hover:underline cursor-pointer"
                           >
                             Corridor details <ArrowRight size={10} />
                           </Link>

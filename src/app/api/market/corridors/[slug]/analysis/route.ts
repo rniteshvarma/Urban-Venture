@@ -123,9 +123,13 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
     const { slug } = await params;
     const decodedSlug = decodeURIComponent(slug);
 
-    const metric = await prisma.corridorMetrics.findFirst({
+    const metric = await prisma.corridorProfile.findFirst({
       where: {
-        corridor: { equals: decodedSlug, mode: "insensitive" }
+        OR: [
+          { slug: { equals: decodedSlug, mode: "insensitive" } },
+          { name: { equals: decodedSlug, mode: "insensitive" } },
+          { shortName: { equals: decodedSlug, mode: "insensitive" } }
+        ]
       }
     });
 
@@ -133,7 +137,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
       return NextResponse.json({ error: "Corridor not found" }, { status: 404 });
     }
 
-    const corridorName = metric.corridor;
+    const corridorName = metric.slug;
 
     // Check File Cache
     const cacheDir = path.join(process.cwd(), "src", "lib", "cache");
@@ -170,7 +174,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
     });
 
     const infra = await prisma.infraProject.findMany({
-      where: { affectedCorridors: { has: corridorName }, isPublished: true }
+      where: { affectedCorridorSlugs: { has: corridorName }, isPublished: true }
     });
 
     const approvals = await prisma.approvalRecord.findMany({
@@ -269,9 +273,13 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
     const { slug } = await params;
     const decodedSlug = decodeURIComponent(slug);
 
-    const metric = await prisma.corridorMetrics.findFirst({
+    const metric = await prisma.corridorProfile.findFirst({
       where: {
-        corridor: { equals: decodedSlug, mode: "insensitive" }
+        OR: [
+          { slug: { equals: decodedSlug, mode: "insensitive" } },
+          { name: { equals: decodedSlug, mode: "insensitive" } },
+          { shortName: { equals: decodedSlug, mode: "insensitive" } }
+        ]
       }
     });
 
@@ -279,7 +287,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
       return NextResponse.json({ error: "Corridor not found" }, { status: 404 });
     }
 
-    const corridorName = metric.corridor;
+    const corridorName = metric.slug;
     const cacheDir = path.join(process.cwd(), "src", "lib", "cache");
     const cacheFile = path.join(cacheDir, `corridor-analysis-${corridorName.replace(/\s+/g, "-").toLowerCase()}.json`);
 

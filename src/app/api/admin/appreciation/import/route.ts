@@ -78,11 +78,23 @@ export async function POST(req: Request) {
       }
 
       try {
+        const profile = await prisma.corridorProfile.findFirst({
+          where: {
+            OR: [
+              { slug: { equals: corridor, mode: "insensitive" } },
+              { name: { equals: corridor, mode: "insensitive" } },
+              { shortName: { equals: corridor, mode: "insensitive" } }
+            ]
+          }
+        });
+
+        const targetCorridor = profile ? profile.slug : corridor.toLowerCase().replace(/\s+/g, "-");
+
         // Calculate YoY Change
         let yoyChange = 0;
         const prevYearRecord = await prisma.appreciationHistory.findFirst({
           where: {
-            corridor,
+            corridor: { equals: targetCorridor, mode: "insensitive" },
             year: year - 1,
             quarter: quarter || null
           }
@@ -104,7 +116,7 @@ export async function POST(req: Request) {
 
           const prevQRecord = await prisma.appreciationHistory.findFirst({
             where: {
-              corridor,
+              corridor: { equals: targetCorridor, mode: "insensitive" },
               year: prevY,
               quarter: prevQ
             }
@@ -118,7 +130,7 @@ export async function POST(req: Request) {
         // Upsert record
         const existing = await prisma.appreciationHistory.findFirst({
           where: {
-            corridor,
+            corridor: { equals: targetCorridor, mode: "insensitive" },
             year,
             quarter: quarter || null
           }
@@ -128,6 +140,8 @@ export async function POST(req: Request) {
           await prisma.appreciationHistory.update({
             where: { id: existing.id },
             data: {
+              corridor: targetCorridor,
+              corridorProfileSlug: profile ? profile.slug : null,
               pricePerSqFt,
               pricePerSqYd,
               yoyChange,
@@ -139,7 +153,8 @@ export async function POST(req: Request) {
         } else {
           await prisma.appreciationHistory.create({
             data: {
-              corridor,
+              corridor: targetCorridor,
+              corridorProfileSlug: profile ? profile.slug : null,
               year,
               quarter,
               pricePerSqFt,

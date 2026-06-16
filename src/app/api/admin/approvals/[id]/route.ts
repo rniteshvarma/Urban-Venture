@@ -61,9 +61,35 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       return NextResponse.json({ error: "Invalid input data", details: parse.error.format() }, { status: 400 });
     }
 
+    const { corridor: inputCorridor, ...rest } = parse.data;
+    let targetCorridor = inputCorridor;
+    let corridorProfileSlug = null;
+
+    if (inputCorridor) {
+      const profile = await prisma.corridorProfile.findFirst({
+        where: {
+          OR: [
+            { slug: { equals: inputCorridor, mode: "insensitive" } },
+            { name: { equals: inputCorridor, mode: "insensitive" } },
+            { shortName: { equals: inputCorridor, mode: "insensitive" } }
+          ]
+        }
+      });
+      if (profile) {
+        targetCorridor = profile.slug;
+        corridorProfileSlug = profile.slug;
+      } else {
+        targetCorridor = inputCorridor.toLowerCase().replace(/\s+/g, "-");
+      }
+    }
+
     const updated = await prisma.approvalRecord.update({
       where: { id },
-      data: parse.data
+      data: {
+        ...rest,
+        corridor: targetCorridor,
+        corridorProfileSlug
+      }
     });
 
     return NextResponse.json({ success: true, approval: updated });

@@ -29,23 +29,24 @@ export async function POST(req: Request) {
     let infrastructureTailwinds: any[] = [];
 
     if (corridorId && corridorId !== "CUSTOM") {
-      const corridorMetrics = await prisma.corridorMetrics.findUnique({
+      const corridorMetrics = await prisma.corridorProfile.findUnique({
         where: { id: corridorId }
       });
       if (corridorMetrics) {
-        corridorName = corridorMetrics.corridor;
-        cagrMin = corridorMetrics.projectedCAGRMin;
-        cagrMax = corridorMetrics.projectedCAGRMax;
-        rentMin = corridorMetrics.rentalYieldMin;
-        rentMax = corridorMetrics.rentalYieldMax;
+        corridorName = corridorMetrics.name;
+        cagrMin = corridorMetrics.projectedCAGRMin || 10;
+        cagrMax = corridorMetrics.projectedCAGRMax || 15;
+        rentMin = corridorMetrics.rentalYieldMin || 2;
+        rentMax = corridorMetrics.rentalYieldMax || 4;
 
         // Query upcoming infra projects to boost CAGR and list tailwinds
         try {
           const upcomingInfra = await prisma.infraProject.findMany({
             where: {
-              affectedCorridors: {
-                has: corridorMetrics.corridor
-              },
+              OR: [
+                { affectedCorridorSlugs: { has: corridorMetrics.slug } },
+                { affectedCorridors: { has: corridorMetrics.name } }
+              ],
               isPublished: true,
               NOT: {
                 status: {

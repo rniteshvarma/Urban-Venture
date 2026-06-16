@@ -40,12 +40,12 @@ const STATUSES = [
   { value: "CANCELLED", label: "Cancelled", color: "bg-slate-200 text-slate-500 border-slate-300 line-through" },
 ];
 
-const CORRIDORS = ["Shadnagar", "Pharma City", "Sangareddy", "Kokapet", "Shamshabad", "Yadadri", "Kompally", "Adibatla"];
 const TAGS_OPTIONS = ["HMDA", "NHAI", "Bharatmala", "TSIIC", "GoT", "RERA"];
 
 export default function InfrastructureProjectsPage() {
   const [projects, setProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [corridorList, setCorridorList] = useState<any[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<any>(null);
 
@@ -86,6 +86,23 @@ export default function InfrastructureProjectsPage() {
   useEffect(() => {
     fetchProjects();
   }, [filterCategory, filterStatus, filterCorridor]);
+
+  useEffect(() => {
+    async function loadCorridors() {
+      try {
+        const res = await fetch("/api/admin/corridors");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.corridors) {
+            setCorridorList(data.corridors);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load corridors", err);
+      }
+    }
+    loadCorridors();
+  }, []);
 
   async function fetchProjects() {
     setLoading(true);
@@ -329,8 +346,8 @@ export default function InfrastructureProjectsPage() {
             className="border border-slate-200 rounded px-2.5 py-1.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-650"
           >
             <option value="ALL">All Corridors</option>
-            {CORRIDORS.map(c => (
-              <option key={c} value={c}>{c}</option>
+            {corridorList.map(c => (
+              <option key={c.id} value={c.corridor}>{c.shortName || c.name}</option>
             ))}
           </select>
         </div>
@@ -628,23 +645,23 @@ export default function InfrastructureProjectsPage() {
                   <div className="flex flex-col gap-1">
                     <label className="font-semibold text-slate-650">Affected Corridors (Multi-select)</label>
                     <div className="border border-slate-250 rounded p-2 max-h-[85px] overflow-y-auto space-y-1 bg-white">
-                      {CORRIDORS.map(corridor => {
-                        const checked = affectedCorridors.includes(corridor);
+                      {corridorList.map(c => {
+                        const checked = affectedCorridors.includes(c.corridor);
                         return (
-                          <label key={corridor} className="flex items-center gap-1.5 cursor-pointer">
+                          <label key={c.id} className="flex items-center gap-1.5 cursor-pointer">
                             <input
                               type="checkbox"
                               checked={checked}
                               onChange={() => {
                                 if (checked) {
-                                  setAffectedCorridors(affectedCorridors.filter(c => c !== corridor));
+                                  setAffectedCorridors(affectedCorridors.filter(x => x !== c.corridor));
                                 } else {
-                                  setAffectedCorridors([...affectedCorridors, corridor]);
+                                  setAffectedCorridors([...affectedCorridors, c.corridor]);
                                 }
                               }}
                               className="accent-blue-650 rounded"
                             />
-                            <span>{corridor}</span>
+                            <span className="text-xs text-slate-700">{c.shortName || c.name}</span>
                           </label>
                         );
                       })}

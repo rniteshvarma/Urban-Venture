@@ -16,7 +16,20 @@ export async function GET(req: Request) {
     };
 
     if (corridor && corridor !== "ALL") {
-      where.corridor = corridor;
+      const profile = await prisma.corridorProfile.findFirst({
+        where: {
+          OR: [
+            { slug: { equals: corridor, mode: "insensitive" } },
+            { name: { equals: corridor, mode: "insensitive" } },
+            { shortName: { equals: corridor, mode: "insensitive" } }
+          ]
+        }
+      });
+      const targetCorridor = profile ? profile.slug : corridor.toLowerCase().replace(/\s+/g, "-");
+      where.OR = [
+        { corridor: { equals: targetCorridor, mode: "insensitive" } },
+        { corridorProfileSlug: { equals: targetCorridor, mode: "insensitive" } }
+      ];
     }
 
     if (authority && authority !== "ALL") {

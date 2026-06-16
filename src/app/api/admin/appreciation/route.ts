@@ -53,12 +53,24 @@ export async function POST(req: Request) {
 
     const { corridor, year, quarter, pricePerSqFt } = parse.data;
 
+    const profile = await prisma.corridorProfile.findFirst({
+      where: {
+        OR: [
+          { slug: { equals: corridor, mode: "insensitive" } },
+          { name: { equals: corridor, mode: "insensitive" } },
+          { shortName: { equals: corridor, mode: "insensitive" } }
+        ]
+      }
+    });
+
+    const targetCorridor = profile ? profile.slug : corridor.toLowerCase().replace(/\s+/g, "-");
+
     // 1. Calculate YoY Change
     // Look for previous year's record for the same corridor & quarter
     let yoyChange = 0;
     const prevYearRecord = await prisma.appreciationHistory.findFirst({
       where: {
-        corridor,
+        corridor: { equals: targetCorridor, mode: "insensitive" },
         year: year - 1,
         quarter: quarter || null
       }
@@ -80,7 +92,7 @@ export async function POST(req: Request) {
 
       const prevQRecord = await prisma.appreciationHistory.findFirst({
         where: {
-          corridor,
+          corridor: { equals: targetCorridor, mode: "insensitive" },
           year: prevY,
           quarter: prevQ
         }
@@ -94,7 +106,7 @@ export async function POST(req: Request) {
     // Upsert or Create record
     const existing = await prisma.appreciationHistory.findFirst({
       where: {
-        corridor,
+        corridor: { equals: targetCorridor, mode: "insensitive" },
         year,
         quarter: quarter || null
       }
@@ -106,6 +118,8 @@ export async function POST(req: Request) {
         where: { id: existing.id },
         data: {
           ...parse.data,
+          corridor: targetCorridor,
+          corridorProfileSlug: profile ? profile.slug : null,
           yoyChange,
           qoqChange
         }
@@ -114,6 +128,8 @@ export async function POST(req: Request) {
       record = await prisma.appreciationHistory.create({
         data: {
           ...parse.data,
+          corridor: targetCorridor,
+          corridorProfileSlug: profile ? profile.slug : null,
           yoyChange,
           qoqChange
         }
