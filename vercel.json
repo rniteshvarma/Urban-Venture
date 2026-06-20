@@ -1,4 +1,4 @@
 {
   "framework": "nextjs",
-  "buildCommand": "npx prisma generate && npx prisma db push --accept-data-loss && npx tsx prisma/seed-upgraded.ts && next build"
+  "buildCommand": "node -e \"console.log('--- DB connection debug ---'); console.log('DATABASE_URL set:', !!process.env.DATABASE_URL); if(process.env.DATABASE_URL) { try { console.log('DATABASE_URL host:', new URL(process.env.DATABASE_URL).host); } catch(e) { console.log('DATABASE_URL invalid format'); } } console.log('POSTGRES_HOST:', process.env.POSTGRES_HOST); console.log('---------------------------');\" && npx prisma generate && npx prisma db push --accept-data-loss && npx tsx prisma/seed-upgraded.ts && next build"
 }
