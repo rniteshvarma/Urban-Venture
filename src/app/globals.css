@@ -383,13 +383,16 @@ body {
 .filter-pill {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   padding: 6px 16px;
   border-radius: 9999px;
-  font-size: 0.8125rem;
-  font-weight: 500;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   background: #FFFFFF;
-  color: #475569;
+  color: #4B5563;
   border: 1px solid #E2E8F0;
   cursor: pointer;
   transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -397,22 +400,35 @@ body {
 }
 
 .filter-pill:hover {
-  border-color: #3B82F6;
-  color: #2563EB;
+  border-color: #5B4FE0;
+  color: #5B4FE0;
+  background: #F4F0FF;
 }
 
 .filter-pill-active {
-  background: #3B82F6;
-  color: #FFFFFF;
-  border-color: #3B82F6;
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 16px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: linear-gradient(135deg, #7C6EF5 0%, #5B4FE0 100%);
+  color: #FFFFFF !important;
+  border: 1px solid transparent;
+  box-shadow: 0 4px 12px rgba(91, 79, 224, 0.25);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .filter-pill-active:hover {
-  background: #2563EB;
-  border-color: #2563EB;
-  color: #FFFFFF;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+  background: linear-gradient(135deg, #6C5CE7 0%, #4B3FC4 100%);
+  color: #FFFFFF !important;
+  box-shadow: 0 6px 16px rgba(91, 79, 224, 0.35);
 }
 
 /* ═══════════════════════════════════════════════════

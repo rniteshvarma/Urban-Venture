@@ -415,6 +415,7 @@ export default function AdminDashboardPage() {
               </Link>
             </div>
 
+            {recentBroadcasts && recentBroadcasts.length > 0 ? (
               <div className="overflow-x-auto w-full">
                 <table className="crm-table text-xs w-full">
                   <thead>
