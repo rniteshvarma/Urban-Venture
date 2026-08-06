@@ -33,13 +33,13 @@ interface LeadsTableProps {
   onToggleRow: (id: string, checked: boolean) => void;
 }
 
-const PERSONA_CONFIGS: Record<string, { label: string; icon: string; color: string }> = {
-  FIRST_TIME_BUYER: { label: "First-Time Buyer", icon: "🏠", color: "#3B82F6" },
-  NRI_INVESTOR: { label: "NRI Investor", icon: "✈️", color: "#8B5CF6" },
-  LAND_SPECULATOR: { label: "Land Speculator", icon: "📈", color: "#EF4444" },
-  RETIREMENT_PLANNER: { label: "Retirement Planner", icon: "👴", color: "#10B981" },
-  HNI_PORTFOLIO_BUILDER: { label: "HNI Portfolio", icon: "💼", color: "#F59E0B" },
-  PROFESSIONAL_FIRST_HOME: { label: "Professional Home", icon: "💻", color: "#06B6D4" }
+const PERSONA_CONFIGS: Record<string, { label: string; icon: string; bg: string; text: string; border: string }> = {
+  FIRST_TIME_BUYER: { label: "First-Time Buyer", icon: "🏠", bg: "bg-blue-50", text: "text-blue-700", border: "border-blue-100" },
+  NRI_INVESTOR: { label: "NRI Investor", icon: "✈️", bg: "bg-purple-50", text: "text-purple-700", border: "border-purple-100" },
+  LAND_SPECULATOR: { label: "Land Speculator", icon: "📈", bg: "bg-rose-50", text: "text-rose-700", border: "border-rose-100" },
+  RETIREMENT_PLANNER: { label: "Retirement Planner", icon: "👴", bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-100" },
+  HNI_PORTFOLIO_BUILDER: { label: "HNI Portfolio", icon: "💼", bg: "bg-amber-50", text: "text-amber-800", border: "border-amber-100" },
+  PROFESSIONAL_FIRST_HOME: { label: "Professional Home", icon: "💻", bg: "bg-cyan-50", text: "text-cyan-700", border: "border-cyan-100" }
 };
 
 const GRADE_CONFIGS: Record<string, { icon: string; color: string; label: string }> = {
@@ -81,15 +81,14 @@ export default function LeadsTable({
     return val < 100 ? `₹${val}L` : `₹${(val / 100).toFixed(1)}Cr`;
   };
 
-  // Sort leads: highest leadScore first by default
   const sortedLeads = [...leads].sort((a, b) => (b.leadScore || 0) - (a.leadScore || 0));
 
   return (
     <div className="overflow-x-auto w-full">
-      <table className="crm-table w-full">
+      <table className="crm-table w-full text-xs">
         <thead>
           <tr>
-            <th className="px-6 py-4 w-4">
+            <th className="px-4 py-3.5 w-4">
               <input
                 type="checkbox"
                 onChange={(e) => onSelectAll(e.target.checked)}
@@ -97,16 +96,16 @@ export default function LeadsTable({
                 className="rounded border-[#E2E8F0] text-[#5B4FE0] focus:ring-[#5B4FE0]"
               />
             </th>
-            <th className="px-6 py-4">Client Name / Contact</th>
-            <th className="px-6 py-4">Source</th>
-            <th className="px-6 py-4">AI Segment</th>
-            <th className="px-6 py-4">Lead Score</th>
-            <th className="px-6 py-4">City</th>
-            <th className="px-6 py-4">Budget</th>
-            <th className="px-6 py-4">Horizon</th>
-            <th className="px-6 py-4">Status</th>
-            <th className="px-6 py-4">Registration</th>
-            <th className="px-6 py-4 text-right">Action</th>
+            <th className="px-4 py-3.5 whitespace-nowrap">Client Name / Contact</th>
+            <th className="px-4 py-3.5 whitespace-nowrap">Source</th>
+            <th className="px-4 py-3.5 whitespace-nowrap">AI Segment</th>
+            <th className="px-4 py-3.5 whitespace-nowrap">Lead Score</th>
+            <th className="px-4 py-3.5 whitespace-nowrap">City</th>
+            <th className="px-4 py-3.5 whitespace-nowrap">Budget</th>
+            <th className="px-4 py-3.5 whitespace-nowrap">Horizon</th>
+            <th className="px-4 py-3.5 whitespace-nowrap">Status</th>
+            <th className="px-4 py-3.5 whitespace-nowrap">Registration</th>
+            <th className="px-4 py-3.5 whitespace-nowrap text-right">Action</th>
           </tr>
         </thead>
         <tbody>
@@ -130,7 +129,7 @@ export default function LeadsTable({
                 onClick={() => onSelectRow(lead)}
               >
                 {/* Checkbox column */}
-                <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
+                <td className="px-4 py-3.5" onClick={(e) => e.stopPropagation()}>
                   <input
                     type="checkbox"
                     checked={isChecked}
@@ -140,7 +139,7 @@ export default function LeadsTable({
                 </td>
                 
                 {/* Contact details */}
-                <td className="px-6 py-4">
+                <td className="px-4 py-3.5">
                   <div className="flex items-center gap-3">
                     <div className="crm-avatar-ring shrink-0">
                       <div className="w-8 h-8 rounded-full bg-[#EBE7F5] flex items-center justify-center text-[#5B4FE0] font-bold text-xs">
@@ -148,35 +147,34 @@ export default function LeadsTable({
                       </div>
                     </div>
                     <div className="flex flex-col gap-0.5">
-                      <span className="font-bold text-[#1A1A2E] text-sm">{lead.name}</span>
-                      <span className="text-[#8A8A9E] text-xs">{lead.email}</span>
-                      <span className="text-[#8A8A9E] text-[10px]">{lead.phone}</span>
+                      <span className="font-bold text-[#1A1A2E] text-sm whitespace-nowrap">{lead.name}</span>
+                      <span className="text-[#8A8A9E] text-xs whitespace-nowrap">{lead.email}</span>
+                      <span className="text-[#8A8A9E] text-[10px] whitespace-nowrap">{lead.phone}</span>
                     </div>
                   </div>
                 </td>
 
                 {/* Source Pill Badge */}
-                <td className="px-6 py-4">
+                <td className="px-4 py-3.5 whitespace-nowrap">
                   {(() => {
                     const src = (lead.source || '').toLowerCase();
-                    if (src.includes('99acres')) return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">🔴 99acres</span>;
-                    if (src.includes('magicbricks')) return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">🔵 MagicBricks</span>;
-                    if (src.includes('housing')) return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-orange-50 text-orange-700 border border-orange-200">🟠 Housing</span>;
-                    if (src.includes('nobroker')) return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200">🟣 NoBroker</span>;
-                    if (src.includes('whatsapp')) return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">💬 WhatsApp</span>;
-                    if (src.includes('gmail')) return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">📧 Gmail</span>;
-                    if (src.includes('website')) return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">🌐 Website</span>;
-                    return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">✋ {lead.source || 'Manual'}</span>;
+                    if (src.includes('99acres')) return <span className="px-3 py-1 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-100 inline-flex items-center gap-1">99acres</span>;
+                    if (src.includes('magicbricks')) return <span className="px-3 py-1 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-100 inline-flex items-center gap-1">MagicBricks</span>;
+                    if (src.includes('housing')) return <span className="px-3 py-1 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-100 inline-flex items-center gap-1">Housing</span>;
+                    if (src.includes('nobroker')) return <span className="px-3 py-1 rounded-full text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-100 inline-flex items-center gap-1">NoBroker</span>;
+                    if (src.includes('whatsapp')) return <span className="px-3 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-100 inline-flex items-center gap-1">WhatsApp</span>;
+                    if (src.includes('gmail')) return <span className="px-3 py-1 rounded-full text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-100 inline-flex items-center gap-1">Gmail</span>;
+                    if (src.includes('website')) return <span className="px-3 py-1 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-100 inline-flex items-center gap-1">Website</span>;
+                    return <span className="px-3 py-1 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200 inline-flex items-center gap-1">{lead.source || 'Manual'}</span>;
                   })()}
                 </td>
 
                 {/* AI Persona Segment */}
-                <td className="px-6 py-4">
+                <td className="px-4 py-3.5 whitespace-nowrap">
                   {persona ? (
                     <div className="relative group/persona inline-block">
                       <span 
-                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider text-white select-none shadow-xs"
-                        style={{ backgroundColor: persona.color }}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border select-none ${persona.bg} ${persona.text} ${persona.border}`}
                       >
                         <span>{persona.icon}</span>
                         <span>{persona.label}</span>
@@ -189,14 +187,14 @@ export default function LeadsTable({
                       )}
                     </div>
                   ) : (
-                    <span className="bg-[#F3F4F6] text-[#4B5563] px-3 py-1 rounded-full text-[10px] uppercase tracking-wider font-bold">
+                    <span className="bg-[#F9F8FD] text-[#8A8A9E] border border-[#E8E5F5] px-3 py-1 rounded-full text-[10px] uppercase tracking-wider font-bold">
                       Unclassified
                     </span>
                   )}
                 </td>
 
                 {/* Predictive Score with Popover */}
-                <td className="px-6 py-4">
+                <td className="px-4 py-3.5 whitespace-nowrap">
                   <div className="relative group/score inline-block" onClick={(e) => e.stopPropagation()}>
                     <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-bold leading-none select-none cursor-help ${gradeInfo.color}`}>
                       <span>{gradeInfo.icon}</span>
@@ -237,18 +235,18 @@ export default function LeadsTable({
                 </td>
                 
                 {/* City */}
-                <td className="px-6 py-4 capitalize font-semibold text-[#1A1A2E]">{lead.city}</td>
+                <td className="px-4 py-3.5 capitalize font-semibold text-[#1A1A2E] whitespace-nowrap">{lead.city}</td>
                 
                 {/* Budget */}
-                <td className="px-6 py-4 font-bold text-[#1A1A2E]">
+                <td className="px-4 py-3.5 font-bold text-[#1A1A2E] whitespace-nowrap">
                   {formatPrice(lead.budget)}
                 </td>
                 
                 {/* Horizon */}
-                <td className="px-6 py-4 font-medium text-[#8A8A9E]">{lead.horizon} Yrs</td>
+                <td className="px-4 py-3.5 font-medium text-[#8A8A9E] whitespace-nowrap">{lead.horizon} Yrs</td>
                 
                 {/* Status Dropdown */}
-                <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
+                <td className="px-4 py-3.5 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                   <select
                     value={lead.status}
                     onChange={(e) => onStatusChange(lead.id, e.target.value)}
@@ -264,7 +262,7 @@ export default function LeadsTable({
                 </td>
                 
                 {/* Date */}
-                <td className="px-6 py-4 text-[#8A8A9E]">
+                <td className="px-4 py-3.5 text-[#8A8A9E] whitespace-nowrap">
                   {new Date(lead.createdAt).toLocaleDateString("en-IN", {
                     day: "numeric",
                     month: "short",
@@ -273,7 +271,7 @@ export default function LeadsTable({
                 </td>
                 
                 {/* Action arrow */}
-                <td className="px-6 py-4 text-right text-[#5B4FE0] font-bold text-xs">
+                <td className="px-4 py-3.5 text-right text-[#5B4FE0] font-bold text-xs whitespace-nowrap">
                   <span className="hover:underline flex items-center justify-end gap-1">
                     Details <ChevronRight size={14} />
                   </span>

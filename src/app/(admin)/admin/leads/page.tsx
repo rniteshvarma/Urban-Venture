@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import LeadsTable from "@/components/admin/LeadsTable";
 import LeadDetailPanel from "@/components/admin/LeadDetailPanel";
 import Link from "next/link";
-import { Megaphone, ArrowRight } from "lucide-react";
+import { Megaphone, ArrowRight, Search, Plus, Download } from "lucide-react";
 
 interface Lead {
   id: string;
@@ -31,7 +31,7 @@ interface Lead {
 const PERSONA_LABELS: Record<string, { label: string; icon: string; color: string }> = {
   FIRST_TIME_BUYER: { label: "First-Time Buyer", icon: "🏠", color: "#3B82F6" },
   NRI_INVESTOR: { label: "NRI Investor", icon: "✈️", color: "#8B5CF6" },
-  LAND_SPECULATOR: { label: "Land Speculator", icon: "📈", color: "#EF4444" },
+  LAND_SPECULATOR: { label: "Land Speculator", icon: "📈", color: "#E11D48" },
   RETIREMENT_PLANNER: { label: "Retirement Planner", icon: "👴", color: "#10B981" },
   HNI_PORTFOLIO_BUILDER: { label: "HNI Portfolio", icon: "💼", color: "#F59E0B" },
   PROFESSIONAL_FIRST_HOME: { label: "Professional Home", icon: "💻", color: "#06B6D4" }
@@ -101,12 +101,10 @@ function LeadsPageContent() {
     }
   }
 
-  // Load leads when filters or page change
   useEffect(() => {
     loadLeads();
   }, [page, statusFilter, cityFilter, personaFilter]);
 
-  // Sync state if url parameter changes
   useEffect(() => {
     const urlPersona = searchParams.get("persona");
     if (urlPersona) {
@@ -171,7 +169,6 @@ function LeadsPageContent() {
     }
   };
 
-  // Bulk selections
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
       setSelectedIds(leads.map((l) => l.id));
@@ -188,11 +185,9 @@ function LeadsPageContent() {
     }
   };
 
-  // Export CSV
   const handleExportCSV = () => {
     if (leads.length === 0) return;
     
-    // Create header row
     const headers = ["ID", "Name", "Email", "Phone", "Budget (Lakhs)", "Horizon (Years)", "City", "Persona", "Lead Score", "Status", "Source", "Date"];
     const rows = leads.map((l) => [
       l.id,
@@ -222,7 +217,6 @@ function LeadsPageContent() {
     document.body.removeChild(link);
   };
 
-  // Manual Create Lead Submit
   const handleCreateLead = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newName || !newEmail || !newPhone) {
@@ -248,7 +242,6 @@ function LeadsPageContent() {
       });
 
       if (res.ok) {
-        // Reset inputs and close
         setNewName("");
         setNewEmail("");
         setNewPhone("");
@@ -258,7 +251,7 @@ function LeadsPageContent() {
         setNewNotes("");
         setNewStatus("NEW");
         setShowAddModal(false);
-        loadLeads(); // Reload table
+        loadLeads();
       } else {
         const errData = await res.json();
         alert(`Failed to create lead: ${errData.error || "Server Error"}${errData.details ? " - " + errData.details : ""}`);
@@ -272,7 +265,7 @@ function LeadsPageContent() {
   };
 
   return (
-    <div className="space-y-6 flex-grow flex flex-col animate-fade-in">
+    <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8 flex-grow flex flex-col animate-fade-in text-[#1A1A2E] w-full">
       
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-[#F0EDFA]">
@@ -290,14 +283,14 @@ function LeadsPageContent() {
             onClick={handleExportCSV}
             className="crm-btn-secondary text-xs"
           >
-            📊 Export CSV
+            <Download size={14} className="text-[#5B4FE0]" /> Export CSV
           </button>
           
           <button
             onClick={() => setShowAddModal(true)}
             className="crm-btn-primary text-xs"
           >
-            ➕ Add Client Manually
+            <Plus size={14} /> Add Client Manually
           </button>
         </div>
       </div>
@@ -308,7 +301,7 @@ function LeadsPageContent() {
         
         <button
           onClick={() => { setPage(1); setPersonaFilter("ALL"); }}
-          className={personaFilter === "ALL" ? "filter-pill-active" : "filter-pill"}
+          className={personaFilter === "ALL" ? "filter-pill-active text-xs" : "filter-pill text-xs"}
         >
           All Segments
         </button>
@@ -333,60 +326,52 @@ function LeadsPageContent() {
         ))}
       </div>
 
-      {/* Filter and Search Bar */}
-      <div className="crm-card p-6 grid grid-cols-1 sm:grid-cols-4 gap-4 items-center">
-        
-        {/* Search */}
-        <div className="sm:col-span-2 flex gap-2">
+      {/* Clean Filter and Search Bar */}
+      <div className="crm-card p-6 flex flex-col sm:flex-row items-center gap-3.5 w-full">
+        <div className="relative flex-grow w-full sm:w-auto">
           <input
             type="text"
             placeholder="Search leads by name, email, or phone..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={handleSearchKeyPress}
-            className="bg-[#F9F8FD] border border-[#E8E5F5] rounded-full px-4 py-2 text-xs text-[#1A1A2E] placeholder-[#8A8A9E] w-full focus:outline-none focus:border-[#5B4FE0]"
+            className="w-full bg-[#F9F8FD] border border-[#E8E5F5] pl-9 pr-4 py-2.5 rounded-full text-xs text-[#1A1A2E] placeholder-[#8A8A9E] focus:outline-none focus:border-[#5B4FE0]"
           />
-          <button
-            onClick={() => { setPage(1); loadLeads(); }}
-            className="crm-btn-primary text-xs px-5"
-          >
-            Search
-          </button>
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8A8A9E]" size={14} />
         </div>
 
-        {/* Status Filter */}
-        <div>
-          <select
-            value={statusFilter}
-            onChange={(e) => { setPage(1); setStatusFilter(e.target.value); }}
-            className="bg-[#F9F8FD] border border-[#E8E5F5] rounded-full px-4 py-2 text-xs text-[#1A1A2E] w-full focus:outline-none focus:border-[#5B4FE0]"
-          >
-            <option value="ALL">All Statuses</option>
-            <option value="NEW">NEW</option>
-            <option value="CONTACTED">CONTACTED</option>
-            <option value="INTERESTED">INTERESTED</option>
-            <option value="NEGOTIATING">NEGOTIATING</option>
-            <option value="CONVERTED">CONVERTED</option>
-            <option value="LOST">LOST</option>
-          </select>
-        </div>
+        <button
+          onClick={() => { setPage(1); loadLeads(); }}
+          className="crm-btn-primary text-xs px-6 py-2.5 shrink-0 w-full sm:w-auto"
+        >
+          Search
+        </button>
 
-        {/* City Filter */}
-        <div>
-          <input
-            type="text"
-            placeholder="Filter by City (e.g. Hyderabad)"
-            value={cityFilter}
-            onChange={(e) => { setPage(1); setCityFilter(e.target.value); }}
-            className="bg-[#F9F8FD] border border-[#E8E5F5] rounded-full px-4 py-2 text-xs text-[#1A1A2E] placeholder-[#8A8A9E] w-full focus:outline-none focus:border-[#5B4FE0]"
-          />
-        </div>
+        <select
+          value={statusFilter}
+          onChange={(e) => { setPage(1); setStatusFilter(e.target.value); }}
+          className="bg-[#F9F8FD] border border-[#E8E5F5] rounded-full px-4 py-2.5 text-xs text-[#1A1A2E] focus:outline-none focus:border-[#5B4FE0] shrink-0 w-full sm:w-auto min-w-[140px]"
+        >
+          <option value="ALL">All Statuses</option>
+          <option value="NEW">NEW</option>
+          <option value="CONTACTED">CONTACTED</option>
+          <option value="INTERESTED">INTERESTED</option>
+          <option value="NEGOTIATING">NEGOTIATING</option>
+          <option value="CONVERTED">CONVERTED</option>
+          <option value="LOST">LOST</option>
+        </select>
 
+        <input
+          type="text"
+          placeholder="Filter by City..."
+          value={cityFilter}
+          onChange={(e) => { setPage(1); setCityFilter(e.target.value); }}
+          className="bg-[#F9F8FD] border border-[#E8E5F5] rounded-full px-4 py-2.5 text-xs text-[#1A1A2E] placeholder-[#8A8A9E] focus:outline-none focus:border-[#5B4FE0] shrink-0 w-full sm:w-auto min-w-[150px]"
+        />
       </div>
 
-      {/* Leads Grid/Table panel */}
+      {/* Leads Table Panel */}
       <div className="crm-card p-0 flex-grow overflow-hidden flex flex-col justify-between">
-        
         {isLoading ? (
           <div className="p-12 text-center text-[#8A8A9E] animate-pulse text-xs">
             Loading client records...
@@ -410,7 +395,7 @@ function LeadsPageContent() {
           />
         )}
 
-        {/* Pagination footer */}
+        {/* Pagination Footer */}
         {totalPages > 1 && (
           <div className="px-6 py-4 border-t border-[#F0EDFA] bg-[#F9F8FD] flex items-center justify-between text-xs">
             <span className="text-[#8A8A9E]">
@@ -438,17 +423,16 @@ function LeadsPageContent() {
 
       {/* Floating Bulk Broadcast bar */}
       {selectedIds.length > 0 && (
-        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-40 bg-slate-900/95 text-white border border-slate-700/80 px-6 py-4 rounded-xl shadow-2xl flex items-center gap-6 animate-slide-in backdrop-blur-md">
+        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-40 bg-[#1A1A2E] text-white px-6 py-3.5 rounded-full shadow-2xl flex items-center gap-6 animate-slide-in backdrop-blur-md">
           <div className="flex items-center gap-2 text-xs">
-            <span className="p-1.5 bg-blue-600 rounded-lg"><Megaphone size={14} /></span>
+            <span className="p-1.5 bg-[#5B4FE0] rounded-full"><Megaphone size={14} /></span>
             <div>
-              <span className="font-bold block">{selectedIds.length} Leads Selected</span>
-              <span className="text-slate-400 text-[10px]">Create a bulk broadcast for these leads</span>
+              <span className="font-bold block text-xs">{selectedIds.length} Leads Selected</span>
             </div>
           </div>
           <Link
             href={`/admin/broadcasts/new?groupType=MANUAL_PICK&leadIds=${selectedIds.join(",")}`}
-            className="btn-primary text-[10px] flex items-center gap-1"
+            className="crm-btn-primary text-xs py-1.5 px-4"
           >
             Broadcast Campaign <ArrowRight size={12} />
           </Link>
@@ -468,22 +452,22 @@ function LeadsPageContent() {
 
       {/* Manual Add Lead Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
-          <div className="bg-surface border border-luxury rounded-card shadow-luxury w-full max-w-lg overflow-hidden animate-slide-in">
-            <div className="px-6 py-4 border-b border-luxury bg-luxury-bg/30 flex justify-between items-center">
-              <h3 className="font-display font-bold text-primary">Add CRM Lead Manually</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#1A1A2E]/40 backdrop-blur-xs">
+          <div className="crm-card bg-white w-full max-w-lg shadow-2xl p-6 space-y-4 animate-scale-in">
+            <div className="pb-3 border-b border-[#F0EDFA] flex justify-between items-center">
+              <h3 className="font-display font-bold text-[#1A1A2E] text-base">Add CRM Lead Manually</h3>
               <button 
                 onClick={() => setShowAddModal(false)}
-                className="text-text-secondary hover:text-primary text-sm font-semibold"
+                className="text-[#8A8A9E] hover:text-[#1A1A2E] text-xs font-semibold"
               >
                 ✕ Close
               </button>
             </div>
 
-            <form onSubmit={handleCreateLead} className="p-6 space-y-4 text-xs">
+            <form onSubmit={handleCreateLead} className="space-y-4 text-xs">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block font-semibold uppercase tracking-wider text-text-secondary mb-1">
+                  <label className="block font-bold uppercase tracking-wider text-[#8A8A9E] text-[10px] mb-1">
                     Client Full Name
                   </label>
                   <input
@@ -491,20 +475,20 @@ function LeadsPageContent() {
                     required
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
-                    className="w-full bg-luxury-bg border border-luxury px-3 py-2 rounded-input text-text-primary focus:outline-none focus:border-accent"
+                    className="w-full bg-[#F9F8FD] border border-[#E8E5F5] px-4 py-2.5 rounded-full text-[#1A1A2E] focus:outline-none focus:border-[#5B4FE0]"
                     placeholder="Enter full name"
                   />
                 </div>
                 <div>
-                  <label className="block font-semibold uppercase tracking-wider text-text-secondary mb-1">
-                    City location
+                  <label className="block font-bold uppercase tracking-wider text-[#8A8A9E] text-[10px] mb-1">
+                    City Location
                   </label>
                   <input
                     type="text"
                     required
                     value={newCity}
                     onChange={(e) => setNewCity(e.target.value)}
-                    className="w-full bg-luxury-bg border border-luxury px-3 py-2 rounded-input text-text-primary focus:outline-none focus:border-accent"
+                    className="w-full bg-[#F9F8FD] border border-[#E8E5F5] px-4 py-2.5 rounded-full text-[#1A1A2E] focus:outline-none focus:border-[#5B4FE0]"
                     placeholder="e.g. Hyderabad"
                   />
                 </div>
@@ -512,7 +496,7 @@ function LeadsPageContent() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block font-semibold uppercase tracking-wider text-text-secondary mb-1">
+                  <label className="block font-bold uppercase tracking-wider text-[#8A8A9E] text-[10px] mb-1">
                     Email Address
                   </label>
                   <input
@@ -520,12 +504,12 @@ function LeadsPageContent() {
                     required
                     value={newEmail}
                     onChange={(e) => setNewEmail(e.target.value)}
-                    className="w-full bg-luxury-bg border border-luxury px-3 py-2 rounded-input text-text-primary focus:outline-none focus:border-accent"
+                    className="w-full bg-[#F9F8FD] border border-[#E8E5F5] px-4 py-2.5 rounded-full text-[#1A1A2E] focus:outline-none focus:border-[#5B4FE0]"
                     placeholder="name@example.com"
                   />
                 </div>
                 <div>
-                  <label className="block font-semibold uppercase tracking-wider text-text-secondary mb-1">
+                  <label className="block font-bold uppercase tracking-wider text-[#8A8A9E] text-[10px] mb-1">
                     Phone Number
                   </label>
                   <input
@@ -533,81 +517,24 @@ function LeadsPageContent() {
                     required
                     value={newPhone}
                     onChange={(e) => setNewPhone(e.target.value)}
-                    className="w-full bg-luxury-bg border border-luxury px-3 py-2 rounded-input text-text-primary focus:outline-none focus:border-accent"
+                    className="w-full bg-[#F9F8FD] border border-[#E8E5F5] px-4 py-2.5 rounded-full text-[#1A1A2E] focus:outline-none focus:border-[#5B4FE0]"
                     placeholder="+91 99999 99999"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <label className="block font-semibold uppercase tracking-wider text-text-secondary mb-1">
-                    Budget (₹ Lakhs)
-                  </label>
-                  <input
-                    type="number"
-                    required
-                    value={newBudget}
-                    onChange={(e) => setNewBudget(Number(e.target.value))}
-                    className="w-full bg-luxury-bg border border-luxury px-3 py-2 rounded-input text-text-primary focus:outline-none focus:border-accent"
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold uppercase tracking-wider text-text-secondary mb-1">
-                    Horizon (Years)
-                  </label>
-                  <input
-                    type="number"
-                    required
-                    value={newHorizon}
-                    onChange={(e) => setNewHorizon(Number(e.target.value))}
-                    className="w-full bg-luxury-bg border border-luxury px-3 py-2 rounded-input text-text-primary focus:outline-none focus:border-accent"
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold uppercase tracking-wider text-text-secondary mb-1">
-                    Pipeline Status
-                  </label>
-                  <select
-                    value={newStatus}
-                    onChange={(e) => setNewStatus(e.target.value)}
-                    className="w-full bg-luxury-bg border border-luxury px-3 py-2 rounded-input text-text-primary focus:outline-none"
-                  >
-                    <option value="NEW">NEW</option>
-                    <option value="CONTACTED">CONTACTED</option>
-                    <option value="INTERESTED">INTERESTED</option>
-                    <option value="NEGOTIATING">NEGOTIATING</option>
-                    <option value="CONVERTED">CONVERTED</option>
-                    <option value="LOST">LOST</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block font-semibold uppercase tracking-wider text-text-secondary mb-1">
-                  CRM Follow-up Notes
-                </label>
-                <textarea
-                  placeholder="Notes from initial manual entry details..."
-                  value={newNotes}
-                  onChange={(e) => setNewNotes(e.target.value)}
-                  rows={3}
-                  className="w-full bg-surface border border-luxury p-3 rounded-input text-text-primary focus:outline-none focus:border-accent resize-none"
-                />
-              </div>
-
-              <div className="pt-4 border-t border-luxury flex justify-end gap-2">
+              <div className="pt-3 border-t border-[#F0EDFA] flex justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="btn-secondary"
+                  className="crm-btn-secondary px-5 py-2 text-xs"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isCreating}
-                  className="btn-primary disabled:opacity-50"
+                  className="crm-btn-primary px-5 py-2 text-xs disabled:opacity-50"
                 >
                   {isCreating ? "Creating..." : "Save CRM Lead"}
                 </button>
@@ -623,7 +550,7 @@ function LeadsPageContent() {
 
 export default function AdminLeadsPage() {
   return (
-    <Suspense fallback={<div className="flex-grow flex items-center justify-center text-text-secondary text-sm">Loading leads directory...</div>}>
+    <Suspense fallback={<div className="flex-grow flex items-center justify-center text-[#8A8A9E] text-sm">Loading leads directory...</div>}>
       <LeadsPageContent />
     </Suspense>
   );
