@@ -250,7 +250,7 @@ export default function AdminProjectsPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8 flex-grow flex flex-col animate-fade-in text-[#1A1A2E] w-full">
+    <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8 flex-grow flex flex-col animate-fade-in text-[#1A1A2E] w-full pb-12">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-[#F0EDFA]">
         <div>
@@ -268,7 +268,7 @@ export default function AdminProjectsPage() {
               href="/admin/projects/new"
               className="crm-btn-primary text-xs"
             >
-              ➕ Add New Project
+              <Plus size={14} /> Add New Project
             </Link>
           </div>
         ) : (
@@ -277,7 +277,7 @@ export default function AdminProjectsPage() {
               onClick={handleOpenAddCorridor}
               className="crm-btn-primary text-xs"
             >
-              ➕ Add Corridor Metric
+              <Plus size={14} /> Add Corridor Metric
             </button>
           </div>
         )}
@@ -297,7 +297,7 @@ export default function AdminProjectsPage() {
             onClick={() => setActiveTab("corridors")}
             className={activeTab === "corridors" ? "crm-pill-tab crm-pill-tab-active" : "crm-pill-tab"}
           >
-            <TrendingUp size={14} className="inline mr-1.5" /> Corridor Metrics CRUD ({corridors.length})
+            <TrendingUp size={14} className="inline mr-1.5" /> Corridor Metrics ({corridors.length})
           </button>
         </div>
       </div>
@@ -305,37 +305,37 @@ export default function AdminProjectsPage() {
       {activeTab === "projects" ? (
         <>
           {/* Projects Filters Bar */}
-          <div className="crm-card p-6 flex flex-col sm:flex-row sm:items-center gap-4">
-            <div className="flex-grow flex gap-2">
+          <div className="crm-card p-6 flex flex-col sm:flex-row items-center gap-3.5 w-full">
+            <div className="relative flex-grow w-full sm:w-auto">
               <input
                 type="text"
                 placeholder="Search projects by name, developer, or corridor..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 onKeyDown={handleSearchKeyPress}
-                className="bg-[#F9F8FD] border border-[#E8E5F5] rounded-full px-4 py-2 text-xs text-[#1A1A2E] placeholder-[#8A8A9E] w-full focus:outline-none focus:border-[#5B4FE0]"
+                className="w-full bg-[#F9F8FD] border border-[#E8E5F5] pl-9 pr-4 py-2.5 rounded-full text-xs text-[#1A1A2E] placeholder-[#8A8A9E] focus:outline-none focus:border-[#5B4FE0]"
               />
-              <button
-                onClick={loadProjects}
-                className="crm-btn-primary text-xs px-5"
-              >
-                Search
-              </button>
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8A8A9E]" size={14} />
             </div>
 
-            <div>
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="bg-[#F9F8FD] border border-[#E8E5F5] rounded-full px-4 py-2 text-xs text-[#1A1A2E] w-full focus:outline-none focus:border-[#5B4FE0]"
-              >
-                <option value="ALL">All Statuses</option>
-                <option value="ACTIVE">ACTIVE</option>
-                <option value="SOLD_OUT">SOLD OUT</option>
-                <option value="UPCOMING">UPCOMING</option>
-                <option value="ARCHIVED">ARCHIVED</option>
-              </select>
-            </div>
+            <button
+              onClick={loadProjects}
+              className="crm-btn-primary text-xs px-6 py-2.5 shrink-0 w-full sm:w-auto"
+            >
+              Search
+            </button>
+
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="bg-[#F9F8FD] border border-[#E8E5F5] rounded-full px-4 py-2.5 text-xs text-[#1A1A2E] focus:outline-none focus:border-[#5B4FE0] shrink-0 w-full sm:w-auto min-w-[140px]"
+            >
+              <option value="ALL">All Statuses</option>
+              <option value="ACTIVE">ACTIVE</option>
+              <option value="SOLD_OUT">SOLD OUT</option>
+              <option value="UPCOMING">UPCOMING</option>
+              <option value="ARCHIVED">ARCHIVED</option>
+            </select>
           </div>
 
           {/* Projects Table */}
@@ -353,72 +353,74 @@ export default function AdminProjectsPage() {
                 </p>
               </div>
             ) : (
-              <table className="crm-table text-xs w-full">
-                <thead>
-                  <tr>
-                    <th>Project / Developer</th>
-                    <th>Corridor</th>
-                    <th>Budget Range</th>
-                    <th>Horizon</th>
-                    <th>Risk Level</th>
-                    <th>Type</th>
-                    <th>Status</th>
-                    <th className="text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {projects.map((project) => (
-                    <tr key={project.id}>
-                      <td className="font-bold text-[#1A1A2E]">
-                        <div className="flex flex-col gap-0.5">
-                          <span className="font-bold text-[#1A1A2E] text-sm">{project.name}</span>
-                          <span className="text-[#8A8A9E] text-xs font-normal">by {project.developer}</span>
-                        </div>
-                      </td>
-                      <td className="font-semibold text-[#1A1A2E]">{project.corridor}</td>
-                      <td className="font-bold text-[#5B4FE0]">
-                        {formatPrice(project.minBudgetLakhs, project.maxBudgetLakhs)}
-                      </td>
-                      <td className="text-[#8A8A9E]">{project.minHorizonYears} - {project.maxHorizonYears} Years</td>
-                      <td>
-                        <span className="badge bg-amber-100 text-amber-800 text-[10px] font-bold">
-                          {project.riskLevel}
-                        </span>
-                      </td>
-                      <td className="text-[#1A1A2E] font-medium">{project.propertyType}</td>
-                      <td>
-                        <span className={`badge text-[10px] font-bold ${
-                          project.status === "ACTIVE" 
-                            ? "bg-emerald-100 text-emerald-800"
-                            : project.status === "SOLD_OUT"
-                            ? "bg-slate-100 text-slate-700"
-                            : project.status === "UPCOMING"
-                            ? "bg-blue-100 text-blue-800"
-                            : "bg-rose-100 text-rose-800"
-                        }`}>
-                          {project.status.replace("_", " ")}
-                        </span>
-                      </td>
-                      <td className="text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <button
-                            onClick={() => handleOpenMatches(project)}
-                            className="crm-btn-secondary text-[11px] px-3 py-1"
-                          >
-                            🎯 Matches
-                          </button>
-                          <Link
-                            href={`/admin/projects/${project.id}`}
-                            className="crm-btn-ghost text-xs text-[#5B4FE0] font-bold px-3 py-1"
-                          >
-                            Edit
-                          </Link>
-                        </div>
-                      </td>
+              <div className="overflow-x-auto w-full">
+                <table className="crm-table text-xs w-full">
+                  <thead>
+                    <tr>
+                      <th className="whitespace-nowrap px-4 py-3.5">Project / Developer</th>
+                      <th className="whitespace-nowrap px-4 py-3.5">Corridor</th>
+                      <th className="whitespace-nowrap px-4 py-3.5">Budget Range</th>
+                      <th className="whitespace-nowrap px-4 py-3.5">Horizon</th>
+                      <th className="whitespace-nowrap px-4 py-3.5">Risk Level</th>
+                      <th className="whitespace-nowrap px-4 py-3.5">Type</th>
+                      <th className="whitespace-nowrap px-4 py-3.5">Status</th>
+                      <th className="text-right whitespace-nowrap px-4 py-3.5">Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {projects.map((project) => (
+                      <tr key={project.id}>
+                        <td className="font-bold text-[#1A1A2E] whitespace-nowrap px-4 py-3.5">
+                          <div className="flex flex-col gap-0.5">
+                            <span className="font-bold text-[#1A1A2E] text-sm">{project.name}</span>
+                            <span className="text-[#8A8A9E] text-xs font-normal">by {project.developer}</span>
+                          </div>
+                        </td>
+                        <td className="font-semibold text-[#1A1A2E] whitespace-nowrap px-4 py-3.5">{project.corridor}</td>
+                        <td className="font-bold text-[#5B4FE0] whitespace-nowrap px-4 py-3.5">
+                          {formatPrice(project.minBudgetLakhs, project.maxBudgetLakhs)}
+                        </td>
+                        <td className="text-[#8A8A9E] whitespace-nowrap px-4 py-3.5">{project.minHorizonYears} - {project.maxHorizonYears} Years</td>
+                        <td className="whitespace-nowrap px-4 py-3.5">
+                          <span className="badge bg-amber-100 text-amber-800 text-[10px] font-bold">
+                            {project.riskLevel}
+                          </span>
+                        </td>
+                        <td className="text-[#1A1A2E] font-medium whitespace-nowrap px-4 py-3.5">{project.propertyType}</td>
+                        <td className="whitespace-nowrap px-4 py-3.5">
+                          <span className={`badge text-[10px] font-bold ${
+                            project.status === "ACTIVE" 
+                              ? "bg-emerald-100 text-emerald-800"
+                              : project.status === "SOLD_OUT"
+                              ? "bg-slate-100 text-slate-700"
+                              : project.status === "UPCOMING"
+                              ? "bg-blue-100 text-blue-800"
+                              : "bg-rose-100 text-rose-800"
+                          }`}>
+                            {project.status.replace("_", " ")}
+                          </span>
+                        </td>
+                        <td className="text-right whitespace-nowrap px-4 py-3.5">
+                          <div className="flex items-center justify-end gap-2.5">
+                            <button
+                              onClick={() => handleOpenMatches(project)}
+                              className="crm-btn-secondary text-[11px] px-3.5 py-1.5 rounded-full inline-flex items-center gap-1 font-bold shadow-2xs"
+                            >
+                              🎯 Matches
+                            </button>
+                            <Link
+                              href={`/admin/projects/${project.id}`}
+                              className="crm-btn-ghost text-xs text-[#5B4FE0] font-bold px-3.5 py-1.5 rounded-full inline-flex items-center gap-1 hover:bg-[#F4F0FF]"
+                            >
+                              <Edit size={13} /> Edit
+                            </Link>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         </>
@@ -438,61 +440,63 @@ export default function AdminProjectsPage() {
               </p>
             </div>
           ) : (
-            <table className="crm-table text-xs w-full">
-              <thead>
-                <tr>
-                  <th>Corridor Name</th>
-                  <th>Historical CAGR</th>
-                  <th>Projected CAGR</th>
-                  <th>Rental Yield</th>
-                  <th>Risk Rating</th>
-                  <th>Infra Score</th>
-                  <th>Demand Score</th>
-                  <th className="text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {corridors.map((c) => (
-                  <tr key={c.id}>
-                    <td className="font-bold text-[#1A1A2E]">
-                      <div className="flex items-center gap-1.5">
-                        <MapPin size={13} className="text-[#5B4FE0]" /> {c.corridor}
-                      </div>
-                    </td>
-                    <td className="font-semibold text-[#1A1A2E]">{c.historicalCAGR}%</td>
-                    <td className="font-bold text-[#5B4FE0]">
-                      {c.projectedCAGRMin}% - {c.projectedCAGRMax}%
-                    </td>
-                    <td className="text-[#8A8A9E]">
-                      {c.rentalYieldMin}% - {c.rentalYieldMax}%
-                    </td>
-                    <td>
-                      <span className="badge bg-[#F4F0FF] text-[#5B4FE0] text-[10px] font-bold">
-                        {c.riskLevel}
-                      </span>
-                    </td>
-                    <td className="font-bold text-[#1A1A2E]">{c.infraScore} / 10</td>
-                    <td className="font-bold text-[#1A1A2E]">{c.demandScore} / 10</td>
-                    <td className="text-right">
-                      <div className="flex justify-end items-center gap-2">
-                        <button
-                          onClick={() => handleOpenEditCorridor(c)}
-                          className="crm-btn-ghost text-xs text-[#5B4FE0] font-bold px-3 py-1"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDeleteCorridor(c.id)}
-                          className="crm-btn-ghost text-xs text-rose-600 font-bold px-3 py-1"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </td>
+            <div className="overflow-x-auto w-full">
+              <table className="crm-table text-xs w-full">
+                <thead>
+                  <tr>
+                    <th className="whitespace-nowrap px-4 py-3.5">Corridor Name</th>
+                    <th className="whitespace-nowrap px-4 py-3.5">Historical CAGR</th>
+                    <th className="whitespace-nowrap px-4 py-3.5">Projected CAGR</th>
+                    <th className="whitespace-nowrap px-4 py-3.5">Rental Yield</th>
+                    <th className="whitespace-nowrap px-4 py-3.5">Risk Rating</th>
+                    <th className="whitespace-nowrap px-4 py-3.5">Infra Score</th>
+                    <th className="whitespace-nowrap px-4 py-3.5">Demand Score</th>
+                    <th className="text-right whitespace-nowrap px-4 py-3.5">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {corridors.map((c) => (
+                    <tr key={c.id}>
+                      <td className="font-bold text-[#1A1A2E] whitespace-nowrap px-4 py-3.5">
+                        <div className="flex items-center gap-1.5">
+                          <MapPin size={13} className="text-[#5B4FE0]" /> {c.corridor}
+                        </div>
+                      </td>
+                      <td className="font-semibold text-[#1A1A2E] whitespace-nowrap px-4 py-3.5">{c.historicalCAGR}%</td>
+                      <td className="font-bold text-[#5B4FE0] whitespace-nowrap px-4 py-3.5">
+                        {c.projectedCAGRMin}% - {c.projectedCAGRMax}%
+                      </td>
+                      <td className="text-[#8A8A9E] whitespace-nowrap px-4 py-3.5">
+                        {c.rentalYieldMin}% - {c.rentalYieldMax}%
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-3.5">
+                        <span className="badge bg-[#F4F0FF] text-[#5B4FE0] text-[10px] font-bold">
+                          {c.riskLevel}
+                        </span>
+                      </td>
+                      <td className="font-bold text-[#1A1A2E] whitespace-nowrap px-4 py-3.5">{c.infraScore} / 10</td>
+                      <td className="font-bold text-[#1A1A2E] whitespace-nowrap px-4 py-3.5">{c.demandScore} / 10</td>
+                      <td className="text-right whitespace-nowrap px-4 py-3.5">
+                        <div className="flex justify-end items-center gap-2">
+                          <button
+                            onClick={() => handleOpenEditCorridor(c)}
+                            className="crm-btn-ghost text-xs text-[#5B4FE0] font-bold px-3.5 py-1.5 rounded-full inline-flex items-center gap-1 hover:bg-[#F4F0FF]"
+                          >
+                            <Edit size={13} /> Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteCorridor(c.id)}
+                            className="crm-btn-ghost text-xs text-rose-600 font-bold px-3.5 py-1.5 rounded-full inline-flex items-center gap-1 hover:bg-rose-50"
+                          >
+                            <Trash2 size={13} /> Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       )}
