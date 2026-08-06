@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import React, { useState, useEffect } from "react";
 import BudgetDistribution from "@/components/admin/charts/BudgetDistribution";
 import CorridorHeatmap from "@/components/admin/charts/CorridorHeatmap";
@@ -47,6 +49,7 @@ export default function AdminAnalyticsPage() {
   const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
     setIsHydrated(true);
     async function loadMarketAnalytics() {
       try {
@@ -65,9 +68,10 @@ export default function AdminAnalyticsPage() {
   }, []);
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
     if (activeTab === "pipeline" && !pipelineData) {
-      setIsLoadingPipeline(true);
       async function loadPipelineAnalytics() {
+        setIsLoadingPipeline(true);
         try {
           const res = await fetch("/api/admin/analytics/pipeline");
           if (res.ok) {
@@ -75,7 +79,7 @@ export default function AdminAnalyticsPage() {
             setPipelineData(data);
           }
         } catch (err) {
-          console.error("Failed to load pipeline analytics", err);
+          console.error("Failed to load pipeline analytics data", err);
         } finally {
           setIsLoadingPipeline(false);
         }

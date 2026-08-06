@@ -39,6 +39,7 @@ export default function Sidebar() {
 
   // Poll for new leads count and stale count every 30 seconds
   useEffect(() => {
+    if (typeof window === 'undefined') return;
     async function fetchCounts() {
       try {
         const leadsRes = await fetch("/api/admin/leads?status=NEW&limit=1");

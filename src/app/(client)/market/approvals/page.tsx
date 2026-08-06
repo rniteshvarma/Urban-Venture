@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { 
@@ -47,6 +49,7 @@ export default function ApprovalsDirectoryPage() {
   const [type, setType] = useState("ALL");
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
     async function loadCorridors() {
       try {
         const res = await fetch("/api/market/corridors");
@@ -62,6 +65,7 @@ export default function ApprovalsDirectoryPage() {
   }, []);
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
     fetchApprovals();
   }, [corridor, authority, type]);
 

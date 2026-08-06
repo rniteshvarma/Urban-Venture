@@ -1,10 +1,16 @@
 import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
 
+if (!process.env.NEXTAUTH_URL) {
+  process.env.NEXTAUTH_URL = process.env.VERCEL_URL 
+    ? `https://${process.env.VERCEL_URL}` 
+    : "http://localhost:3000";
+}
+
 export default withAuth(
   function middleware(req) {
-    const token = req.nextauth.token;
-    const path = req.nextUrl.pathname;
+    const token = req.nextauth?.token;
+    const path = req.nextUrl?.pathname || "";
 
     // Redirect authenticated admin away from login page to dashboard
     if (path === "/admin/login" && token?.role === "ADMIN") {
@@ -20,7 +26,6 @@ export default withAuth(
   },
   {
     callbacks: {
-      // Let it pass through to the middleware function where we handle checks manually
       authorized: () => true,
     },
     secret: process.env.NEXTAUTH_SECRET || "urban-venture-fallback-super-secret-key-12345-aura-luxury",
