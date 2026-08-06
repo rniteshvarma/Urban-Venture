@@ -81,31 +81,31 @@ export default function BroadcastHistoryPage() {
     switch (status) {
       case "SENT":
         return (
-          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
             <CheckCircle size={10} /> Completed
           </span>
         );
       case "SENDING":
         return (
-          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 animate-pulse">
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-200 animate-pulse">
             <Clock size={10} /> Sending
           </span>
         );
       case "SCHEDULED":
         return (
-          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold bg-purple-100 text-purple-800">
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold bg-purple-100 text-purple-800 border border-purple-200">
             <Clock size={10} /> Scheduled
           </span>
         );
       case "FAILED":
         return (
-          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800">
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-200">
             <AlertTriangle size={10} /> Failed
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600">
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
             Draft
           </span>
         );
@@ -116,19 +116,19 @@ export default function BroadcastHistoryPage() {
     switch (channel) {
       case "WHATSAPP":
         return (
-          <span className="inline-flex items-center gap-1 px-3 py-1 text-xs text-emerald-800 font-bold bg-emerald-100 rounded-full">
+          <span className="inline-flex items-center gap-1 px-3 py-1 text-xs text-emerald-800 font-bold bg-emerald-100 rounded-full border border-emerald-200">
             <MessageSquare size={12} /> WhatsApp
           </span>
         );
       case "EMAIL":
         return (
-          <span className="inline-flex items-center gap-1 px-3 py-1 text-xs text-purple-800 font-bold bg-purple-100 rounded-full">
+          <span className="inline-flex items-center gap-1 px-3 py-1 text-xs text-purple-800 font-bold bg-purple-100 rounded-full border border-purple-200">
             <Mail size={12} /> Email
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1 px-3 py-1 text-xs text-blue-800 font-bold bg-blue-100 rounded-full">
+          <span className="inline-flex items-center gap-1 px-3 py-1 text-xs text-blue-800 font-bold bg-blue-100 rounded-full border border-blue-200">
             <Megaphone size={12} /> Email + WA
           </span>
         );
@@ -207,75 +207,75 @@ export default function BroadcastHistoryPage() {
             </Link>
           </div>
         ) : (
-          <table className="crm-table text-xs w-full">
-            <thead>
-              <tr>
-                <th>Campaign Name</th>
-                <th>Channel</th>
-                <th>Target Group</th>
-                <th>Recipients</th>
-                <th>Stats</th>
-                <th>Status</th>
-                <th>Created Date</th>
-                <th className="text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredBroadcasts.map((b) => (
-                <tr key={b.id}>
-                  <td className="font-bold text-[#1A1A2E]">
-                    <Link href={`/admin/broadcasts/history/${b.id}`} className="hover:text-[#5B4FE0]">
-                      {b.name}
-                    </Link>
-                  </td>
-                  <td>{getChannelBadge(b.channel)}</td>
-                  <td className="font-semibold text-[#8A8A9E] uppercase tracking-wider text-[10px]">
-                    {b.groupType.replace(/_/g, " ")}
-                  </td>
-                  <td className="text-[#1A1A2E] font-medium">
-                    {b.recipientCount} leads
-                  </td>
-                  <td className="space-y-0.5 text-[11px] text-[#6E6D8A]">
-                    {b.channel !== "EMAIL" && (
-                      <div>WA Delivered: <strong className="text-[#5B4FE0]">{b.stats.waDeliveredRate}%</strong></div>
-                    )}
-                    {b.channel !== "WHATSAPP" && (
-                      <div>Email Opened: <strong className="text-[#5B4FE0]">{b.stats.emailOpenRate}%</strong></div>
-                    )}
-                  </td>
-                  <td>{getStatusBadge(b.status)}</td>
-                  <td className="text-[#8A8A9E]">
-                    {new Date(b.createdAt).toLocaleDateString("en-IN", {
-                      day: "2-digit",
-                      month: "short",
-                      year: "numeric"
-                    })}
-                  </td>
-                  <td className="text-right">
-                    <div className="flex justify-end items-center gap-2">
-                      <Link
-                        href={`/admin/broadcasts/history/${b.id}`}
-                        className="crm-btn-ghost text-xs text-[#5B4FE0] font-bold px-3 py-1"
-                        title="View Detailed Report"
-                      >
-                        <Eye size={13} className="inline mr-1" /> View
+          <div className="overflow-x-auto w-full">
+            <table className="crm-table text-xs w-full">
+              <thead>
+                <tr>
+                  <th className="whitespace-nowrap px-4 py-3.5">Campaign Name</th>
+                  <th className="whitespace-nowrap px-4 py-3.5">Channel</th>
+                  <th className="whitespace-nowrap px-4 py-3.5">Target Group</th>
+                  <th className="whitespace-nowrap px-4 py-3.5">Recipients</th>
+                  <th className="whitespace-nowrap px-4 py-3.5">Stats</th>
+                  <th className="whitespace-nowrap px-4 py-3.5">Status</th>
+                  <th className="whitespace-nowrap px-4 py-3.5">Created Date</th>
+                  <th className="text-right whitespace-nowrap px-4 py-3.5">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredBroadcasts.map((b) => (
+                  <tr key={b.id}>
+                    <td className="font-bold text-[#1A1A2E] whitespace-nowrap px-4 py-3.5">
+                      <Link href={`/admin/broadcasts/history/${b.id}`} className="hover:text-[#5B4FE0]">
+                        {b.name}
                       </Link>
-                      
-                      {(b.status === "DRAFT" || b.status === "SCHEDULED") && (
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3.5">{getChannelBadge(b.channel)}</td>
+                    <td className="font-semibold text-[#8A8A9E] uppercase tracking-wider text-[10px] whitespace-nowrap px-4 py-3.5">
+                      {b.groupType.replace(/_/g, " ")}
+                    </td>
+                    <td className="text-[#1A1A2E] font-medium whitespace-nowrap px-4 py-3.5">
+                      {b.recipientCount} leads
+                    </td>
+                    <td className="space-y-0.5 text-[11px] text-[#6E6D8A] whitespace-nowrap px-4 py-3.5">
+                      {b.channel !== "EMAIL" && (
+                        <div>WA Delivered: <strong className="text-[#5B4FE0]">{b.stats.waDeliveredRate}%</strong></div>
+                      )}
+                      {b.channel !== "WHATSAPP" && (
+                        <div>Email Opened: <strong className="text-[#5B4FE0]">{b.stats.emailOpenRate}%</strong></div>
+                      )}
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3.5">{getStatusBadge(b.status)}</td>
+                    <td className="text-[#8A8A9E] whitespace-nowrap px-4 py-3.5">
+                      {new Date(b.createdAt).toLocaleDateString("en-IN", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric"
+                      })}
+                    </td>
+                    <td className="text-right whitespace-nowrap px-4 py-3.5">
+                      <div className="flex justify-end items-center gap-2">
+                        <Link
+                          href={`/admin/broadcasts/history/${b.id}`}
+                          className="crm-btn-ghost text-xs text-[#5B4FE0] font-bold px-3 py-1 inline-flex items-center gap-1 hover:bg-[#F4F0FF]"
+                          title="View Detailed Report"
+                        >
+                          <Eye size={13} /> View
+                        </Link>
+                        
                         <button
                           onClick={() => handleDeleteDraft(b.id)}
-                          className="crm-btn-ghost text-xs text-rose-600 font-bold px-3 py-1"
-                          title="Delete Draft"
+                          className="crm-btn-ghost text-xs text-rose-600 font-bold px-3 py-1 inline-flex items-center gap-1 hover:bg-rose-50"
+                          title="Delete Broadcast"
                         >
-                          <Trash2 size={13} className="inline mr-1" /> Delete
+                          <Trash2 size={13} /> Delete
                         </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 
