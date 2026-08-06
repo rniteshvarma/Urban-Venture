@@ -98,6 +98,15 @@ model Lead {
   emailOptOut        Boolean             @default(false)
   whatsappOptOut     Boolean             @default(false)
   broadcastRecipients BroadcastRecipient[]
+
+  // Omnichannel Lead Capture Additions
+  sourceChannel       SourceChannel?
+  sourceMessageId     String?
+  rawEnquiryText      String?
+  aiExtractedBudget   Float?
+  aiExtractedHorizon  Int?
+  aiExtractedProperty String?
+  aiConfidenceScore   Int?
 }
 
 enum LeadStatus {
@@ -107,6 +116,81 @@ enum LeadStatus {
   NEGOTIATING
   CONVERTED
   LOST
+}
+
+// ── INBOUND SOURCE CONFIG ─────────────────────────────────────────────────
+model InboundSource {
+  id              String        @id @default(cuid())
+  name            String        // "99acres", "MagicBricks", "WhatsApp Business"
+  type            SourceType
+  webhookToken    String        @unique @default(cuid())
+  isActive        Boolean       @default(true)
+  fieldMapping    Json?         // Maps portal's field names to Lead fields
+  autoAssignTo    String?       // Agent user ID for auto-assignment
+  defaultStatus   LeadStatus    @default(NEW)
+  dedupeWindow    Int           @default(24) // hours — block duplicate from same phone
+  totalReceived   Int           @default(0)
+  totalCreated    Int           @default(0)
+  totalDupes      Int           @default(0)
+  lastReceivedAt  DateTime?
+  createdAt       DateTime      @default(now())
+  logs            InboundLog[]
+}
+
+model InboundLog {
+  id              String        @id @default(cuid())
+  sourceId        String
+  source          InboundSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  rawPayload      Json          // Full raw POST body stored for debugging
+  parsedData      Json?         // After field mapping applied
+  status          InboundStatus // CREATED, DUPLICATE, FAILED, IGNORED
+  leadId          String?       // If CREATED — links to the new lead
+  duplicateOfId   String?       // If DUPLICATE — links to existing lead
+  failureReason   String?
+  receivedAt      DateTime      @default(now())
+}
+
+model GmailWatchConfig {
+  id              String        @id @default(cuid())
+  gmailAddress    String        @unique
+  historyId       String?       // Last processed historyId (for delta sync)
+  watchExpiry     DateTime?     // Gmail watch expires every 7 days
+  pubSubTopic     String?
+  isActive        Boolean       @default(false)
+  accessToken     String?       // Encrypted OAuth token
+  refreshToken    String?       // Encrypted
+  lastRenewedAt   DateTime?
+  lastEmailAt     DateTime?
+  createdAt       DateTime      @default(now())
+}
+
+enum SourceType {
+  PORTAL_WEBHOOK // 99acres, MagicBricks, Housing.com, NoBroker
+  WHATSAPP       // Incoming WhatsApp via WATI
+  GMAIL          // Gmail API + Pub/Sub
+  WEBSITE_FORM   // Contact form on portal
+  MANUAL         // Admin-entered
+  CSV_IMPORT     // Bulk import
+}
+
+enum SourceChannel {
+  PORTAL_99ACRES
+  PORTAL_MAGICBRICKS
+  PORTAL_HOUSING
+  PORTAL_NOBROKER
+  PORTAL_OTHER
+  WHATSAPP_BUSINESS
+  GMAIL
+  WEBSITE_FORM
+  MANUAL
+  CSV_IMPORT
+}
+
+enum InboundStatus {
+  CREATED   // New lead created
+  DUPLICATE // Phone/email already exists — merged into existing lead
+  FAILED    // Could not parse or create
+  IGNORED   // Matched ignore rules (spam, test, etc.)
 }
 
 model Search {

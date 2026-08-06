@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { DndContext, DragEndEvent, useDroppable, useDraggable } from "@dnd-kit/core";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, AlertTriangle, ChevronRight, User } from "lucide-react";
 
 interface KanbanCard {
   id: string;
@@ -53,27 +53,28 @@ function KanbanColumn({ id, title, cards }: { id: string; title: string; cards: 
   };
 
   return (
-    <div className="flex flex-col bg-surface border border-luxury rounded-card w-80 min-h-[500px] shadow-sm overflow-hidden flex-shrink-0">
+    <div className="crm-card p-0 w-80 min-h-[500px] flex-shrink-0 flex flex-col overflow-hidden bg-white">
       {/* Column Header */}
-      <div className="p-4 border-b border-luxury bg-luxury-bg/30 flex items-center justify-between">
+      <div className="p-4 border-b border-[#F5F3FB] bg-[#F9F8FD] flex items-center justify-between">
         <div>
-          <h3 className="font-display text-xs font-bold text-primary uppercase tracking-wider">
+          <h3 className="font-display text-xs font-bold text-[#1A1A2E] uppercase tracking-wider">
             {title}
           </h3>
-          <span className="text-[9px] text-text-secondary font-semibold uppercase mt-0.5 block">
+          <span className="text-[10px] text-[#8A8A9E] font-semibold block mt-0.5">
             {cards.length} Leads · {formatTotalValue(totalValue)}
           </span>
         </div>
+        <ChevronRight size={14} className="text-[#8A8A9E]" />
       </div>
 
       {/* Cards Area */}
       <div 
         ref={setNodeRef} 
-        className="flex-grow p-3 space-y-3 overflow-y-auto max-h-[600px] bg-luxury-bg/5 scrollbar-thin"
+        className="flex-grow p-3 space-y-3 overflow-y-auto max-h-[600px] bg-[#FDFCFE] scrollbar-thin"
       >
         {cards.length === 0 ? (
-          <div className="h-28 border border-dashed border-luxury/60 rounded flex items-center justify-center text-center p-4">
-            <span className="text-[10px] text-text-secondary italic">Drag leads here</span>
+          <div className="h-28 border border-dashed border-[#E8E5F5] rounded-2xl flex items-center justify-center text-center p-4">
+            <span className="text-xs text-[#8A8A9E] italic">Drag leads here</span>
           </div>
         ) : (
           cards.map((card) => <KanbanCardItem key={card.id} card={card} />)
@@ -106,23 +107,23 @@ function KanbanCardItem({ card }: { card: KanbanCard }) {
       style={style}
       {...listeners}
       {...attributes}
-      className={`bg-surface border p-4 rounded-card hover:shadow-md transition-shadow cursor-grab active:cursor-grabbing select-none relative group space-y-3 ${
-        isDragging ? "opacity-30 border-[#C9A84C]" : card.isStale ? "border-red-300" : "border-luxury"
+      className={`crm-card p-4 transition-all cursor-grab active:cursor-grabbing select-none relative group space-y-3 border border-[#F0EDFA] ${
+        isDragging ? "opacity-30 border-[#5B4FE0]" : card.isStale ? "ring-2 ring-rose-400" : ""
       }`}
     >
       {/* Top badges */}
-      <div className="flex items-start justify-between gap-1">
-        <span className="text-[8px] bg-luxury-bg border border-luxury text-text-secondary px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
+      <div className="flex items-center justify-between gap-1">
+        <span className="text-[10px] bg-[#F4F0FF] text-[#5B4FE0] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider">
           {card.city}
         </span>
         
         <div className="flex items-center gap-1">
           {card.isStale && (
-            <span className="bg-red-50 text-red-600 border border-red-100 text-[8px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider animate-pulse">
+            <span className="badge bg-rose-100 text-rose-800 text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse">
               ⚠️ Stale
             </span>
           )}
-          <span className="bg-[#0F1F3D] text-amber-400 text-[8px] font-bold px-1.5 py-0.5 rounded">
+          <span className="badge bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full">
             {card.probability}%
           </span>
         </div>
@@ -130,37 +131,42 @@ function KanbanCardItem({ card }: { card: KanbanCard }) {
 
       {/* Title */}
       <div>
-        <h4 className="font-display font-bold text-xs text-primary group-hover:text-amber-600 transition-colors">
-          {card.leadName}
+        <h4 className="font-display font-bold text-sm text-[#1A1A2E] group-hover:text-[#5B4FE0] transition-colors flex items-center gap-1.5">
+          <div className="crm-avatar-ring shrink-0">
+            <div className="w-5 h-5 rounded-full bg-[#EBE7F5] flex items-center justify-center text-[#5B4FE0] font-bold text-[9px]">
+              {card.leadName.charAt(0)}
+            </div>
+          </div>
+          <span className="truncate">{card.leadName}</span>
         </h4>
-        <span className="text-[9px] text-text-secondary mt-0.5 block font-medium">
-          {card.projectName}
+        <span className="text-xs text-[#8A8A9E] mt-0.5 block font-medium truncate">
+          {card.projectName || "No matched project"}
         </span>
       </div>
 
-      {/* Progress slider bar */}
+      {/* Progress bar */}
       <div className="space-y-1">
-        <div className="flex justify-between text-[8px] text-text-secondary">
+        <div className="flex justify-between text-[10px] text-[#8A8A9E]">
           <span>Progress</span>
-          <span>{card.progressPercent}%</span>
+          <span className="font-bold text-[#1A1A2E]">{card.progressPercent}%</span>
         </div>
-        <div className="w-full bg-gray-100 h-1 rounded-full overflow-hidden">
+        <div className="w-full bg-[#F0EEFA] h-1.5 rounded-full overflow-hidden">
           <div 
-            className="h-full bg-amber-500 rounded-full transition-all duration-300" 
+            className="h-full crm-gradient-peach-mint rounded-full transition-all duration-300" 
             style={{ width: `${card.progressPercent}%` }}
           />
         </div>
       </div>
 
       {/* Footer details */}
-      <div className="flex items-center justify-between text-[9px] pt-2 border-t border-luxury/40">
+      <div className="flex items-center justify-between text-[10px] pt-2 border-t border-[#F5F3FB]">
         <div>
-          <span className="text-text-secondary block">Value</span>
-          <span className="font-bold text-primary">{formatPrice(card.estimatedValue)}</span>
+          <span className="text-[#8A8A9E] block">Value</span>
+          <span className="font-bold text-[#1A1A2E] text-xs">{formatPrice(card.estimatedValue)}</span>
         </div>
         <div className="text-right">
-          <span className="text-text-secondary block">Time in Stage</span>
-          <span className={`font-semibold ${card.isStale ? "text-red-500" : "text-primary"}`}>
+          <span className="text-[#8A8A9E] block">Time in Stage</span>
+          <span className={`font-bold ${card.isStale ? "text-rose-600" : "text-[#1A1A2E]"}`}>
             {card.daysInStage} Days
           </span>
         </div>
@@ -169,10 +175,9 @@ function KanbanCardItem({ card }: { card: KanbanCard }) {
       {/* Detail page redirect trigger */}
       <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
         <Link 
-          href={`/admin/leads/${card.leadId}`}
-          className="bg-luxury-bg hover:bg-luxury-bg/80 text-[10px] p-1 border border-luxury rounded block font-bold text-primary cursor-pointer"
+          href={`/admin/leads?id=${card.leadId}`}
+          className="bg-[#F4F0FF] hover:bg-[#EBE5FB] text-[10px] p-1.5 rounded-full block font-bold text-[#5B4FE0] cursor-pointer shadow-xs"
           title="Open Roadmap Details"
-          // Stop drag handlers from hijacking this click
           onPointerDown={(e) => e.stopPropagation()}
         >
           ↗
@@ -220,7 +225,6 @@ export default function AdminPipelinePage() {
     const cardId = active.id as string;
     const targetColumn = over.id as string;
 
-    // Find the current column of this card
     let sourceColumn = "";
     let activeCard: KanbanCard | null = null;
 
@@ -237,17 +241,13 @@ export default function AdminPipelinePage() {
 
     // Optimistic Update
     const newColumns = { ...columns };
-    
-    // Remove from source
     newColumns[sourceColumn] = newColumns[sourceColumn].filter((c) => c.id !== cardId);
     
-    // Add to target (simulate movement)
     const updatedCard = { ...activeCard, activeStageKey: targetColumn };
     newColumns[targetColumn] = [...newColumns[targetColumn], updatedCard];
     
     setColumns(newColumns);
 
-    // Make API request to database
     try {
       const res = await fetch("/api/admin/pipeline", {
         method: "PUT",
@@ -263,16 +263,14 @@ export default function AdminPipelinePage() {
         throw new Error(data.details ? `${data.error}: ${data.details}` : (data.error || "Failed to save movement"));
       }
       
-      // Reload fresh calculations (e.g. probability changes, stale days, progressPercent)
       loadPipelineData();
     } catch (err: any) {
       console.error("Failed to move card in pipeline", err);
       alert(`Failed to update lead stage: ${err.message || "Reverting layout."}`);
-      loadPipelineData(); // Revert by reloading
+      loadPipelineData();
     }
   };
 
-  // Filter columns locally
   const getFilteredColumns = () => {
     const filtered: Record<string, KanbanCard[]> = {};
     
@@ -291,7 +289,7 @@ export default function AdminPipelinePage() {
 
   if (!isMounted) {
     return (
-      <div className="flex-grow flex items-center justify-center p-12 text-text-secondary animate-pulse text-sm">
+      <div className="flex-grow flex items-center justify-center p-12 text-[#8A8A9E] animate-pulse text-xs">
         Initializing Kanban Board...
       </div>
     );
@@ -303,14 +301,14 @@ export default function AdminPipelinePage() {
     .filter(c => c.isStale).length;
 
   return (
-    <div className="space-y-6 flex-grow flex flex-col">
+    <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8 flex-grow flex flex-col animate-fade-in w-full">
       {/* Header Area */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-[#F0EDFA]">
         <div>
-          <span className="text-[10px] text-accent font-bold uppercase tracking-widest block">
+          <span className="text-[11px] text-[#5B4FE0] font-bold uppercase tracking-widest block mb-1">
             Lead Closure Pipeline
           </span>
-          <h1 className="font-display text-2xl sm:text-4xl font-bold text-primary">
+          <h1 className="font-display text-2xl sm:text-3xl font-bold text-[#1A1A2E]">
             Kanban Board
           </h1>
         </div>
@@ -318,33 +316,33 @@ export default function AdminPipelinePage() {
         <button
           onClick={loadPipelineData}
           disabled={isLoading}
-          className="flex items-center gap-1.5 px-4 py-2 border border-luxury hover:bg-luxury-bg/40 text-text-primary text-xs font-semibold uppercase tracking-wider rounded-tag transition-colors self-start sm:self-center disabled:opacity-50"
+          className="crm-btn-secondary text-xs"
         >
-          <RefreshCw size={13} className={isLoading ? "animate-spin text-primary" : "text-text-secondary"} />
+          <RefreshCw size={14} className={isLoading ? "animate-spin text-[#5B4FE0]" : "text-[#5B4FE0]"} />
           <span>Refresh Board</span>
         </button>
       </div>
 
       {/* Stale Leads Banner Alert */}
       {displayStaleCount > 0 && (
-        <div className="bg-red-50 border border-red-200 p-4 rounded-card text-xs text-red-700 flex items-center gap-3 animate-slide-in">
-          <span className="text-xl">⚠️</span>
+        <div className="bg-rose-50 border border-rose-200/60 p-4 rounded-2xl text-xs text-rose-800 flex items-center gap-3 animate-slide-in">
+          <AlertTriangle className="w-5 h-5 shrink-0 text-rose-600" />
           <div>
-            <span className="font-bold uppercase tracking-wider block text-[10px] mb-0.5">Stale Pipeline Alert</span>
-            There are {displayStaleCount} leads stuck in progress for over 7 days. Action items need review to maintain client momentum.
+            <span className="font-bold uppercase tracking-wider block text-[10px] text-rose-600 mb-0.5">Stale Pipeline Alert</span>
+            There are <strong>{displayStaleCount} leads</strong> stuck in progress for over 7 days. Action items need review to maintain client momentum.
           </div>
         </div>
       )}
 
       {/* Filter Bar */}
-      <div className="bg-surface border border-luxury p-4 rounded-card shadow-sm grid grid-cols-1 sm:grid-cols-3 gap-3 items-center">
+      <div className="crm-card p-6 grid grid-cols-1 sm:grid-cols-3 gap-4 items-center">
         <div className="sm:col-span-2">
           <input
             type="text"
             placeholder="Filter leads by client name or project name..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-luxury-bg border border-luxury px-3 py-2 rounded-input text-xs text-text-primary focus:outline-none focus:border-accent"
+            className="w-full bg-[#F9F8FD] border border-[#E8E5F5] rounded-full px-4 py-2 text-xs text-[#1A1A2E] placeholder-[#8A8A9E] focus:outline-none focus:border-[#5B4FE0]"
           />
         </div>
         <div>
@@ -353,15 +351,15 @@ export default function AdminPipelinePage() {
             placeholder="Filter by city (e.g. Hyderabad)"
             value={cityFilter}
             onChange={(e) => setCityFilter(e.target.value)}
-            className="w-full bg-luxury-bg border border-luxury px-3 py-2 rounded-input text-xs text-text-primary focus:outline-none focus:border-accent"
+            className="w-full bg-[#F9F8FD] border border-[#E8E5F5] rounded-full px-4 py-2 text-xs text-[#1A1A2E] placeholder-[#8A8A9E] focus:outline-none focus:border-[#5B4FE0]"
           />
         </div>
       </div>
 
       {/* Board Columns (Horizontal Scrolling) */}
-      <div className="flex-grow overflow-x-auto pb-6 -mx-4 px-4 flex gap-4 scrollbar-thin">
+      <div className="flex-grow overflow-x-auto pb-6 -mx-4 px-4 flex gap-5 scrollbar-thin">
         {isLoading ? (
-          <div className="flex-grow flex items-center justify-center p-12 text-text-secondary animate-pulse text-sm">
+          <div className="flex-grow flex items-center justify-center p-12 text-[#8A8A9E] animate-pulse text-xs">
             Loading Kanban stages and active leads...
           </div>
         ) : (

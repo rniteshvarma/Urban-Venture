@@ -35,10 +35,10 @@ const AUTHORITIES = [
 ];
 
 const STATUSES = [
-  { value: "APPROVED", label: "Approved", color: "bg-green-100 text-green-700 border-green-200" },
-  { value: "PENDING", label: "Pending", color: "bg-amber-100 text-amber-700 border-amber-200" },
-  { value: "REVOKED", label: "Revoked", color: "bg-red-100 text-red-700 border-red-200" },
-  { value: "EXPIRED", label: "Expired", color: "bg-slate-100 text-slate-500 border-slate-200" },
+  { value: "APPROVED", label: "Approved", color: "bg-emerald-100 text-emerald-800" },
+  { value: "PENDING", label: "Pending", color: "bg-amber-100 text-amber-800" },
+  { value: "REVOKED", label: "Revoked", color: "bg-rose-100 text-rose-800" },
+  { value: "EXPIRED", label: "Expired", color: "bg-slate-100 text-slate-600" },
 ];
 
 export default function ApprovalsPage() {
@@ -156,7 +156,6 @@ export default function ApprovalsPage() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Parse survey numbers comma-separated
     const surveyNumbers = surveyNumbersInput
       .split(",")
       .map(s => s.trim())
@@ -221,33 +220,34 @@ export default function ApprovalsPage() {
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6 text-slate-800">
+    <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8 flex-grow flex flex-col animate-fade-in text-[#1A1A2E] w-full">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-slate-200 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-[#F0EDFA]">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
-            <FileCheck className="text-blue-650" size={20} />
+          <span className="text-[11px] text-[#5B4FE0] font-bold uppercase tracking-widest block mb-1">
+            Market Intelligence
+          </span>
+          <h1 className="font-display text-2xl sm:text-3xl font-bold text-[#1A1A2E]">
             Approval Records
           </h1>
-          <p className="text-xs text-slate-500 mt-1">Track HMDA Layout permissions, DTCP permits, and RERA registration databases.</p>
         </div>
         <button
           onClick={handleOpenAddModal}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-650 hover:bg-blue-750 text-white rounded text-xs font-bold transition-all shadow-sm shadow-blue-500/10 cursor-pointer"
+          className="crm-btn-primary text-xs"
         >
           <Plus size={14} /> Add Approval Record
         </button>
       </div>
 
-      {/* Filters */}
-      <div className="bg-slate-50 border border-slate-200 rounded p-4 flex flex-wrap gap-4 items-center justify-between">
+      {/* Filters Bar */}
+      <div className="crm-card p-6 flex flex-wrap gap-4 items-center justify-between">
         <div className="flex flex-wrap gap-4 items-center">
           <div className="flex flex-col gap-1 w-full sm:w-auto">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Corridor</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-[#8A8A9E]">Corridor</label>
             <select
               value={filterCorridor}
               onChange={(e) => setFilterCorridor(e.target.value)}
-              className="border border-slate-200 rounded px-2.5 py-1.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-650"
+              className="bg-[#F9F8FD] border border-[#E8E5F5] rounded-full px-4 py-2 text-xs text-[#1A1A2E] focus:outline-none focus:border-[#5B4FE0]"
             >
               <option value="ALL">All Corridors</option>
               {corridorList.map(c => (
@@ -257,11 +257,11 @@ export default function ApprovalsPage() {
           </div>
 
           <div className="flex flex-col gap-1 w-full sm:w-auto">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Authority</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-[#8A8A9E]">Authority</label>
             <select
               value={filterAuthority}
               onChange={(e) => setFilterAuthority(e.target.value)}
-              className="border border-slate-200 rounded px-2.5 py-1.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-650"
+              className="bg-[#F9F8FD] border border-[#E8E5F5] rounded-full px-4 py-2 text-xs text-[#1A1A2E] focus:outline-none focus:border-[#5B4FE0]"
             >
               <option value="ALL">All Authorities</option>
               {AUTHORITIES.map(a => (
@@ -271,8 +271,8 @@ export default function ApprovalsPage() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-1 w-full sm:w-72 mt-2 sm:mt-0">
-          <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Search</label>
+        <div className="flex flex-col gap-1 w-full sm:w-72">
+          <label className="text-[10px] font-bold uppercase tracking-wider text-[#8A8A9E]">Search</label>
           <div className="relative">
             <input
               type="text"
@@ -280,304 +280,146 @@ export default function ApprovalsPage() {
               value={filterSearch}
               onChange={(e) => setFilterSearch(e.target.value)}
               onKeyDown={handleSearchKeyPress}
-              className="w-full border border-slate-200 rounded pl-8 pr-2.5 py-1.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-650"
+              className="w-full bg-[#F9F8FD] border border-[#E8E5F5] pl-9 pr-4 py-2 rounded-full text-xs text-[#1A1A2E] placeholder-[#8A8A9E] focus:outline-none focus:border-[#5B4FE0]"
             />
-            <Search className="absolute left-2.5 top-2.5 text-slate-400" size={13} />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8A8A9E]" size={13} />
           </div>
         </div>
       </div>
 
       {/* Table */}
       {loading ? (
-        <div className="flex items-center justify-center py-20 bg-white border border-slate-200 rounded">
-          <Loader2 className="animate-spin text-blue-650" size={30} />
+        <div className="flex items-center justify-center py-20 bg-white rounded-2xl animate-pulse">
+          <Loader2 className="animate-spin text-[#5B4FE0]" size={30} />
         </div>
       ) : approvals.length === 0 ? (
-        <div className="bg-white border border-slate-200 rounded py-12 px-4 text-center">
-          <p className="text-slate-500 text-xs font-semibold">No approval records found.</p>
+        <div className="crm-card py-16 px-4 text-center">
+          <p className="text-[#8A8A9E] text-xs font-semibold">No approval records found.</p>
         </div>
       ) : (
-        <div className="bg-white border border-slate-200 rounded overflow-hidden shadow-sm">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                  <th className="px-4 py-3">Project Name</th>
-                  <th className="px-4 py-3">Developer</th>
-                  <th className="px-4 py-3">Authority</th>
-                  <th className="px-4 py-3">Approval Type</th>
-                  <th className="px-4 py-3">Number</th>
-                  <th className="px-4 py-3">Date</th>
-                  <th className="px-4 py-3">Corridor</th>
-                  <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-xs">
-                {approvals.map((app) => {
-                  const authInfo = AUTHORITIES.find(a => a.value === app.authority);
-                  const typeInfo = APPROVAL_TYPES.find(t => t.value === app.approvalType);
-                  const statInfo = STATUSES.find(s => s.value === app.status);
+        <div className="crm-card p-0 overflow-hidden flex-grow">
+          <table className="crm-table text-xs w-full">
+            <thead>
+              <tr>
+                <th>Project Name</th>
+                <th>Developer</th>
+                <th>Authority</th>
+                <th>Approval Type</th>
+                <th>Number</th>
+                <th>Date</th>
+                <th>Corridor</th>
+                <th>Status</th>
+                <th className="text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {approvals.map((app) => {
+                const authInfo = AUTHORITIES.find(a => a.value === app.authority);
+                const typeInfo = APPROVAL_TYPES.find(t => t.value === app.approvalType);
+                const statInfo = STATUSES.find(s => s.value === app.status);
 
-                  return (
-                    <tr key={app.id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-4 py-3.5 font-semibold text-slate-900">{app.projectName}</td>
-                      <td className="px-4 py-3.5 text-slate-600">{app.developerName || "—"}</td>
-                      <td className="px-4 py-3.5">
-                        <span className="px-1.5 py-0.5 bg-slate-100 border border-slate-200 rounded text-[9px] font-bold text-slate-700">
-                          {authInfo?.label || app.authority}
+                return (
+                  <tr key={app.id}>
+                    <td className="font-bold text-[#1A1A2E]">{app.projectName}</td>
+                    <td className="text-[#8A8A9E]">{app.developerName || "—"}</td>
+                    <td>
+                      <span className="badge bg-[#F4F0FF] text-[#5B4FE0] font-bold text-[10px]">
+                        {authInfo?.label || app.authority}
+                      </span>
+                    </td>
+                    <td className="text-[#1A1A2E] font-medium">{typeInfo?.label || app.approvalType}</td>
+                    <td className="font-mono text-[11px] text-[#6E6D8A]">{app.approvalNumber || "—"}</td>
+                    <td className="text-[#8A8A9E]">
+                      {app.approvalDate ? (
+                        <span className="flex items-center gap-1">
+                          <Calendar size={11} className="text-[#8A8A9E]" />
+                          {new Date(app.approvalDate).toLocaleDateString()}
                         </span>
-                      </td>
-                      <td className="px-4 py-3.5 text-slate-650">{typeInfo?.label || app.approvalType}</td>
-                      <td className="px-4 py-3.5 font-mono text-[11px] text-slate-500">{app.approvalNumber || "—"}</td>
-                      <td className="px-4 py-3.5 text-slate-500">
-                        {app.approvalDate ? (
-                          <span className="flex items-center gap-1">
-                            <Calendar size={11} className="text-slate-400" />
-                            {new Date(app.approvalDate).toLocaleDateString()}
-                          </span>
-                        ) : "—"}
-                      </td>
-                      <td className="px-4 py-3.5 font-semibold text-slate-600">{app.corridor || "—"}</td>
-                      <td className="px-4 py-3.5">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase border ${statInfo?.color || "bg-slate-100 text-slate-700"}`}>
-                          {statInfo?.label || app.status}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3.5 text-right space-x-1.5">
+                      ) : "—"}
+                    </td>
+                    <td className="font-semibold text-[#1A1A2E]">{app.corridor || "—"}</td>
+                    <td>
+                      <span className={`badge px-3 py-1 text-[10px] font-bold rounded-full ${statInfo?.color || "bg-slate-100 text-slate-700"}`}>
+                        {statInfo?.label || app.status}
+                      </span>
+                    </td>
+                    <td className="text-right">
+                      <div className="flex justify-end items-center gap-2">
                         <button
                           onClick={() => handleOpenEditModal(app)}
-                          className="p-1.5 text-slate-500 hover:text-blue-650 hover:bg-slate-100 rounded transition-colors cursor-pointer inline-flex"
+                          className="crm-btn-ghost text-xs text-[#5B4FE0] font-bold px-2.5 py-1"
                           title="Edit"
                         >
                           <Edit2 size={13} />
                         </button>
                         <button
                           onClick={() => handleDelete(app.id)}
-                          className="p-1.5 text-slate-500 hover:text-red-650 hover:bg-red-50 rounded transition-colors cursor-pointer inline-flex"
+                          className="crm-btn-ghost text-xs text-rose-600 font-bold px-2.5 py-1"
                           title="Delete"
                         >
                           <Trash2 size={13} />
                         </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       )}
 
       {/* Modal Form */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded shadow-xl border border-slate-200 w-full max-w-2xl max-h-[90vh] flex flex-col">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4 bg-slate-50 rounded-t">
-              <h2 className="text-sm font-bold text-slate-950 flex items-center gap-1.5">
-                <FileCheck size={16} className="text-blue-650" />
+        <div className="fixed inset-0 bg-[#1A1A2E]/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+          <div className="crm-card bg-white w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl p-6">
+            <div className="flex items-center justify-between pb-3 border-b border-[#F0EDFA]">
+              <h2 className="text-base font-bold text-[#1A1A2E] flex items-center gap-2">
+                <FileCheck size={16} className="text-[#5B4FE0]" />
                 {editingApproval ? "Edit Approval Record" : "Add Approval Record"}
               </h2>
-              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600 cursor-pointer">
+              <button onClick={() => setIsModalOpen(false)} className="text-[#8A8A9E] hover:text-[#1A1A2E] p-1 rounded-full hover:bg-[#F4F0FF]">
                 <X size={18} />
               </button>
             </div>
 
-            {/* Modal Body */}
-            <form onSubmit={handleSave} className="flex-1 overflow-y-auto p-6 space-y-4 text-xs">
+            <form onSubmit={handleSave} className="flex-1 overflow-y-auto pt-4 space-y-4 text-xs pr-2">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex flex-col gap-1">
-                  <label className="font-semibold text-slate-650">Project Name *</label>
+                <div className="flex flex-col gap-1.5">
+                  <label className="font-bold text-[#8A8A9E] text-[10px] uppercase">Project Name *</label>
                   <input
                     type="text"
                     required
                     placeholder="Aura Premium Plots"
                     value={projectName}
                     onChange={(e) => setProjectName(e.target.value)}
-                    className="border border-slate-250 rounded px-3 py-2 text-xs focus:ring-1 focus:ring-blue-650 focus:outline-none"
+                    className="bg-[#F9F8FD] border border-[#E8E5F5] rounded-full px-4 py-2 text-xs text-[#1A1A2E] focus:outline-none focus:border-[#5B4FE0]"
                   />
                 </div>
 
-                <div className="flex flex-col gap-1">
-                  <label className="font-semibold text-slate-650">Developer Name</label>
+                <div className="flex flex-col gap-1.5">
+                  <label className="font-bold text-[#8A8A9E] text-[10px] uppercase">Developer Name</label>
                   <input
                     type="text"
                     placeholder="Aura Developers"
                     value={developerName}
                     onChange={(e) => setDeveloperName(e.target.value)}
-                    className="border border-slate-250 rounded px-3 py-2 text-xs focus:ring-1 focus:ring-blue-650 focus:outline-none"
+                    className="bg-[#F9F8FD] border border-[#E8E5F5] rounded-full px-4 py-2 text-xs text-[#1A1A2E] focus:outline-none focus:border-[#5B4FE0]"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex flex-col gap-1">
-                  <label className="font-semibold text-slate-650">Approval Type *</label>
-                  <select
-                    value={approvalType}
-                    onChange={(e) => setApprovalType(e.target.value)}
-                    className="border border-slate-250 rounded px-3 py-2 text-xs focus:ring-1 focus:ring-blue-650 focus:outline-none bg-white"
-                  >
-                    {APPROVAL_TYPES.map(t => (
-                      <option key={t.value} value={t.value}>{t.label}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <label className="font-semibold text-slate-650">Authority *</label>
-                  <select
-                    value={authority}
-                    onChange={(e) => setAuthority(e.target.value)}
-                    className="border border-slate-250 rounded px-3 py-2 text-xs focus:ring-1 focus:ring-blue-650 focus:outline-none bg-white"
-                  >
-                    {AUTHORITIES.map(a => (
-                      <option key={a.value} value={a.value}>{a.label}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="flex flex-col gap-1">
-                  <label className="font-semibold text-slate-650">Approval/LP Number</label>
-                  <input
-                    type="text"
-                    placeholder="LP-000456/2025/HMDA"
-                    value={approvalNumber}
-                    onChange={(e) => setApprovalNumber(e.target.value)}
-                    className="border border-slate-250 rounded px-3 py-2 text-xs focus:ring-1 focus:ring-blue-650 focus:outline-none"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <label className="font-semibold text-slate-650">Approval Date</label>
-                  <input
-                    type="date"
-                    value={approvalDate}
-                    onChange={(e) => setApprovalDate(e.target.value)}
-                    className="border border-slate-250 rounded px-3 py-2 text-xs focus:ring-1 focus:ring-blue-650 focus:outline-none"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <label className="font-semibold text-slate-650">Corridor *</label>
-                  <select
-                    value={corridor}
-                    onChange={(e) => setCorridor(e.target.value)}
-                    className="border border-slate-250 rounded px-3 py-2 text-xs focus:ring-1 focus:ring-blue-650 focus:outline-none bg-white"
-                  >
-                    {corridorList.map(c => (
-                      <option key={c.id} value={c.corridor}>{c.shortName || c.name}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex flex-col gap-1">
-                  <label className="font-semibold text-slate-650">Area (in Acres)</label>
-                  <input
-                    type="number"
-                    step="any"
-                    placeholder="e.g. 45.2"
-                    value={areaAcres}
-                    onChange={(e) => setAreaAcres(e.target.value ? Number(e.target.value) : "")}
-                    className="border border-slate-250 rounded px-3 py-2 text-xs focus:ring-1 focus:ring-blue-650 focus:outline-none"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <label className="font-semibold text-slate-650">Survey Numbers (comma-separated)</label>
-                  <input
-                    type="text"
-                    placeholder="120, 121, 122"
-                    value={surveyNumbersInput}
-                    onChange={(e) => setSurveyNumbersInput(e.target.value)}
-                    className="border border-slate-250 rounded px-3 py-2 text-xs focus:ring-1 focus:ring-blue-650 focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex flex-col gap-1">
-                  <label className="font-semibold text-slate-650">RERA Number</label>
-                  <input
-                    type="text"
-                    placeholder="P02400005678"
-                    value={reraNumber}
-                    onChange={(e) => setReraNumber(e.target.value)}
-                    className="border border-slate-250 rounded px-3 py-2 text-xs focus:ring-1 focus:ring-blue-650 focus:outline-none"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <label className="font-semibold text-slate-650">RERA URL</label>
-                  <input
-                    type="url"
-                    placeholder="https://rera.telangana.gov.in"
-                    value={reraUrl}
-                    onChange={(e) => setReraUrl(e.target.value)}
-                    className="border border-slate-250 rounded px-3 py-2 text-xs focus:ring-1 focus:ring-blue-650 focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex flex-col gap-1">
-                  <label className="font-semibold text-slate-650">Status *</label>
-                  <select
-                    value={status}
-                    onChange={(e) => setStatus(e.target.value)}
-                    className="border border-slate-250 rounded px-3 py-2 text-xs focus:ring-1 focus:ring-blue-650 focus:outline-none bg-white"
-                  >
-                    {STATUSES.map(s => (
-                      <option key={s.value} value={s.value}>{s.label}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="flex items-center justify-between border border-slate-200 bg-slate-50 rounded px-4 py-2">
-                  <div className="flex flex-col">
-                    <span className="font-bold text-slate-900">Publish Approval</span>
-                    <span className="text-[10px] text-slate-400">Control visibility on public portal.</span>
-                  </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={isPublished}
-                      onChange={(e) => setIsPublished(e.target.checked)}
-                      className="sr-only peer"
-                    />
-                    <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-650"></div>
-                  </label>
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-1">
-                <label className="font-semibold text-slate-650">Notes / Details</label>
-                <textarea
-                  rows={3}
-                  placeholder="Provide any additional layout approval notes..."
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  className="border border-slate-250 rounded px-3 py-2 text-xs focus:ring-1 focus:ring-blue-650 focus:outline-none"
-                />
-              </div>
-
-              {/* Actions Footer */}
-              <div className="border-t border-slate-200 pt-4 flex items-center justify-end gap-2">
+              <div className="flex justify-end gap-3 pt-4 border-t border-[#F0EDFA]">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 border border-slate-250 text-slate-600 rounded text-xs font-semibold hover:bg-slate-50 cursor-pointer"
+                  className="crm-btn-secondary px-5 py-2 text-xs"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-650 text-white rounded text-xs font-bold hover:bg-blue-750 cursor-pointer"
+                  className="crm-btn-primary px-5 py-2 text-xs"
                 >
                   {editingApproval ? "Update Record" : "Create Record"}
                 </button>

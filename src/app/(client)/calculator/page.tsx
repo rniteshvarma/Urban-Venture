@@ -218,16 +218,16 @@ function CalculatorContent() {
   const selectedCorridor = corridors.find(c => c.id === selectedCorridorId);
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8 space-y-10">
+    <div className="max-w-6xl mx-auto px-4 py-8 space-y-10 animate-fade-in">
       {/* Header Banner */}
       <div className="text-center max-w-2xl mx-auto space-y-3">
-        <span className="text-[10px] text-[#2563EB] font-bold uppercase tracking-widest border border-blue-200/50 bg-blue-50/50 px-3 py-1 rounded-full inline-block">
+        <span className="badge badge-premium">
           Investment Intelligence
         </span>
-        <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+        <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-text-primary tracking-tight">
           Hyderabad ROI & Appreciation Simulator
         </h1>
-        <p className="text-sm text-slate-500 leading-relaxed">
+        <p className="text-sm text-text-secondary leading-relaxed">
           Simulate compounding returns in major Hyderabad real estate corridors. Contrast appreciation + rental yield projections with liquid equity, gold, and debt benchmarks.
         </p>
       </div>
@@ -236,16 +236,16 @@ function CalculatorContent() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
         {/* Left Column: Sliders & Inputs (4 Cols) */}
-        <div className="lg:col-span-4 bg-white border border-slate-200 p-6 rounded-2xl shadow-sm space-y-6">
-          <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-3 flex items-center gap-1.5">
-            <DollarSign className="w-4 h-4 text-[#2563EB]" /> Configure Parameters
+        <div className="lg:col-span-4 card-dark p-6 space-y-6">
+          <h2 className="text-sm font-bold text-white uppercase tracking-wider border-b border-white/20 pb-3 flex items-center gap-1.5 section-header">
+            <DollarSign className="w-4 h-4 text-accent" /> Configure Parameters
           </h2>
 
           {/* Initial Capital Slider */}
           <div className="space-y-2">
-            <div className="flex justify-between text-xs font-semibold text-slate-700">
+            <div className="flex justify-between text-xs font-semibold text-white/80">
               <span>Investment Amount</span>
-              <span className="text-[#2563EB] font-bold">₹{initialAmount} Lakhs</span>
+              <span className="text-accent font-bold">₹{initialAmount} Lakhs</span>
             </div>
             <input 
               type="range" 
@@ -254,9 +254,9 @@ function CalculatorContent() {
               step="5"
               value={initialAmount}
               onChange={(e) => setInitialAmount(parseFloat(e.target.value))}
-              className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-[#2563EB]"
+              className="w-full h-1.5 bg-white/20 rounded-lg appearance-none cursor-pointer accent-[#00B4D8]"
             />
-            <div className="flex justify-between text-[10px] text-slate-400">
+            <div className="flex justify-between text-[10px] text-white/50">
               <span>₹10L</span>
               <span>₹5.0Cr</span>
             </div>
@@ -264,9 +264,9 @@ function CalculatorContent() {
 
           {/* Horizon Slider */}
           <div className="space-y-2">
-            <div className="flex justify-between text-xs font-semibold text-slate-700">
+            <div className="flex justify-between text-xs font-semibold text-white/80">
               <span>Investment Horizon</span>
-              <span className="text-[#2563EB] font-bold">{years} Years</span>
+              <span className="text-accent font-bold">{years} Years</span>
             </div>
             <input 
               type="range" 
@@ -275,9 +275,9 @@ function CalculatorContent() {
               step="1"
               value={years}
               onChange={(e) => setYears(parseInt(e.target.value))}
-              className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-[#2563EB]"
+              className="w-full h-1.5 bg-white/20 rounded-lg appearance-none cursor-pointer accent-[#00B4D8]"
             />
-            <div className="flex justify-between text-[10px] text-slate-400">
+            <div className="flex justify-between text-[10px] text-white/50">
               <span>3 Years</span>
               <span>15 Years</span>
             </div>
@@ -285,11 +285,11 @@ function CalculatorContent() {
 
           {/* Corridor Selection */}
           <div className="space-y-2">
-            <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">Select Growth Corridor</label>
+            <label className="block text-xs font-bold text-white/80 uppercase tracking-wider">Select Growth Corridor</label>
             <select
               value={selectedCorridorId}
               onChange={(e) => setSelectedCorridorId(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 px-3.5 py-2.5 rounded-lg text-xs text-slate-800 focus:outline-none focus:border-[#2563EB] transition-colors"
+              className="w-full bg-white/10 border border-white/20 px-3.5 py-2.5 rounded-[8px] text-xs text-white focus:outline-none focus:border-accent transition-colors [&>option]:text-text-primary"
             >
               <option value="CUSTOM">Custom Parameters (Configure Below)</option>
               {corridors.map((c) => (
@@ -420,7 +420,7 @@ function CalculatorContent() {
         {/* Right Column: Comparative Results & Charts (8 Cols) */}
         <div className="lg:col-span-8 space-y-6 flex flex-col">
           {/* Output Card */}
-          <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm flex-grow flex flex-col justify-between space-y-6">
+          <div className="glass-panel border border-luxury p-6 rounded-[12px] shadow-sm flex-grow flex flex-col justify-between space-y-6 bg-surface">
             
             {/* Results Title and Tab select */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100 pb-3">
@@ -464,21 +464,21 @@ function CalculatorContent() {
               <div className="flex-grow flex flex-col justify-between">
                 
                 {/* Highlight Boxes for RE (Cons) vs RE (Opt) */}
-                <div className="grid grid-cols-2 gap-4 text-center">
-                  <div className="border border-slate-200/80 bg-slate-50/50 p-4 rounded-xl">
-                    <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider block mb-1">Conservative Real Estate</span>
-                    <span className="text-2xl font-black text-slate-800 leading-none block">
+                <div className="grid grid-cols-2 gap-4 text-center animate-fade-in-up">
+                  <div className="card-premium">
+                    <span className="text-[10px] text-text-secondary uppercase font-bold tracking-wider block mb-1">Conservative Real Estate</span>
+                    <span className="font-display text-2xl sm:text-3xl font-black text-text-primary leading-none block">
                       {formatPrice(calculationData.finalRealEstateMin)}
                     </span>
-                    <span className="text-[9px] text-slate-400 font-bold block mt-1">Apprec: {calculationData.appreciationCagrMin}% · Yield: {calculationData.rentalYieldMin}%</span>
+                    <span className="text-[9px] text-success font-bold block mt-1">Apprec: {calculationData.appreciationCagrMin}% · Yield: {calculationData.rentalYieldMin}%</span>
                   </div>
 
-                  <div className="border border-[#2563EB]/20 bg-blue-50/10 p-4 rounded-xl">
-                    <span className="text-[10px] text-[#2563EB] uppercase font-bold tracking-wider block mb-1">Optimistic Real Estate</span>
-                    <span className="text-2xl font-black text-slate-900 leading-none block">
+                  <div className="card-premium border-accent/20 bg-accent-light/10 shadow-glow-cyan">
+                    <span className="text-[10px] text-accent-cyan uppercase font-bold tracking-wider block mb-1">Optimistic Real Estate</span>
+                    <span className="font-display text-2xl sm:text-3xl font-black text-primary leading-none block">
                       {formatPrice(calculationData.finalRealEstateMax)}
                     </span>
-                    <span className="text-[9px] text-[#2563EB]/70 font-bold block mt-1">Apprec: {calculationData.appreciationCagrMax}% · Yield: {calculationData.rentalYieldMax}%</span>
+                    <span className="text-[9px] text-success font-bold block mt-1">Apprec: {calculationData.appreciationCagrMax}% · Yield: {calculationData.rentalYieldMax}%</span>
                   </div>
                 </div>
 
@@ -597,23 +597,23 @@ function CalculatorContent() {
       </div>
 
       {/* Lead Capture Overlay Section */}
-      <div className="bg-slate-50 border border-slate-200 rounded-3xl p-6 sm:p-8 max-w-3xl mx-auto space-y-6 shadow-sm">
+      <div className="card-premium max-w-3xl mx-auto space-y-6">
         <div className="text-center space-y-2">
-          <h3 className="font-display text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight">
+          <h3 className="font-display text-lg sm:text-xl font-extrabold text-primary tracking-tight">
             Receive a Detailed Investment Feasibility Report
           </h3>
-          <p className="text-xs text-slate-500 max-w-lg mx-auto leading-relaxed">
+          <p className="text-xs text-text-secondary max-w-lg mx-auto leading-relaxed">
             Get a tailored real estate advisory docket including RERA certifications, developer comparables, exiting timeline logs, and corridor analytics matching this calculation.
           </p>
         </div>
 
         {leadSubmitted ? (
-          <div className="py-6 text-center space-y-3 animate-slide-in">
-            <span className="w-12 h-12 rounded-full bg-green-50 border border-green-200 flex items-center justify-center text-green-600 mx-auto text-xl">
+          <div className="py-6 text-center space-y-3 animate-slide-in-right">
+            <span className="w-12 h-12 rounded-full bg-success-light border border-success/20 flex items-center justify-center text-success mx-auto text-xl">
               ✓
             </span>
-            <h4 className="font-bold text-sm text-slate-800">Feasibility Request Logged!</h4>
-            <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
+            <h4 className="font-bold text-sm text-text-primary">Feasibility Request Logged!</h4>
+            <p className="text-xs text-text-secondary max-w-sm mx-auto leading-relaxed">
               Our Senior Property Advisor has received your simulation parameters. We will contact you at your verified phone number shortly.
             </p>
           </div>
@@ -625,7 +625,7 @@ function CalculatorContent() {
                 placeholder="Full Name"
                 value={leadName}
                 onChange={(e) => setLeadName(e.target.value)}
-                className="w-full bg-white border border-slate-200 px-4 py-2.5 rounded-lg text-xs text-slate-800 focus:outline-none focus:border-[#2563EB] transition-colors"
+                className="input-premium w-full"
                 required
               />
             </div>
@@ -636,7 +636,7 @@ function CalculatorContent() {
                 placeholder="Email Address"
                 value={leadEmail}
                 onChange={(e) => setLeadEmail(e.target.value)}
-                className="w-full bg-white border border-slate-200 px-4 py-2.5 rounded-lg text-xs text-slate-800 focus:outline-none focus:border-[#2563EB] transition-colors"
+                className="input-premium w-full"
                 required
               />
             </div>
@@ -644,10 +644,10 @@ function CalculatorContent() {
             <div className="space-y-1">
               <input 
                 type="tel"
-                placeholder="Phone Number (with Country Code)"
+                placeholder="Phone Number"
                 value={leadPhone}
                 onChange={(e) => setLeadPhone(e.target.value)}
-                className="w-full bg-white border border-slate-200 px-4 py-2.5 rounded-lg text-xs text-slate-800 focus:outline-none focus:border-[#2563EB] transition-colors"
+                className="input-premium w-full"
                 required
               />
             </div>
@@ -655,7 +655,7 @@ function CalculatorContent() {
             <button
               type="submit"
               disabled={isSubmittingLead}
-              className="sm:col-span-3 w-full bg-[#2563EB] hover:bg-blue-700 text-white font-bold uppercase tracking-wider text-xs py-3 rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50 mt-2 cursor-pointer"
+              className="btn-primary sm:col-span-3 w-full py-3 mt-2 flex items-center justify-center gap-1.5 shadow-glow-cyan"
             >
               Get Custom Investment Feasibility Report <ArrowRight className="w-3.5 h-3.5" />
             </button>

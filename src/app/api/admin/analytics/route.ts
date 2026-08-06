@@ -217,6 +217,51 @@ export async function GET(req: Request) {
       value,
     }));
 
+    // 11. Source Attribution Stacked Monthly Data (Last 12 months)
+    const monthlySources: Record<string, Record<string, number>> = {};
+    const months: string[] = [];
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const label = d.toLocaleString('en-US', { month: 'short', year: '2-digit' });
+      months.push(label);
+      monthlySources[label] = {
+        '99acres': 0,
+        'MagicBricks': 0,
+        'Housing': 0,
+        'NoBroker': 0,
+        'WhatsApp': 0,
+        'Gmail': 0,
+        'Website': 0,
+        'Manual': 0
+      };
+    }
+
+    const allLeadsForSource = await prisma.lead.findMany({
+      select: { createdAt: true, source: true, sourceChannel: true }
+    });
+
+    allLeadsForSource.forEach(l => {
+      const d = new Date(l.createdAt);
+      const label = d.toLocaleString('en-US', { month: 'short', year: '2-digit' });
+      if (monthlySources[label]) {
+        const src = (l.source || '').toLowerCase();
+        const ch = l.sourceChannel;
+        if (ch === 'PORTAL_99ACRES' || src.includes('99acres')) monthlySources[label]['99acres']++;
+        else if (ch === 'PORTAL_MAGICBRICKS' || src.includes('magicbricks')) monthlySources[label]['MagicBricks']++;
+        else if (ch === 'PORTAL_HOUSING' || src.includes('housing')) monthlySources[label]['Housing']++;
+        else if (ch === 'PORTAL_NOBROKER' || src.includes('nobroker')) monthlySources[label]['NoBroker']++;
+        else if (ch === 'WHATSAPP_BUSINESS' || src.includes('whatsapp')) monthlySources[label]['WhatsApp']++;
+        else if (ch === 'GMAIL' || src.includes('gmail')) monthlySources[label]['Gmail']++;
+        else if (ch === 'WEBSITE_FORM' || src.includes('website')) monthlySources[label]['Website']++;
+        else monthlySources[label]['Manual']++;
+      }
+    });
+
+    const sourceAttribution = months.map(month => ({
+      month,
+      ...monthlySources[month]
+    }));
+
     return NextResponse.json({
       leadsByStatus,
       budgetDistribution,
@@ -228,6 +273,7 @@ export async function GET(req: Request) {
       hotLeads,
       personaDistribution,
       scoreGradeDistribution,
+      sourceAttribution,
       kpis: {
         totalLeads,
         newLeads7Days: leads.filter(

@@ -164,7 +164,7 @@ export default function BroadcastReportPage({ params }: PageProps) {
       case "FAILED":
         return <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-red-50 text-red-700 border border-red-200"><AlertTriangle size={10} /> Failed</span>;
       default:
-        return <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-50 text-slate-500 border border-slate-200">Draft</span>;
+        return <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-50 text-text-secondary border border-slate-200">Draft</span>;
     }
   };
 
@@ -180,8 +180,8 @@ export default function BroadcastReportPage({ params }: PageProps) {
     return (
       <div className="space-y-4 text-center p-12">
         <AlertTriangle className="text-red-500 mx-auto w-12 h-12" />
-        <h2 className="text-lg font-bold text-slate-800">Broadcast Campaign Not Found</h2>
-        <Link href="/admin/broadcasts" className="text-xs text-blue-600 hover:underline">
+        <h2 className="text-lg font-bold text-text-primary">Broadcast Campaign Not Found</h2>
+        <Link href="/admin/broadcasts" className="text-xs text-accent hover:underline">
           Return to Broadcast Center
         </Link>
       </div>
@@ -194,17 +194,17 @@ export default function BroadcastReportPage({ params }: PageProps) {
     <div className="space-y-6 flex-grow flex flex-col">
       {/* Navigation Headers */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-xs text-slate-500">
+        <div className="flex items-center gap-2 text-xs text-text-secondary">
           <Link href="/admin/broadcasts/history" className="hover:text-primary transition-colors flex items-center gap-1">
             <ArrowLeft size={12} /> Broadcast Center
           </Link>
           <span>/</span>
-          <span className="text-slate-800 font-semibold">Report Detail</span>
+          <span className="text-text-primary font-semibold">Report Detail</span>
         </div>
 
         <button
           onClick={loadBroadcastAndStats}
-          className="p-1.5 border border-slate-200 rounded hover:bg-slate-50 text-slate-500"
+          className="p-1.5 border border-slate-200 rounded hover:bg-slate-50 text-text-secondary"
           title="Force refresh"
         >
           <RefreshCw size={13} />
@@ -212,16 +212,16 @@ export default function BroadcastReportPage({ params }: PageProps) {
       </div>
 
       {/* Main Campaign Header details */}
-      <div className="bg-white border border-slate-200 p-6 rounded shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="card-premium p-6 rounded shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-2">
           <div className="flex items-center gap-3">
-            <h1 className="font-display text-xl sm:text-2xl font-bold text-slate-900">
+            <h1 className="font-display text-xl sm:text-2xl font-bold text-text-primary">
               {broadcast.name}
             </h1>
             {getStatusBadge(broadcast.status)}
           </div>
           
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500 font-medium">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-text-secondary font-medium">
             <span>Channel: <strong className="text-slate-700">{broadcast.channel}</strong></span>
             <span>•</span>
             <span>Target: <strong className="text-slate-700 uppercase tracking-wider text-[10px]">{broadcast.groupType.replace(/_/g, " ")}</strong></span>
@@ -240,7 +240,7 @@ export default function BroadcastReportPage({ params }: PageProps) {
           <button
             onClick={handleRetryFailed}
             disabled={isRetrying}
-            className="flex items-center justify-center gap-1.5 px-4.5 py-2.5 bg-[#2563EB] hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-bold uppercase tracking-wider rounded transition-colors shadow-sm"
+            className="flex items-center justify-center gap-1.5 px-4.5 py-2.5 btn-primary disabled:opacity-50 text-white text-xs font-bold uppercase tracking-wider rounded transition-colors shadow-sm"
           >
             {isRetrying ? <Loader2 size={13} className="animate-spin" /> : <Send size={13} />} Retry Failed Recipients ({stats.failedCount})
           </button>
@@ -251,22 +251,22 @@ export default function BroadcastReportPage({ params }: PageProps) {
       {stats && (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
           {/* Card 1: Total Size */}
-          <div className="bg-white border border-slate-200 p-5 rounded shadow-sm flex items-center justify-between">
+          <div className="card-premium p-5 rounded shadow-sm flex items-center justify-between">
             <div className="space-y-1">
               <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Recipients Size</span>
-              <div className="text-2xl font-bold text-slate-800">{stats.totalRecipients}</div>
-              <span className="text-[10px] text-slate-500 font-medium">Target audience size</span>
+              <div className="text-2xl font-bold text-text-primary">{stats.totalRecipients}</div>
+              <span className="text-[10px] text-text-secondary font-medium">Target audience size</span>
             </div>
-            <span className="p-3 bg-blue-50 text-blue-600 rounded-full"><Users size={20} /></span>
+            <span className="p-3 bg-blue-50 text-accent rounded-full"><Users size={20} /></span>
           </div>
 
           {/* Card 2: WhatsApp stats */}
           {(broadcast.channel === "WHATSAPP" || broadcast.channel === "BOTH") && (
-            <div className="bg-white border border-slate-200 p-5 rounded shadow-sm flex items-center justify-between">
+            <div className="card-premium p-5 rounded shadow-sm flex items-center justify-between">
               <div className="space-y-1">
                 <span className="text-[10px] text-green-600 font-bold uppercase tracking-wider block">WhatsApp Delivery</span>
                 <div className="text-2xl font-bold text-green-800">{stats.whatsapp.deliveredRate}%</div>
-                <span className="text-[10px] text-slate-500 font-medium">Delivered: {stats.whatsapp.delivered} | Read: {stats.whatsapp.read}</span>
+                <span className="text-[10px] text-text-secondary font-medium">Delivered: {stats.whatsapp.delivered} | Read: {stats.whatsapp.read}</span>
               </div>
               <span className="p-3 bg-green-50 text-green-600 rounded-full"><MessageSquare size={20} /></span>
             </div>
@@ -274,22 +274,22 @@ export default function BroadcastReportPage({ params }: PageProps) {
 
           {/* Card 3: Email stats */}
           {(broadcast.channel === "EMAIL" || broadcast.channel === "BOTH") && (
-            <div className="bg-white border border-slate-200 p-5 rounded shadow-sm flex items-center justify-between">
+            <div className="card-premium p-5 rounded shadow-sm flex items-center justify-between">
               <div className="space-y-1">
                 <span className="text-[10px] text-purple-600 font-bold uppercase tracking-wider block">Email Open Rate</span>
                 <div className="text-2xl font-bold text-purple-800">{stats.email.openRate}%</div>
-                <span className="text-[10px] text-slate-500 font-medium">Opened: {stats.email.opened} | Sent: {stats.email.sent}</span>
+                <span className="text-[10px] text-text-secondary font-medium">Opened: {stats.email.opened} | Sent: {stats.email.sent}</span>
               </div>
               <span className="p-3 bg-purple-50 text-purple-600 rounded-full"><Mail size={20} /></span>
             </div>
           )}
 
           {/* Card 4: Failed deliveries count */}
-          <div className="bg-white border border-slate-200 p-5 rounded shadow-sm flex items-center justify-between">
+          <div className="card-premium p-5 rounded shadow-sm flex items-center justify-between">
             <div className="space-y-1">
               <span className="text-[10px] text-red-600 font-bold uppercase tracking-wider block">Failed Dispatches</span>
               <div className="text-2xl font-bold text-red-800">{stats.failedCount}</div>
-              <span className="text-[10px] text-slate-500 font-medium">Deliveries requiring attention</span>
+              <span className="text-[10px] text-text-secondary font-medium">Deliveries requiring attention</span>
             </div>
             <span className="p-3 bg-red-50 text-red-600 rounded-full"><XCircle size={20} /></span>
           </div>
@@ -297,16 +297,16 @@ export default function BroadcastReportPage({ params }: PageProps) {
       )}
 
       {/* Campaign Messages Preview Accordion */}
-      <div className="bg-white border border-slate-200 p-5 rounded shadow-sm space-y-4">
-        <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-2">
+      <div className="card-premium p-5 rounded shadow-sm space-y-4">
+        <h3 className="text-xs font-bold text-text-primary uppercase tracking-wider section-header pb-2">
           Campaign Message Preview
         </h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
           {broadcast.whatsappMessage && (
             <div className="space-y-2">
-              <span className="font-bold text-slate-500 block uppercase tracking-wider text-[9px]">WhatsApp Text Structure:</span>
-              <div className="p-3 bg-slate-50 rounded border border-slate-200 font-mono text-[10px] whitespace-pre-line text-slate-800 shadow-inner">
+              <span className="font-bold text-text-secondary block uppercase tracking-wider text-[9px]">WhatsApp Text Structure:</span>
+              <div className="p-3 bg-slate-50 rounded border border-slate-200 font-mono text-[10px] whitespace-pre-line text-text-primary shadow-inner">
                 {broadcast.whatsappMessage}
               </div>
             </div>
@@ -314,8 +314,8 @@ export default function BroadcastReportPage({ params }: PageProps) {
 
           {broadcast.emailBody && (
             <div className="space-y-2">
-              <span className="font-bold text-slate-500 block uppercase tracking-wider text-[9px]">Email Content Structure:</span>
-              <div className="p-3 bg-slate-50 rounded border border-slate-200 text-[10px] text-slate-800 space-y-2 shadow-inner">
+              <span className="font-bold text-text-secondary block uppercase tracking-wider text-[9px]">Email Content Structure:</span>
+              <div className="p-3 bg-slate-50 rounded border border-slate-200 text-[10px] text-text-primary space-y-2 shadow-inner">
                 <div className="border-b border-slate-200 pb-1 font-bold">
                   Subject: <span className="font-normal font-sans text-slate-700">{broadcast.emailSubject}</span>
                 </div>
@@ -330,7 +330,7 @@ export default function BroadcastReportPage({ params }: PageProps) {
       {isSending && (
         <div className="bg-blue-50 border border-blue-200 p-5 rounded shadow-sm space-y-3">
           <div className="flex justify-between items-center text-xs font-bold text-blue-900">
-            <span className="flex items-center gap-1.5"><Activity size={14} className="animate-spin text-blue-600" /> Active batch dispatcher is processing...</span>
+            <span className="flex items-center gap-1.5"><Activity size={14} className="animate-spin text-accent" /> Active batch dispatcher is processing...</span>
             <span>Refreshing logs...</span>
           </div>
           <div className="w-full bg-blue-100 rounded-full h-2 overflow-hidden">
@@ -340,27 +340,19 @@ export default function BroadcastReportPage({ params }: PageProps) {
       )}
 
       {/* Detailed Recipients status logs */}
-      <div className="bg-white border border-slate-200 rounded shadow-sm flex-grow flex flex-col">
+      <div className="card-premium rounded shadow-sm flex-grow flex flex-col">
         {/* Table Filter options */}
         <div className="p-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex gap-2">
             <button
               onClick={() => setStatusFilter("ALL")}
-              className={`px-3 py-1.5 rounded text-[10px] font-bold uppercase tracking-wider border transition-all ${
-                statusFilter === "ALL" 
-                  ? "bg-slate-800 text-white border-slate-800" 
-                  : "bg-white text-slate-600 border-slate-200 hover:border-slate-350"
-              }`}
+              className={statusFilter === "ALL" ? "filter-pill-active text-[10px]" : "filter-pill text-[10px]"}
             >
               All Logs
             </button>
             <button
               onClick={() => setStatusFilter("FAILED")}
-              className={`px-3 py-1.5 rounded text-[10px] font-bold uppercase tracking-wider border transition-all ${
-                statusFilter === "FAILED" 
-                  ? "bg-red-650 text-white border-red-650" 
-                  : "bg-white text-slate-600 border-slate-200 hover:border-slate-350"
-              }`}
+              className={statusFilter === "FAILED" ? "filter-pill-active text-[10px]" : "filter-pill text-[10px]"}
             >
               Failed ({stats?.failedCount || 0})
             </button>
@@ -382,7 +374,7 @@ export default function BroadcastReportPage({ params }: PageProps) {
               placeholder="Search recipient by name..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-white border border-slate-200 pl-8 pr-3 py-1.5 rounded text-xs focus:outline-none focus:border-blue-600"
+              className="w-full card-premium pl-8 pr-3 py-1.5 rounded text-xs focus:outline-none focus:border-blue-600"
             />
             <Search size={12} className="absolute left-2.5 top-2.5 text-slate-400" />
           </div>
@@ -411,10 +403,10 @@ export default function BroadcastReportPage({ params }: PageProps) {
                   const hasError = r.errorMessage;
                   return (
                     <tr key={r.id} className={`hover:bg-slate-50/50 transition-colors ${hasError ? "bg-red-50/10" : ""}`}>
-                      <td className="px-5 py-4 font-semibold text-slate-800">
+                      <td className="px-5 py-4 font-semibold text-text-primary">
                         {r.lead?.name}
                       </td>
-                      <td className="px-5 py-4 space-y-0.5 text-[10px] text-slate-500">
+                      <td className="px-5 py-4 space-y-0.5 text-[10px] text-text-secondary">
                         {r.lead?.email && <div>{r.lead.email}</div>}
                         {r.lead?.phone && <div>{r.lead.phone}</div>}
                       </td>
@@ -450,7 +442,7 @@ export default function BroadcastReportPage({ params }: PageProps) {
                           : "-"
                         }
                       </td>
-                      <td className="px-5 py-4 max-w-[200px] truncate text-[10px] text-slate-500" title={r.errorMessage || ""}>
+                      <td className="px-5 py-4 max-w-[200px] truncate text-[10px] text-text-secondary" title={r.errorMessage || ""}>
                         {r.errorMessage ? (
                           <span className="text-red-600 font-medium flex items-center gap-0.5"><XCircle size={10} className="flex-shrink-0" /> {r.errorMessage}</span>
                         ) : (

@@ -216,7 +216,7 @@ export default function LeadRoadmapTimeline({ roadmap, onRefresh }: LeadRoadmapT
   return (
     <div className="space-y-6">
       {/* 1. Stepper Bar (Horizontal) */}
-      <div className="bg-surface border border-luxury p-5 rounded-card shadow-sm overflow-x-auto">
+      <div className="card-premium p-5 overflow-x-auto">
         <h3 className="text-xs font-bold uppercase tracking-wider text-primary mb-6">
           Pipeline Overview ({roadmap.probability}% Probability)
         </h3>
@@ -273,7 +273,7 @@ export default function LeadRoadmapTimeline({ roadmap, onRefresh }: LeadRoadmapT
           return (
             <div 
               key={stage.id} 
-              className={`bg-surface border rounded-card overflow-hidden transition-all shadow-sm ${
+              className={`card-premium overflow-hidden transition-all ${
                 isActive ? "border-blue-900/40 ring-1 ring-blue-900/10" : "border-luxury"
               }`}
             >
@@ -408,7 +408,7 @@ export default function LeadRoadmapTimeline({ roadmap, onRefresh }: LeadRoadmapT
                           placeholder="Add custom verification step..."
                           value={addingActionStageId === stage.id ? "" : newActionText}
                           onChange={(e) => setNewActionText(e.target.value)}
-                          className="flex-grow bg-surface border border-luxury px-3 py-1.5 rounded-input text-xs text-text-primary focus:outline-none focus:border-accent"
+                          className="flex-grow input-premium text-xs"
                           required
                         />
                         <button
@@ -439,7 +439,7 @@ export default function LeadRoadmapTimeline({ roadmap, onRefresh }: LeadRoadmapT
                             }
                           }}
                           rows={6}
-                          className="w-full bg-surface border border-luxury p-3 rounded-input text-xs text-text-primary focus:outline-none focus:border-accent resize-none"
+                          className="w-full input-premium text-xs resize-none"
                         />
                         <p className="text-[9px] text-text-secondary italic">
                           * Notes are auto-saved on text area blur (clicking outside the text area).

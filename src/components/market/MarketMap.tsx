@@ -180,8 +180,7 @@ export default function MarketMap({ projects, corridors = [] }: MarketMapProps) 
   return (
     <div 
       ref={mapContainerRef} 
-      className="w-full h-full min-h-[350px] md:min-h-[450px] rounded border border-slate-200 shadow-inner z-10"
-      style={{ overflow: "hidden" }}
+      className="w-full h-full min-h-[350px] md:min-h-[450px] card-premium p-0 overflow-hidden z-10"
     />
   );
 }

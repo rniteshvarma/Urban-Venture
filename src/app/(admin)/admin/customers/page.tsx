@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import CustomerProfile from "@/components/admin/CustomerProfile";
+import { User, ChevronRight, Search } from "lucide-react";
 
 interface Customer {
   id: string;
@@ -112,34 +113,34 @@ export default function AdminCustomersPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "NEW":
-        return "bg-blue-50 text-blue-700 border-blue-200";
+        return "bg-blue-100 text-blue-800";
       case "CONTACTED":
-        return "bg-purple-50 text-purple-700 border-purple-200";
+        return "bg-purple-100 text-purple-800";
       case "INTERESTED":
-        return "bg-emerald-50 text-emerald-700 border-emerald-200";
+        return "bg-[#F4F0FF] text-[#5B4FE0]";
       case "NEGOTIATING":
-        return "bg-amber-50 text-amber-700 border-amber-200";
+        return "bg-amber-100 text-amber-800";
       case "CONVERTED":
-        return "bg-green-100 text-green-800 border-green-300";
+        return "bg-emerald-100 text-emerald-800";
       case "LOST":
-        return "bg-red-50 text-red-700 border-red-200";
+        return "bg-rose-100 text-rose-800";
       default:
-        return "bg-gray-50 text-gray-700 border-gray-200";
+        return "bg-slate-100 text-slate-700";
     }
   };
 
   return (
-    <div className="space-y-6 flex-grow flex flex-col">
+    <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8 flex-grow flex flex-col animate-fade-in text-[#1A1A2E] w-full">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-[#F0EDFA]">
         <div>
-          <span className="text-[10px] text-accent font-bold uppercase tracking-widest block">Client Profile Ledger</span>
-          <h1 className="font-display text-2xl sm:text-4xl font-bold text-primary">Customer Directory</h1>
+          <span className="text-[11px] text-[#5B4FE0] font-bold uppercase tracking-widest block mb-1">Client Profile Ledger</span>
+          <h1 className="font-display text-2xl sm:text-3xl font-bold text-[#1A1A2E]">Customer Directory</h1>
         </div>
         <div>
           <button
             onClick={handleExportCSV}
-            className="px-4 py-2 border border-luxury hover:bg-luxury-bg/40 text-text-primary text-xs font-semibold uppercase tracking-wider rounded-tag transition-colors"
+            className="crm-btn-secondary text-xs"
           >
             📊 Export CSV
           </button>
@@ -147,82 +148,94 @@ export default function AdminCustomersPage() {
       </div>
 
       {/* Search Bar */}
-      <div className="bg-surface border border-luxury p-4 rounded-card shadow-sm flex gap-2">
-        <input
-          type="text"
-          placeholder="Search customers by name, email, or phone... (Press Enter)"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          onKeyDown={handleSearchKeyPress}
-          className="w-full bg-luxury-bg border border-luxury px-3 py-2 rounded-input text-xs text-text-primary focus:outline-none focus:border-accent"
-        />
+      <div className="crm-card p-6 flex gap-3 items-center">
+        <div className="relative flex-grow">
+          <input
+            type="text"
+            placeholder="Search customers by name, email, or phone..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={handleSearchKeyPress}
+            className="w-full bg-[#F9F8FD] border border-[#E8E5F5] pl-9 pr-4 py-2 rounded-full text-xs text-[#1A1A2E] placeholder-[#8A8A9E] focus:outline-none focus:border-[#5B4FE0]"
+          />
+          <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8A8A9E]" />
+        </div>
         <button
           onClick={loadCustomers}
-          className="bg-primary hover:bg-blue-700 px-4 rounded-input text-xs text-surface uppercase font-semibold tracking-wider transition-colors"
+          className="crm-btn-primary text-xs px-5"
         >
           Search
         </button>
       </div>
 
       {/* Directory Table */}
-      <div className="bg-surface border border-luxury rounded-card shadow-sm flex-grow overflow-hidden">
+      <div className="crm-card p-0 overflow-hidden flex-grow">
         {isLoading ? (
-          <div className="p-8 text-center text-text-secondary animate-pulse">
+          <div className="p-12 text-center text-[#8A8A9E] animate-pulse text-xs">
             Loading directory entries...
           </div>
         ) : customers.length === 0 ? (
-          <div className="p-16 text-center text-text-secondary space-y-3">
+          <div className="p-16 text-center text-[#8A8A9E] space-y-3">
             <span className="text-3xl">👥</span>
-            <h3 className="font-display text-lg font-bold text-primary">No Customers Found</h3>
+            <h3 className="font-display text-lg font-bold text-[#1A1A2E]">No Customers Found</h3>
             <p className="text-xs max-w-sm mx-auto leading-relaxed">
               No matching client profiles found.
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto w-full">
-            <table className="min-w-full divide-y divide-luxury text-left text-xs text-text-primary">
-              <thead className="bg-luxury-bg text-text-secondary uppercase font-semibold tracking-wider">
-                <tr>
-                  <th className="px-6 py-4">Client Name</th>
-                  <th className="px-6 py-4">Email</th>
-                  <th className="px-6 py-4">Phone</th>
-                  <th className="px-6 py-4">Searches Count</th>
-                  <th className="px-6 py-4">Lead status</th>
-                  <th className="px-6 py-4">Last activity</th>
-                  <th className="px-6 py-4 text-right">Actions</th>
+          <table className="crm-table text-xs w-full">
+            <thead>
+              <tr>
+                <th>Client Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Searches Count</th>
+                <th>Lead Status</th>
+                <th>Last Activity</th>
+                <th className="text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {customers.map((c) => (
+                <tr
+                  key={c.id}
+                  className="cursor-pointer"
+                  onClick={() => setActiveCustomer(c)}
+                >
+                  <td className="font-bold text-[#1A1A2E]">
+                    <div className="flex items-center gap-3">
+                      <div className="crm-avatar-ring shrink-0">
+                        <div className="w-8 h-8 rounded-full bg-[#EBE7F5] flex items-center justify-center text-[#5B4FE0] font-bold text-xs">
+                          {c.name.charAt(0)}
+                        </div>
+                      </div>
+                      <span>{c.name}</span>
+                    </div>
+                  </td>
+                  <td className="text-[#8A8A9E]">{c.email}</td>
+                  <td className="text-[#8A8A9E]">{c.phone}</td>
+                  <td className="font-semibold text-[#1A1A2E]">{c.searchesCount} Searches</td>
+                  <td>
+                    <span className={`badge px-3 py-1 rounded-full text-[10px] font-bold ${getStatusBadge(c.leadStatus)}`}>
+                      {c.leadStatus.replace("_", " ")}
+                    </span>
+                  </td>
+                  <td className="text-[#8A8A9E]">
+                    {new Date(c.lastActivity).toLocaleDateString("en-IN", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    })}
+                  </td>
+                  <td className="text-right">
+                    <span className="text-[#5B4FE0] font-bold text-xs inline-flex items-center gap-1 hover:underline">
+                      View Profile <ChevronRight size={14} />
+                    </span>
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-luxury bg-surface">
-                {customers.map((c) => (
-                  <tr
-                    key={c.id}
-                    className="hover:bg-luxury-bg/30 transition-colors cursor-pointer"
-                    onClick={() => setActiveCustomer(c)}
-                  >
-                    <td className="px-6 py-4 font-semibold text-primary text-sm">{c.name}</td>
-                    <td className="px-6 py-4 text-text-secondary">{c.email}</td>
-                    <td className="px-6 py-4 text-text-secondary">{c.phone}</td>
-                    <td className="px-6 py-4 font-medium text-center sm:text-left">{c.searchesCount} Searches</td>
-                    <td className="px-6 py-4">
-                      <span className={`px-2 py-0.5 rounded border text-[9px] font-bold uppercase ${getStatusBadge(c.leadStatus)}`}>
-                        {c.leadStatus.replace("_", " ")}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-text-secondary">
-                      {new Date(c.lastActivity).toLocaleDateString("en-IN", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      })}
-                    </td>
-                    <td className="px-6 py-4 text-right text-accent font-bold text-sm">
-                      <span>View Profile →</span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </table>
         )}
       </div>
 
@@ -234,7 +247,6 @@ export default function AdminCustomersPage() {
           onUpdateCustomer={handleUpdateCustomer}
         />
       )}
-
     </div>
   );
 }

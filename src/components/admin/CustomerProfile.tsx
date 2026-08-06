@@ -58,19 +58,19 @@ export default function CustomerProfile({
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "NEW":
-        return "bg-blue-50 text-blue-700 border-blue-200";
+        return "badge-new";
       case "CONTACTED":
-        return "bg-purple-50 text-purple-700 border-purple-200";
+        return "badge-hot";
       case "INTERESTED":
-        return "bg-emerald-50 text-emerald-700 border-emerald-200";
+        return "badge-premium";
       case "NEGOTIATING":
-        return "bg-amber-50 text-amber-700 border-amber-200";
+        return "badge-warning";
       case "CONVERTED":
-        return "bg-green-100 text-green-800 border-green-300";
+        return "badge-verified";
       case "LOST":
-        return "bg-red-50 text-red-700 border-red-200";
+        return "badge-danger";
       default:
-        return "bg-gray-50 text-gray-700 border-gray-200";
+        return "badge";
     }
   };
 
@@ -88,8 +88,8 @@ export default function CustomerProfile({
         {/* Header */}
         <div className="px-6 py-4 border-b border-luxury bg-luxury-bg/40 flex items-center justify-between">
           <div>
-            <span className="text-[9px] text-accent font-bold uppercase tracking-wider block">Customer Directory Profile</span>
-            <h2 className="font-display text-lg font-bold text-primary">{customer.name}</h2>
+            <span className="text-[9px] text-text-secondary font-bold uppercase tracking-widest block">Customer Directory Profile</span>
+            <h2 className="font-display text-lg font-bold text-text-primary">{customer.name}</h2>
           </div>
           <button 
             onClick={onClose}
@@ -103,9 +103,9 @@ export default function CustomerProfile({
         <div className="flex-grow overflow-y-auto p-6 space-y-6 scrollbar-thin">
           
           {/* Editable Contact Info */}
-          <section className="bg-luxury-bg/20 p-4 rounded-card border border-luxury/50 space-y-4">
+          <section className="card-premium space-y-4">
             <div className="flex justify-between items-center border-b border-luxury/40 pb-2">
-              <h3 className="font-bold text-primary uppercase tracking-wide">Client Details</h3>
+              <h3 className="font-bold text-text-primary uppercase tracking-wide">Client Details</h3>
               <button
                 type="button"
                 onClick={() => setIsEditing(!isEditing)}
@@ -124,7 +124,7 @@ export default function CustomerProfile({
                     required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full bg-surface border border-luxury px-3 py-1.5 rounded-input text-xs text-text-primary"
+                    className="input-premium w-full text-xs"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
@@ -135,7 +135,7 @@ export default function CustomerProfile({
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full bg-surface border border-luxury px-3 py-1.5 rounded-input text-xs text-text-primary"
+                      className="input-premium w-full text-xs"
                     />
                   </div>
                   <div>
@@ -145,7 +145,7 @@ export default function CustomerProfile({
                       required
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      className="w-full bg-surface border border-luxury px-3 py-1.5 rounded-input text-xs text-text-primary"
+                      className="input-premium w-full text-xs"
                     />
                   </div>
                 </div>
@@ -153,7 +153,7 @@ export default function CustomerProfile({
                   <button
                     type="submit"
                     disabled={isSaving}
-                    className="px-3 py-1.5 bg-primary text-surface font-semibold rounded-tag"
+                    className="btn-primary text-[10px]"
                   >
                     {isSaving ? "Saving..." : "Save Changes"}
                   </button>
@@ -193,7 +193,7 @@ export default function CustomerProfile({
 
           {/* AI Searches & Recommendations History */}
           <section className="space-y-3">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-primary border-b border-luxury pb-1.5">
+            <h3 className="section-header">
               AI Recommendations History ({customer.searchesCount})
             </h3>
             {customer.searches.length === 0 ? (
@@ -204,7 +204,7 @@ export default function CustomerProfile({
                   const responseJson = s.aiResponse || {};
                   const corridors = responseJson.corridors || [];
                   return (
-                    <div key={s.id} className="border border-luxury rounded-card p-3 bg-surface space-y-2">
+                    <div key={s.id} className="card-premium p-3 space-y-2">
                       <div className="flex justify-between items-center text-[9px] text-text-secondary">
                         <span>Query parameters: ₹{s.budget}L · {s.horizon}Yrs · {s.city}</span>
                         <span>{new Date(s.createdAt).toLocaleDateString("en-IN")}</span>
@@ -228,7 +228,7 @@ export default function CustomerProfile({
 
           {/* Activity Timeline */}
           <section className="space-y-3">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-primary border-b border-luxury pb-1.5">
+            <h3 className="section-header">
               Activity History Timeline
             </h3>
             <div className="relative border-l border-luxury pl-4 ml-2 space-y-4">
@@ -276,7 +276,7 @@ export default function CustomerProfile({
         <div className="px-6 py-4 border-t border-luxury bg-luxury-bg/20 text-center">
           <button
             onClick={onClose}
-            className="px-6 py-2 bg-primary text-surface font-semibold uppercase tracking-wider rounded-tag"
+            className="btn-primary"
           >
             Close Profile
           </button>

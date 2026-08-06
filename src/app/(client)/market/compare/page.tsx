@@ -152,26 +152,26 @@ export function ComparePageContent() {
     router.push(`/market/compare?${params.toString()}`);
   };
 
-  const lineColors = ["#f59e0b", "#3b82f6", "#8b5cf6"];
+  const lineColors = ["#00B4D8", "#10B981", "#8b5cf6"];
   const overlaidData = getOverlaidChartData();
 
   return (
-    <div className="bg-luxury-bg text-text-primary min-h-screen font-sans">
+    <div className="bg-surface-dim text-text-primary min-h-screen font-sans">
       {/* Back Header */}
-      <div className="bg-white border-b border-luxury py-3 px-6">
+      <div className="bg-surface border-b border-slate-200 py-3 px-6">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <Link href="/market" className="inline-flex items-center gap-1.5 text-xs font-semibold text-text-secondary hover:text-text-primary transition-colors">
             <ArrowLeft size={13} /> Back to Market Hub
           </Link>
-          <span className="text-xs text-primary font-bold uppercase tracking-wider">Corridor Comparison Tool</span>
+          <span className="text-xs text-accent font-bold uppercase tracking-wider">Corridor Comparison Tool</span>
         </div>
       </div>
 
-      <main className="max-w-7xl mx-auto py-10 px-6 space-y-10">
+      <main className="max-w-7xl mx-auto py-10 px-6 space-y-10 animate-fade-in">
         {/* Selector Panel */}
-        <div className="bg-white border border-luxury p-5 rounded-lg space-y-4 shadow-sm">
+        <div className="glass-panel p-5 space-y-4">
           <h1 className="text-lg font-bold text-text-primary flex items-center gap-1.5">
-            <Sparkles size={18} className="text-primary" /> Compare Hyderabad Corridors
+            <Sparkles size={18} className="text-accent" /> Compare Hyderabad Corridors
           </h1>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="flex flex-col gap-1.5">
@@ -179,7 +179,7 @@ export function ComparePageContent() {
               <select
                 value={corridorA}
                 onChange={(e) => handleUpdateQuery("a", e.target.value)}
-                className="border border-slate-200 bg-white text-text-primary rounded px-3 py-2 text-xs focus:ring-1 focus:ring-primary focus:outline-none"
+                className="input-premium bg-white px-3 py-2 text-xs"
               >
                 {corridors.map(c => (
                   <option key={c.corridor} value={c.corridor} disabled={c.corridor === corridorB || c.corridor === corridorC}>
@@ -194,7 +194,7 @@ export function ComparePageContent() {
               <select
                 value={corridorB}
                 onChange={(e) => handleUpdateQuery("b", e.target.value)}
-                className="border border-slate-200 bg-white text-text-primary rounded px-3 py-2 text-xs focus:ring-1 focus:ring-primary focus:outline-none"
+                className="input-premium bg-white px-3 py-2 text-xs"
               >
                 {corridors.map(c => (
                   <option key={c.corridor} value={c.corridor} disabled={c.corridor === corridorA || c.corridor === corridorC}>
@@ -210,7 +210,7 @@ export function ComparePageContent() {
                 <select
                   value={corridorC}
                   onChange={(e) => handleUpdateQuery("c", e.target.value)}
-                  className="w-full border border-slate-200 bg-white text-text-primary rounded px-3 py-2 text-xs focus:ring-1 focus:ring-primary focus:outline-none"
+                  className="input-premium bg-white px-3 py-2 text-xs w-full"
                 >
                   <option value="">-- Add Third Corridor --</option>
                   {corridors.map(c => (
@@ -245,7 +245,7 @@ export function ComparePageContent() {
             {/* Row 1: circular score gauges */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {comparisons.map((c, idx) => (
-                <div key={c.corridor} className="bg-white border border-luxury p-6 rounded-lg text-center flex flex-col items-center shadow-sm">
+                <div key={c.corridor} className="card-premium p-6 text-center flex flex-col items-center">
                   <span className="text-[10px] font-bold text-text-secondary uppercase tracking-widest mb-1">{c.zone || c.city || "Growth"} Zone</span>
                   <h3 className="text-base font-bold text-text-primary mb-4">{c.shortName || c.name}</h3>
 
@@ -267,10 +267,10 @@ export function ComparePageContent() {
                     <span className="absolute text-base font-black text-text-primary">{c.overallScore}</span>
                   </div>
 
-                  <span className={`mt-3 px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider border ${
-                    c.investorSentiment === "BULLISH" ? "bg-emerald-50 text-emerald-700 border-emerald-250" :
-                    c.investorSentiment === "CAUTIOUS" ? "bg-red-50 text-red-700 border-red-200" :
-                    "bg-amber-50 text-amber-700 border-amber-250"
+                  <span className={`mt-3 badge ${
+                    c.investorSentiment === "BULLISH" ? "badge-verified" :
+                    c.investorSentiment === "CAUTIOUS" ? "badge-danger" :
+                    "badge-warning"
                   }`}>
                     {c.investorSentiment}
                   </span>
@@ -287,9 +287,9 @@ export function ComparePageContent() {
             </div>
 
             {/* Row 2: Overlaid Appreciation Line Chart */}
-            <div className="bg-white border border-luxury p-5 rounded-lg shadow-sm">
-              <h2 className="text-xs font-bold text-text-primary uppercase tracking-wider mb-4 flex items-center gap-1.5">
-                <TrendingUp size={14} className="text-primary" /> Overlaid 5-Year price Appreciation (₹/sqft)
+            <div className="card-premium p-5">
+              <h2 className="text-xs font-bold text-text-primary uppercase tracking-wider mb-4 flex items-center gap-1.5 section-header border-l-4 border-accent pl-2">
+                <TrendingUp size={14} className="text-accent" /> Overlaid 5-Year price Appreciation (₹/sqft)
               </h2>
               <div className="h-[250px] w-full text-[10px] text-text-secondary">
                 <ResponsiveContainer width="100%" height="100%">
@@ -321,12 +321,12 @@ export function ComparePageContent() {
             </div>
 
             {/* Row 3: Key metrics comparison grid table */}
-            <div className="bg-white border border-luxury rounded-lg overflow-hidden shadow-sm">
-              <div className="px-4 py-3 bg-slate-50 border-b border-luxury text-xs font-bold text-text-primary">
+            <div className="card-premium overflow-hidden">
+              <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 text-xs font-bold text-text-primary">
                 Key Return Metrics Side-by-Side
               </div>
               <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse text-xs">
+                <table className="table-premium w-full text-left border-collapse text-xs">
                   <tbody>
                     <tr className="border-b border-slate-100">
                       <td className="px-4 py-3 font-semibold text-text-secondary bg-slate-50/50 w-44">Historical CAGR</td>
@@ -345,7 +345,7 @@ export function ComparePageContent() {
                     <tr className="border-b border-slate-100">
                       <td className="px-4 py-3 font-semibold text-text-secondary bg-slate-50/50 w-44">Projected CAGR Max</td>
                       {comparisons.map((c, idx) => (
-                        <td key={idx} className="px-4 py-3 font-bold text-emerald-650">{c.projectedCAGRMax}%</td>
+                        <td key={idx} className="px-4 py-3 font-bold text-success bg-success-light/30">{c.projectedCAGRMax}%</td>
                       ))}
                       {comparisons.length === 2 && <td className="px-4 py-3 text-text-secondary">—</td>}
                     </tr>
@@ -374,9 +374,9 @@ export function ComparePageContent() {
             {/* Row 4: Infrastructure projects list */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {comparisons.map((c) => (
-                <div key={c.corridor} className="bg-white border border-luxury rounded-lg p-5 space-y-4 shadow-sm">
-                  <h3 className="text-xs font-bold text-text-primary uppercase tracking-wider flex items-center gap-1.5 border-b border-luxury pb-2">
-                    <Hammer size={14} className="text-primary" /> Infra tailwinds: {c.shortName || c.name}
+                <div key={c.corridor} className="card-premium p-5 space-y-4">
+                  <h3 className="text-xs font-bold text-text-primary uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-200 pb-2">
+                    <Hammer size={14} className="text-accent" /> Infra tailwinds: {c.shortName || c.name}
                   </h3>
                   {c.infraProjects?.length === 0 ? (
                     <p className="text-text-secondary text-[11px] italic">No public projects mapped.</p>
@@ -406,10 +406,10 @@ export function ComparePageContent() {
             {/* Row 5 & 6: Risks and Persona Suited For */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {comparisons.map((c) => (
-                <div key={c.corridor} className="bg-white border border-luxury rounded-lg p-5 space-y-5 shadow-sm">
+                <div key={c.corridor} className="card-premium p-5 space-y-5">
                   {/* Risks */}
                   <div className="space-y-2">
-                    <h3 className="text-[10px] font-bold text-red-600 uppercase tracking-wider border-b border-luxury pb-1.5">
+                    <h3 className="text-[10px] font-bold text-danger uppercase tracking-wider border-b border-slate-200 pb-1.5">
                       ⚠️ Core Market Risks
                     </h3>
                     <ul className="text-text-secondary text-xs space-y-1 list-disc list-inside">
@@ -443,10 +443,10 @@ export function ComparePageContent() {
             </div>
 
             {/* Bottom Add to Research Report CTA */}
-            <div className="border border-luxury bg-white p-6 rounded-lg flex flex-col md:flex-row md:items-center justify-between gap-6 max-w-4xl mx-auto shadow-sm">
+            <div className="card-premium p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 max-w-4xl mx-auto">
               <div className="space-y-1.5">
                 <h3 className="text-sm font-bold text-text-primary flex items-center gap-1.5">
-                  <Brain className="text-primary" size={16} /> AI Research Report Builder
+                  <Brain className="text-accent" size={16} /> AI Research Report Builder
                 </h3>
                 <p className="text-text-secondary text-xs leading-relaxed max-w-xl">
                   Ready to draft a detailed investor proposal? Transfer these compared corridors directly into our AI Research compiler to generate a customized PDF proposal document.
@@ -457,7 +457,7 @@ export function ComparePageContent() {
                   let pathStr = `/research?corridors=${encodeURIComponent([corridorA, corridorB, corridorC].filter(Boolean).join(","))}`;
                   router.push(pathStr);
                 }}
-                className="px-4 py-2 bg-primary hover:bg-blue-700 text-white font-bold rounded text-xs transition-colors flex items-center gap-1 cursor-pointer self-start md:self-center shadow-md"
+                className="btn-primary"
               >
                 Assemble AI Report <ChevronRight size={14} />
               </button>
@@ -473,9 +473,9 @@ export function ComparePageContent() {
 export default function ComparePage() {
   return (
     <Suspense fallback={
-      <div className="bg-luxury-bg text-text-primary min-h-screen flex items-center justify-center font-sans">
+      <div className="bg-surface-dim text-text-primary min-h-screen flex items-center justify-center font-sans">
         <div className="text-center space-y-3">
-          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+          <div className="w-8 h-8 border-4 border-accent border-t-transparent rounded-full animate-spin mx-auto" />
           <p className="text-xs text-text-secondary font-semibold tracking-wider uppercase">Loading Comparison Engine...</p>
         </div>
       </div>

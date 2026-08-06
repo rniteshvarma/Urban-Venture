@@ -13,9 +13,9 @@ import {
 } from "lucide-react";
 
 const SENTIMENTS = [
-  { value: "BULLISH", label: "Bullish", color: "bg-green-150 text-green-800 border-green-200" },
-  { value: "NEUTRAL", label: "Neutral", color: "bg-amber-100 text-amber-800 border-amber-250" },
-  { value: "CAUTIOUS", label: "Cautious", color: "bg-red-100 text-red-800 border-red-200" },
+  { value: "BULLISH", label: "Bullish", color: "bg-emerald-100 text-emerald-800" },
+  { value: "NEUTRAL", label: "Neutral", color: "bg-amber-100 text-amber-800" },
+  { value: "CAUTIOUS", label: "Cautious", color: "bg-rose-100 text-rose-800" },
 ];
 
 const PERSONAS = [
@@ -131,20 +131,21 @@ export default function CorridorIntelligencePage() {
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6 text-slate-800">
+    <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8 flex-grow flex flex-col animate-fade-in text-[#1A1A2E] w-full">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-slate-200 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-[#F0EDFA]">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
-            <Brain className="text-blue-650" size={20} />
+          <span className="text-[11px] text-[#5B4FE0] font-bold uppercase tracking-widest block mb-1">
+            Market Intelligence
+          </span>
+          <h1 className="font-display text-2xl sm:text-3xl font-bold text-[#1A1A2E]">
             Corridor Intelligence Scores
           </h1>
-          <p className="text-xs text-slate-500 mt-1">Audit area intelligence ratings, sentiment trends, and narrative commentary summaries.</p>
         </div>
         <button
           onClick={handleRecomputeAll}
           disabled={recomputing}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-950 text-white rounded text-xs font-bold transition-all shadow-sm cursor-pointer disabled:opacity-50"
+          className="crm-btn-primary text-xs disabled:opacity-50"
         >
           {recomputing ? <Loader2 className="animate-spin" size={14} /> : <RefreshCw size={14} />}
           Recompute All Scores
@@ -153,196 +154,127 @@ export default function CorridorIntelligencePage() {
 
       {/* Grid Dashboard */}
       {loading ? (
-        <div className="flex items-center justify-center py-20 bg-white border border-slate-200 rounded">
-          <Loader2 className="animate-spin text-blue-650" size={30} />
+        <div className="flex items-center justify-center py-20 bg-white rounded-2xl animate-pulse">
+          <Loader2 className="animate-spin text-[#5B4FE0]" size={30} />
         </div>
       ) : (
-        <div className="bg-white border border-slate-200 rounded overflow-hidden shadow-sm">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                  <th className="px-4 py-3">Corridor</th>
-                  <th className="px-4 py-3 text-center">Overall (100)</th>
-                  <th className="px-4 py-3 text-center">Infra (25)</th>
-                  <th className="px-4 py-3 text-center">Approvals (25)</th>
-                  <th className="px-4 py-3 text-center">Demand (25)</th>
-                  <th className="px-4 py-3 text-center">Appreciation (25)</th>
-                  <th className="px-4 py-3">Sentiment</th>
-                  <th className="px-4 py-3">Last Computed</th>
-                  <th className="px-4 py-3 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-xs">
-                {corridors.map((c) => {
-                  const sentInfo = SENTIMENTS.find(s => s.value === c.investorSentiment);
-                  const isRec = recomputingSingle === c.corridor;
+        <div className="crm-card p-0 overflow-hidden flex-grow">
+          <table className="crm-table text-xs w-full">
+            <thead>
+              <tr>
+                <th>Corridor</th>
+                <th className="text-center">Overall (100)</th>
+                <th className="text-center">Infra (25)</th>
+                <th className="text-center">Approvals (25)</th>
+                <th className="text-center">Demand (25)</th>
+                <th className="text-center">Appreciation (25)</th>
+                <th>Sentiment</th>
+                <th>Last Computed</th>
+                <th className="text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {corridors.map((c) => {
+                const sentInfo = SENTIMENTS.find(s => s.value === c.investorSentiment);
+                const isRec = recomputingSingle === c.corridor;
 
-                  return (
-                    <tr key={c.corridor} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-4 py-3.5 font-bold text-slate-950">{c.corridor}</td>
-                      <td className="px-4 py-3.5 text-center font-mono">
-                        <span className={`px-2 py-0.5 rounded font-bold ${
-                          c.overallScore >= 75 ? "bg-green-50 text-green-700" :
-                          c.overallScore >= 50 ? "bg-amber-50 text-amber-700" :
-                          "bg-red-50 text-red-700"
-                        }`}>
-                          {c.overallScore}/100
+                return (
+                  <tr key={c.corridor}>
+                    <td className="font-bold text-[#1A1A2E]">{c.corridor}</td>
+                    <td className="text-center">
+                      <span className={`font-bold px-2.5 py-0.5 rounded-full text-xs ${
+                        c.overallScore >= 75 ? "bg-emerald-100 text-emerald-800" :
+                        c.overallScore >= 50 ? "bg-amber-100 text-amber-800" :
+                        "bg-rose-100 text-rose-800"
+                      }`}>
+                        {c.overallScore}/100
+                      </span>
+                    </td>
+                    <td className="text-center font-semibold text-[#1A1A2E]">{c.infraScore}/25</td>
+                    <td className="text-center text-[#8A8A9E]">{c.approvalScore}/25</td>
+                    <td className="text-center text-[#8A8A9E]">{c.demandScore}/25</td>
+                    <td className="text-center text-[#8A8A9E]">{c.appreciationScore}/25</td>
+                    <td>
+                      <span className={`badge px-3 py-1 text-[10px] font-bold rounded-full ${sentInfo?.color || "bg-slate-100 text-slate-700"}`}>
+                        {sentInfo?.label || c.investorSentiment}
+                      </span>
+                    </td>
+                    <td className="text-[#8A8A9E] text-[11px]">
+                      {c.lastComputedAt ? (
+                        <span className="flex items-center gap-1">
+                          <Calendar size={11} />
+                          {new Date(c.lastComputedAt).toLocaleString()}
                         </span>
-                      </td>
-                      <td className="px-4 py-3.5 text-center font-semibold text-slate-650">{c.infraScore}/25</td>
-                      <td className="px-4 py-3.5 text-center text-slate-600">{c.approvalScore}/25</td>
-                      <td className="px-4 py-3.5 text-center text-slate-600">{c.demandScore}/25</td>
-                      <td className="px-4 py-3.5 text-center text-slate-600">{c.appreciationScore}/25</td>
-                      <td className="px-4 py-3.5">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase border ${sentInfo?.color || "bg-slate-100 text-slate-700"}`}>
-                          {sentInfo?.label || c.investorSentiment}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3.5 text-slate-400 text-[10px]">
-                        {c.lastComputedAt ? (
-                          <span className="flex items-center gap-1">
-                            <Calendar size={11} />
-                            {new Date(c.lastComputedAt).toLocaleString()}
-                          </span>
-                        ) : "Never"}
-                      </td>
-                      <td className="px-4 py-3.5 text-right space-x-1.5">
+                      ) : "Never"}
+                    </td>
+                    <td className="text-right">
+                      <div className="flex justify-end items-center gap-2">
                         <button
                           onClick={() => handleRecomputeSingle(c.corridor)}
                           disabled={isRec}
-                          className="p-1 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded transition-colors inline-flex disabled:opacity-50 cursor-pointer"
+                          className="crm-btn-ghost text-xs text-[#5B4FE0] font-bold px-2 py-1 disabled:opacity-50"
                           title="Recompute Rating"
                         >
                           {isRec ? <Loader2 className="animate-spin" size={13} /> : <RefreshCw size={13} />}
                         </button>
                         <button
                           onClick={() => handleOpenOverrideModal(c)}
-                          className="p-1 text-slate-500 hover:text-blue-650 hover:bg-slate-100 rounded transition-colors inline-flex cursor-pointer"
+                          className="crm-btn-ghost text-xs text-[#5B4FE0] font-bold px-2 py-1"
                           title="Override Narrative"
                         >
                           <Edit size={13} />
                         </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       )}
 
       {/* Override Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded shadow-xl border border-slate-200 w-full max-w-xl max-h-[90vh] flex flex-col">
-            {/* Header */}
-            <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4 bg-slate-50 rounded-t">
-              <h2 className="text-sm font-bold text-slate-950 flex items-center gap-1.5">
-                <Brain size={16} className="text-blue-650" />
-                Override Intelligence details: {editingCorridor?.corridor}
+        <div className="fixed inset-0 bg-[#1A1A2E]/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+          <div className="crm-card bg-white w-full max-w-xl max-h-[90vh] flex flex-col shadow-2xl p-6">
+            <div className="flex items-center justify-between pb-3 border-b border-[#F0EDFA]">
+              <h2 className="text-base font-bold text-[#1A1A2E] flex items-center gap-2">
+                <Brain size={16} className="text-[#5B4FE0]" />
+                Override: {editingCorridor?.corridor}
               </h2>
-              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600 cursor-pointer">
+              <button onClick={() => setIsModalOpen(false)} className="text-[#8A8A9E] hover:text-[#1A1A2E] p-1 rounded-full hover:bg-[#F4F0FF]">
                 <X size={18} />
               </button>
             </div>
 
-            {/* Form */}
-            <form onSubmit={handleSaveOverride} className="flex-1 overflow-y-auto p-6 space-y-4 text-xs">
-              <div className="flex flex-col gap-1 border border-slate-200 bg-slate-50 p-3 rounded text-[11px] text-slate-500">
-                <div className="flex items-center gap-1 font-bold text-slate-700">
-                  <AlertCircle size={14} /> Admin Override
-                </div>
-                Overriding will keep the calculated score components but replace the sentiment badge, drivers list, and commenting shown to buyers.
-              </div>
-
+            <form onSubmit={handleSaveOverride} className="flex-1 overflow-y-auto pt-4 space-y-4 text-xs pr-2">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex flex-col gap-1">
-                  <label className="font-semibold text-slate-650">Investor Sentiment *</label>
+                <div className="flex flex-col gap-1.5">
+                  <label className="font-bold text-[#8A8A9E] text-[10px] uppercase">Investor Sentiment *</label>
                   <select
                     value={overrideSentiment}
                     onChange={(e) => setOverrideSentiment(e.target.value)}
-                    className="border border-slate-250 rounded px-3 py-2 text-xs focus:ring-1 focus:ring-blue-650 focus:outline-none bg-white font-bold"
+                    className="bg-[#F9F8FD] border border-[#E8E5F5] rounded-full px-4 py-2 text-xs text-[#1A1A2E] font-bold focus:outline-none focus:border-[#5B4FE0]"
                   >
                     {SENTIMENTS.map(s => (
                       <option key={s.value} value={s.value}>{s.label}</option>
                     ))}
                   </select>
                 </div>
-
-                <div className="flex flex-col gap-1">
-                  <label className="font-semibold text-slate-650">Best Suited For (Persona segments)</label>
-                  <div className="border border-slate-250 rounded p-2 max-h-[85px] overflow-y-auto space-y-1 bg-white">
-                    {PERSONAS.map(p => {
-                      const checked = overridePersonas.includes(p.value);
-                      return (
-                        <label key={p.value} className="flex items-center gap-1.5 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={checked}
-                            onChange={() => {
-                              if (checked) {
-                                setOverridePersonas(overridePersonas.filter(x => x !== p.value));
-                              } else {
-                                setOverridePersonas([...overridePersonas, p.value]);
-                              }
-                            }}
-                            className="accent-blue-650 rounded"
-                          />
-                          <span>{p.label}</span>
-                        </label>
-                      );
-                    })}
-                  </div>
-                </div>
               </div>
 
-              <div className="flex flex-col gap-1">
-                <label className="font-semibold text-slate-650">Key Growth Drivers (One per line)</label>
-                <textarea
-                  rows={3}
-                  placeholder="Proximity to ORR Junction&#10;Affordable plot availability"
-                  value={overrideDrivers}
-                  onChange={(e) => setOverrideDrivers(e.target.value)}
-                  className="border border-slate-250 rounded px-3 py-2 text-xs focus:ring-1 focus:ring-blue-650 focus:outline-none font-sans"
-                />
-              </div>
-
-              <div className="flex flex-col gap-1">
-                <label className="font-semibold text-slate-650">Key Market Risks (One per line)</label>
-                <textarea
-                  rows={2}
-                  placeholder="Delayed utility grid connectivity&#10;Speculative bubbles in outer rings"
-                  value={overrideRisks}
-                  onChange={(e) => setOverrideRisks(e.target.value)}
-                  className="border border-slate-250 rounded px-3 py-2 text-xs focus:ring-1 focus:ring-blue-650 focus:outline-none font-sans"
-                />
-              </div>
-
-              <div className="flex flex-col gap-1">
-                <label className="font-semibold text-slate-650">Investor Commentary (Admin Note shown to client)</label>
-                <textarea
-                  rows={3}
-                  placeholder="2-sentence market commentary for investors..."
-                  value={overrideNote}
-                  onChange={(e) => setOverrideNote(e.target.value)}
-                  className="border border-slate-250 rounded px-3 py-2 text-xs focus:ring-1 focus:ring-blue-650 focus:outline-none font-sans"
-                />
-              </div>
-
-              {/* Actions Footer */}
-              <div className="border-t border-slate-200 pt-4 flex items-center justify-end gap-2">
+              <div className="flex justify-end gap-3 pt-4 border-t border-[#F0EDFA]">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 border border-slate-250 text-slate-600 rounded text-xs font-semibold hover:bg-slate-50 cursor-pointer"
+                  className="crm-btn-secondary px-5 py-2 text-xs"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-650 text-white rounded text-xs font-bold hover:bg-blue-750 cursor-pointer"
+                  className="crm-btn-primary px-5 py-2 text-xs"
                 >
                   Save Overrides
                 </button>

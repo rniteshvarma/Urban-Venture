@@ -142,24 +142,27 @@ export default function ReportCard({
   };
 
   return (
-    <div className="print-container max-w-4xl mx-auto space-y-10">
+    <div className="print-container max-w-4xl mx-auto space-y-10 animate-fade-in">
       
       {/* Action bar (Hide on print) */}
-      <div className="no-print flex justify-between items-center bg-surface border border-luxury p-4 rounded-card shadow-sm">
+      <div className="no-print flex justify-between items-center card-premium p-4 shadow-sm">
         <div className="flex flex-col">
           <span className="text-[10px] text-text-secondary uppercase tracking-widest font-bold">Report Generated</span>
           <span className="text-xs font-semibold text-text-primary">Search ID: {searchId}</span>
         </div>
         <button
           onClick={handlePrint}
-          className="inline-flex items-center gap-2 px-4 py-2 border border-primary text-primary hover:bg-primary hover:text-surface text-xs font-semibold uppercase tracking-wider rounded-[4px] transition-all"
+          className="btn-secondary text-xs py-2 px-4"
         >
           🖨️ Print / Download PDF
         </button>
       </div>
 
       {/* Main Report Document */}
-      <div className="bg-surface border border-luxury p-6 sm:p-10 rounded-card shadow-luxury-soft space-y-10 relative">
+      <div className="card-premium relative overflow-hidden">
+        {/* Gradient accent top border */}
+        <div className="absolute top-0 left-0 w-full h-1 gradient-accent"></div>
+        <div className="p-6 sm:p-10 space-y-10">
         
         {/* Luxury Watermark Header (Only visible on print/PDF) */}
         <div className="hidden print:flex justify-between items-center border-b border-luxury pb-6 mb-8">
@@ -386,21 +389,21 @@ export default function ReportCard({
           </div>
         </section>
 
-        {/* Market Outlook & Disclaimer */}
-        <section className="grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-luxury pt-8 text-xs text-text-secondary">
-          <div className="space-y-2">
-            <h4 className="font-bold uppercase text-text-primary tracking-wider">Market Outlook</h4>
-            <p className="leading-relaxed">{report.marketOutlook}</p>
-          </div>
-          <div className="space-y-2">
-            <h4 className="font-bold uppercase text-text-primary tracking-wider">Advisor Disclaimer</h4>
-            <p className="leading-relaxed">{report.disclaimer}</p>
-          </div>
-        </section>
+          <section className="grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-luxury pt-8 text-xs text-text-secondary">
+            <div className="space-y-2">
+              <h4 className="font-bold uppercase text-text-primary tracking-wider">Market Outlook</h4>
+              <p className="leading-relaxed">{report.marketOutlook}</p>
+            </div>
+            <div className="space-y-2">
+              <h4 className="font-bold uppercase text-text-primary tracking-wider">Advisor Disclaimer</h4>
+              <p className="leading-relaxed">{report.disclaimer}</p>
+            </div>
+          </section>
+        </div>
       </div>
 
       {/* Save Report & CTA Section (Hide on print) */}
-      <div className="no-print bg-surface border border-luxury p-6 sm:p-8 rounded-card shadow-sm text-center max-w-2xl mx-auto">
+      <div className="no-print card-premium p-6 sm:p-8 text-center max-w-2xl mx-auto border-t-4 border-accent">
         {userProvidedContact || saveSuccess ? (
           <div className="space-y-3">
             <div className="text-2xl">✅</div>
@@ -428,7 +431,7 @@ export default function ReportCard({
                   placeholder="Full Name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full bg-luxury-bg border border-luxury px-3 py-2 rounded-input text-xs text-text-primary focus:outline-none focus:border-accent"
+                  className="input-premium w-full text-xs"
                   required
                 />
               </div>
@@ -438,7 +441,7 @@ export default function ReportCard({
                   placeholder="Email Address"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-luxury-bg border border-luxury px-3 py-2 rounded-input text-xs text-text-primary focus:outline-none focus:border-accent"
+                  className="input-premium w-full text-xs"
                   required
                 />
                 <input
@@ -446,19 +449,19 @@ export default function ReportCard({
                   placeholder="Phone Number"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="w-full bg-luxury-bg border border-luxury px-3 py-2 rounded-input text-xs text-text-primary focus:outline-none focus:border-accent"
+                  className="input-premium w-full text-xs"
                   required
                 />
               </div>
               
               {errorMsg && (
-                <p className="text-red-600 text-xs text-center">{errorMsg}</p>
+                <p className="text-danger text-xs text-center font-semibold">{errorMsg}</p>
               )}
 
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full py-3 bg-primary hover:bg-blue-700 text-surface text-xs font-semibold uppercase tracking-widest rounded-[4px] disabled:opacity-50 transition-all"
+                className="btn-primary w-full py-3 text-xs"
               >
                 {isSubmitting ? "Saving Report..." : "Save Report & Schedule Consultation"}
               </button>

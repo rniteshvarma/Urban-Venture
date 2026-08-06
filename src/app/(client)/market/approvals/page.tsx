@@ -96,12 +96,12 @@ export default function ApprovalsDirectoryPage() {
   };
 
   return (
-    <div className="bg-luxury-bg text-text-primary min-h-screen font-sans">
+    <div className="bg-surface-dim text-text-primary min-h-screen font-sans">
       {/* Header Banner */}
-      <section className="bg-white py-12 px-6 border-b border-luxury shadow-sm">
+      <section className="bg-surface py-12 px-6 border-b border-slate-200 shadow-sm gradient-surface">
         <div className="max-w-7xl mx-auto space-y-4 text-center">
-          <span className="text-[10px] font-bold text-primary uppercase tracking-widest block">Verifiable Registry Records</span>
-          <h1 className="text-3xl md:text-4xl font-extrabold text-text-primary tracking-tight leading-tight">
+          <span className="text-[10px] font-bold text-accent uppercase tracking-widest block badge badge-verified inline-flex mb-1">Verifiable Registry Records</span>
+          <h1 className="text-3xl md:text-4xl font-display font-extrabold text-text-primary tracking-tight leading-tight">
             HMDA / DTCP & RERA Layout Directory
           </h1>
           <p className="max-w-xl mx-auto text-text-secondary text-xs md:text-sm leading-relaxed">
@@ -113,9 +113,9 @@ export default function ApprovalsDirectoryPage() {
       <main className="max-w-7xl mx-auto py-12 px-6 space-y-8">
         
         {/* Verification Note Box */}
-        <div className="bg-white border border-luxury p-4 rounded-lg flex flex-col md:flex-row md:items-center justify-between gap-4 text-xs max-w-4xl mx-auto shadow-sm">
+        <div className="card-premium p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 text-xs max-w-4xl mx-auto bg-blue-50/30">
           <div className="space-y-1">
-            <span className="font-bold text-text-primary block">💡 Official Verification Disclaimer</span>
+            <span className="font-bold text-text-primary block flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-warning animate-pulse"></span> Official Verification Disclaimer</span>
             <p className="text-text-secondary leading-relaxed">
               This directory is maintained by our real estate research team. For official, legally binding verification, always check the RERA Telangana or HMDA portal directly.
             </p>
@@ -125,7 +125,7 @@ export default function ApprovalsDirectoryPage() {
               href="https://rera.telangana.gov.in"
               target="_blank"
               rel="noopener noreferrer"
-              className="px-3 py-1.5 border border-slate-200 hover:border-slate-350 text-text-primary font-bold rounded text-[10px] flex items-center gap-1 transition-all bg-white shadow-sm"
+              className="px-3 py-1.5 border border-slate-200 hover:border-accent text-text-primary font-bold rounded text-[10px] flex items-center gap-1 transition-all bg-white shadow-sm"
             >
               rera.telangana.gov.in <ExternalLink size={10} />
             </a>
@@ -133,14 +133,14 @@ export default function ApprovalsDirectoryPage() {
         </div>
 
         {/* Filters Controls Panel */}
-        <div className="bg-white border border-luxury p-5 rounded-lg flex flex-wrap gap-4 items-center justify-between shadow-sm">
+        <div className="glass-panel p-5 flex flex-wrap gap-4 items-center justify-between">
           <div className="flex flex-wrap gap-4 items-center w-full md:w-auto">
             <div className="flex flex-col gap-1 w-full sm:w-auto">
               <label className="text-[10px] font-bold uppercase tracking-wider text-text-secondary">Corridor Zone</label>
               <select
                 value={corridor}
                 onChange={(e) => setCorridor(e.target.value)}
-                className="border border-slate-200 bg-white text-text-primary rounded px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-primary focus:outline-none"
+                className="input-premium bg-white px-2.5 py-1.5 text-xs"
               >
                 <option value="ALL">All Corridors</option>
                 {corridors.map(c => (
@@ -154,7 +154,7 @@ export default function ApprovalsDirectoryPage() {
               <select
                 value={authority}
                 onChange={(e) => setAuthority(e.target.value)}
-                className="border border-slate-200 bg-white text-text-primary rounded px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-primary focus:outline-none"
+                className="input-premium bg-white px-2.5 py-1.5 text-xs"
               >
                 <option value="ALL">All Authorities</option>
                 {AUTHORITIES.map(a => (
@@ -168,7 +168,7 @@ export default function ApprovalsDirectoryPage() {
               <select
                 value={type}
                 onChange={(e) => setType(e.target.value)}
-                className="border border-slate-200 bg-white text-text-primary rounded px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-primary focus:outline-none"
+                className="input-premium bg-white px-2.5 py-1.5 text-xs"
               >
                 <option value="ALL">All Types</option>
                 {APPROVAL_TYPES.map(t => (
@@ -187,7 +187,7 @@ export default function ApprovalsDirectoryPage() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 onKeyDown={handleKeyPress}
-                className="w-full border border-slate-200 bg-white text-text-primary rounded pl-8 pr-2.5 py-1.5 text-xs focus:ring-1 focus:ring-primary focus:outline-none"
+                className="input-premium bg-white pl-8 pr-2.5 py-1.5 text-xs w-full"
               />
               <Search className="absolute left-2.5 top-2.5 text-text-secondary" size={13} />
             </div>
@@ -197,16 +197,16 @@ export default function ApprovalsDirectoryPage() {
         {/* Results List */}
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="animate-spin text-primary" size={32} />
+            <Loader2 className="animate-spin text-accent" size={32} />
           </div>
         ) : approvals.length === 0 ? (
-          <div className="bg-white border border-luxury rounded py-12 text-center text-text-secondary text-xs italic shadow-sm">
+          <div className="card-premium py-12 text-center text-text-secondary text-xs italic shadow-sm">
             No layout approval records found matching your filters.
           </div>
         ) : (
-          <div className="bg-white border border-luxury rounded-lg overflow-hidden shadow-sm">
+          <div className="card-premium overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse text-xs">
+              <table className="table-premium w-full text-left border-collapse text-xs">
                 <thead>
                   <tr className="bg-slate-50 border-b border-luxury text-[10px] font-bold uppercase text-text-secondary">
                     <th className="px-4 py-3">Project / Layout Name</th>
@@ -225,10 +225,10 @@ export default function ApprovalsDirectoryPage() {
                       <td className="px-4 py-3.5 font-bold text-text-primary">{app.projectName}</td>
                       <td className="px-4 py-3.5 text-text-secondary">{app.developerName || "—"}</td>
                       <td className="px-4 py-3.5">
-                        <span className={`px-2 py-0.5 rounded text-[8px] font-bold border uppercase tracking-wider ${
-                          app.authority === "HMDA" ? "bg-green-50 text-green-700 border-green-200" :
-                          app.authority === "DTCP" ? "bg-teal-50 text-teal-700 border-teal-200" :
-                          "bg-slate-50 text-text-secondary border-slate-200"
+                        <span className={`badge ${
+                          app.authority === "HMDA" ? "badge-verified" :
+                          app.authority === "DTCP" ? "badge-premium" :
+                          "badge-warning"
                         }`}>
                           {app.authority}
                         </span>
@@ -244,11 +244,11 @@ export default function ApprovalsDirectoryPage() {
                         ) : "—"}
                       </td>
                       <td className="px-4 py-3.5 font-semibold text-text-primary">{getCorridorName(app.corridor || app.corridorProfileSlug)}</td>
-                      <td className="px-4 py-3.5 text-right font-bold text-primary">
+                      <td className="px-4 py-3.5 text-right font-bold">
                         {app.corridor || app.corridorProfileSlug ? (
                           <Link
                             href={`/market/${(app.corridor || app.corridorProfileSlug).toLowerCase()}`}
-                            className="inline-flex items-center gap-1 text-[10px] font-bold text-primary hover:text-blue-700 hover:underline cursor-pointer"
+                            className="inline-flex items-center gap-1 text-[10px] font-bold text-accent hover:text-accent-indigo hover:underline cursor-pointer"
                           >
                             Corridor details <ArrowRight size={10} />
                           </Link>

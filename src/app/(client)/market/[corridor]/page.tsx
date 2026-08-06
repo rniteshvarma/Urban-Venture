@@ -220,51 +220,51 @@ export default function CorridorDetailPage() {
       </div>
 
       {/* SECTION 1: Intelligence Score Header Banner */}
-      <section className="bg-white py-10 px-6 border-b border-luxury shadow-sm">
+      <section className="gradient-hero py-16 px-6 border-b border-luxury shadow-sm">
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
           {/* Corridor Info */}
           <div className="space-y-4 lg:col-span-2">
             <div>
-              <span className="text-[10px] font-bold text-accent uppercase tracking-widest block mb-1">Corridor Profile Deep Dive</span>
-              <h1 className="text-4xl md:text-5xl font-black text-text-primary tracking-tight font-serif capitalize">
+              <span className="text-[10px] font-bold text-accent-light uppercase tracking-widest block mb-1">Corridor Profile Deep Dive</span>
+              <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight font-display capitalize">
                 {profile.corridor}
               </h1>
-              <p className="text-xs text-text-secondary mt-1.5 font-medium flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+              <p className="text-xs text-slate-200 mt-1.5 font-medium flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
                 {ZONE_DESCRIPTIONS[profile.corridor] || "Hyderabad Growth Corridor"}
               </p>
             </div>
 
             {/* Sub-scores Row */}
-            <div className="grid grid-cols-4 gap-4 bg-slate-50 border border-luxury rounded p-4">
+            <div className="grid grid-cols-4 gap-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-4">
               <div className="text-center">
-                <div className="text-[11px] font-bold text-text-secondary uppercase tracking-wider">Infra</div>
-                <div className="text-base font-black text-text-primary mt-1">{profile.infraScore}/25</div>
+                <div className="text-[11px] font-bold text-slate-300 uppercase tracking-wider">Infra</div>
+                <div className="text-base font-black text-white mt-1">{profile.infraScore}/25</div>
               </div>
-              <div className="text-center border-l border-luxury">
-                <div className="text-[11px] font-bold text-text-secondary uppercase tracking-wider">Approvals</div>
-                <div className="text-base font-black text-text-primary mt-1">{profile.approvalScore}/25</div>
+              <div className="text-center border-l border-white/20">
+                <div className="text-[11px] font-bold text-slate-300 uppercase tracking-wider">Approvals</div>
+                <div className="text-base font-black text-white mt-1">{profile.approvalScore}/25</div>
               </div>
-              <div className="text-center border-l border-luxury">
-                <div className="text-[11px] font-bold text-text-secondary uppercase tracking-wider">Demand</div>
-                <div className="text-base font-black text-text-primary mt-1">{profile.demandScore}/25</div>
+              <div className="text-center border-l border-white/20">
+                <div className="text-[11px] font-bold text-slate-300 uppercase tracking-wider">Demand</div>
+                <div className="text-base font-black text-white mt-1">{profile.demandScore}/25</div>
               </div>
-              <div className="text-center border-l border-luxury">
-                <div className="text-[11px] font-bold text-text-secondary uppercase tracking-wider">Appr.</div>
-                <div className="text-base font-black text-text-primary mt-1">{profile.appreciationScore}/25</div>
+              <div className="text-center border-l border-white/20">
+                <div className="text-[11px] font-bold text-slate-300 uppercase tracking-wider">Appr.</div>
+                <div className="text-base font-black text-white mt-1">{profile.appreciationScore}/25</div>
               </div>
             </div>
 
             {/* Gold-bordered Quote block (Admin/AI commentary) */}
             {profile.adminNote && (
-              <div className="border-l-4 border-[#2563EB] bg-blue-50/40 px-4 py-3 rounded-r text-xs text-text-secondary italic max-w-2xl leading-relaxed">
+              <div className="border-l-4 border-accent bg-black/20 backdrop-blur-sm px-4 py-3 rounded-r text-xs text-slate-200 italic max-w-2xl leading-relaxed">
                 &quot;{profile.adminNote}&quot;
               </div>
             )}
           </div>
 
           {/* Overall Score Circle Gauge */}
-          <div className="flex flex-col items-center justify-center bg-white border border-luxury p-6 rounded-lg max-w-[280px] mx-auto w-full shadow-sm">
+          <div className="flex flex-col items-center justify-center bg-white border border-luxury p-6 rounded-xl max-w-[280px] mx-auto w-full shadow-luxury">
             <span className="text-[9px] font-bold text-text-secondary uppercase tracking-widest mb-3">Overall Rating</span>
             
             <div className="relative w-28 h-28 flex items-center justify-center">
@@ -274,7 +274,7 @@ export default function CorridorDetailPage() {
                   cx="56" 
                   cy="56" 
                   r="48" 
-                  stroke="#3B82F6" 
+                  stroke="#00B4D8" 
                   strokeWidth="8" 
                   fill="transparent" 
                   strokeDasharray="301"
@@ -284,7 +284,7 @@ export default function CorridorDetailPage() {
               </svg>
               <div className="absolute text-center">
                 <span className="text-3xl font-black text-text-primary block leading-none font-mono">{profile.overallScore}</span>
-                <span className="text-[8px] text-[#3B82F6] uppercase font-black tracking-widest mt-1 inline-block font-mono">Score</span>
+                <span className="text-[8px] text-accent uppercase font-black tracking-widest mt-1 inline-block font-mono">Score</span>
               </div>
             </div>
 
@@ -335,10 +335,12 @@ export default function CorridorDetailPage() {
             {/* Charts Row */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Chart 1: Price per SqFt vs Benchmark */}
-              <div className="bg-white border border-luxury rounded p-5 flex flex-col shadow-sm">
-                <h3 className="text-xs font-bold text-text-primary mb-4 uppercase tracking-wider flex items-center gap-1.5">
-                  <TrendingUp size={14} className="text-primary" /> Price per SqFt (₹) vs Hyderabad Average
-                </h3>
+              <div className="card-premium p-5 flex flex-col">
+                <div className="section-header border-l-4 border-accent pl-3 mb-4">
+                  <h3 className="text-xs font-bold text-text-primary uppercase tracking-wider flex items-center gap-1.5">
+                    <TrendingUp size={14} className="text-accent" /> Price per SqFt (₹) vs Hyderabad Average
+                  </h3>
+                </div>
                 {priceChartData.length === 0 ? (
                   <div className="h-[220px] flex items-center justify-center text-text-secondary text-xs italic">No price points seeded.</div>
                 ) : (
@@ -350,7 +352,7 @@ export default function CorridorDetailPage() {
                         <YAxis stroke="#94A3B8" />
                         <Tooltip contentStyle={{ backgroundColor: "#FFFFFF", borderColor: "#E2E8F0", fontSize: "11px", color: "#0F172A" }} />
                         <Legend wrapperStyle={{ fontSize: "10px" }} />
-                        <Line type="monotone" dataKey="price" stroke="#2563EB" strokeWidth={2.5} name={profile.corridor} dot={{ r: 4 }} />
+                        <Line type="monotone" dataKey="price" stroke="#00B4D8" strokeWidth={2.5} name={profile.corridor} dot={{ r: 4 }} />
                         <Line type="monotone" dataKey="benchmark" stroke="#94A3B8" strokeDasharray="4 4" strokeWidth={1.5} name="Hyd Metro Average" dot={false} />
                       </LineChart>
                     </ResponsiveContainer>
@@ -359,10 +361,12 @@ export default function CorridorDetailPage() {
               </div>
 
               {/* Chart 2: YoY price growth */}
-              <div className="bg-white border border-luxury rounded p-5 flex flex-col shadow-sm">
-                <h3 className="text-xs font-bold text-text-primary mb-4 uppercase tracking-wider flex items-center gap-1.5">
-                  <TrendingUp size={14} className="text-green-600" /> Year-over-Year (YoY) Change %
-                </h3>
+              <div className="card-premium p-5 flex flex-col">
+                <div className="section-header border-l-4 border-success pl-3 mb-4">
+                  <h3 className="text-xs font-bold text-text-primary uppercase tracking-wider flex items-center gap-1.5">
+                    <TrendingUp size={14} className="text-success" /> Year-over-Year (YoY) Change %
+                  </h3>
+                </div>
                 {priceChartData.length === 0 ? (
                   <div className="h-[220px] flex items-center justify-center text-text-secondary text-xs italic">No price points seeded.</div>
                 ) : (
@@ -373,7 +377,7 @@ export default function CorridorDetailPage() {
                         <XAxis dataKey="year" stroke="#94A3B8" />
                         <YAxis stroke="#94A3B8" />
                         <Tooltip contentStyle={{ backgroundColor: "#FFFFFF", borderColor: "#E2E8F0", fontSize: "11px", color: "#0F172A" }} />
-                        <Bar dataKey="yoy" fill="#3B82F6" name="YoY Change %" radius={[2, 2, 0, 0]} />
+                        <Bar dataKey="yoy" fill="#00B4D8" name="YoY Change %" radius={[2, 2, 0, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
@@ -382,24 +386,24 @@ export default function CorridorDetailPage() {
             </div>
 
             {/* Price Stats Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-white border border-luxury p-5 rounded-lg shadow-sm">
-              <div>
-                <div className="text-[10px] text-text-secondary font-bold uppercase tracking-widest">CAGR (5yr)</div>
-                <div className="text-xl font-black text-text-primary mt-1">~14.5%</div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="stat-card">
+                <div className="stat-label">CAGR (5yr)</div>
+                <div className="stat-value mt-1">~14.5%</div>
               </div>
-              <div className="border-l border-luxury pl-4">
-                <div className="text-[10px] text-text-secondary font-bold uppercase tracking-widest">CAGR (3yr)</div>
-                <div className="text-xl font-black text-text-primary mt-1">~13.2%</div>
+              <div className="stat-card">
+                <div className="stat-label">CAGR (3yr)</div>
+                <div className="stat-value mt-1">~13.2%</div>
               </div>
-              <div className="border-l border-luxury pl-4">
-                <div className="text-[10px] text-text-secondary font-bold uppercase tracking-widest">Current price</div>
-                <div className="text-xl font-black text-text-primary mt-1">
+              <div className="stat-card">
+                <div className="stat-label">Current price</div>
+                <div className="stat-value mt-1">
                   ₹{pricing?.pricePoints?.slice(-1)[0]?.pricePerSqFt?.toLocaleString() || "4,200"} <span className="text-xs font-normal text-text-secondary">/sqft</span>
                 </div>
               </div>
-              <div className="border-l border-luxury pl-4">
-                <div className="text-[10px] text-text-secondary font-bold uppercase tracking-widest">Historical Multiplier</div>
-                <div className="text-xl font-black text-green-600 mt-1">2.4x <span className="text-xs font-normal text-text-secondary">since 2018</span></div>
+              <div className="stat-card">
+                <div className="stat-label">Historical Multiplier</div>
+                <div className="stat-value text-success mt-1">2.4x <span className="text-xs font-normal text-text-secondary">since 2018</span></div>
               </div>
             </div>
 
@@ -451,24 +455,24 @@ export default function CorridorDetailPage() {
           <div className="space-y-10 animate-fade-in">
             {/* KPI Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="bg-white border border-luxury rounded p-4 text-center shadow-sm">
-                <span className="text-[10px] text-text-secondary font-bold uppercase tracking-widest block">Absorption Rate</span>
-                <span className="text-2xl font-black text-text-primary mt-1 block">{demand?.currentAbsorptionRate || 18.2}%</span>
+              <div className="stat-card text-center">
+                <span className="stat-label block">Absorption Rate</span>
+                <span className="stat-value mt-1 block">{demand?.currentAbsorptionRate || 18.2}%</span>
                 <span className="text-[9px] text-text-secondary block mt-1">Percent of inventory absorbed monthly</span>
               </div>
-              <div className="bg-white border border-luxury rounded p-4 text-center shadow-sm">
-                <span className="text-[10px] text-text-secondary font-bold uppercase tracking-widest block">Days on Market</span>
-                <span className="text-2xl font-black text-text-primary mt-1 block">{demand?.avgDaysOnMkt || 48} days</span>
+              <div className="stat-card text-center">
+                <span className="stat-label block">Days on Market</span>
+                <span className="stat-value mt-1 block">{demand?.avgDaysOnMkt || 48} days</span>
                 <span className="text-[9px] text-text-secondary block mt-1">Median listing conversion speed</span>
               </div>
-              <div className="bg-white border border-luxury rounded p-4 text-center shadow-sm">
-                <span className="text-[10px] text-text-secondary font-bold uppercase tracking-widest block">Inquiry Growth</span>
-                <span className="text-2xl font-black text-green-600 mt-1 block">+{demand?.yoyInquiryGrowth || 34}%</span>
+              <div className="stat-card text-center">
+                <span className="stat-label block">Inquiry Growth</span>
+                <span className="stat-value text-success mt-1 block">+{demand?.yoyInquiryGrowth || 34}%</span>
                 <span className="text-[9px] text-text-secondary block mt-1">Year-over-Year inquiry growth</span>
               </div>
-              <div className="bg-white border border-luxury rounded p-4 text-center shadow-sm">
-                <span className="text-[10px] text-text-secondary font-bold uppercase tracking-widest block">Active Inventory</span>
-                <span className="text-2xl font-black text-text-primary mt-1 block">{demand?.activeListings || 120} units</span>
+              <div className="stat-card text-center">
+                <span className="stat-label block">Active Inventory</span>
+                <span className="stat-value mt-1 block">{demand?.activeListings || 120} units</span>
                 <span className="text-[9px] text-text-secondary block mt-1">Available layout inventory units</span>
               </div>
             </div>
@@ -487,10 +491,12 @@ export default function CorridorDetailPage() {
             {/* Charts Row */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Chart 1: Dual axis inquiry vs absorption */}
-              <div className="bg-white border border-luxury rounded p-5 flex flex-col shadow-sm">
-                <h3 className="text-xs font-bold text-text-primary mb-4 uppercase tracking-wider flex items-center gap-1.5">
-                  <TrendingDown size={14} className="text-[#2563EB]" /> Inquiries vs Absorption Rate % (Last 24 Months)
-                </h3>
+              <div className="card-premium p-5 flex flex-col">
+                <div className="section-header border-l-4 border-accent pl-3 mb-4">
+                  <h3 className="text-xs font-bold text-text-primary uppercase tracking-wider flex items-center gap-1.5">
+                    <TrendingDown size={14} className="text-accent" /> Inquiries vs Absorption Rate % (Last 24 Months)
+                  </h3>
+                </div>
                 {demandChartData.length === 0 ? (
                   <div className="h-[220px] flex items-center justify-center text-text-secondary text-xs italic">No monthly logs found.</div>
                 ) : (
@@ -503,7 +509,7 @@ export default function CorridorDetailPage() {
                         <YAxis yAxisId="right" orientation="right" stroke="#94A3B8" />
                         <Tooltip contentStyle={{ backgroundColor: "#FFFFFF", borderColor: "#E2E8F0", fontSize: "11px", color: "#0F172A" }} />
                         <Legend wrapperStyle={{ fontSize: "10px" }} />
-                        <Bar yAxisId="left" dataKey="inquiries" fill="#2563EB" name="Inquiries" radius={[2, 2, 0, 0]} />
+                        <Bar yAxisId="left" dataKey="inquiries" fill="#00B4D8" name="Inquiries" radius={[2, 2, 0, 0]} />
                         <Bar yAxisId="right" dataKey="absorption" fill="#10B981" name="Absorption %" radius={[2, 2, 0, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
@@ -512,10 +518,12 @@ export default function CorridorDetailPage() {
               </div>
 
               {/* Chart 2: Inventory vs Sold units */}
-              <div className="bg-white border border-luxury rounded p-5 flex flex-col shadow-sm">
-                <h3 className="text-xs font-bold text-text-primary mb-4 uppercase tracking-wider flex items-center gap-1.5">
-                  <TrendingDown size={14} className="text-purple-600" /> Available Inventory vs Sold Units (Monthly)
-                </h3>
+              <div className="card-premium p-5 flex flex-col">
+                <div className="section-header border-l-4 border-accent-purple pl-3 mb-4">
+                  <h3 className="text-xs font-bold text-text-primary uppercase tracking-wider flex items-center gap-1.5">
+                    <TrendingDown size={14} className="text-accent-purple" /> Available Inventory vs Sold Units (Monthly)
+                  </h3>
+                </div>
                 {demandChartData.length === 0 ? (
                   <div className="h-[220px] flex items-center justify-center text-text-secondary text-xs italic">No monthly logs found.</div>
                 ) : (
@@ -541,7 +549,7 @@ export default function CorridorDetailPage() {
         {/* Tab 3: Infrastructure timeline pipeline */}
         {activeTab === "infra" && (
           <div className="space-y-10 animate-fade-in">
-            <div>
+            <div className="section-header border-l-4 border-accent pl-4">
               <h3 className="text-sm font-bold text-text-primary uppercase tracking-wider mb-2">Government Infrastructure pipeline</h3>
               <p className="text-text-secondary text-xs">Timeline of public expressway, metro link, and industrial developments affecting {profile.corridor} corridor growth.</p>
             </div>

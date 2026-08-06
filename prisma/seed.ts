@@ -227,6 +227,109 @@ async function main() {
       console.log(`Created project: ${createdProject.name} in ${createdProject.corridor}`);
     }
 
+    console.log("Seeding Inbound Sources...");
+    const inboundSources = [
+      {
+        name: "99acres",
+        type: "PORTAL_WEBHOOK" as const,
+        webhookToken: "99acres-token-uv-2026",
+        fieldMapping: {
+          name: "name",
+          mobile: "phone",
+          email: "email",
+          message: "message",
+          property_id: "propertyId",
+          property_name: "propertyName",
+          budget: "budget"
+        },
+        defaultStatus: "NEW" as const,
+        dedupeWindow: 24,
+        isActive: true,
+      },
+      {
+        name: "MagicBricks",
+        type: "PORTAL_WEBHOOK" as const,
+        webhookToken: "magicbricks-token-uv-2026",
+        fieldMapping: {
+          sender_name: "name",
+          sender_phone: "phone",
+          sender_email: "email",
+          remark: "message",
+          pid: "propertyId",
+          project_name: "propertyName"
+        },
+        defaultStatus: "NEW" as const,
+        dedupeWindow: 24,
+        isActive: true,
+      },
+      {
+        name: "Housing.com",
+        type: "PORTAL_WEBHOOK" as const,
+        webhookToken: "housing-token-uv-2026",
+        fieldMapping: {
+          lead_name: "name",
+          lead_phone: "phone",
+          lead_email: "email",
+          query_message: "message",
+          property_id: "propertyId"
+        },
+        defaultStatus: "NEW" as const,
+        dedupeWindow: 24,
+        isActive: true,
+      },
+      {
+        name: "NoBroker",
+        type: "PORTAL_WEBHOOK" as const,
+        webhookToken: "nobroker-token-uv-2026",
+        fieldMapping: {
+          name: "name",
+          phone: "phone",
+          email: "email",
+          message: "message",
+          listing_id: "propertyId"
+        },
+        defaultStatus: "NEW" as const,
+        dedupeWindow: 24,
+        isActive: true,
+      },
+      {
+        name: "WhatsApp Business",
+        type: "WHATSAPP" as const,
+        webhookToken: "whatsapp-token-uv-2026",
+        fieldMapping: null,
+        defaultStatus: "NEW" as const,
+        dedupeWindow: 24,
+        isActive: true,
+      },
+      {
+        name: "Gmail Inbox",
+        type: "GMAIL" as const,
+        webhookToken: "gmail-token-uv-2026",
+        fieldMapping: null,
+        defaultStatus: "NEW" as const,
+        dedupeWindow: 24,
+        isActive: true,
+      },
+      {
+        name: "Website Form",
+        type: "WEBSITE_FORM" as const,
+        webhookToken: "website-token-uv-2026",
+        fieldMapping: null,
+        defaultStatus: "NEW" as const,
+        dedupeWindow: 24,
+        isActive: true,
+      }
+    ];
+
+    for (const source of inboundSources) {
+      await prisma.inboundSource.upsert({
+        where: { webhookToken: source.webhookToken },
+        update: source,
+        create: source,
+      });
+    }
+    console.log("Inbound sources seeded.");
+
     console.log("Database seeding completed successfully!");
   } catch (error) {
     console.error("Error during database seeding:", error);

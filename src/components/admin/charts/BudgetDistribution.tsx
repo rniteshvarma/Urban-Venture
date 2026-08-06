@@ -16,45 +16,49 @@ export default function BudgetDistribution({ data }: BudgetDistributionProps) {
 
   if (!isHydrated) {
     return (
-      <div className="h-64 flex items-center justify-center text-xs text-text-secondary">
+      <div className="h-64 flex items-center justify-center text-xs text-[#8A8A9E] animate-pulse">
         Loading budget distribution...
       </div>
     );
   }
 
+  const COLORS = ["#7C6EF5", "#5B4FE0", "#3B82F6", "#10B981", "#F59E0B", "#8B5CF6"];
+
   return (
-    <div className="h-64 w-full">
+    <div className="h-64 w-full pt-2">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart
           data={data}
-          margin={{ top: 20, right: 10, left: -20, bottom: 5 }}
+          margin={{ top: 15, right: 10, left: -25, bottom: 5 }}
         >
-          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F0EDFA" />
           <XAxis 
             dataKey="name" 
-            tick={{ fontSize: 10, fill: "#475569" }}
-            axisLine={{ stroke: "#E2E8F0" }}
+            tick={{ fontSize: 10, fill: "#8A8A9E" }}
+            axisLine={{ stroke: "#F0EDFA" }}
             tickLine={false}
           />
           <YAxis 
-            tick={{ fontSize: 10, fill: "#475569" }}
+            tick={{ fontSize: 10, fill: "#8A8A9E" }}
             axisLine={false}
             tickLine={false}
           />
           <Tooltip
-            cursor={{ fill: "rgba(37, 99, 235, 0.05)" }}
+            cursor={{ fill: "rgba(91, 79, 224, 0.04)" }}
             contentStyle={{
               backgroundColor: "#FFFFFF",
-              border: "1px solid #E2E8F0",
-              borderRadius: "6px",
-              fontFamily: "var(--font-sans)",
+              border: "none",
+              borderRadius: "14px",
+              boxShadow: "0 8px 30px rgba(0,0,0,0.08)",
+              fontFamily: "Inter",
+              padding: "10px 14px"
             }}
           />
-          <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+          <Bar dataKey="value" radius={[8, 8, 0, 0]} barSize={32}>
             {data.map((entry, index) => (
               <Cell 
                 key={`cell-${index}`} 
-                fill={index % 2 === 0 ? "#2563EB" : "#94A3B8"} 
+                fill={COLORS[index % COLORS.length]} 
               />
             ))}
           </Bar>

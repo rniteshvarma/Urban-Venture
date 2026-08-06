@@ -11,7 +11,10 @@ import {
   Trash2, 
   Edit, 
   Activity, 
-  RefreshCw 
+  RefreshCw,
+  Search,
+  ChevronRight,
+  X
 } from "lucide-react";
 
 interface Project {
@@ -143,8 +146,6 @@ export default function AdminProjectsPage() {
         const data = await res.json();
         setMatchedLeads(data);
       }
-    } catch (err) {
-      console.error("Failed to load matches", err);
     } finally {
       setIsLoadingMatches(false);
     }
@@ -249,19 +250,23 @@ export default function AdminProjectsPage() {
   };
 
   return (
-    <div className="space-y-6 flex-grow flex flex-col">
+    <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8 flex-grow flex flex-col animate-fade-in text-[#1A1A2E] w-full">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-[#F0EDFA]">
         <div>
-          <span className="text-[10px] text-accent font-bold uppercase tracking-widest block">Portfolio Assets</span>
-          <h1 className="font-display text-2xl sm:text-4xl font-bold text-primary">Project Management</h1>
+          <span className="text-[11px] text-[#5B4FE0] font-bold uppercase tracking-widest block mb-1">
+            Portfolio Assets
+          </span>
+          <h1 className="font-display text-2xl sm:text-3xl font-bold text-[#1A1A2E]">
+            Project Management
+          </h1>
         </div>
         
         {activeTab === "projects" ? (
           <div>
             <Link
               href="/admin/projects/new"
-              className="px-4 py-2 bg-primary hover:bg-blue-700 text-surface text-xs font-semibold uppercase tracking-wider rounded-tag transition-colors shadow-sm animate-fade-in"
+              className="crm-btn-primary text-xs"
             >
               ➕ Add New Project
             </Link>
@@ -270,7 +275,7 @@ export default function AdminProjectsPage() {
           <div>
             <button
               onClick={handleOpenAddCorridor}
-              className="px-4 py-2 bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-bold uppercase tracking-wider rounded transition-colors shadow-sm animate-fade-in"
+              className="crm-btn-primary text-xs"
             >
               ➕ Add Corridor Metric
             </button>
@@ -278,47 +283,41 @@ export default function AdminProjectsPage() {
         )}
       </div>
 
-      {/* Tabs */}
-      <div className="flex border-b border-luxury">
-        <button
-          onClick={() => setActiveTab("projects")}
-          className={`px-5 py-3 text-xs font-bold uppercase tracking-wider border-b-2 -mb-[2px] transition-colors flex items-center gap-2 ${
-            activeTab === "projects"
-              ? "border-[#2563EB] text-[#2563EB]"
-              : "border-transparent text-text-secondary hover:text-primary"
-          }`}
-        >
-          <Building2 size={14} /> Inventory Projects ({projects.length})
-        </button>
-        
-        <button
-          onClick={() => setActiveTab("corridors")}
-          className={`px-5 py-3 text-xs font-bold uppercase tracking-wider border-b-2 -mb-[2px] transition-colors flex items-center gap-2 ${
-            activeTab === "corridors"
-              ? "border-[#2563EB] text-[#2563EB]"
-              : "border-transparent text-text-secondary hover:text-primary"
-          }`}
-        >
-          <TrendingUp size={14} /> Corridor Metrics CRUD ({corridors.length})
-        </button>
+      {/* LoopAI Pill Tabs */}
+      <div className="flex items-center gap-3">
+        <div className="crm-pill-nav">
+          <button
+            onClick={() => setActiveTab("projects")}
+            className={activeTab === "projects" ? "crm-pill-tab crm-pill-tab-active" : "crm-pill-tab"}
+          >
+            <Building2 size={14} className="inline mr-1.5" /> Inventory Projects ({projects.length})
+          </button>
+          
+          <button
+            onClick={() => setActiveTab("corridors")}
+            className={activeTab === "corridors" ? "crm-pill-tab crm-pill-tab-active" : "crm-pill-tab"}
+          >
+            <TrendingUp size={14} className="inline mr-1.5" /> Corridor Metrics CRUD ({corridors.length})
+          </button>
+        </div>
       </div>
 
       {activeTab === "projects" ? (
         <>
-          {/* Projects Filters */}
-          <div className="bg-surface border border-luxury p-4 rounded-card shadow-sm flex flex-col sm:flex-row sm:items-center gap-3">
+          {/* Projects Filters Bar */}
+          <div className="crm-card p-6 flex flex-col sm:flex-row sm:items-center gap-4">
             <div className="flex-grow flex gap-2">
               <input
                 type="text"
-                placeholder="Search projects by name, developer, or corridor... (Press Enter)"
+                placeholder="Search projects by name, developer, or corridor..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 onKeyDown={handleSearchKeyPress}
-                className="w-full bg-luxury-bg border border-luxury px-3 py-2 rounded-input text-xs text-text-primary focus:outline-none focus:border-accent"
+                className="bg-[#F9F8FD] border border-[#E8E5F5] rounded-full px-4 py-2 text-xs text-[#1A1A2E] placeholder-[#8A8A9E] w-full focus:outline-none focus:border-[#5B4FE0]"
               />
               <button
                 onClick={loadProjects}
-                className="bg-primary hover:bg-blue-700 px-4 rounded-input text-xs text-surface uppercase font-semibold tracking-wider transition-colors"
+                className="crm-btn-primary text-xs px-5"
               >
                 Search
               </button>
@@ -328,7 +327,7 @@ export default function AdminProjectsPage() {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full bg-luxury-bg border border-luxury px-3 py-2 rounded-input text-xs text-text-primary focus:outline-none"
+                className="bg-[#F9F8FD] border border-[#E8E5F5] rounded-full px-4 py-2 text-xs text-[#1A1A2E] w-full focus:outline-none focus:border-[#5B4FE0]"
               >
                 <option value="ALL">All Statuses</option>
                 <option value="ACTIVE">ACTIVE</option>
@@ -340,201 +339,207 @@ export default function AdminProjectsPage() {
           </div>
 
           {/* Projects Table */}
-          <div className="bg-surface border border-luxury rounded-card shadow-sm flex-grow overflow-hidden">
+          <div className="crm-card p-0 overflow-hidden flex-grow">
             {isLoading ? (
-              <div className="p-8 text-center text-text-secondary animate-pulse">
+              <div className="p-12 text-center text-[#8A8A9E] animate-pulse text-xs">
                 Loading project records...
               </div>
             ) : projects.length === 0 ? (
-              <div className="p-16 text-center text-text-secondary space-y-3">
+              <div className="p-16 text-center text-[#8A8A9E] space-y-3">
                 <span className="text-3xl">🏢</span>
-                <h3 className="font-display text-lg font-bold text-primary">No Projects Found</h3>
+                <h3 className="font-display text-lg font-bold text-[#1A1A2E]">No Projects Found</h3>
                 <p className="text-xs max-w-sm mx-auto leading-relaxed">
-                  No project records match your filters. Seed default data or create a project.
+                  No project records match your search filters. Try clearing filters or create a project.
                 </p>
               </div>
             ) : (
-              <div className="overflow-x-auto w-full">
-                <table className="min-w-full divide-y divide-luxury text-left text-xs text-text-primary">
-                  <thead className="bg-luxury-bg text-text-secondary uppercase font-semibold tracking-wider">
-                    <tr>
-                      <th className="px-6 py-4">Project / Developer</th>
-                      <th className="px-6 py-4">Corridor</th>
-                      <th className="px-6 py-4">Budget Range</th>
-                      <th className="px-6 py-4">Horizon</th>
-                      <th className="px-6 py-4">Risk Level</th>
-                      <th className="px-6 py-4">Type</th>
-                      <th className="px-6 py-4">Status</th>
-                      <th className="px-6 py-4 text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-luxury bg-surface">
-                    {projects.map((project) => (
-                      <tr key={project.id} className="hover:bg-luxury-bg/30 transition-colors">
-                        <td className="px-6 py-4">
-                          <div className="flex flex-col gap-0.5">
-                            <span className="font-semibold text-primary text-sm">{project.name}</span>
-                            <span className="text-text-secondary">by {project.developer}</span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 font-medium">{project.corridor}</td>
-                        <td className="px-6 py-4 font-semibold text-primary">
-                          {formatPrice(project.minBudgetLakhs, project.maxBudgetLakhs)}
-                        </td>
-                        <td className="px-6 py-4">{project.minHorizonYears} - {project.maxHorizonYears} Years</td>
-                        <td className="px-6 py-4 uppercase font-semibold tracking-wide text-accent">{project.riskLevel}</td>
-                        <td className="px-6 py-4">{project.propertyType}</td>
-                        <td className="px-6 py-4">
-                          <span className={`px-2 py-0.5 rounded-tag text-[9px] font-bold uppercase tracking-wider border ${
-                            project.status === "ACTIVE" 
-                              ? "bg-green-50 text-green-700 border-green-200"
-                              : project.status === "SOLD_OUT"
-                              ? "bg-gray-100 text-gray-700 border-gray-200"
-                              : project.status === "UPCOMING"
-                              ? "bg-blue-50 text-blue-700 border-blue-200"
-                              : "bg-red-50 text-red-700 border-red-200"
-                          }`}>
-                            {project.status.replace("_", " ")}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-right space-x-3" onClick={(e) => e.stopPropagation()}>
+              <table className="crm-table text-xs w-full">
+                <thead>
+                  <tr>
+                    <th>Project / Developer</th>
+                    <th>Corridor</th>
+                    <th>Budget Range</th>
+                    <th>Horizon</th>
+                    <th>Risk Level</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th className="text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {projects.map((project) => (
+                    <tr key={project.id}>
+                      <td className="font-bold text-[#1A1A2E]">
+                        <div className="flex flex-col gap-0.5">
+                          <span className="font-bold text-[#1A1A2E] text-sm">{project.name}</span>
+                          <span className="text-[#8A8A9E] text-xs font-normal">by {project.developer}</span>
+                        </div>
+                      </td>
+                      <td className="font-semibold text-[#1A1A2E]">{project.corridor}</td>
+                      <td className="font-bold text-[#5B4FE0]">
+                        {formatPrice(project.minBudgetLakhs, project.maxBudgetLakhs)}
+                      </td>
+                      <td className="text-[#8A8A9E]">{project.minHorizonYears} - {project.maxHorizonYears} Years</td>
+                      <td>
+                        <span className="badge bg-amber-100 text-amber-800 text-[10px] font-bold">
+                          {project.riskLevel}
+                        </span>
+                      </td>
+                      <td className="text-[#1A1A2E] font-medium">{project.propertyType}</td>
+                      <td>
+                        <span className={`badge text-[10px] font-bold ${
+                          project.status === "ACTIVE" 
+                            ? "bg-emerald-100 text-emerald-800"
+                            : project.status === "SOLD_OUT"
+                            ? "bg-slate-100 text-slate-700"
+                            : project.status === "UPCOMING"
+                            ? "bg-blue-100 text-blue-800"
+                            : "bg-rose-100 text-rose-800"
+                        }`}>
+                          {project.status.replace("_", " ")}
+                        </span>
+                      </td>
+                      <td className="text-right">
+                        <div className="flex items-center justify-end gap-2">
                           <button
                             onClick={() => handleOpenMatches(project)}
-                            className="text-xs font-bold text-accent hover:text-accent-light uppercase tracking-wider"
+                            className="crm-btn-secondary text-[11px] px-3 py-1"
                           >
                             🎯 Matches
                           </button>
                           <Link
                             href={`/admin/projects/${project.id}`}
-                            className="text-xs font-bold text-primary hover:text-primary-light uppercase tracking-wider"
+                            className="crm-btn-ghost text-xs text-[#5B4FE0] font-bold px-3 py-1"
                           >
                             Edit
                           </Link>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        </>
-      ) : (
-        /* Corridor Metrics CRUD Panel */
-        <div className="bg-surface border border-luxury rounded-card shadow-sm flex-grow overflow-hidden">
-          {isLoadingCorridors ? (
-            <div className="p-8 text-center text-text-secondary animate-pulse">
-              Loading corridor CAGR metrics...
-            </div>
-          ) : corridors.length === 0 ? (
-            <div className="p-16 text-center text-text-secondary space-y-3">
-              <span className="text-3xl">📈</span>
-              <h3 className="font-display text-lg font-bold text-primary">No Corridor Metrics Found</h3>
-              <p className="text-xs max-w-sm mx-auto leading-relaxed">
-                Add corridor CAGR and yield mappings to feed the ROI Calculator.
-              </p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto w-full">
-              <table className="min-w-full divide-y divide-luxury text-left text-xs text-text-primary">
-                <thead className="bg-luxury-bg text-text-secondary uppercase font-semibold tracking-wider">
-                  <tr>
-                    <th className="px-6 py-4">Corridor Name</th>
-                    <th className="px-6 py-4">Historical CAGR</th>
-                    <th className="px-6 py-4">Projected CAGR</th>
-                    <th className="px-6 py-4">Rental Yield</th>
-                    <th className="px-6 py-4">Risk Rating</th>
-                    <th className="px-6 py-4">Infra Score</th>
-                    <th className="px-6 py-4">Demand Score</th>
-                    <th className="px-6 py-4 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-luxury bg-surface">
-                  {corridors.map((c) => (
-                    <tr key={c.id} className="hover:bg-luxury-bg/30 transition-colors">
-                      <td className="px-6 py-4 font-semibold text-primary text-sm flex items-center gap-1">
-                        <MapPin size={12} className="text-slate-400" /> {c.corridor}
-                      </td>
-                      <td className="px-6 py-4 font-medium">{c.historicalCAGR}%</td>
-                      <td className="px-6 py-4 font-medium text-blue-600">
-                        {c.projectedCAGRMin}% - {c.projectedCAGRMax}%
-                      </td>
-                      <td className="px-6 py-4">
-                        {c.rentalYieldMin}% - {c.rentalYieldMax}%
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="font-bold text-[10px] uppercase tracking-wide bg-slate-100 border border-slate-200 px-2 py-0.5 rounded">
-                          {c.riskLevel}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 font-semibold">{c.infraScore} / 10</td>
-                      <td className="px-6 py-4 font-semibold">{c.demandScore} / 10</td>
-                      <td className="px-6 py-4 text-right space-x-3">
-                        <button
-                          onClick={() => handleOpenEditCorridor(c)}
-                          className="text-xs font-bold text-[#2563EB] hover:underline uppercase tracking-wider"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDeleteCorridor(c.id)}
-                          className="text-xs font-bold text-red-500 hover:text-red-700 uppercase tracking-wider"
-                        >
-                          Delete
-                        </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+            )}
+          </div>
+        </>
+      ) : (
+        /* Corridor Metrics CRUD Panel */
+        <div className="crm-card p-0 overflow-hidden flex-grow">
+          {isLoadingCorridors ? (
+            <div className="p-12 text-center text-[#8A8A9E] animate-pulse text-xs">
+              Loading corridor CAGR metrics...
             </div>
+          ) : corridors.length === 0 ? (
+            <div className="p-16 text-center text-[#8A8A9E] space-y-3">
+              <span className="text-3xl">📈</span>
+              <h3 className="font-display text-lg font-bold text-[#1A1A2E]">No Corridor Metrics Found</h3>
+              <p className="text-xs max-w-sm mx-auto leading-relaxed">
+                Add corridor CAGR and yield mappings to feed the AI investment engine.
+              </p>
+            </div>
+          ) : (
+            <table className="crm-table text-xs w-full">
+              <thead>
+                <tr>
+                  <th>Corridor Name</th>
+                  <th>Historical CAGR</th>
+                  <th>Projected CAGR</th>
+                  <th>Rental Yield</th>
+                  <th>Risk Rating</th>
+                  <th>Infra Score</th>
+                  <th>Demand Score</th>
+                  <th className="text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {corridors.map((c) => (
+                  <tr key={c.id}>
+                    <td className="font-bold text-[#1A1A2E]">
+                      <div className="flex items-center gap-1.5">
+                        <MapPin size={13} className="text-[#5B4FE0]" /> {c.corridor}
+                      </div>
+                    </td>
+                    <td className="font-semibold text-[#1A1A2E]">{c.historicalCAGR}%</td>
+                    <td className="font-bold text-[#5B4FE0]">
+                      {c.projectedCAGRMin}% - {c.projectedCAGRMax}%
+                    </td>
+                    <td className="text-[#8A8A9E]">
+                      {c.rentalYieldMin}% - {c.rentalYieldMax}%
+                    </td>
+                    <td>
+                      <span className="badge bg-[#F4F0FF] text-[#5B4FE0] text-[10px] font-bold">
+                        {c.riskLevel}
+                      </span>
+                    </td>
+                    <td className="font-bold text-[#1A1A2E]">{c.infraScore} / 10</td>
+                    <td className="font-bold text-[#1A1A2E]">{c.demandScore} / 10</td>
+                    <td className="text-right">
+                      <div className="flex justify-end items-center gap-2">
+                        <button
+                          onClick={() => handleOpenEditCorridor(c)}
+                          className="crm-btn-ghost text-xs text-[#5B4FE0] font-bold px-3 py-1"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeleteCorridor(c.id)}
+                          className="crm-btn-ghost text-xs text-rose-600 font-bold px-3 py-1"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           )}
         </div>
       )}
 
       {/* Auto-Matched Leads modal drawer */}
       {activeProjectMatches && (
-        <div className="fixed inset-0 z-50 flex items-center justify-end bg-black/40">
+        <div className="fixed inset-0 z-50 flex items-center justify-end bg-[#1A1A2E]/40 backdrop-blur-xs">
           <div onClick={() => setActiveProjectMatches(null)} className="absolute inset-0" />
-          <div className="relative z-10 w-full max-w-lg h-full bg-surface border-l border-luxury shadow-luxury flex flex-col justify-between animate-slide-in">
-            <div className="px-6 py-4 border-b border-luxury bg-luxury-bg/30 flex justify-between items-center">
+          <div className="relative z-10 w-full max-w-lg h-full crm-card bg-white rounded-none flex flex-col justify-between shadow-2xl animate-slide-in p-6">
+            <div className="pb-4 border-b border-[#F0EDFA] flex justify-between items-center">
               <div>
-                <span className="text-[9px] text-accent font-bold uppercase tracking-wider block">Auto-Match Lead Matrix</span>
-                <h3 className="font-display font-semibold text-primary">{activeProjectMatches.name} Leads</h3>
+                <span className="text-[10px] text-[#5B4FE0] font-bold uppercase tracking-wider block">Auto-Match Lead Matrix</span>
+                <h3 className="font-display font-bold text-[#1A1A2E] text-base">{activeProjectMatches.name} Leads</h3>
               </div>
               <button 
                 onClick={() => setActiveProjectMatches(null)}
-                className="text-text-secondary hover:text-primary text-sm font-semibold"
+                className="text-[#8A8A9E] hover:text-[#1A1A2E] p-1 rounded-full hover:bg-[#F4F0FF]"
               >
-                ✕ Close
+                <X size={18} />
               </button>
             </div>
 
-            <div className="flex-grow overflow-y-auto p-6 space-y-4">
-              <p className="text-xs text-text-secondary leading-relaxed">
-                The following leads have investment profiles (Budget: {formatPrice(activeProjectMatches.minBudgetLakhs, activeProjectMatches.maxBudgetLakhs)}, Horizon: {activeProjectMatches.minHorizonYears}-{activeProjectMatches.maxHorizonYears}Yrs) that match this project location:
+            <div className="flex-grow overflow-y-auto py-4 space-y-4">
+              <p className="text-xs text-[#8A8A9E] leading-relaxed">
+                Leads matching budget range ({formatPrice(activeProjectMatches.minBudgetLakhs, activeProjectMatches.maxBudgetLakhs)}) and horizon ({activeProjectMatches.minHorizonYears}-{activeProjectMatches.maxHorizonYears} Yrs):
               </p>
 
               {isLoadingMatches ? (
-                <p className="text-xs text-text-secondary animate-pulse">Running lead correlation calculations...</p>
+                <p className="text-xs text-[#8A8A9E] animate-pulse">Running lead correlation calculations...</p>
               ) : matchedLeads.length === 0 ? (
-                <div className="text-center py-10 text-text-secondary border border-dashed border-luxury rounded-card">
-                  <span className="text-2xl block mb-2">👥</span>
+                <div className="text-center py-12 text-[#8A8A9E] bg-[#F9F8FD] rounded-2xl space-y-2">
+                  <span className="text-3xl block">👥</span>
                   <p className="text-xs italic">No matching leads in database.</p>
                 </div>
               ) : (
                 <div className="space-y-3">
                   {matchedLeads.map((lead) => (
-                    <div key={lead.id} className="border border-luxury p-3.5 rounded-card flex justify-between items-center bg-luxury-bg/10 hover:bg-luxury-bg/30 transition-colors text-xs">
+                    <div key={lead.id} className="bg-[#F9F8FD] p-4 rounded-2xl border border-[#F0EDFA] flex justify-between items-center text-xs">
                       <div>
-                        <h4 className="font-bold text-primary">{lead.name}</h4>
-                        <p className="text-[10px] text-text-secondary">{lead.email} · {lead.phone}</p>
+                        <h4 className="font-bold text-[#1A1A2E] text-sm">{lead.name}</h4>
+                        <p className="text-[11px] text-[#8A8A9E] mt-0.5">{lead.email} · {lead.phone}</p>
                       </div>
                       <div className="text-right">
-                        <span className="font-bold text-primary block">
+                        <span className="font-bold text-[#5B4FE0] block text-sm">
                           {lead.budget < 100 ? `₹${lead.budget}L` : `₹${(lead.budget / 100).toFixed(1)}Cr`}
                         </span>
-                        <span className="text-[9px] text-text-secondary">{lead.horizon} Yrs horizon</span>
+                        <span className="text-[10px] text-[#8A8A9E]">{lead.horizon} Yrs horizon</span>
                       </div>
                     </div>
                   ))}
@@ -542,10 +547,10 @@ export default function AdminProjectsPage() {
               )}
             </div>
 
-            <div className="px-6 py-4 border-t border-luxury bg-luxury-bg/20 text-center">
+            <div className="pt-4 border-t border-[#F0EDFA]">
               <button
                 onClick={() => setActiveProjectMatches(null)}
-                className="px-6 py-2 bg-primary text-surface text-xs font-semibold uppercase tracking-wider rounded-tag"
+                className="crm-btn-primary w-full text-xs py-2.5"
               >
                 Close Match View
               </button>
@@ -556,117 +561,117 @@ export default function AdminProjectsPage() {
 
       {/* Corridor Modal Form */}
       {showCorridorModal && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-          <div className="bg-surface border border-luxury w-full max-w-lg rounded-card shadow-luxury overflow-hidden animate-slide-in">
-            <div className="px-6 py-4 border-b border-luxury bg-slate-50/50 flex items-center justify-between">
-              <h2 className="font-display font-bold text-slate-800 text-sm">
+        <div className="fixed inset-0 bg-[#1A1A2E]/40 z-50 flex items-center justify-center p-4 backdrop-blur-xs">
+          <div className="crm-card bg-white w-full max-w-lg shadow-2xl p-6 space-y-5 animate-scale-in">
+            <div className="flex items-center justify-between pb-3 border-b border-[#F0EDFA]">
+              <h2 className="font-display font-bold text-[#1A1A2E] text-base">
                 {editingCorridor ? "Edit Corridor Metrics" : "Add Corridor Metrics"}
               </h2>
               <button 
                 onClick={() => setShowCorridorModal(false)}
-                className="text-slate-600 hover:text-slate-900 border border-slate-200 rounded px-2.5 py-1 text-xs bg-white font-bold"
+                className="text-[#8A8A9E] hover:text-[#1A1A2E] p-1 rounded-full hover:bg-[#F4F0FF]"
               >
-                ✕
+                <X size={18} />
               </button>
             </div>
             
-            <form onSubmit={handleSaveCorridor} className="p-6 space-y-4 text-xs">
+            <form onSubmit={handleSaveCorridor} className="space-y-4 text-xs">
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="block font-bold text-slate-500 uppercase tracking-wider">Corridor Name</label>
+                <div className="space-y-1.5">
+                  <label className="block font-bold text-[#8A8A9E] uppercase tracking-wider text-[10px]">Corridor Name</label>
                   <input
                     type="text"
                     placeholder="e.g. yadadri corridor"
                     value={corridorName}
                     onChange={(e) => setCorridorName(e.target.value)}
-                    className="w-full bg-luxury-bg border border-luxury px-3.5 py-2 rounded text-xs text-text-primary focus:outline-none focus:border-[#2563EB]"
+                    className="w-full bg-[#F9F8FD] border border-[#E8E5F5] rounded-full px-4 py-2 text-xs text-[#1A1A2E] focus:outline-none focus:border-[#5B4FE0]"
                     required
                   />
                 </div>
 
-                <div className="space-y-1">
-                  <label className="block font-bold text-slate-500 uppercase tracking-wider">City Location</label>
+                <div className="space-y-1.5">
+                  <label className="block font-bold text-[#8A8A9E] uppercase tracking-wider text-[10px]">City Location</label>
                   <input
                     type="text"
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
-                    className="w-full bg-luxury-bg border border-luxury px-3.5 py-2 rounded text-xs text-text-primary focus:outline-none focus:border-[#2563EB]"
+                    className="w-full bg-[#F9F8FD] border border-[#E8E5F5] rounded-full px-4 py-2 text-xs text-[#1A1A2E] focus:outline-none focus:border-[#5B4FE0]"
                     required
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-1">
-                  <label className="block font-bold text-slate-500 uppercase tracking-wider">Hist. CAGR (%)</label>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="space-y-1.5">
+                  <label className="block font-bold text-[#8A8A9E] uppercase tracking-wider text-[10px]">Hist. CAGR (%)</label>
                   <input
                     type="number"
                     step="0.1"
                     value={historicalCagr}
                     onChange={(e) => setHistoricalCagr(parseFloat(e.target.value))}
-                    className="w-full bg-luxury-bg border border-luxury px-3.5 py-2 rounded text-xs text-text-primary focus:outline-none focus:border-[#2563EB]"
+                    className="w-full bg-[#F9F8FD] border border-[#E8E5F5] rounded-full px-3 py-2 text-xs text-[#1A1A2E] focus:outline-none focus:border-[#5B4FE0]"
                     required
                   />
                 </div>
 
-                <div className="space-y-1">
-                  <label className="block font-bold text-slate-500 uppercase tracking-wider">Proj. CAGR Min (%)</label>
+                <div className="space-y-1.5">
+                  <label className="block font-bold text-[#8A8A9E] uppercase tracking-wider text-[10px]">Proj. CAGR Min</label>
                   <input
                     type="number"
                     step="0.1"
                     value={cagrMin}
                     onChange={(e) => setCagrMin(parseFloat(e.target.value))}
-                    className="w-full bg-luxury-bg border border-luxury px-3.5 py-2 rounded text-xs text-text-primary focus:outline-none focus:border-[#2563EB]"
+                    className="w-full bg-[#F9F8FD] border border-[#E8E5F5] rounded-full px-3 py-2 text-xs text-[#1A1A2E] focus:outline-none focus:border-[#5B4FE0]"
                     required
                   />
                 </div>
 
-                <div className="space-y-1">
-                  <label className="block font-bold text-slate-500 uppercase tracking-wider">Proj. CAGR Max (%)</label>
+                <div className="space-y-1.5">
+                  <label className="block font-bold text-[#8A8A9E] uppercase tracking-wider text-[10px]">Proj. CAGR Max</label>
                   <input
                     type="number"
                     step="0.1"
                     value={cagrMax}
                     onChange={(e) => setCagrMax(parseFloat(e.target.value))}
-                    className="w-full bg-luxury-bg border border-luxury px-3.5 py-2 rounded text-xs text-text-primary focus:outline-none focus:border-[#2563EB]"
+                    className="w-full bg-[#F9F8FD] border border-[#E8E5F5] rounded-full px-3 py-2 text-xs text-[#1A1A2E] focus:outline-none focus:border-[#5B4FE0]"
                     required
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="block font-bold text-slate-500 uppercase tracking-wider">Rent Yield Min (%)</label>
+                <div className="space-y-1.5">
+                  <label className="block font-bold text-[#8A8A9E] uppercase tracking-wider text-[10px]">Rent Yield Min (%)</label>
                   <input
                     type="number"
                     step="0.1"
                     value={rentMin}
                     onChange={(e) => setRentMin(parseFloat(e.target.value))}
-                    className="w-full bg-luxury-bg border border-luxury px-3.5 py-2 rounded text-xs text-text-primary focus:outline-none focus:border-[#2563EB]"
+                    className="w-full bg-[#F9F8FD] border border-[#E8E5F5] rounded-full px-4 py-2 text-xs text-[#1A1A2E] focus:outline-none focus:border-[#5B4FE0]"
                     required
                   />
                 </div>
 
-                <div className="space-y-1">
-                  <label className="block font-bold text-slate-500 uppercase tracking-wider">Rent Yield Max (%)</label>
+                <div className="space-y-1.5">
+                  <label className="block font-bold text-[#8A8A9E] uppercase tracking-wider text-[10px]">Rent Yield Max (%)</label>
                   <input
                     type="number"
                     step="0.1"
                     value={rentMax}
                     onChange={(e) => setRentMax(parseFloat(e.target.value))}
-                    className="w-full bg-luxury-bg border border-luxury px-3.5 py-2 rounded text-xs text-text-primary focus:outline-none focus:border-[#2563EB]"
+                    className="w-full bg-[#F9F8FD] border border-[#E8E5F5] rounded-full px-4 py-2 text-xs text-[#1A1A2E] focus:outline-none focus:border-[#5B4FE0]"
                     required
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-1">
-                  <label className="block font-bold text-slate-500 uppercase tracking-wider">Risk Rating</label>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="space-y-1.5">
+                  <label className="block font-bold text-[#8A8A9E] uppercase tracking-wider text-[10px]">Risk Rating</label>
                   <select
                     value={riskLevel}
                     onChange={(e) => setRiskLevel(e.target.value)}
-                    className="w-full bg-luxury-bg border border-luxury px-3.5 py-2 rounded text-xs text-text-primary focus:outline-none focus:border-[#2563EB]"
+                    className="w-full bg-[#F9F8FD] border border-[#E8E5F5] rounded-full px-3 py-2 text-xs text-[#1A1A2E] focus:outline-none focus:border-[#5B4FE0]"
                   >
                     <option value="LOW">LOW</option>
                     <option value="MEDIUM">MEDIUM</option>
@@ -674,45 +679,45 @@ export default function AdminProjectsPage() {
                   </select>
                 </div>
 
-                <div className="space-y-1">
-                  <label className="block font-bold text-slate-500 uppercase tracking-wider">Infra Score (1-10)</label>
+                <div className="space-y-1.5">
+                  <label className="block font-bold text-[#8A8A9E] uppercase tracking-wider text-[10px]">Infra (1-10)</label>
                   <input
                     type="number"
                     min="1"
                     max="10"
                     value={infraScore}
                     onChange={(e) => setInfraScore(parseInt(e.target.value))}
-                    className="w-full bg-luxury-bg border border-luxury px-3.5 py-2 rounded text-xs text-text-primary focus:outline-none focus:border-[#2563EB]"
+                    className="w-full bg-[#F9F8FD] border border-[#E8E5F5] rounded-full px-3 py-2 text-xs text-[#1A1A2E] focus:outline-none focus:border-[#5B4FE0]"
                     required
                   />
                 </div>
 
-                <div className="space-y-1">
-                  <label className="block font-bold text-[#2563EB] uppercase tracking-wider">Demand (1-10)</label>
+                <div className="space-y-1.5">
+                  <label className="block font-bold text-[#5B4FE0] uppercase tracking-wider text-[10px]">Demand (1-10)</label>
                   <input
                     type="number"
                     min="1"
                     max="10"
                     value={demandScore}
                     onChange={(e) => setDemandScore(parseInt(e.target.value))}
-                    className="w-full bg-luxury-bg border border-luxury px-3.5 py-2 rounded text-xs text-text-primary focus:outline-none focus:border-[#2563EB]"
+                    className="w-full bg-[#F9F8FD] border border-[#E8E5F5] rounded-full px-3 py-2 text-xs text-[#1A1A2E] focus:outline-none focus:border-[#5B4FE0]"
                     required
                   />
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 pt-3 border-t border-luxury/40">
+              <div className="flex justify-end gap-3 pt-3 border-t border-[#F0EDFA]">
                 <button
                   type="button"
                   onClick={() => setShowCorridorModal(false)}
-                  className="px-4 py-2 border border-slate-200 rounded font-bold text-slate-600 hover:bg-slate-50 uppercase tracking-wider text-[10px]"
+                  className="crm-btn-secondary px-5 py-2 text-xs"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSavingCorridor}
-                  className="px-4 py-2 bg-[#2563EB] hover:bg-blue-700 text-white rounded font-bold uppercase tracking-wider text-[10px] transition-colors disabled:opacity-50"
+                  className="crm-btn-primary px-5 py-2 text-xs"
                 >
                   {isSavingCorridor ? "Saving..." : "Save Metrics"}
                 </button>

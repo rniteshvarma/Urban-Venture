@@ -1,71 +1,629 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #2563EB;
-  --color-primary-light: #EFF6FF;
+  /* ═══════════════════════════════════════════════════
+     URBAN VENTURES — Premium Design System v2.0
+     Client Portal & Base Theme Tokens
+     ═══════════════════════════════════════════════════ */
+
+  /* ── Primary Brand Colors ── */
+  --color-primary: #0B1D3A;
+  --color-primary-light: #1A3A5C;
+  --color-primary-lighter: #264A6E;
+  --color-primary-50: #E8F0FE;
   --color-accent: #3B82F6;
-  --color-accent-light: #EFF6FF;
-  --color-luxury-bg: #F8FAFC;
+  --color-accent-light: #E0F7FA;
+  --color-accent-dark: #0090AD;
+  --color-accent-glow: rgba(59, 130, 246, 0.15);
+
+  /* ── Semantic Colors ── */
+  --color-success: #10B981;
+  --color-success-light: #D1FAE5;
+  --color-warning: #F59E0B;
+  --color-warning-light: #FEF3C7;
+  --color-danger: #E53935;
+  --color-danger-light: #FEE2E2;
+  --color-info: #3B82F6;
+  --color-info-light: #DBEAFE;
+
+  /* ── Surface & Background ── */
+  --color-luxury-bg: #F0F4F8;
   --color-surface: #FFFFFF;
+  --color-surface-raised: #FFFFFF;
+  --color-surface-dim: #F7F9FC;
   --color-luxury-border: #E2E8F0;
-  
+  --color-border-light: #F1F5F9;
+
+  /* ── Text Colors ── */
   --color-text-primary: #0F172A;
   --color-text-secondary: #475569;
-  
-  --font-display: var(--font-dm-sans), sans-serif;
-  --font-sans: var(--font-dm-sans), sans-serif;
-  
-  --radius-card: 8px;
-  --radius-input: 6px;
-  --radius-tag: 4px;
-  
-  --shadow-luxury: 0 1px 3px rgba(0,0,0,0.05), 0 4px 12px rgba(0,0,0,0.03);
+  --color-text-tertiary: #94A3B8;
+  --color-text-inverse: #FFFFFF;
+  --color-text-accent: #3B82F6;
 
-  /* Deep Research Edition Theme Tokens mapped to Old Theme */
-  --color-warm-paper: #F8FAFC;
-  --color-warm-card: #FFFFFF;
-  --color-warm-border: #E2E8F0;
-  --color-accent-gold: #2563EB;
-  --color-teal-metric: #3B82F6;
-  --color-rust-warning: #EF4444;
+  /* ── Hero & Gradient ── */
+  --color-hero-start: #0B1D3A;
+  --color-hero-mid: #132D52;
+  --color-hero-end: #1A3A5C;
 
-  --font-space-grotesk: var(--font-dm-sans), sans-serif;
+  /* ── Accent Palette (for charts, badges, metrics) ── */
+  --color-accent-gold: #F59E0B;
+  --color-accent-emerald: #10B981;
+  --color-accent-coral: #F97066;
+  --color-accent-purple: #8B5CF6;
+  --color-accent-cyan: #00B4D8;
+  --color-accent-indigo: #6366F1;
+  --color-teal-metric: #00B4D8;
+  --color-rust-warning: #E53935;
+
+  /* ── Card Interaction ── */
+  --color-card-hover: rgba(59, 130, 246, 0.04);
+  --color-card-active: rgba(59, 130, 246, 0.08);
+
+  /* ── Typography ── */
+  --font-display: var(--font-plus-jakarta), sans-serif;
+  --font-sans: var(--font-inter), sans-serif;
+  --font-serif: var(--font-playfair), serif;
+  --font-space-grotesk: var(--font-plus-jakarta), sans-serif;
   --font-dm-serif: var(--font-playfair), serif;
-  --font-jetbrains-mono: var(--font-dm-sans), sans-serif;
+  --font-dm-sans: var(--font-inter), sans-serif;
 
-  /* Custom Admin and UI Colors */
-  --color-blue-650: #2563EB;
-  --color-blue-750: #1D4ED8;
-  --color-red-650: #DC2626;
+  /* ── Border Radius ── */
+  --radius-card: 12px;
+  --radius-input: 8px;
+  --radius-tag: 6px;
+  --radius-button: 8px;
+  --radius-full: 9999px;
+
+  /* ── Shadows ── */
+  --shadow-luxury: 0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.04);
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-card: 0 2px 8px rgba(0,0,0,0.06), 0 0 1px rgba(0,0,0,0.08);
+  --shadow-elevated: 0 8px 24px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06);
+  --shadow-modal: 0 20px 60px rgba(0,0,0,0.15), 0 4px 16px rgba(0,0,0,0.08);
+  --shadow-glow-cyan: 0 0 20px rgba(59, 130, 246, 0.25);
+  --shadow-glow-gold: 0 0 20px rgba(245, 158, 11, 0.2);
+
+  /* ── Admin & UI Scale Colors ── */
+  --color-blue-650: #0B1D3A;
+  --color-blue-750: #091527;
+  --color-red-650: #E53935;
   --color-slate-150: #E2E8F0;
   --color-slate-250: #CBD5E1;
   --color-slate-450: #64748B;
   --color-slate-650: #334155;
+
+  /* ── Transitions ── */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-smooth: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
+/* ═══════════════════════════════════════════════════
+   ROOT VARIABLES & BASE STYLES
+   ═══════════════════════════════════════════════════ */
+
 :root {
-  --background: #F8FAFC;
+  --background: #F0F4F8;
   --foreground: #0F172A;
+  scroll-behavior: smooth;
+}
+
+::selection {
+  background-color: rgba(59, 130, 246, 0.2);
+  color: #0B1D3A;
 }
 
 body {
   background-color: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Custom Utilities or Styles */
-.border-luxury {
+/* ═══════════════════════════════════════════════════
+   KEYFRAME ANIMATIONS
+   ═══════════════════════════════════════════════════ */
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in-down {
+  from { opacity: 0; transform: translateY(-12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(24px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slide-in-left {
+  from { opacity: 0; transform: translateX(-24px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 8px rgba(91, 79, 224, 0.2); }
+  50% { box-shadow: 0 0 20px rgba(91, 79, 224, 0.4); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+}
+
+/* ═══════════════════════════════════════════════════
+   ANIMATION UTILITY CLASSES
+   ═══════════════════════════════════════════════════ */
+
+.animate-fade-in {
+  animation: fade-in 0.4s ease-out both;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.5s ease-out both;
+}
+
+.animate-fade-in-down {
+  animation: fade-in-down 0.4s ease-out both;
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.4s ease-out both;
+}
+
+.animate-slide-in-left {
+  animation: slide-in-left 0.4s ease-out both;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.3s ease-out both;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.1s; }
+.stagger-3 { animation-delay: 0.15s; }
+.stagger-4 { animation-delay: 0.2s; }
+.stagger-5 { animation-delay: 0.25s; }
+
+/* ═══════════════════════════════════════════════════
+   GLASSMORPHISM & PREMIUM CONTAINERS (Client App)
+   ═══════════════════════════════════════════════════ */
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.glass-header {
+  background: rgba(11, 29, 58, 0.85);
+  backdrop-filter: blur(20px) saturate(1.8);
+  -webkit-backdrop-filter: blur(20px) saturate(1.8);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-header-scrolled {
+  background: rgba(11, 29, 58, 0.95);
+  backdrop-filter: blur(24px) saturate(1.8);
+  -webkit-backdrop-filter: blur(24px) saturate(1.8);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.gradient-hero {
+  background: linear-gradient(135deg, #0B1D3A 0%, #132D52 40%, #1A3A5C 100%);
+}
+
+.gradient-dark-footer {
+  background: linear-gradient(180deg, #0B1D3A 0%, #061224 100%);
+}
+
+/* ═══════════════════════════════════════════════════
+   PREMIUM CARD SYSTEM (Client App)
+   ═══════════════════════════════════════════════════ */
+
+.card-premium {
+  background: #FFFFFF;
   border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06), 0 0 1px rgba(0,0,0,0.08);
+  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.shadow-luxury-soft {
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 4px 12px rgba(0,0,0,0.03);
+.card-premium:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06);
+  border-color: rgba(59, 130, 246, 0.2);
 }
 
-.text-gold-gradient {
-  background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+.card-interactive {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
 }
 
+.card-stat {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.stat-card .stat-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+.stat-card .stat-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #0F172A;
+  font-family: var(--font-display);
+}
+
+.stat-card .stat-label {
+  font-size: 0.8125rem;
+  color: #64748B;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge-verified { background: #D1FAE5; color: #065F46; }
+.badge-hot { background: #FEF3C7; color: #92400E; }
+.badge-premium { background: #0B1D3A; color: #FFFFFF; }
+.badge-rera { background: #DBEAFE; color: #1E40AF; }
+.badge-new { background: #E0F7FA; color: #0090AD; }
+.badge-danger { background: #FEE2E2; color: #991B1B; }
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 24px;
+  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+  color: #FFFFFF;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25);
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 24px;
+  background: #FFFFFF;
+  color: #0B1D3A;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border-radius: 8px;
+  border: 1px solid #E2E8F0;
+  cursor: pointer;
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: transparent;
+  color: #475569;
+  font-weight: 500;
+  font-size: 0.875rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.filter-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  border-radius: 9999px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  background: #FFFFFF;
+  color: #475569;
+  border: 1px solid #E2E8F0;
+  cursor: pointer;
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+}
+
+.filter-pill:hover {
+  border-color: #3B82F6;
+  color: #2563EB;
+}
+
+.filter-pill-active {
+  background: #3B82F6;
+  color: #FFFFFF;
+  border-color: #3B82F6;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+.filter-pill-active:hover {
+  background: #2563EB;
+  border-color: #2563EB;
+  color: #FFFFFF;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+}
+
+/* ═══════════════════════════════════════════════════
+   CRM SPECIFIC DESIGN SYSTEM (LoopAI Inspired)
+   2 Separate Designs — Scoped specifically for CRM
+   ═══════════════════════════════════════════════════ */
+
+/* CRM Page Canvas: Soft Light Lavender */
+.crm-canvas {
+  background-color: #F0EEFA;
+  color: #1A1A2E;
+  font-family: var(--font-sans), sans-serif;
+  min-height: 100vh;
+}
+
+/* CRM Pure White Content Cards — NO visible border, 20px radius, soft diffused shadow */
+.crm-card {
+  background: #FFFFFF;
+  border-radius: 20px;
+  border: none !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.035), 0 1px 3px rgba(0, 0, 0, 0.02);
+  padding: 1.5rem;
+  transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.crm-card:hover {
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.03);
+  transform: translateY(-2px);
+}
+
+/* CRM Indigo-Violet Primary Pill Button */
+.crm-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 22px;
+  background: linear-gradient(135deg, #7C6EF5 0%, #5B4FE0 100%);
+  color: #FFFFFF;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  border-radius: 9999px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(91, 79, 224, 0.35);
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.crm-btn-primary:hover {
+  box-shadow: 0 6px 20px rgba(91, 79, 224, 0.45);
+  transform: translateY(-1px);
+}
+
+.crm-btn-primary:active {
+  transform: scale(0.98);
+}
+
+/* CRM Secondary Outline Pill Button */
+.crm-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: #FFFFFF;
+  color: #1A1A2E;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  border-radius: 9999px;
+  border: 1px solid #EBE7F5;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.crm-btn-secondary:hover {
+  border-color: #5B4FE0;
+  color: #5B4FE0;
+  background: #F6F4FE;
+}
+
+/* CRM Ghost Pill Button */
+.crm-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: transparent;
+  color: #8A8A9E;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  border-radius: 9999px;
+  border: none;
+  cursor: pointer;
+  transition: all 200ms ease;
+}
+
+.crm-btn-ghost:hover {
+  color: #5B4FE0;
+  background: #F4F0FF;
+}
+
+/* CRM Pill Navigation Tab Container */
+.crm-pill-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #EBE7F5;
+  padding: 4px;
+  border-radius: 9999px;
+}
+
+.crm-pill-tab {
+  padding: 7px 18px;
+  border-radius: 9999px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #8A8A9E;
+  transition: all 200ms ease;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+}
+
+.crm-pill-tab:hover {
+  color: #1A3A5C;
+}
+
+.crm-pill-tab-active {
+  background: #FFFFFF;
+  color: #1A1A2E;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.crm-pill-tab-indigo {
+  background: linear-gradient(135deg, #7C6EF5 0%, #5B4FE0 100%);
+  color: #FFFFFF;
+  box-shadow: 0 4px 14px rgba(91, 79, 224, 0.35);
+}
+
+/* CRM Soft Two-Tone Gradient Bars & Highlights */
+.crm-gradient-peach-mint {
+  background: linear-gradient(90deg, #FDE68A 0%, #A7F3D0 100%);
+}
+
+.crm-gradient-purple-lavender {
+  background: linear-gradient(90deg, #DDD6FE 0%, #E9D5FF 100%);
+}
+
+.crm-gradient-blue-cyan {
+  background: linear-gradient(90deg, #BFDBFE 0%, #99F6E4 100%);
+}
+
+.crm-gradient-coral-lavender {
+  background: linear-gradient(90deg, #FECDD3 0%, #E9D5FF 100%);
+}
+
+/* CRM AI Insight Callout Box */
+.crm-insight-box {
+  background: #F4F0FF;
+  border: 1px solid #E4DCFF;
+  border-radius: 14px;
+  padding: 12px 16px;
+  color: #5B4FE0;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+/* CRM Avatar Gradient Ring */
+.crm-avatar-ring {
+  padding: 2.5px;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, #7C6EF5, #A7F3D0, #5B4FE0);
+}
+
+/* CRM Table Styling: Borderless, Soft Hover */
+.crm-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.crm-table thead th {
+  padding: 12px 16px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #8A8A9E;
+  background: transparent;
+  border-bottom: 1px solid #F0EDFA;
+  text-align: left;
+}
+
+.crm-table tbody td {
+  padding: 14px 16px;
+  font-size: 0.84rem;
+  color: #1A1A2E;
+  border-bottom: 1px solid #F5F3FB;
+  transition: background 150ms ease;
+}
+
+.crm-table tbody tr:hover td {
+  background: #F7F5FC;
+}
+
+.crm-table tbody tr:last-child td {
+  border-bottom: none;
+}

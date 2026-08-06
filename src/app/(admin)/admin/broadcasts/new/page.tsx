@@ -351,26 +351,26 @@ export default function NewBroadcastWizardPage() {
   };
 
   return (
-    <div className="space-y-6 flex-grow flex flex-col max-w-4xl mx-auto w-full">
+    <div className="space-y-6 flex-grow flex flex-col max-w-4xl mx-auto w-full animate-fade-in text-text-primary">
       {/* Navigation Headers */}
-      <div className="flex items-center gap-2 text-xs text-slate-500">
-        <Link href="/admin/broadcasts" className="hover:text-primary transition-colors flex items-center gap-1">
+      <div className="flex items-center gap-2 text-xs text-text-secondary">
+        <Link href="/admin/broadcasts" className="hover:text-accent transition-colors flex items-center gap-1">
           <ArrowLeft size={12} /> Broadcast Center
         </Link>
         <span>/</span>
-        <span className="text-slate-800 font-semibold">New Campaign</span>
+        <span className="text-text-primary font-semibold">New Campaign</span>
       </div>
 
       {step < 5 && (
-        <div className="flex justify-between items-center bg-white border border-slate-200 px-6 py-4 rounded shadow-sm">
-          <h1 className="font-display text-lg font-bold text-slate-900">
+        <div className="flex justify-between items-center card-premium px-6 py-4">
+          <h1 className="font-display text-lg font-bold text-text-primary">
             Create Bulk Broadcast Campaign
           </h1>
-          <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
-            <span className={`px-2 py-0.5 rounded ${step === 1 ? "bg-blue-100 text-blue-700" : "bg-slate-100"}`}>1. Target</span>
-            <span className={`px-2 py-0.5 rounded ${step === 2 ? "bg-blue-100 text-blue-700" : "bg-slate-100"}`}>2. Channel</span>
-            <span className={`px-2 py-0.5 rounded ${step === 3 ? "bg-blue-100 text-blue-700" : "bg-slate-100"}`}>3. Content</span>
-            <span className={`px-2 py-0.5 rounded ${step === 4 ? "bg-blue-100 text-blue-700" : "bg-slate-100"}`}>4. Dispatch</span>
+          <div className="flex items-center gap-2 text-xs font-semibold text-text-tertiary">
+            <span className={`px-2 py-0.5 rounded-[6px] ${step === 1 ? "bg-accent-light text-accent" : "bg-luxury-bg text-text-secondary"}`}>1. Target</span>
+            <span className={`px-2 py-0.5 rounded-[6px] ${step === 2 ? "bg-accent-light text-accent" : "bg-luxury-bg text-text-secondary"}`}>2. Channel</span>
+            <span className={`px-2 py-0.5 rounded-[6px] ${step === 3 ? "bg-accent-light text-accent" : "bg-luxury-bg text-text-secondary"}`}>3. Content</span>
+            <span className={`px-2 py-0.5 rounded-[6px] ${step === 4 ? "bg-accent-light text-accent" : "bg-luxury-bg text-text-secondary"}`}>4. Dispatch</span>
           </div>
         </div>
       )}
@@ -378,8 +378,8 @@ export default function NewBroadcastWizardPage() {
       {/* STEP 1: Target Audience Selection */}
       {step === 1 && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="md:col-span-2 bg-white border border-slate-200 p-6 rounded shadow-sm space-y-6">
-            <h2 className="text-sm font-bold text-slate-800 border-b border-slate-100 pb-2">
+          <div className="md:col-span-2 card-premium p-6 space-y-6">
+            <h2 className="text-sm font-bold text-text-primary border-b border-luxury pb-2">
               Step 1: Select Recipient Group
             </h2>
 
@@ -401,7 +401,7 @@ export default function NewBroadcastWizardPage() {
                       leadIds: "",
                     });
                   }}
-                  className="w-full bg-slate-50 border border-slate-200 px-3.5 py-2.5 rounded text-xs focus:outline-none focus:border-blue-600"
+                  className="w-full input-premium px-3.5 py-2.5 rounded text-xs focus:outline-none focus:border-blue-600"
                 >
                   <option value="ALL_LEADS">All Leads (Everyone)</option>
                   <option value="PERSONA">By Buyer Persona</option>
@@ -421,7 +421,7 @@ export default function NewBroadcastWizardPage() {
                   <select
                     value={filters.persona}
                     onChange={(e) => handleFilterChange("persona", e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 px-3.5 py-2.5 rounded text-xs focus:outline-none focus:border-blue-600"
+                    className="w-full input-premium px-3.5 py-2.5 rounded text-xs focus:outline-none focus:border-blue-600"
                   >
                     <option value="">-- Select Persona --</option>
                     <option value="SELECTIVE_NRI">Selective NRI</option>
@@ -439,7 +439,7 @@ export default function NewBroadcastWizardPage() {
                   <select
                     value={filters.status}
                     onChange={(e) => handleFilterChange("status", e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 px-3.5 py-2.5 rounded text-xs focus:outline-none focus:border-blue-600"
+                    className="w-full input-premium px-3.5 py-2.5 rounded text-xs focus:outline-none focus:border-blue-600"
                   >
                     <option value="">-- Select Status --</option>
                     <option value="NEW">New</option>
@@ -459,7 +459,7 @@ export default function NewBroadcastWizardPage() {
                   <select
                     value={filters.stageKey}
                     onChange={(e) => handleFilterChange("stageKey", e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 px-3.5 py-2.5 rounded text-xs focus:outline-none focus:border-blue-600"
+                    className="w-full input-premium px-3.5 py-2.5 rounded text-xs focus:outline-none focus:border-blue-600"
                   >
                     <option value="">-- Select Roadmap Stage --</option>
                     <option value="INITIAL_CONTACT">Initial Contact</option>
@@ -478,7 +478,7 @@ export default function NewBroadcastWizardPage() {
                   <select
                     value={filters.grade}
                     onChange={(e) => handleFilterChange("grade", e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 px-3.5 py-2.5 rounded text-xs focus:outline-none focus:border-blue-600"
+                    className="w-full input-premium px-3.5 py-2.5 rounded text-xs focus:outline-none focus:border-blue-600"
                   >
                     <option value="">-- Select Grade --</option>
                     <option value="A">Grade A (Hot Lead)</option>
@@ -495,7 +495,7 @@ export default function NewBroadcastWizardPage() {
                   <select
                     value={filters.corridor}
                     onChange={(e) => handleFilterChange("corridor", e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 px-3.5 py-2.5 rounded text-xs focus:outline-none focus:border-blue-600"
+                    className="w-full input-premium px-3.5 py-2.5 rounded text-xs focus:outline-none focus:border-blue-600"
                   >
                     <option value="">-- Select Corridor --</option>
                     <option value="North Bangalore">North Bangalore (Hebbal, Devanahalli)</option>
@@ -516,7 +516,7 @@ export default function NewBroadcastWizardPage() {
                       placeholder="e.g. 1.0"
                       value={filters.minBudget}
                       onChange={(e) => handleFilterChange("minBudget", e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 px-3.5 py-2 rounded text-xs focus:outline-none"
+                      className="w-full input-premium px-3.5 py-2 rounded text-xs focus:outline-none"
                     />
                   </div>
                   <div className="space-y-1">
@@ -527,7 +527,7 @@ export default function NewBroadcastWizardPage() {
                       placeholder="e.g. 3.0"
                       value={filters.maxBudget}
                       onChange={(e) => handleFilterChange("maxBudget", e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 px-3.5 py-2 rounded text-xs focus:outline-none"
+                      className="w-full input-premium px-3.5 py-2 rounded text-xs focus:outline-none"
                     />
                   </div>
                 </div>
@@ -541,7 +541,7 @@ export default function NewBroadcastWizardPage() {
                     value={filters.leadIds}
                     onChange={(e) => handleFilterChange("leadIds", e.target.value)}
                     rows={4}
-                    className="w-full bg-slate-50 border border-slate-200 p-3 rounded text-xs font-mono focus:outline-none"
+                    className="w-full input-premium p-3 rounded text-xs font-mono focus:outline-none"
                   />
                 </div>
               )}
@@ -549,15 +549,15 @@ export default function NewBroadcastWizardPage() {
           </div>
 
           {/* Right Preview Side panel */}
-          <div className="bg-white border border-slate-200 p-6 rounded shadow-sm space-y-6 flex flex-col justify-between">
+          <div className="card-premium p-6 space-y-6 flex flex-col justify-between">
             <div>
-              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-2">
+              <h3 className="text-xs font-bold text-text-primary uppercase tracking-wider border-b border-luxury pb-2">
                 Live Group Preview
               </h3>
 
               {previewLoading ? (
                 <div className="py-12 flex flex-col items-center justify-center text-slate-500 space-y-2">
-                  <Loader2 size={24} className="animate-spin text-blue-600" />
+                  <Loader2 size={24} className="animate-spin text-accent" />
                   <span className="text-[10px] uppercase font-bold tracking-wider">Calculating segment...</span>
                 </div>
               ) : (
@@ -596,7 +596,7 @@ export default function NewBroadcastWizardPage() {
             <button
               onClick={() => setStep(2)}
               disabled={!canNext()}
-              className="w-full flex items-center justify-center gap-1 px-4 py-2.5 bg-[#2563EB] disabled:opacity-40 hover:bg-blue-700 text-white text-xs font-bold uppercase tracking-wider rounded transition-all shadow-sm"
+              className="w-full btn-primary flex items-center justify-center gap-1 text-xs font-bold uppercase tracking-wider disabled:opacity-40"
             >
               Continue to Channel <ChevronRight size={14} />
             </button>
@@ -606,8 +606,8 @@ export default function NewBroadcastWizardPage() {
 
       {/* STEP 2: Channel Selection */}
       {step === 2 && (
-        <div className="bg-white border border-slate-200 p-6 rounded shadow-sm space-y-6">
-          <h2 className="text-sm font-bold text-slate-800 border-b border-slate-100 pb-2">
+        <div className="card-premium p-6 space-y-6">
+          <h2 className="text-sm font-bold text-text-primary border-b border-luxury pb-2">
             Step 2: Select Communication Channels
           </h2>
 
@@ -687,17 +687,17 @@ export default function NewBroadcastWizardPage() {
             </div>
           )}
 
-          <div className="flex justify-between pt-6 border-t border-slate-100">
+          <div className="flex justify-between pt-6 border-t border-luxury">
             <button
               onClick={() => setStep(1)}
-              className="flex items-center gap-1 px-4 py-2 border border-slate-200 rounded text-xs font-bold uppercase tracking-wider text-slate-600 hover:bg-slate-50"
+              className="btn-secondary flex items-center gap-1 text-xs font-bold uppercase tracking-wider"
             >
               <ChevronLeft size={14} /> Back
             </button>
             <button
               onClick={() => setStep(3)}
               disabled={!canNext()}
-              className="flex items-center gap-1 px-5 py-2.5 bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-bold uppercase tracking-wider rounded transition-colors"
+              className="btn-primary flex items-center gap-1 text-xs font-bold uppercase tracking-wider disabled:opacity-40"
             >
               Continue to Content <ChevronRight size={14} />
             </button>
@@ -708,8 +708,8 @@ export default function NewBroadcastWizardPage() {
       {/* STEP 3: Message & Template Selection */}
       {step === 3 && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="md:col-span-2 bg-white border border-slate-200 p-6 rounded shadow-sm space-y-6">
-            <h2 className="text-sm font-bold text-slate-800 border-b border-slate-100 pb-2">
+          <div className="md:col-span-2 card-premium p-6 space-y-6">
+            <h2 className="text-sm font-bold text-text-primary border-b border-luxury pb-2">
               Step 3: Setup Campaign Content
             </h2>
 
@@ -717,12 +717,12 @@ export default function NewBroadcastWizardPage() {
               <div className="space-y-1">
                 <label className="block font-bold text-slate-500 uppercase tracking-wider">Choose Existing Template (Optional)</label>
                 {templatesLoading ? (
-                  <div className="h-9 bg-slate-50 border border-slate-200 rounded animate-pulse" />
+                  <div className="h-9 input-premium rounded animate-pulse" />
                 ) : (
                   <select
                     value={selectedTemplateId}
                     onChange={(e) => handleTemplateSelect(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 px-3.5 py-2.5 rounded text-xs focus:outline-none focus:border-blue-600"
+                    className="w-full input-premium px-3.5 py-2.5 rounded text-xs focus:outline-none focus:border-blue-600"
                   >
                     <option value="">-- Choose Template or Write Custom --</option>
                     {templates.map(t => (
@@ -740,7 +740,7 @@ export default function NewBroadcastWizardPage() {
                     value={whatsappMessage}
                     onChange={(e) => setWhatsappMessage(e.target.value)}
                     rows={5}
-                    className="w-full bg-slate-50 border border-slate-200 p-3 rounded text-xs font-mono focus:outline-none"
+                    className="w-full input-premium p-3 rounded text-xs font-mono focus:outline-none"
                     required
                   />
                   <p className="text-[10px] text-slate-400">Supports merge tags: {"{{lead_name}}"}, {"{{budget}}"}, {"{{project_name}}"}, etc.</p>
@@ -756,7 +756,7 @@ export default function NewBroadcastWizardPage() {
                       placeholder=" Bangalore Investment Opportunities"
                       value={emailSubject}
                       onChange={(e) => setEmailSubject(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 px-3.5 py-2 rounded text-xs focus:outline-none"
+                      className="w-full input-premium px-3.5 py-2 rounded text-xs focus:outline-none"
                       required
                     />
                   </div>
@@ -768,7 +768,7 @@ export default function NewBroadcastWizardPage() {
                       value={emailBody}
                       onChange={(e) => setEmailBody(e.target.value)}
                       rows={6}
-                      className="w-full bg-slate-50 border border-slate-200 p-3 rounded text-xs font-mono focus:outline-none"
+                      className="w-full input-premium p-3 rounded text-xs font-mono focus:outline-none"
                       required
                     />
                     <p className="text-[10px] text-slate-400">Supports HTML tags and merge tags.</p>
@@ -779,9 +779,9 @@ export default function NewBroadcastWizardPage() {
           </div>
 
           {/* Right Live Preview Side panel */}
-          <div className="bg-white border border-slate-200 p-6 rounded shadow-sm flex flex-col justify-between space-y-6">
+          <div className="card-premium p-6 flex flex-col justify-between space-y-6">
             <div>
-              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-2 flex items-center gap-1">
+              <h3 className="text-xs font-bold text-text-primary uppercase tracking-wider border-b border-luxury pb-2 flex items-center gap-1">
                 <Eye size={12} /> Live Render Preview
               </h3>
 
@@ -819,7 +819,7 @@ export default function NewBroadcastWizardPage() {
               <button
                 onClick={() => setStep(4)}
                 disabled={!canNext()}
-                className="flex-1 flex items-center justify-center gap-1 px-4 py-2.5 bg-[#2563EB] disabled:opacity-40 hover:bg-blue-700 text-white text-xs font-bold uppercase tracking-wider rounded transition-all shadow-sm"
+                className="flex-1 flex items-center justify-center gap-1 px-4 py-2.5 btn-primary text-white text-xs font-bold uppercase tracking-wider rounded transition-all shadow-sm"
               >
                 Continue <ChevronRight size={14} />
               </button>
@@ -830,8 +830,8 @@ export default function NewBroadcastWizardPage() {
 
       {/* STEP 4: Summary & Dispatch */}
       {step === 4 && (
-        <div className="bg-white border border-slate-200 p-6 rounded shadow-sm space-y-6">
-          <h2 className="text-sm font-bold text-slate-800 border-b border-slate-100 pb-2">
+        <div className="card-premium p-6 rounded shadow-sm space-y-6">
+          <h2 className="text-sm font-bold text-slate-800 section-header pb-2">
             Step 4: Campaign Details & Execution
           </h2>
 
@@ -844,7 +844,7 @@ export default function NewBroadcastWizardPage() {
                   placeholder="e.g. Bangalore Investors Newsletter - Q3"
                   value={campaignName}
                   onChange={(e) => setCampaignName(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 px-3.5 py-2.5 rounded text-xs focus:outline-none focus:border-blue-600 font-semibold"
+                  className="w-full input-premium px-3.5 py-2.5 rounded text-xs focus:outline-none focus:border-blue-600 font-semibold"
                   required
                 />
               </div>
@@ -857,7 +857,7 @@ export default function NewBroadcastWizardPage() {
                   type="datetime-local"
                   value={scheduleTime}
                   onChange={(e) => setScheduleTime(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 px-3.5 py-2.5 rounded text-xs focus:outline-none"
+                  className="w-full input-premium px-3.5 py-2.5 rounded text-xs focus:outline-none"
                 />
                 <p className="text-[10px] text-slate-400">Leave blank to dispatch immediately.</p>
               </div>
@@ -876,7 +876,7 @@ export default function NewBroadcastWizardPage() {
               </div>
               <div className="flex justify-between py-1 border-b border-slate-200/50">
                 <span className="text-slate-500">Channel:</span>
-                <span className="font-semibold text-blue-600 font-sans tracking-wide">{channel}</span>
+                <span className="font-semibold text-accent font-sans tracking-wide">{channel}</span>
               </div>
               <div className="flex justify-between py-1">
                 <span className="text-slate-500">Timing:</span>
@@ -898,7 +898,7 @@ export default function NewBroadcastWizardPage() {
             <button
               onClick={handleCreateBroadcast}
               disabled={isSubmitting || !campaignName.trim()}
-              className="flex items-center justify-center gap-1.5 px-5 py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-bold uppercase tracking-wider rounded transition-colors shadow-sm"
+              className="flex items-center justify-center gap-1.5 px-5 py-3 btn-primary disabled:opacity-50 text-white text-xs font-bold uppercase tracking-wider rounded transition-colors shadow-sm"
             >
               {isSubmitting ? (
                 <>
@@ -916,8 +916,8 @@ export default function NewBroadcastWizardPage() {
 
       {/* STEP 5: Real-time Dispatch Progress Screen */}
       {step === 5 && (
-        <div className="bg-white border border-slate-200 p-6 rounded shadow-sm space-y-6">
-          <div className="border-b border-slate-100 pb-3 flex justify-between items-center">
+        <div className="card-premium p-6 rounded shadow-sm space-y-6">
+          <div className="section-header pb-3 flex justify-between items-center">
             <div>
               <h2 className="text-base font-bold text-slate-800">
                 Campaign Dispatch Engine Active
@@ -941,7 +941,7 @@ export default function NewBroadcastWizardPage() {
             <div className="space-y-1">
               <div className="flex justify-between items-center text-xs font-semibold">
                 <span className="text-slate-500">Overall Delivery Completion:</span>
-                <span className="text-blue-600">{getProgressPercentage()}% ({getProcessedCount()} / {recipientCount})</span>
+                <span className="text-accent">{getProgressPercentage()}% ({getProcessedCount()} / {recipientCount})</span>
               </div>
               <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden border border-slate-200/50">
                 <div 
@@ -1021,7 +1021,7 @@ export default function NewBroadcastWizardPage() {
             {(progressStatus === "SENT" || progressStatus === "FAILED") ? (
               <button
                 onClick={() => router.push(`/admin/broadcasts/history/${createdBroadcastId}`)}
-                className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold uppercase tracking-wider rounded transition-colors"
+                className="px-5 py-2.5 btn-primary text-white text-xs font-bold uppercase tracking-wider rounded transition-colors"
               >
                 View Campaign Report
               </button>

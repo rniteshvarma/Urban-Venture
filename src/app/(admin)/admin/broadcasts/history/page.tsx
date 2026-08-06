@@ -81,31 +81,31 @@ export default function BroadcastHistoryPage() {
     switch (status) {
       case "SENT":
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-green-50 text-green-700 border border-green-200">
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
             <CheckCircle size={10} /> Completed
           </span>
         );
       case "SENDING":
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200 animate-pulse">
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 animate-pulse">
             <Clock size={10} /> Sending
           </span>
         );
       case "SCHEDULED":
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold bg-purple-100 text-purple-800">
             <Clock size={10} /> Scheduled
           </span>
         );
       case "FAILED":
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-red-50 text-red-700 border border-red-200">
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800">
             <AlertTriangle size={10} /> Failed
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-50 text-slate-500 border border-slate-200">
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600">
             Draft
           </span>
         );
@@ -116,20 +116,20 @@ export default function BroadcastHistoryPage() {
     switch (channel) {
       case "WHATSAPP":
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs text-green-700 font-medium bg-green-50 rounded border border-green-150">
-            <MessageSquare size={11} /> WhatsApp
+          <span className="inline-flex items-center gap-1 px-3 py-1 text-xs text-emerald-800 font-bold bg-emerald-100 rounded-full">
+            <MessageSquare size={12} /> WhatsApp
           </span>
         );
       case "EMAIL":
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs text-purple-700 font-medium bg-purple-50 rounded border border-purple-150">
-            <Mail size={11} /> Email
+          <span className="inline-flex items-center gap-1 px-3 py-1 text-xs text-purple-800 font-bold bg-purple-100 rounded-full">
+            <Mail size={12} /> Email
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs text-blue-700 font-medium bg-blue-50 rounded border border-blue-150">
-            <Megaphone size={11} /> Email + WA
+          <span className="inline-flex items-center gap-1 px-3 py-1 text-xs text-blue-800 font-bold bg-blue-100 rounded-full">
+            <Megaphone size={12} /> Email + WA
           </span>
         );
     }
@@ -140,134 +140,134 @@ export default function BroadcastHistoryPage() {
   );
 
   return (
-    <div className="space-y-6 flex-grow flex flex-col">
+    <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8 flex-grow flex flex-col animate-fade-in text-[#1A1A2E] w-full">
       {/* Header Panel */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-[#F0EDFA]">
         <div>
-          <span className="text-[10px] text-blue-600 font-bold uppercase tracking-widest block">
+          <span className="text-[11px] text-[#5B4FE0] font-bold uppercase tracking-widest block mb-1">
             Broadcasting Center
           </span>
-          <h1 className="font-display text-2xl sm:text-4xl font-bold text-slate-900 flex items-center gap-2">
-            <Megaphone size={28} className="text-blue-600" /> Bulk Broadcast Center
+          <h1 className="font-display text-2xl sm:text-3xl font-bold text-[#1A1A2E] flex items-center gap-2">
+            Bulk Broadcast Center
           </h1>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-3">
           <Link
             href="/admin/broadcasts/templates"
-            className="flex items-center justify-center gap-1.5 px-4 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 text-xs font-bold uppercase tracking-wider rounded transition-colors shadow-sm"
+            className="crm-btn-secondary text-xs"
           >
-            <FileText size={14} /> Templates
+            <FileText size={14} className="text-[#5B4FE0]" /> Templates
           </Link>
           <Link
             href="/admin/broadcasts/new"
-            className="flex items-center justify-center gap-1.5 px-4 py-2 bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-bold uppercase tracking-wider rounded transition-colors shadow-sm"
+            className="crm-btn-primary text-xs"
           >
             <Plus size={14} /> New Broadcast
           </Link>
         </div>
       </div>
 
-      {/* Search & Actions bar */}
-      <div className="flex items-center justify-between gap-4 border-b border-slate-200 pb-3.5">
+      {/* Search & Actions Bar */}
+      <div className="crm-card p-4 flex items-center justify-between gap-4">
         <div className="relative w-full max-w-sm">
           <input
             type="text"
             placeholder="Search campaigns by name..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-white border border-slate-200 pl-8 pr-3 py-1.5 rounded text-xs focus:outline-none focus:border-blue-600"
+            className="w-full bg-[#F9F8FD] border border-[#E8E5F5] pl-9 pr-4 py-2 rounded-full text-xs text-[#1A1A2E] focus:outline-none focus:border-[#5B4FE0]"
           />
-          <Search size={12} className="absolute left-2.5 top-2.5 text-slate-400" />
+          <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8A8A9E]" />
         </div>
 
         <button
           onClick={() => loadBroadcasts(currentPage)}
-          className="p-1.5 border border-slate-200 rounded hover:bg-slate-50 text-slate-500 transition-colors"
+          className="crm-btn-secondary p-2.5 text-xs"
           title="Refresh campaigns"
         >
-          <RefreshCw size={14} />
+          <RefreshCw size={14} className="text-[#5B4FE0]" />
         </button>
       </div>
 
       {/* Campaigns Listing */}
-      <div className="bg-white border border-slate-200 rounded shadow-sm overflow-x-auto flex-grow">
+      <div className="crm-card p-0 overflow-hidden flex-grow">
         {isLoading ? (
-          <div className="py-16 text-center text-slate-500 animate-pulse text-xs">
+          <div className="py-16 text-center text-[#8A8A9E] animate-pulse text-xs">
             Loading broadcast campaigns history...
           </div>
         ) : filteredBroadcasts.length === 0 ? (
           <div className="py-16 text-center space-y-3">
-            <p className="text-xs text-slate-450 italic">No broadcast campaigns found.</p>
+            <p className="text-xs text-[#8A8A9E] italic">No broadcast campaigns found.</p>
             <Link
               href="/admin/broadcasts/new"
-              className="inline-flex items-center gap-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold uppercase tracking-wider rounded transition-colors shadow-sm"
+              className="crm-btn-primary text-xs"
             >
               <Plus size={14} /> Create One
             </Link>
           </div>
         ) : (
-          <table className="w-full text-left border-collapse text-xs">
+          <table className="crm-table text-xs w-full">
             <thead>
-              <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold uppercase tracking-wider text-[10px]">
-                <th className="px-5 py-3">Campaign Name</th>
-                <th className="px-5 py-3">Channel</th>
-                <th className="px-5 py-3">Target Group</th>
-                <th className="px-5 py-3">Recipients</th>
-                <th className="px-5 py-3">Stats</th>
-                <th className="px-5 py-3">Status</th>
-                <th className="px-5 py-3">Created Date</th>
-                <th className="px-5 py-3 text-right">Actions</th>
+              <tr>
+                <th>Campaign Name</th>
+                <th>Channel</th>
+                <th>Target Group</th>
+                <th>Recipients</th>
+                <th>Stats</th>
+                <th>Status</th>
+                <th>Created Date</th>
+                <th className="text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody>
               {filteredBroadcasts.map((b) => (
-                <tr key={b.id} className="hover:bg-slate-50/50 transition-colors">
-                  <td className="px-5 py-4 font-semibold text-slate-800">
-                    <Link href={`/admin/broadcasts/history/${b.id}`} className="hover:text-blue-600 hover:underline">
+                <tr key={b.id}>
+                  <td className="font-bold text-[#1A1A2E]">
+                    <Link href={`/admin/broadcasts/history/${b.id}`} className="hover:text-[#5B4FE0]">
                       {b.name}
                     </Link>
                   </td>
-                  <td className="px-5 py-4">{getChannelBadge(b.channel)}</td>
-                  <td className="px-5 py-4 font-medium text-slate-600 uppercase tracking-wider text-[9px]">
+                  <td>{getChannelBadge(b.channel)}</td>
+                  <td className="font-semibold text-[#8A8A9E] uppercase tracking-wider text-[10px]">
                     {b.groupType.replace(/_/g, " ")}
                   </td>
-                  <td className="px-5 py-4 text-slate-700 font-medium">
+                  <td className="text-[#1A1A2E] font-medium">
                     {b.recipientCount} leads
                   </td>
-                  <td className="px-5 py-4 space-y-0.5 text-[10px] text-slate-500">
+                  <td className="space-y-0.5 text-[11px] text-[#6E6D8A]">
                     {b.channel !== "EMAIL" && (
-                      <div>WA Delivered: <strong className="text-slate-800">{b.stats.waDeliveredRate}%</strong></div>
+                      <div>WA Delivered: <strong className="text-[#5B4FE0]">{b.stats.waDeliveredRate}%</strong></div>
                     )}
                     {b.channel !== "WHATSAPP" && (
-                      <div>Email Opened: <strong className="text-slate-800">{b.stats.emailOpenRate}%</strong></div>
+                      <div>Email Opened: <strong className="text-[#5B4FE0]">{b.stats.emailOpenRate}%</strong></div>
                     )}
                   </td>
-                  <td className="px-5 py-4">{getStatusBadge(b.status)}</td>
-                  <td className="px-5 py-4 text-slate-400 font-mono text-[10px]">
+                  <td>{getStatusBadge(b.status)}</td>
+                  <td className="text-[#8A8A9E]">
                     {new Date(b.createdAt).toLocaleDateString("en-IN", {
                       day: "2-digit",
                       month: "short",
                       year: "numeric"
                     })}
                   </td>
-                  <td className="px-5 py-4 text-right">
-                    <div className="flex justify-end gap-3.5">
+                  <td className="text-right">
+                    <div className="flex justify-end items-center gap-2">
                       <Link
                         href={`/admin/broadcasts/history/${b.id}`}
-                        className="flex items-center gap-1 text-blue-600 hover:text-blue-800 font-bold uppercase tracking-wider text-[9px]"
+                        className="crm-btn-ghost text-xs text-[#5B4FE0] font-bold px-3 py-1"
                         title="View Detailed Report"
                       >
-                        <Eye size={12} /> View
+                        <Eye size={13} className="inline mr-1" /> View
                       </Link>
                       
                       {(b.status === "DRAFT" || b.status === "SCHEDULED") && (
                         <button
                           onClick={() => handleDeleteDraft(b.id)}
-                          className="flex items-center gap-1 text-red-500 hover:text-red-700 font-bold uppercase tracking-wider text-[9px]"
+                          className="crm-btn-ghost text-xs text-rose-600 font-bold px-3 py-1"
                           title="Delete Draft"
                         >
-                          <Trash2 size={12} /> Delete
+                          <Trash2 size={13} className="inline mr-1" /> Delete
                         </button>
                       )}
                     </div>
@@ -279,22 +279,22 @@ export default function BroadcastHistoryPage() {
         )}
       </div>
 
-      {/* Pagination panel */}
+      {/* Pagination Panel */}
       {pagination.pages > 1 && (
-        <div className="flex items-center justify-between text-xs text-slate-500 pt-2">
-          <span>Showing page {pagination.page} of {pagination.pages} ({pagination.total} campaigns total)</span>
+        <div className="flex items-center justify-between text-xs text-[#8A8A9E] pt-2">
+          <span>Page {pagination.page} of {pagination.pages} ({pagination.total} campaigns total)</span>
           <div className="flex gap-2">
             <button
               onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
               disabled={currentPage === 1}
-              className="px-3 py-1.5 border border-slate-200 rounded disabled:opacity-40 hover:bg-slate-50 text-[10px] uppercase font-bold tracking-wider"
+              className="crm-btn-ghost text-xs"
             >
               Previous
             </button>
             <button
               onClick={() => setCurrentPage(prev => Math.min(pagination.pages, prev + 1))}
               disabled={currentPage === pagination.pages}
-              className="px-3 py-1.5 border border-slate-200 rounded disabled:opacity-40 hover:bg-slate-50 text-[10px] uppercase font-bold tracking-wider"
+              className="crm-btn-ghost text-xs"
             >
               Next
             </button>

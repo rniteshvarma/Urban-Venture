@@ -2,6 +2,20 @@
 
 import React, { useState, useEffect, use } from "react";
 import Link from "next/link";
+import { 
+  MapPin, 
+  ShieldCheck, 
+  ArrowLeft, 
+  Building, 
+  Activity, 
+  Clock, 
+  IndianRupee,
+  FileText,
+  TrendingUp,
+  Landmark,
+  CheckCircle2,
+  Sparkles
+} from "lucide-react";
 
 interface ProjectDetails {
   id: string;
@@ -97,22 +111,37 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
     return `₹${minText} - ₹${maxText}`;
   };
 
+  const getRiskBadge = (level: string) => {
+    switch (level) {
+      case "LOW":
+        return <span className="bg-success/10 text-success border border-success/20 px-2.5 py-1 rounded-[6px] text-[10px] font-bold uppercase tracking-wider">LOW RISK</span>;
+      case "MEDIUM":
+        return <span className="bg-warning/10 text-warning border border-warning/20 px-2.5 py-1 rounded-[6px] text-[10px] font-bold uppercase tracking-wider">MEDIUM RISK</span>;
+      case "HIGH":
+        return <span className="bg-danger/10 text-danger border border-danger/20 px-2.5 py-1 rounded-[6px] text-[10px] font-bold uppercase tracking-wider">HIGH RISK</span>;
+      default:
+        return null;
+    }
+  };
+
   if (isLoading) {
     return (
-      <div className="flex-grow flex flex-col justify-center items-center py-24 bg-luxury-bg animate-pulse">
-        <div className="h-8 bg-luxury-border w-48 rounded mb-4" />
-        <div className="h-4 bg-luxury-border w-64 rounded" />
+      <div className="flex-grow flex flex-col justify-center items-center py-40 bg-surface-dim font-sans min-h-screen">
+        <div className="animate-pulse flex flex-col items-center">
+          <div className="h-12 w-12 border-4 border-accent border-t-transparent rounded-full animate-spin mb-4"></div>
+          <div className="h-4 bg-gray-200 w-48 rounded"></div>
+        </div>
       </div>
     );
   }
 
   if (!project) {
     return (
-      <div className="flex-grow flex flex-col justify-center items-center py-24 bg-luxury-bg text-center">
-        <h2 className="font-display text-2xl font-bold text-primary mb-2">Project Not Found</h2>
-        <p className="text-xs text-text-secondary mb-6">The requested project detail does not exist.</p>
-        <Link href="/projects" className="px-4 py-2 bg-primary text-surface text-xs font-semibold uppercase tracking-wider rounded-tag">
-          Back to Projects
+      <div className="flex-grow flex flex-col justify-center items-center py-40 bg-surface-dim text-center font-sans min-h-screen">
+        <h2 className="font-display text-2xl font-bold text-text-primary mb-2">Project Not Found</h2>
+        <p className="text-sm text-text-secondary mb-6">The requested project detail does not exist or has been removed.</p>
+        <Link href="/projects" className="btn-primary inline-flex items-center gap-2">
+          <ArrowLeft size={16} /> Back to Projects
         </Link>
       </div>
     );
@@ -120,40 +149,70 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
 
   const mainImage = (project.imageUrls && project.imageUrls.length > 0)
     ? project.imageUrls[0]
-    : `https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=1200&q=80`;
+    : `https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=1600&q=80`;
 
   return (
-    <div className="flex-grow bg-luxury-bg">
-      {/* Hero Banner */}
-      <div className="relative h-96 bg-primary-light w-full overflow-hidden">
+    <div className="flex-grow bg-surface-dim font-sans min-h-screen">
+      
+      {/* Back Nav */}
+      <div className="glass-header sticky top-16 z-30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+          <Link href="/projects" className="nav-link inline-flex items-center gap-1.5 text-xs font-semibold">
+            <ArrowLeft size={13} /> Back to Listings
+          </Link>
+          <span className="text-xs text-text-secondary font-bold uppercase tracking-wider hidden sm:block">
+            {project.city} / {project.corridor}
+          </span>
+        </div>
+      </div>
+
+      {/* Hero Banner - Larger hero with img-hover-zoom */}
+      <div className="relative h-[45vh] min-h-[400px] w-full overflow-hidden group">
         {mainImage.startsWith("/") && mainImage !== "/placeholder-project.jpg" ? (
           <img 
             src={mainImage} 
             alt={project.name}
-            className="w-full h-full object-cover opacity-90"
+            className="w-full h-full object-cover img-hover-zoom"
             onError={(e) => {
-              (e.target as HTMLImageElement).src = `https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=1200&q=80`;
+              (e.target as HTMLImageElement).src = `https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=1600&q=80`;
             }}
           />
         ) : (
           <img 
-            src={`https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=1200&q=80`} 
+            src={`https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=1600&q=80`} 
             alt={project.name}
-            className="w-full h-full object-cover opacity-90"
+            className="w-full h-full object-cover img-hover-zoom"
           />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-primary/80 to-transparent flex items-end">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full pb-8">
-            <div className="space-y-2">
-              <span className="text-xs font-bold text-accent uppercase tracking-widest border border-accent/30 bg-primary/40 px-3 py-1 rounded-tag">
-                {project.corridor}
-              </span>
-              <h1 className="font-display text-3xl sm:text-5xl font-bold text-surface">
+        
+        {/* Gradient Overlays */}
+        <div className="absolute inset-0 bg-gradient-to-t from-primary/95 via-primary/50 to-transparent flex items-end">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full pb-10 sm:pb-16 animate-fade-in-up">
+            <div className="space-y-4 max-w-3xl">
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="text-[10px] font-bold text-surface bg-accent px-3 py-1 rounded-full uppercase tracking-widest shadow-sm">
+                  {project.status.replace("_", " ")}
+                </span>
+                <span className="text-[10px] font-bold text-accent bg-accent/20 border border-accent/30 px-3 py-1 rounded-full uppercase tracking-widest flex items-center gap-1 backdrop-blur-sm">
+                  <MapPin size={10} /> {project.corridor}
+                </span>
+              </div>
+              
+              <h1 className="font-display text-4xl sm:text-6xl font-bold text-surface drop-shadow-md">
                 {project.name}
               </h1>
-              <p className="text-sm text-gray-300">
-                Developed by <strong className="text-surface">{project.developer}</strong> · {project.city}
-              </p>
+              
+              <div className="flex flex-wrap items-center gap-4 text-sm text-gray-300">
+                <p className="flex items-center gap-1.5">
+                  <Building size={16} className="text-accent" />
+                  Developed by <strong className="text-surface font-semibold">{project.developer}</strong>
+                </p>
+                <span className="hidden sm:inline text-gray-500">•</span>
+                <p className="flex items-center gap-1.5">
+                  <Landmark size={16} className="text-accent" />
+                  {project.propertyType}
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -164,55 +223,73 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
           
           {/* Left Columns (Project Info) */}
-          <div className="lg:col-span-2 space-y-10">
+          <div className="lg:col-span-2 space-y-8 stagger-1 animate-fade-in-up">
+            
             {/* Overview Attributes */}
-            <section className="bg-surface border border-luxury p-6 rounded-card shadow-sm grid grid-cols-2 sm:grid-cols-4 gap-6">
-              <div>
-                <span className="text-[10px] text-text-secondary uppercase tracking-wider block">Investment Bracket</span>
-                <span className="text-base font-bold text-primary">{formatPrice(project.minBudgetLakhs, project.maxBudgetLakhs)}</span>
+            <section className="card-premium grid grid-cols-2 sm:grid-cols-4 gap-6 !p-8">
+              <div className="space-y-1">
+                <span className="text-[10px] text-text-secondary uppercase tracking-wider font-bold flex items-center gap-1.5">
+                  <IndianRupee size={12} className="text-accent" /> Est. Budget
+                </span>
+                <span className="text-base font-bold text-text-primary block">{formatPrice(project.minBudgetLakhs, project.maxBudgetLakhs)}</span>
               </div>
-              <div>
-                <span className="text-[10px] text-text-secondary uppercase tracking-wider block">Target Horizon</span>
-                <span className="text-base font-bold text-primary">{project.minHorizonYears} - {project.maxHorizonYears} Years</span>
+              <div className="space-y-1 border-l border-gray-100 pl-4 sm:pl-6">
+                <span className="text-[10px] text-text-secondary uppercase tracking-wider font-bold flex items-center gap-1.5">
+                  <Clock size={12} className="text-accent" /> Target Horizon
+                </span>
+                <span className="text-base font-bold text-text-primary block">{project.minHorizonYears} - {project.maxHorizonYears} Yrs</span>
               </div>
-              <div>
-                <span className="text-[10px] text-text-secondary uppercase tracking-wider block">Risk Index</span>
-                <span className="text-base font-bold text-accent uppercase tracking-wide">{project.riskLevel} Risk</span>
+              <div className="space-y-1 border-l border-gray-100 pl-4 sm:pl-6">
+                <span className="text-[10px] text-text-secondary uppercase tracking-wider font-bold flex items-center gap-1.5">
+                  <Activity size={12} className="text-accent" /> Risk Index
+                </span>
+                <div className="mt-1">{getRiskBadge(project.riskLevel)}</div>
               </div>
-              <div>
-                <span className="text-[10px] text-text-secondary uppercase tracking-wider block">Property Type</span>
-                <span className="text-base font-bold text-primary">{project.propertyType}</span>
+              <div className="space-y-1 border-l border-gray-100 pl-4 sm:pl-6">
+                <span className="text-[10px] text-text-secondary uppercase tracking-wider font-bold flex items-center gap-1.5">
+                  <ShieldCheck size={12} className="text-success" /> Verification
+                </span>
+                {project.riskLevel === "LOW" ? (
+                  <span className="text-base font-bold text-success flex items-center gap-1"><CheckCircle2 size={16} /> Verified</span>
+                ) : (
+                  <span className="text-base font-bold text-text-secondary">Standard</span>
+                )}
               </div>
             </section>
 
             {/* Project Description */}
-            <section className="space-y-4">
-              <h2 className="font-display text-2xl font-bold text-primary">About the Project</h2>
+            <section className="card-premium space-y-4 !p-8">
+              <h2 className="section-header text-xl">About the Project</h2>
               <p className="text-sm text-text-secondary leading-relaxed whitespace-pre-line">
                 {project.description}
               </p>
             </section>
 
             {/* Infrastructure Highlights */}
-            <section className="space-y-4">
-              <h2 className="font-display text-2xl font-bold text-primary">Infrastructure Driving Growth</h2>
-              <div className="flex flex-wrap gap-2">
+            <section className="card-premium space-y-6 !p-8 border-t-4 border-t-accent">
+              <h2 className="section-header text-xl">Infrastructure Driving Growth</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {project.infraHighlights.map((tag, idx) => (
-                  <span key={idx} className="bg-surface border border-luxury px-3.5 py-1.5 rounded-tag text-xs font-semibold text-primary shadow-sm">
-                    🚀 {tag}
-                  </span>
+                  <div key={idx} className="flex items-start gap-3 p-3 bg-surface-dim rounded-lg border border-gray-100 hover:border-accent/30 transition-colors">
+                    <div className="bg-accent/10 p-2 rounded-full text-accent shrink-0 mt-0.5">
+                      <Sparkles size={14} />
+                    </div>
+                    <span className="text-xs font-semibold text-text-primary pt-1 leading-relaxed">
+                      {tag}
+                    </span>
+                  </div>
                 ))}
               </div>
             </section>
 
             {/* Exit Opportunities */}
-            <section className="space-y-4">
-              <h2 className="font-display text-2xl font-bold text-primary">Liquidation & Exit Opportunities</h2>
-              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <section className="card-premium space-y-6 !p-8 border-t-4 border-t-success">
+              <h2 className="section-header text-xl">Liquidation & Exit Opportunities</h2>
+              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {project.exitOpportunities.map((exit, idx) => (
-                  <li key={idx} className="bg-surface border border-luxury px-4 py-3 rounded-card text-xs text-text-secondary flex items-start gap-2.5 shadow-sm">
-                    <span className="text-accent text-sm">✔</span>
-                    <span>{exit}</span>
+                  <li key={idx} className="bg-success/5 border border-success/20 px-4 py-4 rounded-[8px] text-xs text-text-primary font-medium flex items-start gap-3 shadow-sm">
+                    <CheckCircle2 size={16} className="text-success shrink-0 mt-0.5" />
+                    <span className="leading-relaxed">{exit}</span>
                   </li>
                 ))}
               </ul>
@@ -220,12 +297,12 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
 
             {/* Comparable Projects */}
             {project.comparables && project.comparables.length > 0 && (
-              <section className="space-y-4">
-                <h2 className="font-display text-2xl font-bold text-primary">Comparable Local Benchmarks</h2>
+              <section className="card-premium space-y-4 !p-8 border-t-4 border-t-warning">
+                <h2 className="section-header text-xl">Comparable Local Benchmarks</h2>
                 <div className="flex flex-wrap gap-2">
                   {project.comparables.map((comp, idx) => (
-                    <span key={idx} className="bg-luxury-bg border border-luxury px-3 py-1.5 rounded-tag text-xs text-text-secondary">
-                      🏢 {comp}
+                    <span key={idx} className="bg-surface-dim border border-gray-200 px-4 py-2 rounded-full text-xs font-semibold text-text-secondary hover:text-text-primary transition-colors flex items-center gap-2">
+                      <TrendingUp size={12} className="text-warning" /> {comp}
                     </span>
                   ))}
                 </div>
@@ -234,109 +311,132 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
 
             {/* Brochure download if brochureUrl exists */}
             {project.brochureUrl && (
-              <section className="bg-surface border border-luxury p-5 rounded-card shadow-sm flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-bold text-primary uppercase tracking-wide">Project Documentation</h3>
-                  <p className="text-xs text-text-secondary">Download full RERA registration documents and layouts.</p>
+              <section className="card-premium !p-8 bg-gradient-to-r from-surface to-accent-light/30 border-l-4 border-l-accent flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+                <div className="space-y-1">
+                  <h3 className="text-base font-bold text-text-primary font-display flex items-center gap-2">
+                    <FileText size={18} className="text-accent" /> Project Documentation
+                  </h3>
+                  <p className="text-xs text-text-secondary">Download full RERA registration documents, layouts, and master plans.</p>
                 </div>
                 <a
                   href={project.brochureUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="px-4 py-2 border border-accent text-accent hover:bg-accent hover:text-surface text-xs font-bold uppercase tracking-wider rounded-tag transition-colors"
+                  className="btn-primary whitespace-nowrap text-xs shadow-glow-cyan"
                 >
-                  Download Brochure PDF
+                  Download Brochure
                 </a>
               </section>
             )}
           </div>
 
-          {/* Right Column (Express Interest Form) */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-24 bg-surface border border-luxury p-6 rounded-card shadow-luxury-soft space-y-6">
-              <div className="text-center border-b border-luxury pb-4">
-                <span className="text-[10px] text-accent font-bold uppercase tracking-widest block mb-1">Direct Advisor Connect</span>
-                <h3 className="font-display text-lg font-bold text-primary">Express Investment Interest</h3>
+          {/* Right Column (Express Interest Form + Price) */}
+          <div className="lg:col-span-1 stagger-2 animate-fade-in-up">
+            <div className="sticky top-32 card-premium !p-0 overflow-hidden shadow-luxury border-gray-200">
+              
+              {/* Prominent Price Section */}
+              <div className="bg-primary p-6 text-center text-surface relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-4 opacity-10">
+                  <IndianRupee size={80} />
+                </div>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-accent-light block mb-2 relative z-10">
+                  Investment Bracket
+                </span>
+                <h3 className="font-display text-4xl font-bold relative z-10">
+                  {formatPrice(project.minBudgetLakhs, project.maxBudgetLakhs)}
+                </h3>
               </div>
 
-              {submitSuccess ? (
-                <div className="text-center py-6 space-y-3">
-                  <div className="text-3xl">✅</div>
-                  <h4 className="font-display text-base font-bold text-primary">Interest Registered</h4>
-                  <p className="text-xs text-text-secondary leading-relaxed">
-                    Thank you! Our Hyderabad advisor has received your request and will call you with project layouts and price sheets.
-                  </p>
+              {/* Form Section */}
+              <div className="p-6 space-y-6 bg-surface">
+                <div className="text-center border-b border-gray-100 pb-4">
+                  <h4 className="font-display text-base font-bold text-text-primary">Direct Advisor Connect</h4>
+                  <p className="text-[10px] text-text-secondary mt-1">Get priority access to inventory and pricing</p>
                 </div>
-              ) : (
-                <form onSubmit={handleExpressInterest} className="space-y-4">
-                  <div>
-                    <label className="block text-[10px] font-semibold uppercase tracking-wider text-text-secondary mb-1">
-                      Full Name
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Your Name"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className="w-full bg-luxury-bg border border-luxury px-3 py-2 rounded-input text-xs text-text-primary focus:outline-none focus:border-accent"
-                      required
-                    />
+
+                {submitSuccess ? (
+                  <div className="text-center py-6 space-y-3">
+                    <div className="text-4xl flex justify-center text-success"><CheckCircle2 size={48} /></div>
+                    <h4 className="font-display text-lg font-bold text-text-primary">Interest Registered</h4>
+                    <p className="text-xs text-text-secondary leading-relaxed">
+                      Thank you! Our Hyderabad advisor has received your request and will call you with project layouts and price sheets shortly.
+                    </p>
                   </div>
+                ) : (
+                  <form onSubmit={handleExpressInterest} className="space-y-4">
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-text-secondary mb-1.5">
+                        Full Name
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Your Name"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        className="input-premium w-full"
+                        required
+                      />
+                    </div>
 
-                  <div>
-                    <label className="block text-[10px] font-semibold uppercase tracking-wider text-text-secondary mb-1">
-                      Email Address
-                    </label>
-                    <input
-                      type="email"
-                      placeholder="name@example.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="w-full bg-luxury-bg border border-luxury px-3 py-2 rounded-input text-xs text-text-primary focus:outline-none focus:border-accent"
-                      required
-                    />
-                  </div>
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-text-secondary mb-1.5">
+                        Email Address
+                      </label>
+                      <input
+                        type="email"
+                        placeholder="name@example.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="input-premium w-full"
+                        required
+                      />
+                    </div>
 
-                  <div>
-                    <label className="block text-[10px] font-semibold uppercase tracking-wider text-text-secondary mb-1">
-                      Phone Number
-                    </label>
-                    <input
-                      type="tel"
-                      placeholder="+91 99999 99999"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      className="w-full bg-luxury-bg border border-luxury px-3 py-2 rounded-input text-xs text-text-primary focus:outline-none focus:border-accent"
-                      required
-                    />
-                  </div>
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-text-secondary mb-1.5">
+                        Phone Number
+                      </label>
+                      <input
+                        type="tel"
+                        placeholder="+91 99999 99999"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        className="input-premium w-full"
+                        required
+                      />
+                    </div>
 
-                  <div>
-                    <label className="block text-[10px] font-semibold uppercase tracking-wider text-text-secondary mb-1">
-                      Message / Notes (Optional)
-                    </label>
-                    <textarea
-                      placeholder="Requesting site visit details or pricing sheets..."
-                      value={notes}
-                      onChange={(e) => setNotes(e.target.value)}
-                      rows={3}
-                      className="w-full bg-luxury-bg border border-luxury px-3 py-2 rounded-input text-xs text-text-primary focus:outline-none focus:border-accent resize-none"
-                    />
-                  </div>
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-text-secondary mb-1.5">
+                        Message / Notes (Optional)
+                      </label>
+                      <textarea
+                        placeholder="Requesting site visit details or pricing sheets..."
+                        value={notes}
+                        onChange={(e) => setNotes(e.target.value)}
+                        rows={3}
+                        className="input-premium w-full resize-none"
+                      />
+                    </div>
 
-                  {errorMsg && (
-                    <p className="text-red-600 text-xs text-center">{errorMsg}</p>
-                  )}
+                    {errorMsg && (
+                      <p className="text-danger text-xs text-center font-semibold bg-danger/10 p-2 rounded">{errorMsg}</p>
+                    )}
 
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full py-3 bg-primary hover:bg-blue-700 text-surface text-xs font-semibold uppercase tracking-widest rounded-[4px] disabled:opacity-50 transition-colors shadow-sm"
-                  >
-                    {isSubmitting ? "Submitting..." : "Submit Inquiry"}
-                  </button>
-                </form>
-              )}
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="btn-primary w-full py-3"
+                    >
+                      {isSubmitting ? "Submitting..." : "Submit Inquiry"}
+                    </button>
+                    
+                    <p className="text-[9px] text-center text-text-secondary">
+                      By submitting, you agree to our privacy policy and terms of service.
+                    </p>
+                  </form>
+                )}
+              </div>
             </div>
           </div>
 

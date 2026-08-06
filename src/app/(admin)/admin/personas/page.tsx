@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Users, DollarSign, Calendar, TrendingUp, RefreshCw, Compass } from "lucide-react";
+import { Users, DollarSign, Calendar, TrendingUp, RefreshCw, Compass, Sparkles, ChevronRight, Megaphone } from "lucide-react";
 
 interface PersonaStat {
   persona: string;
@@ -30,8 +30,6 @@ export default function AdminPersonasPage() {
         const data = await res.json();
         setStats(data.stats || []);
       }
-    } catch (err) {
-      console.error("Failed to load persona stats", err);
     } finally {
       setIsLoading(false);
     }
@@ -66,21 +64,25 @@ export default function AdminPersonasPage() {
 
   if (isLoading) {
     return (
-      <div className="flex-grow flex items-center justify-center p-12 text-text-secondary animate-pulse text-sm">
-        Analyzing buyer personas and calculating conversion metrics...
+      <div className="max-w-7xl mx-auto space-y-6 flex-grow flex flex-col justify-center items-center py-20 animate-pulse">
+        <div className="h-8 bg-[#EBE7F5] w-64 rounded-full" />
+        <div className="h-24 bg-[#EBE7F5] w-full rounded-2xl" />
+        <div className="grid grid-cols-3 gap-6 w-full">
+          {[1,2,3,4,5,6].map(i => <div key={i} className="h-64 bg-[#EBE7F5] rounded-2xl" />)}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 flex-grow flex flex-col">
+    <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8 flex-grow flex flex-col animate-fade-in w-full">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-[#F0EDFA]">
         <div>
-          <span className="text-[10px] text-accent font-bold uppercase tracking-widest block">
+          <span className="text-[11px] text-[#5B4FE0] font-bold uppercase tracking-widest block mb-1">
             AI Buyer Profiling
           </span>
-          <h1 className="font-display text-2xl sm:text-4xl font-bold text-primary">
+          <h1 className="font-display text-2xl sm:text-3xl font-bold text-[#1A1A2E]">
             Persona Segmentation
           </h1>
         </div>
@@ -88,108 +90,102 @@ export default function AdminPersonasPage() {
         <button
           onClick={handleReclassifyAll}
           disabled={isReclassifying}
-          className="flex items-center gap-1.5 px-4 py-2 bg-primary hover:bg-blue-700 text-surface text-xs font-bold uppercase tracking-wider rounded transition-colors disabled:opacity-50"
+          className="crm-btn-primary text-xs"
         >
           <RefreshCw size={14} className={isReclassifying ? "animate-spin" : ""} />
           {isReclassifying ? "Reclassifying..." : "Reclassify All Leads"}
         </button>
       </div>
 
-      {/* Intro info banner */}
-      <div className="bg-blue-50/20 border border-blue-200/50 p-4 rounded-card text-xs text-text-secondary flex items-start gap-3">
-        <span className="text-xl">💡</span>
-        <p className="leading-relaxed">
-          Leads are automatically assigned to one of six buyer personas upon creation based on their budget range, investment horizon, preferred corridor, and context notes. Personas are used to drive project recommendations and trigger targeted automated WhatsApp campaigns.
-        </p>
+      {/* LoopAI Insight Box */}
+      <div className="crm-insight-box">
+        <Sparkles className="w-4 h-4 text-[#5B4FE0] shrink-0 mt-0.5" />
+        <span>Leads are automatically assigned to one of six buyer personas upon creation based on their budget range, investment horizon, preferred corridor, and context notes. Personas drive automated recommendations and targeted WhatsApp broadcasts.</span>
       </div>
 
-      {/* Grid of 6 personas */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {stats.map((p) => (
+      {/* Grid of 6 LoopAI Persona Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        {stats.map((p, index) => (
           <div
             key={p.persona}
-            className="bg-white border border-slate-200/80 hover:border-slate-300 rounded-card shadow-sm hover:shadow-md transition-all flex flex-col justify-between overflow-hidden"
+            className="crm-card p-6 sm:p-7 flex flex-col justify-between space-y-5"
           >
-            {/* Top Bar with Icon and Count */}
-            <div className="p-5 border-b border-slate-100 flex items-start justify-between">
+            {/* Top Bar with Icon, Persona Name, Count & Chevron */}
+            <div className="flex items-start justify-between pb-3 border-b border-[#F5F3FB]">
               <div className="flex items-center gap-3">
-                <span 
-                  className="w-10 h-10 rounded-full flex items-center justify-center text-lg shadow-sm border border-slate-100"
-                  style={{ backgroundColor: `${p.color}15` }}
-                >
-                  {p.icon}
+                <div className="crm-avatar-ring shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-[#F4F0FF] flex items-center justify-center text-lg shadow-xs">
+                    {p.icon}
+                  </div>
+                </div>
+                <div>
+                  <h3 className="font-bold text-base text-[#1A1A2E] leading-tight">{p.displayName}</h3>
+                  <span className="text-[10px] text-[#8A8A9E] font-bold uppercase tracking-wider block mt-0.5">{p.persona.replace(/_/g, " ")}</span>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <span className="badge bg-[#F4F0FF] text-[#5B4FE0] font-bold text-xs px-3 py-1 rounded-full">
+                  {p.count} {p.count === 1 ? "Lead" : "Leads"}
                 </span>
-                <div>
-                  <h3 className="font-bold text-sm text-slate-800">{p.displayName}</h3>
-                  <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">{p.persona.replace(/_/g, " ")}</span>
-                </div>
-              </div>
-              
-              <div className="bg-slate-50 border border-slate-150 rounded-tag px-2.5 py-1 text-center">
-                <span className="text-[10px] text-slate-400 block uppercase font-bold tracking-wider leading-none">Leads</span>
-                <span className="text-sm font-black text-slate-800 leading-none block mt-1">{p.count}</span>
+                <ChevronRight size={16} className="text-[#8A8A9E]" />
               </div>
             </div>
 
-            {/* Description */}
-            <p className="px-5 py-3 text-xs text-text-secondary leading-relaxed flex-grow italic">
+            {/* Description Card Box */}
+            <div className="bg-[#F9F8FD] p-3.5 rounded-xl border border-[#F0EDFA] text-xs text-[#6E6D8A] italic leading-relaxed">
               "{p.description}"
-            </p>
+            </div>
 
-            {/* Metrics list */}
-            <div className="px-5 py-4 border-t border-slate-100 bg-slate-50/50 grid grid-cols-2 gap-4 text-xs">
-              <div className="flex items-center gap-2">
-                <DollarSign size={14} className="text-slate-400" />
-                <div>
-                  <span className="text-[9px] text-slate-400 block uppercase tracking-wider">Avg Budget</span>
-                  <span className="font-bold text-slate-700">
-                    {p.avgBudget === 0 ? "N/A" : p.avgBudget < 100 ? `₹${p.avgBudget}L` : `₹${(p.avgBudget / 100).toFixed(1)}Cr`}
-                  </span>
-                </div>
+            {/* Metrics List Block */}
+            <div className="bg-[#F9F8FD] p-4 rounded-2xl border border-[#F0EDFA] grid grid-cols-2 gap-3 text-xs">
+              <div className="space-y-1">
+                <span className="text-[10px] text-[#8A8A9E] font-bold uppercase tracking-wider block">Avg Budget</span>
+                <span className="font-bold text-[#1A1A2E] text-sm block">
+                  {p.avgBudget === 0 ? "N/A" : p.avgBudget < 100 ? `₹${p.avgBudget}L` : `₹${(p.avgBudget / 100).toFixed(1)}Cr`}
+                </span>
               </div>
               
-              <div className="flex items-center gap-2">
-                <Calendar size={14} className="text-slate-400" />
-                <div>
-                  <span className="text-[9px] text-slate-400 block uppercase tracking-wider">Avg Horizon</span>
-                  <span className="font-bold text-slate-700">{p.avgHorizon === 0 ? "N/A" : `${p.avgHorizon} Yrs`}</span>
-                </div>
+              <div className="space-y-1">
+                <span className="text-[10px] text-[#8A8A9E] font-bold uppercase tracking-wider block">Avg Horizon</span>
+                <span className="font-bold text-[#1A1A2E] text-sm block">{p.avgHorizon === 0 ? "N/A" : `${p.avgHorizon} Yrs`}</span>
               </div>
 
-              <div className="flex items-center gap-2">
-                <Compass size={14} className="text-slate-400" />
-                <div>
-                  <span className="text-[9px] text-slate-400 block uppercase tracking-wider">Top Corridor</span>
-                  <span className="font-bold text-slate-700 truncate block max-w-[100px]">{p.topCorridor}</span>
-                </div>
+              <div className="space-y-1 pt-1">
+                <span className="text-[10px] text-[#8A8A9E] font-bold uppercase tracking-wider block">Top Corridor</span>
+                <span className="font-bold text-[#1A1A2E] truncate block text-xs">{p.topCorridor}</span>
               </div>
 
-              <div className="flex items-center gap-2">
-                <TrendingUp size={14} className="text-slate-400" />
-                <div>
-                  <span className="text-[9px] text-slate-400 block uppercase tracking-wider">Conversion</span>
-                  <span className={`font-bold px-1.5 py-0.2 rounded text-[10px] ${
-                    p.conversionRate > 25 ? "bg-green-50 text-green-600 border border-green-100" : "bg-slate-100 text-slate-600"
-                  }`}>
-                    {p.conversionRate}%
-                  </span>
-                </div>
+              <div className="space-y-1 pt-1">
+                <span className="text-[10px] text-[#8A8A9E] font-bold uppercase tracking-wider block">Conversion</span>
+                <span className="badge bg-emerald-100 text-emerald-800 text-[10px] font-bold">
+                  {p.conversionRate}%
+                </span>
               </div>
             </div>
 
-            {/* Card Action Link */}
-            <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-between items-center px-5 text-xs font-bold uppercase tracking-wider">
+            {/* Soft Two-Tone Gradient Bar Accent */}
+            <div className="w-full h-1.5 rounded-full bg-[#F0EEFA] overflow-hidden">
+              <div className={`h-full rounded-full ${
+                index % 3 === 0 ? 'crm-gradient-peach-mint w-[85%]' :
+                index % 3 === 1 ? 'crm-gradient-purple-lavender w-[75%]' :
+                'crm-gradient-blue-cyan w-[90%]'
+              }`} />
+            </div>
+
+            {/* Card Action Bar */}
+            <div className="pt-3 border-t border-[#F5F3FB] flex justify-between items-center text-xs">
               <Link
                 href={`/admin/leads?persona=${p.persona}`}
-                className="text-blue-600 hover:text-blue-800 transition-colors"
+                className="crm-btn-ghost text-xs text-[#5B4FE0] font-bold"
               >
-                View Leads →
+                View Clients →
               </Link>
               <Link
                 href={`/admin/broadcasts/new?groupType=PERSONA&persona=${p.persona}`}
-                className="text-[#D97706] hover:text-amber-700 transition-colors flex items-center gap-0.5"
+                className="crm-btn-primary text-xs py-1.5 px-4 flex items-center gap-1.5"
               >
-                Broadcast 📣
+                <Megaphone size={13} /> Broadcast
               </Link>
             </div>
           </div>

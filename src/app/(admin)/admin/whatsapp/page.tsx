@@ -13,7 +13,9 @@ import {
   AlertTriangle, 
   Sparkles,
   ToggleLeft,
-  ToggleRight
+  ToggleRight,
+  ChevronRight,
+  X
 } from "lucide-react";
 
 interface Template {
@@ -116,7 +118,7 @@ export default function AdminWhatsAppPage() {
       });
       if (res.ok) {
         setTemplates((prev) =>
-          prev.map((t) => (t.id === template.id ? { ...t, isActive: !t.isActive } : t))
+          prev.map((t) => (t.id === template.id ? { ...t, isActive: !template.isActive } : t))
         );
       }
     } catch (err) {
@@ -176,122 +178,119 @@ export default function AdminWhatsAppPage() {
   const getStatusBadge = (s: string) => {
     switch (s) {
       case "READ":
-        return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-50 text-green-700 border border-green-200"><CheckCircle2 size={10} /> Read</span>;
+        return <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800"><CheckCircle2 size={10} /> Read</span>;
       case "DELIVERED":
-        return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200"><CheckCircle2 size={10} /> Delivered</span>;
+        return <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800"><CheckCircle2 size={10} /> Delivered</span>;
       case "SENT":
-        return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-50 text-slate-700 border border-slate-200"><Clock size={10} /> Sent</span>;
+        return <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700"><Clock size={10} /> Sent</span>;
       case "FAILED":
-        return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-50 text-red-700 border border-red-200"><AlertTriangle size={10} /> Failed</span>;
+        return <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800"><AlertTriangle size={10} /> Failed</span>;
       default:
-        return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-50 text-slate-500 border border-slate-200">Pending</span>;
+        return <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600">Pending</span>;
     }
   };
 
   return (
-    <div className="space-y-6 flex-grow flex flex-col">
+    <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8 flex-grow flex flex-col animate-fade-in w-full">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-[#F0EDFA]">
         <div>
-          <span className="text-[10px] text-accent font-bold uppercase tracking-widest block">
+          <span className="text-[11px] text-[#5B4FE0] font-bold uppercase tracking-widest block mb-1">
             Communications Engine
           </span>
-          <h1 className="font-display text-2xl sm:text-4xl font-bold text-primary">
+          <h1 className="font-display text-2xl sm:text-3xl font-bold text-[#1A1A2E]">
             WhatsApp Control Panel
           </h1>
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex items-center gap-3">
           <button
             onClick={loadAllData}
-            className="p-2 border border-luxury rounded bg-white hover:bg-slate-50 transition-colors text-slate-600"
+            className="crm-btn-secondary text-xs p-2.5"
             title="Refresh logs & templates"
           >
-            <RefreshCw size={14} />
+            <RefreshCw size={14} className="text-[#5B4FE0]" />
           </button>
           
           <button
             onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-1.5 px-4 py-2 bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-bold uppercase tracking-wider rounded transition-colors shadow-sm"
+            className="crm-btn-primary text-xs"
           >
             <Plus size={14} /> Add Template
           </button>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex border-b border-luxury">
-        <button
-          onClick={() => setActiveTab("templates")}
-          className={`px-5 py-3 text-xs font-bold uppercase tracking-wider border-b-2 -mb-[2px] transition-colors flex items-center gap-2 ${
-            activeTab === "templates"
-              ? "border-[#2563EB] text-[#2563EB]"
-              : "border-transparent text-text-secondary hover:text-primary"
-          }`}
-        >
-          <FileText size={14} /> Message Templates ({templates.length})
-        </button>
-        
-        <button
-          onClick={() => setActiveTab("logs")}
-          className={`px-5 py-3 text-xs font-bold uppercase tracking-wider border-b-2 -mb-[2px] transition-colors flex items-center gap-2 ${
-            activeTab === "logs"
-              ? "border-[#2563EB] text-[#2563EB]"
-              : "border-transparent text-text-secondary hover:text-primary"
-          }`}
-        >
-          <Send size={14} /> Delivery Logs History ({logs.length})
-        </button>
+      {/* LoopAI Top Pill Navigation Bar */}
+      <div className="flex items-center gap-3">
+        <div className="crm-pill-nav">
+          <button
+            onClick={() => setActiveTab("templates")}
+            className={activeTab === "templates" ? "crm-pill-tab crm-pill-tab-active" : "crm-pill-tab"}
+          >
+            <FileText size={14} className="inline mr-1.5" /> Message Templates ({templates.length})
+          </button>
+          
+          <button
+            onClick={() => setActiveTab("logs")}
+            className={activeTab === "logs" ? "crm-pill-tab crm-pill-tab-active" : "crm-pill-tab"}
+          >
+            <Send size={14} className="inline mr-1.5" /> Delivery Logs History ({logs.length})
+          </button>
+        </div>
       </div>
 
       {/* Tab Panels */}
       <div className="flex-grow">
         {isLoading ? (
-          <div className="flex items-center justify-center p-12 text-text-secondary animate-pulse text-xs">
+          <div className="flex items-center justify-center p-16 text-[#8A8A9E] animate-pulse text-xs">
             Loading Communications datasets...
           </div>
         ) : activeTab === "templates" ? (
           /* Templates Grid */
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {templates.map((t) => (
               <div 
                 key={t.id}
-                className="bg-surface border border-luxury p-5 rounded-card shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-4"
+                className="crm-card p-6 sm:p-7 flex flex-col justify-between space-y-4"
               >
                 <div>
-                  <div className="flex justify-between items-start">
+                  <div className="flex justify-between items-start pb-3 border-b border-[#F5F3FB]">
                     <div>
-                      <h3 className="font-bold text-sm text-slate-800">{t.name}</h3>
-                      <span className="text-[9px] text-[#2563EB] font-bold uppercase tracking-wider">
+                      <h3 className="font-bold text-base text-[#1A1A2E]">{t.name}</h3>
+                      <span className="text-[10px] text-[#5B4FE0] font-bold uppercase tracking-wider block mt-0.5">
                         {TRIGGER_LABELS[t.trigger] || t.trigger}
                       </span>
                     </div>
 
-                    <button 
-                      onClick={() => handleToggleActive(t)}
-                      className="text-slate-500 hover:text-primary transition-colors focus:outline-none"
-                    >
-                      {t.isActive ? (
-                        <ToggleRight className="w-8 h-8 text-green-600" />
-                      ) : (
-                        <ToggleLeft className="w-8 h-8 text-slate-400" />
-                      )}
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button 
+                        onClick={() => handleToggleActive(t)}
+                        className="text-[#8A8A9E] hover:text-[#1A1A2E] transition-colors focus:outline-none"
+                      >
+                        {t.isActive ? (
+                          <ToggleRight className="w-8 h-8 text-emerald-500" />
+                        ) : (
+                          <ToggleLeft className="w-8 h-8 text-[#8A8A9E]" />
+                        )}
+                      </button>
+                      <ChevronRight size={16} className="text-[#8A8A9E]" />
+                    </div>
                   </div>
 
-                  <p className="mt-3 text-xs text-slate-600 font-mono leading-relaxed bg-slate-50 p-3 rounded border border-slate-100 whitespace-pre-line text-[10px]">
+                  <p className="mt-4 text-xs text-[#1A1A2E] font-mono leading-relaxed bg-[#F9F8FD] p-4 rounded-xl border border-[#F0EDFA] whitespace-pre-line text-[11px]">
                     {t.message}
                   </p>
                 </div>
 
-                <div className="flex justify-between items-center text-[10px] border-t border-luxury/40 pt-3 text-text-secondary">
-                  <span>Dispatched: <strong className="text-slate-700">{t.sentCount}</strong> times</span>
+                <div className="flex justify-between items-center text-xs border-t border-[#F5F3FB] pt-3 text-[#8A8A9E]">
+                  <span>Dispatched: <strong className="text-[#1A1A2E] font-bold">{t.sentCount}</strong> times</span>
                   
                   <button
                     onClick={() => handleDeleteTemplate(t.id)}
-                    className="flex items-center gap-1 text-red-500 hover:text-red-700 font-bold uppercase tracking-wider"
+                    className="crm-btn-ghost text-rose-600 text-xs px-3 py-1.5"
                   >
-                    <Trash2 size={12} /> Delete
+                    <Trash2 size={13} /> Delete
                   </button>
                 </div>
               </div>
@@ -299,44 +298,44 @@ export default function AdminWhatsAppPage() {
           </div>
         ) : (
           /* Logs Panel */
-          <div className="bg-surface border border-luxury rounded-card shadow-sm overflow-x-auto">
+          <div className="crm-card p-0 overflow-hidden">
             {logs.length === 0 ? (
-              <p className="text-xs text-text-secondary py-8 text-center italic">No message logs registered yet.</p>
+              <p className="text-xs text-[#8A8A9E] py-12 text-center italic">No message logs registered yet.</p>
             ) : (
-              <table className="w-full text-left border-collapse text-xs">
+              <table className="crm-table text-xs w-full">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-luxury text-text-secondary font-semibold uppercase tracking-wider text-[10px]">
-                    <th className="px-5 py-3">Recipient</th>
-                    <th className="px-5 py-3">Template</th>
-                    <th className="px-5 py-3">Message Dispatched</th>
-                    <th className="px-5 py-3">Status</th>
-                    <th className="px-5 py-3">Sent Timestamp</th>
-                    <th className="px-5 py-3 text-right">Receipts</th>
+                  <tr>
+                    <th>Recipient</th>
+                    <th>Template</th>
+                    <th>Message Dispatched</th>
+                    <th>Status</th>
+                    <th>Sent Timestamp</th>
+                    <th className="text-right">Receipts</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-luxury">
+                <tbody>
                   {logs.map((log) => (
-                    <tr key={log.id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-5 py-4 font-semibold text-slate-800">
+                    <tr key={log.id}>
+                      <td className="font-bold text-[#1A1A2E]">
                         {log.lead.name}
-                        <span className="block text-[9px] text-slate-400 font-normal mt-0.5">{log.lead.phone}</span>
+                        <span className="block text-[10px] text-[#8A8A9E] font-normal mt-0.5">{log.lead.phone}</span>
                       </td>
-                      <td className="px-5 py-4 text-slate-700 font-semibold">
+                      <td className="text-[#1A1A2E] font-semibold">
                         {log.template?.name || "Custom manual Message"}
                       </td>
-                      <td className="px-5 py-4 max-w-[240px] truncate text-[10px] text-slate-500 font-mono" title={log.message}>
+                      <td className="max-w-[240px] truncate text-[11px] text-[#6E6D8A] font-mono" title={log.message}>
                         {log.message}
                       </td>
-                      <td className="px-5 py-4">{getStatusBadge(log.status)}</td>
-                      <td className="px-5 py-4 text-slate-400">{new Date(log.createdAt).toLocaleString("en-IN")}</td>
-                      <td className="px-5 py-4 text-right text-[9px] text-slate-400 space-y-0.5">
+                      <td>{getStatusBadge(log.status)}</td>
+                      <td className="text-[#8A8A9E]">{new Date(log.createdAt).toLocaleString("en-IN")}</td>
+                      <td className="text-right text-[10px] text-[#8A8A9E] space-y-0.5">
                         {log.deliveredAt && (
-                          <div className="flex items-center justify-end gap-1 text-blue-600 font-medium">
+                          <div className="flex items-center justify-end gap-1 text-[#5B4FE0] font-semibold">
                             ✓ Delivered: {new Date(log.deliveredAt).toLocaleTimeString("en-IN", { hour: '2-digit', minute: '2-digit' })}
                           </div>
                         )}
                         {log.readAt && (
-                          <div className="flex items-center justify-end gap-1 text-green-600 font-medium">
+                          <div className="flex items-center justify-end gap-1 text-emerald-600 font-semibold">
                             ✓✓ Read: {new Date(log.readAt).toLocaleTimeString("en-IN", { hour: '2-digit', minute: '2-digit' })}
                           </div>
                         )}
@@ -353,37 +352,37 @@ export default function AdminWhatsAppPage() {
 
       {/* Add Template Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-          <div className="bg-surface border border-luxury w-full max-w-lg rounded-card shadow-luxury overflow-hidden animate-slide-in">
-            <div className="px-6 py-4 border-b border-luxury bg-slate-50/50 flex items-center justify-between">
-              <h2 className="font-display font-bold text-slate-800 text-sm">Add Message Template</h2>
+        <div className="fixed inset-0 bg-[#1A1A2E]/40 z-50 flex items-center justify-center p-4 backdrop-blur-xs">
+          <div className="crm-card bg-white w-full max-w-lg shadow-2xl p-6 space-y-5 animate-scale-in">
+            <div className="flex items-center justify-between pb-3 border-b border-[#F0EDFA]">
+              <h2 className="font-display font-bold text-[#1A1A2E] text-base">Add Message Template</h2>
               <button 
                 onClick={() => setShowAddModal(false)}
-                className="text-slate-600 hover:text-slate-900 border border-slate-200 rounded px-2.5 py-1 text-xs bg-white"
+                className="text-[#8A8A9E] hover:text-[#1A1A2E] p-1 rounded-full hover:bg-[#F4F0FF]"
               >
-                ✕
+                <X size={18} />
               </button>
             </div>
             
-            <form onSubmit={handleCreateTemplate} className="p-6 space-y-4 text-xs">
-              <div className="space-y-1">
-                <label className="block font-bold text-slate-500 uppercase tracking-wider">Template Name</label>
+            <form onSubmit={handleCreateTemplate} className="space-y-4 text-xs">
+              <div className="space-y-1.5">
+                <label className="block font-bold text-[#8A8A9E] uppercase tracking-wider text-[10px]">Template Name</label>
                 <input
                   type="text"
                   placeholder="e.g. Welcome Introduction"
                   value={newTemplateName}
                   onChange={(e) => setNewTemplateName(e.target.value)}
-                  className="w-full bg-luxury-bg border border-luxury px-3.5 py-2 rounded text-xs text-text-primary focus:outline-none focus:border-[#2563EB]"
+                  className="w-full bg-[#F9F8FD] border border-[#E8E5F5] rounded-full px-4 py-2.5 text-xs text-[#1A1A2E] focus:outline-none focus:border-[#5B4FE0]"
                   required
                 />
               </div>
 
-              <div className="space-y-1">
-                <label className="block font-bold text-slate-500 uppercase tracking-wider">Trigger Source</label>
+              <div className="space-y-1.5">
+                <label className="block font-bold text-[#8A8A9E] uppercase tracking-wider text-[10px]">Trigger Source</label>
                 <select
                   value={newTemplateTrigger}
                   onChange={(e) => setNewTemplateTrigger(e.target.value)}
-                  className="w-full bg-luxury-bg border border-luxury px-3.5 py-2 rounded text-xs text-text-primary focus:outline-none focus:border-[#2563EB]"
+                  className="w-full bg-[#F9F8FD] border border-[#E8E5F5] rounded-full px-4 py-2.5 text-xs text-[#1A1A2E] focus:outline-none focus:border-[#5B4FE0]"
                 >
                   {Object.entries(TRIGGER_LABELS).map(([key, label]) => (
                     <option key={key} value={key}>{label}</option>
@@ -391,27 +390,27 @@ export default function AdminWhatsAppPage() {
                 </select>
               </div>
 
-              <div className="space-y-1">
-                <label className="block font-bold text-slate-500 uppercase tracking-wider">Message Content</label>
+              <div className="space-y-1.5">
+                <label className="block font-bold text-[#8A8A9E] uppercase tracking-wider text-[10px]">Message Content</label>
                 <textarea
                   placeholder="Hi {{lead_name}}, thank you for registering your interest in Hyderabad real estate..."
                   value={newTemplateMessage}
                   onChange={(e) => setNewTemplateMessage(e.target.value)}
-                  rows={6}
-                  className="w-full bg-luxury-bg border border-luxury p-3.5 rounded text-xs text-text-primary focus:outline-none focus:border-[#2563EB] resize-none"
+                  rows={5}
+                  className="w-full bg-[#F9F8FD] border border-[#E8E5F5] rounded-2xl p-4 text-xs text-[#1A1A2E] focus:outline-none focus:border-[#5B4FE0] resize-none"
                   required
                 />
                 
-                <div className="bg-blue-50 border border-blue-200/50 p-3 rounded text-[10px] text-blue-800 space-y-1 leading-relaxed mt-2 font-medium">
-                  <span className="font-bold flex items-center gap-1"><Sparkles size={11} /> Supported Merge Tags:</span>
-                  <div className="flex flex-wrap gap-2 pt-1 font-mono text-[9px]">
-                    <span className="bg-white border border-blue-200 px-1 py-0.2 rounded">{"{{lead_name}}"}</span>
-                    <span className="bg-white border border-blue-200 px-1 py-0.2 rounded">{"{{budget}}"}</span>
-                    <span className="bg-white border border-blue-200 px-1 py-0.2 rounded">{"{{horizon}}"}</span>
-                    <span className="bg-white border border-blue-200 px-1 py-0.2 rounded">{"{{city}}"}</span>
-                    <span className="bg-white border border-blue-200 px-1 py-0.2 rounded">{"{{agent_name}}"}</span>
-                    <span className="bg-white border border-blue-200 px-1 py-0.2 rounded">{"{{project_name}}"}</span>
-                    <span className="bg-white border border-blue-200 px-1 py-0.2 rounded">{"{{project_price}}"}</span>
+                <div className="crm-insight-box mt-2 flex flex-col gap-1.5">
+                  <span className="font-bold flex items-center gap-1 text-xs"><Sparkles size={13} /> Supported Merge Tags:</span>
+                  <div className="flex flex-wrap gap-2 font-mono text-[10px]">
+                    <span className="bg-white border border-[#E4DCFF] px-2 py-0.5 rounded-full text-[#1A1A2E]">{"{{lead_name}}"}</span>
+                    <span className="bg-white border border-[#E4DCFF] px-2 py-0.5 rounded-full text-[#1A1A2E]">{"{{budget}}"}</span>
+                    <span className="bg-white border border-[#E4DCFF] px-2 py-0.5 rounded-full text-[#1A1A2E]">{"{{horizon}}"}</span>
+                    <span className="bg-white border border-[#E4DCFF] px-2 py-0.5 rounded-full text-[#1A1A2E]">{"{{city}}"}</span>
+                    <span className="bg-white border border-[#E4DCFF] px-2 py-0.5 rounded-full text-[#1A1A2E]">{"{{agent_name}}"}</span>
+                    <span className="bg-white border border-[#E4DCFF] px-2 py-0.5 rounded-full text-[#1A1A2E]">{"{{project_name}}"}</span>
+                    <span className="bg-white border border-[#E4DCFF] px-2 py-0.5 rounded-full text-[#1A1A2E]">{"{{project_price}}"}</span>
                   </div>
                 </div>
               </div>
@@ -420,14 +419,14 @@ export default function AdminWhatsAppPage() {
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="px-4 py-2 border border-slate-200 rounded font-bold text-slate-600 hover:bg-slate-50 uppercase tracking-wider text-[10px]"
+                  className="crm-btn-secondary px-5 py-2 text-xs"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="px-4 py-2 bg-[#2563EB] hover:bg-blue-700 text-white rounded font-bold uppercase tracking-wider text-[10px] transition-colors disabled:opacity-50"
+                  className="crm-btn-primary px-5 py-2 text-xs"
                 >
                   {isSaving ? "Saving..." : "Save Template"}
                 </button>

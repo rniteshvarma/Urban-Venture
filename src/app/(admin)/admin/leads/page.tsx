@@ -272,43 +272,43 @@ function LeadsPageContent() {
   };
 
   return (
-    <div className="space-y-6 flex-grow flex flex-col">
+    <div className="space-y-6 flex-grow flex flex-col animate-fade-in">
       
-      {/* Header bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-[#F0EDFA]">
         <div>
-          <span className="text-[10px] text-accent font-bold uppercase tracking-widest block">Customer Relationship Management</span>
-          <h1 className="font-display text-2xl sm:text-4xl font-bold text-primary">Leads Directory</h1>
+          <span className="text-[11px] text-[#5B4FE0] font-bold uppercase tracking-widest block mb-1">
+            Client Management
+          </span>
+          <h1 className="font-display text-2xl sm:text-3xl font-bold text-[#1A1A2E]">
+            Client Leads & Accounts
+          </h1>
         </div>
-        
-        <div className="flex gap-2">
+
+        <div className="flex flex-wrap gap-3">
           <button
             onClick={handleExportCSV}
-            className="px-4 py-2 border border-luxury hover:bg-luxury-bg/40 text-text-primary text-xs font-semibold uppercase tracking-wider rounded-tag transition-colors"
+            className="crm-btn-secondary text-xs"
           >
             📊 Export CSV
           </button>
           
           <button
             onClick={() => setShowAddModal(true)}
-            className="px-4 py-2 bg-primary hover:bg-blue-700 text-surface text-xs font-semibold uppercase tracking-wider rounded-tag transition-colors shadow-sm"
+            className="crm-btn-primary text-xs"
           >
-            ➕ Add Lead Manually
+            ➕ Add Client Manually
           </button>
         </div>
       </div>
 
       {/* Persona Filter Chips Row */}
-      <div className="flex flex-wrap gap-2 items-center pb-2 overflow-x-auto select-none border-b border-slate-100">
-        <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mr-2">Segment Filter:</span>
+      <div className="flex flex-wrap gap-2 items-center pb-2 overflow-x-auto select-none border-b border-[#F0EDFA]">
+        <span className="text-[10px] uppercase font-bold text-[#8A8A9E] tracking-wider mr-2">Segment Filter:</span>
         
         <button
           onClick={() => { setPage(1); setPersonaFilter("ALL"); }}
-          className={`px-3 py-1.5 rounded text-xs font-semibold uppercase tracking-wider transition-colors border ${
-            personaFilter === "ALL"
-              ? "bg-[#2563EB] text-white border-[#2563EB]"
-              : "bg-white hover:bg-slate-50 text-slate-600 border-slate-200"
-          }`}
+          className={personaFilter === "ALL" ? "filter-pill-active" : "filter-pill"}
         >
           All Segments
         </button>
@@ -317,10 +317,10 @@ function LeadsPageContent() {
           <button
             key={key}
             onClick={() => { setPage(1); setPersonaFilter(key); }}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold uppercase tracking-wider transition-colors border ${
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-all border ${
               personaFilter === key
-                ? "text-white border-transparent"
-                : "bg-white hover:bg-slate-50 text-slate-600 border-slate-200"
+                ? "text-white border-transparent shadow-md"
+                : "bg-white hover:bg-[#F4F0FF] text-[#4B5563] border-[#E2E8F0]"
             }`}
             style={{ 
               backgroundColor: personaFilter === key ? config.color : undefined,
@@ -334,21 +334,21 @@ function LeadsPageContent() {
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-surface border border-luxury p-4 rounded-card shadow-sm grid grid-cols-1 sm:grid-cols-4 gap-3 items-center">
+      <div className="crm-card p-6 grid grid-cols-1 sm:grid-cols-4 gap-4 items-center">
         
         {/* Search */}
         <div className="sm:col-span-2 flex gap-2">
           <input
             type="text"
-            placeholder="Search leads by name, email, or phone... (Press Enter)"
+            placeholder="Search leads by name, email, or phone..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={handleSearchKeyPress}
-            className="w-full bg-luxury-bg border border-luxury px-3 py-2 rounded-input text-xs text-text-primary focus:outline-none focus:border-accent"
+            className="bg-[#F9F8FD] border border-[#E8E5F5] rounded-full px-4 py-2 text-xs text-[#1A1A2E] placeholder-[#8A8A9E] w-full focus:outline-none focus:border-[#5B4FE0]"
           />
           <button
             onClick={() => { setPage(1); loadLeads(); }}
-            className="bg-primary hover:bg-blue-700 px-3.5 rounded-input text-xs text-surface uppercase font-semibold tracking-wider transition-colors"
+            className="crm-btn-primary text-xs px-5"
           >
             Search
           </button>
@@ -359,7 +359,7 @@ function LeadsPageContent() {
           <select
             value={statusFilter}
             onChange={(e) => { setPage(1); setStatusFilter(e.target.value); }}
-            className="w-full bg-luxury-bg border border-luxury px-3 py-2 rounded-input text-xs text-text-primary focus:outline-none"
+            className="bg-[#F9F8FD] border border-[#E8E5F5] rounded-full px-4 py-2 text-xs text-[#1A1A2E] w-full focus:outline-none focus:border-[#5B4FE0]"
           >
             <option value="ALL">All Statuses</option>
             <option value="NEW">NEW</option>
@@ -378,25 +378,25 @@ function LeadsPageContent() {
             placeholder="Filter by City (e.g. Hyderabad)"
             value={cityFilter}
             onChange={(e) => { setPage(1); setCityFilter(e.target.value); }}
-            className="w-full bg-luxury-bg border border-luxury px-3 py-2 rounded-input text-xs text-text-primary focus:outline-none focus:border-accent"
+            className="bg-[#F9F8FD] border border-[#E8E5F5] rounded-full px-4 py-2 text-xs text-[#1A1A2E] placeholder-[#8A8A9E] w-full focus:outline-none focus:border-[#5B4FE0]"
           />
         </div>
 
       </div>
 
       {/* Leads Grid/Table panel */}
-      <div className="bg-surface border border-luxury rounded-card shadow-sm flex-grow overflow-hidden flex flex-col justify-between">
+      <div className="crm-card p-0 flex-grow overflow-hidden flex flex-col justify-between">
         
         {isLoading ? (
-          <div className="p-8 text-center text-text-secondary animate-pulse">
-            Loading leads records...
+          <div className="p-12 text-center text-[#8A8A9E] animate-pulse text-xs">
+            Loading client records...
           </div>
         ) : leads.length === 0 ? (
-          <div className="p-16 text-center text-text-secondary space-y-3">
+          <div className="p-16 text-center text-[#8A8A9E] space-y-3">
             <span className="text-3xl">👥</span>
-            <h3 className="font-display text-lg font-bold text-primary">No Leads Found</h3>
+            <h3 className="font-display text-lg font-bold text-[#1A1A2E]">No Clients Found</h3>
             <p className="text-xs max-w-sm mx-auto leading-relaxed">
-              No lead records match your queries. Try clearing search strings or add a manual lead profile.
+              No lead records match your search criteria. Try clearing filters or add a client profile.
             </p>
           </div>
         ) : (
@@ -412,22 +412,22 @@ function LeadsPageContent() {
 
         {/* Pagination footer */}
         {totalPages > 1 && (
-          <div className="px-6 py-4 border-t border-luxury bg-luxury-bg/20 flex items-center justify-between text-xs">
-            <span className="text-text-secondary">
-              Showing page {page} of {totalPages} ({totalLeads} total leads)
+          <div className="px-6 py-4 border-t border-[#F0EDFA] bg-[#F9F8FD] flex items-center justify-between text-xs">
+            <span className="text-[#8A8A9E]">
+              Page {page} of {totalPages} ({totalLeads} total leads)
             </span>
             <div className="flex gap-2">
               <button
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="px-3 py-1.5 border border-luxury rounded bg-surface text-text-secondary disabled:opacity-50 hover:bg-luxury-bg/50 transition-colors"
+                className="crm-btn-ghost text-xs"
               >
                 Previous
               </button>
               <button
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                className="px-3 py-1.5 border border-luxury rounded bg-surface text-text-secondary disabled:opacity-50 hover:bg-luxury-bg/50 transition-colors"
+                className="crm-btn-ghost text-xs"
               >
                 Next
               </button>
@@ -448,7 +448,7 @@ function LeadsPageContent() {
           </div>
           <Link
             href={`/admin/broadcasts/new?groupType=MANUAL_PICK&leadIds=${selectedIds.join(",")}`}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold uppercase tracking-wider rounded text-[10px] transition-all flex items-center gap-1 shadow-md"
+            className="btn-primary text-[10px] flex items-center gap-1"
           >
             Broadcast Campaign <ArrowRight size={12} />
           </Link>
@@ -600,14 +600,14 @@ function LeadsPageContent() {
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="px-4 py-2 border border-luxury rounded bg-surface hover:bg-luxury-bg text-text-secondary"
+                  className="btn-secondary"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isCreating}
-                  className="px-5 py-2 bg-primary hover:bg-blue-700 text-surface font-semibold rounded-[4px] disabled:opacity-50"
+                  className="btn-primary disabled:opacity-50"
                 >
                   {isCreating ? "Creating..." : "Save CRM Lead"}
                 </button>

@@ -427,11 +427,42 @@ export default function LeadDetailPanel({
 
               {/* Persona Rationale Explanation */}
               {persona && lead.personaReason && (
-                <section className="bg-slate-50 border border-slate-200/60 p-3 rounded-lg text-xs leading-relaxed text-slate-600">
-                  <span className="font-bold text-[10px] text-slate-700 block uppercase tracking-wider mb-1">AI Persona Rationale:</span>
+                <section className="card-premium p-3 text-xs leading-relaxed text-text-primary">
+                  <span className="font-bold text-[10px] text-text-secondary block uppercase tracking-wider mb-1">AI Persona Rationale:</span>
                   "{lead.personaReason}"
                 </section>
               )}
+
+              {/* Inbound Context Section */}
+              <section className="bg-[#F4F0FF]/80 border border-[#E0D7FF] p-4 rounded-2xl space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#5B4FE0] flex items-center gap-1">
+                    📡 Inbound Context & AI Extraction
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#5B4FE0] text-white">
+                    {(lead as any).sourceChannel?.replace('_', ' ') || lead.source?.toUpperCase() || 'INBOUND'}
+                  </span>
+                </div>
+
+                {(lead as any).rawEnquiryText || lead.notes ? (
+                  <div className="bg-white p-3 rounded-xl border border-[#E8E5F5] text-xs text-[#1A1A2E] whitespace-pre-wrap">
+                    <span className="font-bold text-[10px] text-[#8A8A9E] uppercase block mb-1">Raw Enquiry Text:</span>
+                    {(lead as any).rawEnquiryText || lead.notes}
+                  </div>
+                ) : null}
+
+                {((lead as any).aiExtractedBudget || (lead as any).aiExtractedProperty || (lead as any).aiConfidenceScore) && (
+                  <div className="bg-[#5B4FE0]/10 p-3 rounded-xl text-xs space-y-1 text-[#1A1A2E]">
+                    <span className="font-bold text-[10px] text-[#5B4FE0] uppercase block">AI Intelligence Summary:</span>
+                    <div>
+                      {(lead as any).aiExtractedBudget ? `Extracted Budget: ₹${(lead as any).aiExtractedBudget}L · ` : ''}
+                      {(lead as any).aiExtractedHorizon ? `${(lead as any).aiExtractedHorizon}yr Horizon · ` : ''}
+                      {(lead as any).aiExtractedProperty ? `Property: ${(lead as any).aiExtractedProperty} · ` : ''}
+                      Confidence: {(lead as any).aiConfidenceScore || 75}%
+                    </div>
+                  </div>
+                )}
+              </section>
 
               {/* Lead Score segmented progress bar */}
               <section className="bg-white border border-slate-200/80 p-4 rounded-card shadow-sm space-y-3">
@@ -470,10 +501,10 @@ export default function LeadDetailPanel({
               )}
 
               {/* Quick Info & Status */}
-              <section className="grid grid-cols-2 gap-4 bg-slate-50 border border-slate-200/60 p-4 rounded-card text-xs">
+              <section className="grid grid-cols-2 gap-4 card-premium text-xs">
                 <div>
-                  <span className="text-[9px] text-slate-400 font-bold uppercase block mb-1">Email Address</span>
-                  <a href={`mailto:${lead.email}`} className="font-semibold text-blue-600 underline">{lead.email}</a>
+                  <span className="text-[9px] text-text-secondary font-bold uppercase block mb-1">Email Address</span>
+                  <a href={`mailto:${lead.email}`} className="font-semibold text-accent underline">{lead.email}</a>
                 </div>
                 <div>
                   <span className="text-[9px] text-slate-400 font-bold uppercase block mb-1">Phone Number</span>
@@ -484,7 +515,7 @@ export default function LeadDetailPanel({
                   <select
                     value={lead.status}
                     onChange={(e) => onStatusChange(lead.id, e.target.value)}
-                    className="font-bold bg-white border border-slate-200 px-2.5 py-1 rounded text-xs text-slate-800 focus:outline-none"
+                    className="input-premium py-1 font-bold text-xs"
                   >
                     <option value="NEW">NEW</option>
                     <option value="CONTACTED">CONTACTED</option>
@@ -501,11 +532,11 @@ export default function LeadDetailPanel({
               </section>
 
               {/* View Closure Roadmap Link */}
-              <div className="bg-blue-50/30 border border-blue-200 p-4 rounded-card text-center space-y-2">
+              <div className="card-premium bg-accent/5 border-accent/20 text-center space-y-2">
                 <span className="text-xs text-text-secondary block font-semibold">Need closure timelines & action item checks?</span>
                 <Link 
                   href={`/admin/leads/${lead.id}`}
-                  className="w-full flex items-center justify-center gap-1.5 py-2.5 bg-blue-600 text-white hover:bg-blue-700 text-xs font-bold uppercase tracking-wider rounded transition-colors shadow-sm"
+                  className="btn-primary w-full flex items-center justify-center gap-1.5"
                 >
                   🛣️ Open Lead Closure Roadmap
                 </Link>
@@ -582,14 +613,14 @@ export default function LeadDetailPanel({
                                   <button
                                     type="button"
                                     onClick={() => handleDismissMatch(match.id)}
-                                    className="px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 rounded font-bold uppercase tracking-wider text-[9px] transition-colors"
+                                    className="btn-secondary text-[9px]"
                                   >
                                     Dismiss
                                   </button>
                                   <button
                                     type="button"
                                     onClick={() => handlePitchMatch(match.id)}
-                                    className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded font-bold uppercase tracking-wider text-[9px] transition-colors flex items-center gap-1 shadow-sm"
+                                    className="btn-primary text-[9px] flex items-center gap-1"
                                   >
                                     <Send size={8} /> Pitch
                                   </button>
@@ -618,7 +649,7 @@ export default function LeadDetailPanel({
                   <select
                     value={selectedTemplateId}
                     onChange={(e) => setSelectedTemplateId(e.target.value)}
-                    className="w-full bg-white border border-slate-200 px-3 py-2 rounded text-xs text-slate-800 focus:outline-none focus:border-blue-500"
+                    className="input-premium w-full text-xs"
                     required
                   >
                     {templates.length === 0 ? (
@@ -644,7 +675,7 @@ export default function LeadDetailPanel({
                 <button
                   type="submit"
                   disabled={isSendingWa || templates.length === 0}
-                  className="w-full flex items-center justify-center gap-1.5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-wider rounded transition-colors shadow-sm disabled:opacity-50"
+                  className="btn-primary w-full flex items-center justify-center gap-1.5 disabled:opacity-50"
                 >
                   <Send size={14} />
                   {isSendingWa ? "Dispatching..." : "Send Personalized Message"}
@@ -702,7 +733,7 @@ export default function LeadDetailPanel({
                 value={newNote}
                 onChange={(e) => setNewNote(e.target.value)}
                 rows={2}
-                className="w-full bg-white border border-slate-200 p-3 rounded text-xs text-text-primary focus:outline-none focus:border-blue-500 resize-none"
+                className="input-premium w-full resize-none text-xs"
                 required
               />
               <div className="flex justify-between items-center">
@@ -712,7 +743,7 @@ export default function LeadDetailPanel({
                 <button
                   type="submit"
                   disabled={isSavingNote || !newNote.trim()}
-                  className="px-4 py-2 bg-primary hover:bg-blue-700 text-surface text-[10px] font-bold uppercase tracking-wider rounded transition-colors disabled:opacity-50"
+                  className="btn-primary text-[10px] disabled:opacity-50"
                 >
                   {isSavingNote ? "Saving..." : "Add Update Note"}
                 </button>

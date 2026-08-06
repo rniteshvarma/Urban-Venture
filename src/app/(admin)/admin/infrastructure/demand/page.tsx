@@ -63,12 +63,10 @@ export default function DemandTrendsPage() {
       const res = await fetch("/api/admin/demand");
       if (res.ok) {
         const data = await res.json();
-        // Filter by selected corridor and year
         const filtered = data.filter((d: any) => 
           d.corridor.toLowerCase() === selectedCorridor.toLowerCase() &&
           d.year === selectedYear
         );
-        // Ensure all 12 months are represented (with zero counts if no record exists)
         const fullYear = Array.from({ length: 12 }, (_, i) => {
           const m = i + 1;
           const match = filtered.find((f: any) => f.month === m);
@@ -138,26 +136,27 @@ export default function DemandTrendsPage() {
   const currentCorridorName = corridorList.find(c => c.corridor === selectedCorridor)?.shortName || selectedCorridor;
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6 text-slate-800">
+    <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8 flex-grow flex flex-col animate-fade-in text-[#1A1A2E] w-full">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-slate-200 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-[#F0EDFA]">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
-            <TrendingDown className="text-blue-650" size={20} />
+          <span className="text-[11px] text-[#5B4FE0] font-bold uppercase tracking-widest block mb-1">
+            Market Intelligence
+          </span>
+          <h1 className="font-display text-2xl sm:text-3xl font-bold text-[#1A1A2E]">
             Demand Trends Manager
           </h1>
-          <p className="text-xs text-slate-500 mt-1">Manage monthly search volumes, buyer inquiries, site visits, absorption rates, and inventory movements.</p>
         </div>
       </div>
 
       {/* Selectors */}
-      <div className="bg-slate-50 border border-slate-200 rounded p-4 flex flex-wrap gap-4 items-center">
+      <div className="crm-card p-6 flex flex-wrap gap-4 items-center">
         <div className="flex flex-col gap-1 w-full sm:w-auto">
-          <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Corridor</label>
+          <label className="text-[10px] font-bold uppercase tracking-wider text-[#8A8A9E]">Corridor</label>
           <select
             value={selectedCorridor}
             onChange={(e) => setSelectedCorridor(e.target.value)}
-            className="border border-slate-200 rounded px-2.5 py-1.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-650"
+            className="bg-[#F9F8FD] border border-[#E8E5F5] rounded-full px-4 py-2 text-xs text-[#1A1A2E] focus:outline-none focus:border-[#5B4FE0]"
           >
             {corridorList.map(c => (
               <option key={c.corridor} value={c.corridor}>
@@ -168,11 +167,11 @@ export default function DemandTrendsPage() {
         </div>
 
         <div className="flex flex-col gap-1 w-full sm:w-auto">
-          <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Year</label>
+          <label className="text-[10px] font-bold uppercase tracking-wider text-[#8A8A9E]">Year</label>
           <select
             value={selectedYear}
             onChange={(e) => setSelectedYear(Number(e.target.value))}
-            className="border border-slate-200 rounded px-2.5 py-1.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-650"
+            className="bg-[#F9F8FD] border border-[#E8E5F5] rounded-full px-4 py-2 text-xs text-[#1A1A2E] focus:outline-none focus:border-[#5B4FE0]"
           >
             {[2024, 2025, 2026, 2027].map(y => (
               <option key={y} value={y}>{y}</option>
@@ -183,158 +182,120 @@ export default function DemandTrendsPage() {
 
       {/* Grid Table */}
       {loading ? (
-        <div className="flex items-center justify-center py-20 bg-white border border-slate-200 rounded">
-          <Loader2 className="animate-spin text-blue-650" size={30} />
+        <div className="flex items-center justify-center py-20 bg-white rounded-2xl animate-pulse">
+          <Loader2 className="animate-spin text-[#5B4FE0]" size={30} />
         </div>
       ) : (
-        <div className="bg-white border border-slate-200 rounded overflow-hidden shadow-sm">
-          <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-900">Monthly Demand Logs ({currentCorridorName} — {selectedYear})</span>
-            <span className="text-[10px] text-slate-400 font-semibold">🔍 Search & Inquiry counts are auto-calculated from portal logs</span>
+        <div className="crm-card p-0 overflow-hidden flex-grow">
+          <div className="px-6 py-4 border-b border-[#F5F3FB] flex items-center justify-between">
+            <span className="text-xs font-bold text-[#1A1A2E]">Monthly Demand Logs ({currentCorridorName} — {selectedYear})</span>
+            <span className="text-[10px] text-[#8A8A9E] font-semibold">🔍 Search & Inquiry counts auto-calculated</span>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-slate-50/50 border-b border-slate-200 text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                  <th className="px-4 py-3">Month</th>
-                  <th className="px-4 py-3 text-center">Search Volume</th>
-                  <th className="px-4 py-3 text-center">Inquiry Count</th>
-                  <th className="px-4 py-3 text-center">Site Visits</th>
-                  <th className="px-4 py-3 text-center">New Listings</th>
-                  <th className="px-4 py-3 text-center">Inventory Units</th>
-                  <th className="px-4 py-3 text-center">Sold Units</th>
-                  <th className="px-4 py-3 text-center">Absorption Rate</th>
-                  <th className="px-4 py-3 text-center">Days on Mkt</th>
-                  <th className="px-4 py-3 text-right">Actions</th>
+          <table className="crm-table text-xs w-full">
+            <thead>
+              <tr>
+                <th>Month</th>
+                <th className="text-center">Search Volume</th>
+                <th className="text-center">Inquiry Count</th>
+                <th className="text-center">Site Visits</th>
+                <th className="text-center">New Listings</th>
+                <th className="text-center">Inventory Units</th>
+                <th className="text-center">Sold Units</th>
+                <th className="text-center">Absorption Rate</th>
+                <th className="text-center">Days on Mkt</th>
+                <th className="text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {trends.map((t) => (
+                <tr key={t.month}>
+                  <td className="font-bold text-[#1A1A2E]">{MONTH_NAMES[t.month - 1]}</td>
+                  <td className="text-center font-semibold text-[#1A1A2E]">{t.searchVolume}</td>
+                  <td className="text-center font-semibold text-[#1A1A2E]">{t.inquiryCount}</td>
+                  <td className="text-center text-[#8A8A9E]">{t.siteVisits}</td>
+                  <td className="text-center text-[#1A1A2E]">{t.newListings || 0}</td>
+                  <td className="text-center text-[#1A1A2E]">{t.inventoryUnits || 0}</td>
+                  <td className="text-center text-[#1A1A2E]">{t.soldUnits || 0}</td>
+                  <td className="text-center">
+                    <span className={`badge px-2.5 py-0.5 text-[10px] font-bold rounded-full ${
+                      t.absorptionRate >= 20 ? "bg-emerald-100 text-emerald-800" :
+                      t.absorptionRate >= 10 ? "bg-blue-100 text-blue-800" :
+                      t.absorptionRate > 0 ? "bg-slate-100 text-slate-700" :
+                      "text-slate-400"
+                    }`}>
+                      {t.absorptionRate ? `${t.absorptionRate}%` : "0%"}
+                    </span>
+                  </td>
+                  <td className="text-center text-[#8A8A9E]">{t.medianDaysOnMkt || "—"} days</td>
+                  <td className="text-right">
+                    <button
+                      onClick={() => handleOpenEditModal(t)}
+                      className="crm-btn-ghost text-xs text-[#5B4FE0] font-bold px-2 py-1"
+                      title="Update Metrics"
+                    >
+                      <Edit2 size={13} />
+                    </button>
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-xs">
-                {trends.map((t) => (
-                  <tr key={t.month} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="px-4 py-3 font-semibold text-slate-950">{MONTH_NAMES[t.month - 1]}</td>
-                    <td className="px-4 py-3 text-center font-semibold text-slate-650">{t.searchVolume}</td>
-                    <td className="px-4 py-3 text-center font-semibold text-slate-650">{t.inquiryCount}</td>
-                    <td className="px-4 py-3 text-center text-slate-600">{t.siteVisits}</td>
-                    <td className="px-4 py-3 text-center text-slate-700">{t.newListings || 0}</td>
-                    <td className="px-4 py-3 text-center text-slate-700">{t.inventoryUnits || 0}</td>
-                    <td className="px-4 py-3 text-center text-slate-700">{t.soldUnits || 0}</td>
-                    <td className="px-4 py-3 text-center">
-                      <span className={`px-1.5 py-0.2 rounded text-[10px] font-bold ${
-                        t.absorptionRate >= 20 ? "bg-green-50 text-green-700" :
-                        t.absorptionRate >= 10 ? "bg-blue-50 text-blue-700" :
-                        t.absorptionRate > 0 ? "bg-slate-100 text-slate-600" :
-                        "text-slate-400"
-                      }`}>
-                        {t.absorptionRate ? `${t.absorptionRate}%` : "0%"}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-center text-slate-600">{t.medianDaysOnMkt || "—"} days</td>
-                    <td className="px-4 py-3 text-right">
-                      <button
-                        onClick={() => handleOpenEditModal(t)}
-                        className="p-1 text-slate-500 hover:text-blue-650 hover:bg-slate-100 rounded transition-colors cursor-pointer inline-flex"
-                        title="Update Metrics"
-                      >
-                        <Edit2 size={13} />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
 
       {/* Edit Monthly Data Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded shadow-xl border border-slate-200 w-full max-w-sm">
-            {/* Header */}
-            <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4 bg-slate-50 rounded-t">
-              <h2 className="text-sm font-bold text-slate-950 flex items-center gap-1.5">
-                <Calendar size={16} className="text-blue-650" />
-                Update Month Stats: {MONTH_NAMES[month - 1]}
+        <div className="fixed inset-0 bg-[#1A1A2E]/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+          <div className="crm-card bg-white w-full max-w-sm shadow-2xl p-6 space-y-5 animate-scale-in">
+            <div className="flex items-center justify-between pb-3 border-b border-[#F0EDFA]">
+              <h2 className="text-base font-bold text-[#1A1A2E] flex items-center gap-2">
+                <Calendar size={16} className="text-[#5B4FE0]" />
+                Update {MONTH_NAMES[month - 1]} Stats
               </h2>
-              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600 cursor-pointer">
+              <button onClick={() => setIsModalOpen(false)} className="text-[#8A8A9E] hover:text-[#1A1A2E] p-1 rounded-full hover:bg-[#F4F0FF]">
                 <X size={18} />
               </button>
             </div>
 
-            {/* Body Form */}
-            <form onSubmit={handleSave} className="p-6 space-y-4 text-xs">
+            <form onSubmit={handleSave} className="space-y-4 text-xs">
               <div className="grid grid-cols-2 gap-4">
-                <div className="flex flex-col gap-1">
-                  <label className="font-semibold text-slate-650">New Listings</label>
+                <div className="flex flex-col gap-1.5">
+                  <label className="font-bold text-[#8A8A9E] text-[10px] uppercase">New Listings</label>
                   <input
                     type="number"
                     min="0"
                     value={newListings}
                     onChange={(e) => setNewListings(e.target.value !== "" ? Number(e.target.value) : "")}
-                    className="border border-slate-250 rounded px-3 py-2 text-xs focus:ring-1 focus:ring-blue-650 focus:outline-none"
+                    className="bg-[#F9F8FD] border border-[#E8E5F5] rounded-full px-4 py-2 text-xs text-[#1A1A2E] focus:outline-none focus:border-[#5B4FE0]"
                   />
                 </div>
 
-                <div className="flex flex-col gap-1">
-                  <label className="font-semibold text-slate-650">Inventory Units</label>
+                <div className="flex flex-col gap-1.5">
+                  <label className="font-bold text-[#8A8A9E] text-[10px] uppercase">Inventory Units</label>
                   <input
                     type="number"
                     min="0"
                     value={inventoryUnits}
                     onChange={(e) => setInventoryUnits(e.target.value !== "" ? Number(e.target.value) : "")}
-                    className="border border-slate-250 rounded px-3 py-2 text-xs focus:ring-1 focus:ring-blue-650 focus:outline-none"
+                    className="bg-[#F9F8FD] border border-[#E8E5F5] rounded-full px-4 py-2 text-xs text-[#1A1A2E] focus:outline-none focus:border-[#5B4FE0]"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex flex-col gap-1">
-                  <label className="font-semibold text-slate-650">Sold Units</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={soldUnits}
-                    onChange={(e) => setSoldUnits(e.target.value !== "" ? Number(e.target.value) : "")}
-                    className="border border-slate-250 rounded px-3 py-2 text-xs focus:ring-1 focus:ring-blue-650 focus:outline-none"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <label className="font-semibold text-slate-650">Median Days on Market</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={medianDaysOnMkt}
-                    onChange={(e) => setMedianDaysOnMkt(e.target.value !== "" ? Number(e.target.value) : "")}
-                    className="border border-slate-250 rounded px-3 py-2 text-xs focus:ring-1 focus:ring-blue-650 focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              {/* Dynamic absorption rate info */}
-              <div className="bg-slate-50 border border-slate-150 p-3 rounded text-[11px] text-slate-500">
-                💡 Absorption rate is auto-calculated: 
-                <strong> {inventoryUnits && soldUnits && Number(inventoryUnits) > 0 
-                  ? ((Number(soldUnits) / Number(inventoryUnits)) * 100).toFixed(1) 
-                  : 0}%
-                </strong>.
-              </div>
-
-              {/* Actions Footer */}
-              <div className="border-t border-slate-200 pt-4 flex items-center justify-end gap-2">
+              <div className="flex justify-end gap-3 pt-4 border-t border-[#F0EDFA]">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 border border-slate-250 text-slate-600 rounded text-xs font-semibold hover:bg-slate-50 cursor-pointer"
+                  className="crm-btn-secondary px-5 py-2 text-xs"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-650 text-white rounded text-xs font-bold hover:bg-blue-750 flex items-center gap-1 cursor-pointer"
+                  className="crm-btn-primary px-5 py-2 text-xs"
                 >
-                  <Save size={13} /> Update Stats
+                  Update Stats
                 </button>
               </div>
             </form>

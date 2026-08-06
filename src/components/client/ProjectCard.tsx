@@ -1,5 +1,6 @@
 import Link from "next/link";
 import React from "react";
+import { MapPin, ShieldCheck } from "lucide-react";
 
 interface ProjectCardProps {
   project: {
@@ -21,22 +22,20 @@ interface ProjectCardProps {
 }
 
 export default function ProjectCard({ project }: ProjectCardProps) {
-  const formatPrice = (min: number, max: number) => {
-    const minText = min < 100 ? `${min}L` : `${(min / 100).toFixed(1)}Cr`;
-    const maxText = max < 100 ? `${max}L` : `${(max / 100).toFixed(1)}Cr`;
-    return `₹${minText} - ₹${maxText}`;
+  const formatPrice = (min: number) => {
+    return min < 100 ? `₹${min}L` : `₹${(min / 100).toFixed(1)}Cr`;
   };
 
   const getRiskColor = (level: string) => {
     switch (level) {
       case "LOW":
-        return "bg-green-50 text-green-700 border-green-200";
+        return "bg-success/10 text-success border-success/20";
       case "MEDIUM":
-        return "bg-amber-50 text-amber-700 border-amber-200";
+        return "bg-warning/10 text-warning border-warning/20";
       case "HIGH":
-        return "bg-red-50 text-red-700 border-red-200";
+        return "bg-danger/10 text-danger border-danger/20";
       default:
-        return "bg-gray-50 text-gray-700 border-gray-200";
+        return "bg-gray-100 text-gray-700 border-gray-200";
     }
   };
 
@@ -46,35 +45,42 @@ export default function ProjectCard({ project }: ProjectCardProps) {
     : "/placeholder-project.jpg";
 
   return (
-    <div className="bg-surface border border-luxury rounded-card shadow-sm hover:shadow-luxury transition-all duration-300 flex flex-col overflow-hidden w-80 flex-shrink-0">
+    <div className="card-premium h-full flex flex-col group overflow-hidden p-0 border-0 shadow-sm hover:shadow-card">
       {/* Project Image & Status overlay */}
-      <div className="relative h-48 bg-primary-light flex items-center justify-center text-accent/50 text-xs tracking-wider uppercase font-semibold">
+      <div className="relative aspect-video bg-primary-light flex items-center justify-center overflow-hidden">
         {imgUrl.startsWith("/") && imgUrl !== "/placeholder-project.jpg" ? (
           <img 
             src={imgUrl} 
             alt={project.name}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover img-hover-zoom"
             onError={(e) => {
               // Fallback
-              (e.target as HTMLImageElement).src = `https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=400&q=80`;
+              (e.target as HTMLImageElement).src = `https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=800&q=80`;
             }}
           />
         ) : (
           <img 
-            src={`https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=400&q=80`} 
+            src={`https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=800&q=80`} 
             alt={project.name}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover img-hover-zoom"
           />
         )}
         
         {/* Status Badge */}
-        <span className="absolute top-3 left-3 bg-primary/95 text-white text-[9px] font-bold px-2 py-0.5 rounded-tag border border-accent/20 uppercase tracking-widest">
+        <span className="absolute top-3 left-3 bg-surface/90 text-text-primary text-[10px] font-bold px-2.5 py-1 rounded-[6px] border border-gray-200 uppercase tracking-widest shadow-sm z-10">
           {project.status.replace("_", " ")}
         </span>
 
-        {/* Property Type Badge */}
-        <span className="absolute bottom-3 right-3 bg-surface/90 text-text-primary text-[10px] font-semibold px-2 py-0.5 rounded-tag border border-luxury uppercase tracking-wider">
-          {project.propertyType}
+        {/* Verification / RERA Badge */}
+        {project.riskLevel === "LOW" && (
+          <span className="absolute top-3 right-3 badge-verified flex items-center gap-1 z-10 shadow-sm">
+            <ShieldCheck size={10} /> RERA verified
+          </span>
+        )}
+
+        {/* Price Tag (badge-premium) */}
+        <span className="absolute bottom-3 right-3 badge-premium shadow-sm z-10 text-sm">
+          From {formatPrice(project.minBudgetLakhs)}
         </span>
       </div>
 
@@ -82,39 +88,38 @@ export default function ProjectCard({ project }: ProjectCardProps) {
       <div className="p-5 flex-grow flex flex-col justify-between">
         <div>
           {/* Corridor Tag */}
-          <div className="text-[10px] font-bold text-accent uppercase tracking-wider mb-1">
+          <div className="text-[10px] font-bold text-accent uppercase tracking-wider mb-2 flex items-center gap-1">
+            <MapPin size={12} className="text-accent" />
             {project.corridor}
           </div>
           
-          <h3 className="font-display text-lg font-bold text-primary mb-1 line-clamp-1">
+          <h3 className="font-display text-lg font-bold text-text-primary mb-1 line-clamp-1 group-hover:text-accent transition-colors">
             {project.name}
           </h3>
           
-          <p className="text-xs text-text-secondary mb-3">
-            by {project.developer}
+          <p className="text-xs text-text-secondary mb-4">
+            by <span className="font-semibold text-text-primary">{project.developer}</span>
           </p>
 
-          <div className="flex items-center gap-2 mb-4">
-            <span className={`text-[10px] font-semibold uppercase tracking-wider border px-2 py-0.5 rounded-tag ${getRiskColor(project.riskLevel)}`}>
+          <div className="flex flex-wrap items-center gap-2 mb-4">
+            <span className={`px-2 py-0.5 rounded-[4px] text-[9px] font-bold uppercase tracking-wider border ${getRiskColor(project.riskLevel)}`}>
               {project.riskLevel} RISK
             </span>
-            <span className="text-[10px] text-text-secondary">
-              {project.minHorizonYears}-{project.maxHorizonYears} Yrs Horizon
+            <span className="px-2 py-0.5 rounded-[4px] bg-surface-dim border border-gray-100 text-text-secondary text-[9px] font-bold uppercase tracking-wider">
+              {project.propertyType}
+            </span>
+            <span className="text-[10px] text-text-secondary font-medium ml-auto">
+              {project.minHorizonYears}-{project.maxHorizonYears} Yrs Hold
             </span>
           </div>
         </div>
 
-        <div className="border-t border-luxury pt-4 mt-2 flex items-center justify-between">
-          <div className="flex flex-col">
-            <span className="text-[10px] text-text-secondary uppercase tracking-wider">Est. Budget</span>
-            <span className="text-sm font-bold text-primary">{formatPrice(project.minBudgetLakhs, project.maxBudgetLakhs)}</span>
-          </div>
-
+        <div className="border-t border-gray-100 pt-4 mt-2">
           <Link
             href={`/projects/${project.id}`}
-            className="text-xs font-bold text-primary hover:text-accent border-b border-primary hover:border-accent pb-0.5 uppercase tracking-wider transition-all"
+            className="btn-primary w-full text-center text-xs py-2"
           >
-            Details →
+            View Details
           </Link>
         </div>
       </div>

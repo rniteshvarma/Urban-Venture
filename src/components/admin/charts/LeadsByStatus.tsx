@@ -16,27 +16,28 @@ export default function LeadsByStatus({ data }: LeadsByStatusProps) {
 
   if (!isHydrated) {
     return (
-      <div className="h-64 flex items-center justify-center text-xs text-text-secondary">
+      <div className="h-64 flex items-center justify-center text-xs text-[#8A8A9E] animate-pulse">
         Loading status breakdown...
       </div>
     );
   }
 
-  // Refined SaaS blue/slate color palette
-  const COLORS = ["#2563EB", "#3B82F6", "#60A5FA", "#93C5FD", "#94A3B8", "#CBD5E1"];
+  // LoopAI vibrant color palette matching pill badges across CRM
+  const COLORS = ["#5B4FE0", "#7C6EF5", "#3B82F6", "#10B981", "#F59E0B", "#E11D48"];
 
   return (
-    <div className="h-64 w-full">
+    <div className="h-64 w-full pt-2">
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
             data={data}
             cx="50%"
-            cy="50%"
-            innerRadius={60}
-            outerRadius={80}
-            paddingAngle={3}
+            cy="45%"
+            innerRadius={55}
+            outerRadius={75}
+            paddingAngle={4}
             dataKey="value"
+            cornerRadius={6}
           >
             {data.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -45,9 +46,11 @@ export default function LeadsByStatus({ data }: LeadsByStatusProps) {
           <Tooltip 
             contentStyle={{ 
               backgroundColor: "#FFFFFF", 
-              border: "1px solid #E2E8F0",
-              borderRadius: "6px",
-              fontFamily: "var(--font-sans)"
+              border: "none",
+              borderRadius: "14px",
+              boxShadow: "0 8px 30px rgba(0,0,0,0.08)",
+              fontFamily: "Inter",
+              padding: "10px 14px"
             }} 
           />
           <Legend 
@@ -55,7 +58,7 @@ export default function LeadsByStatus({ data }: LeadsByStatusProps) {
             height={36} 
             iconSize={8}
             iconType="circle"
-            wrapperStyle={{ fontSize: "10px", fontFamily: "var(--font-sans)" }}
+            wrapperStyle={{ fontSize: "10px", fontFamily: "Inter", color: "#8A8A9E" }}
           />
         </PieChart>
       </ResponsiveContainer>

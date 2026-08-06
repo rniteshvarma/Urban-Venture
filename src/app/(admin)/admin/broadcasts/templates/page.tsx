@@ -256,17 +256,17 @@ export default function BroadcastTemplatesPage() {
       {/* Header Panel */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <span className="text-[10px] text-blue-600 font-bold uppercase tracking-widest block">
+          <span className="text-[10px] text-accent font-bold uppercase tracking-widest block">
             Campaign Assets
           </span>
           <h1 className="font-display text-2xl sm:text-4xl font-bold text-slate-900 flex items-center gap-2">
-            <Megaphone size={28} className="text-blue-600" /> Broadcast Template Manager
+            <Megaphone size={28} className="text-accent" /> Broadcast Template Manager
           </h1>
         </div>
 
         <button
           onClick={handleOpenAdd}
-          className="flex items-center justify-center gap-1.5 px-4 py-2.5 bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-bold uppercase tracking-wider rounded transition-colors shadow-sm"
+          className="flex items-center justify-center gap-1.5 px-4 py-2.5 btn-primary text-white text-xs font-bold uppercase tracking-wider rounded transition-colors shadow-sm"
         >
           <Plus size={14} /> Create New Template
         </button>
@@ -279,7 +279,7 @@ export default function BroadcastTemplatesPage() {
             onClick={() => setActiveTab("whatsapp")}
             className={`px-4 py-2.5 text-xs font-bold uppercase tracking-wider border-b-2 -mb-[14px] transition-colors flex items-center gap-2 ${
               activeTab === "whatsapp"
-                ? "border-blue-600 text-blue-600"
+                ? "border-blue-600 text-accent"
                 : "border-transparent text-slate-500 hover:text-slate-800"
             }`}
           >
@@ -290,7 +290,7 @@ export default function BroadcastTemplatesPage() {
             onClick={() => setActiveTab("email")}
             className={`px-4 py-2.5 text-xs font-bold uppercase tracking-wider border-b-2 -mb-[14px] transition-colors flex items-center gap-2 ${
               activeTab === "email"
-                ? "border-blue-600 text-blue-600"
+                ? "border-blue-600 text-accent"
                 : "border-transparent text-slate-500 hover:text-slate-800"
             }`}
           >
@@ -304,7 +304,7 @@ export default function BroadcastTemplatesPage() {
             placeholder="Search templates by name..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-white border border-slate-200 pl-8 pr-3 py-1.5 rounded text-xs focus:outline-none focus:border-blue-600"
+            className="w-full card-premium pl-8 pr-3 py-1.5 rounded text-xs focus:outline-none focus:border-blue-600"
           />
           <Search size={12} className="absolute left-2.5 top-2.5 text-slate-400" />
         </div>
@@ -320,7 +320,7 @@ export default function BroadcastTemplatesPage() {
           filteredWa.length === 0 ? (
             <div className="bg-slate-50 border border-dashed border-slate-350 p-12 text-center rounded">
               <p className="text-xs text-slate-500 italic">No WhatsApp templates found.</p>
-              <button onClick={handleOpenAdd} className="mt-3 text-[11px] font-bold uppercase text-blue-600 hover:underline">
+              <button onClick={handleOpenAdd} className="mt-3 text-[11px] font-bold uppercase text-accent hover:underline">
                 Create one now
               </button>
             </div>
@@ -329,13 +329,13 @@ export default function BroadcastTemplatesPage() {
               {filteredWa.map((t) => (
                 <div 
                   key={t.id}
-                  className="bg-white border border-slate-200 p-5 rounded shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-4"
+                  className="card-premium p-5 rounded shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-4"
                 >
                   <div>
                     <div className="flex justify-between items-start">
                       <div>
                         <h3 className="font-bold text-sm text-slate-800">{t.name}</h3>
-                        <span className="text-[9px] text-blue-600 font-bold uppercase tracking-wider">
+                        <span className="text-[9px] text-accent font-bold uppercase tracking-wider">
                           {t.trigger}
                         </span>
                       </div>
@@ -383,7 +383,7 @@ export default function BroadcastTemplatesPage() {
           filteredEmail.length === 0 ? (
             <div className="bg-slate-50 border border-dashed border-slate-350 p-12 text-center rounded">
               <p className="text-xs text-slate-500 italic">No Email templates found.</p>
-              <button onClick={handleOpenAdd} className="mt-3 text-[11px] font-bold uppercase text-blue-600 hover:underline">
+              <button onClick={handleOpenAdd} className="mt-3 text-[11px] font-bold uppercase text-accent hover:underline">
                 Create one now
               </button>
             </div>
@@ -392,7 +392,7 @@ export default function BroadcastTemplatesPage() {
               {filteredEmail.map((t) => (
                 <div 
                   key={t.id}
-                  className="bg-white border border-slate-200 p-5 rounded shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-4"
+                  className="card-premium p-5 rounded shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-4"
                 >
                   <div className="space-y-3">
                     <div className="flex justify-between items-start">
@@ -448,7 +448,7 @@ export default function BroadcastTemplatesPage() {
       {/* Editor Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-          <div className="bg-white border border-slate-200 w-full max-w-xl rounded shadow-lg overflow-hidden animate-slide-in flex flex-col max-h-[90vh]">
+          <div className="card-premium w-full max-w-xl rounded shadow-lg overflow-hidden animate-slide-in flex flex-col max-h-[90vh]">
             <div className="px-6 py-4 border-b border-slate-150 bg-slate-50 flex items-center justify-between">
               <h2 className="font-display font-bold text-slate-800 text-sm">
                 {editingId ? "Modify Template" : "Add New Template"} ({activeTab === "whatsapp" ? "WhatsApp" : "Email"})
@@ -470,7 +470,7 @@ export default function BroadcastTemplatesPage() {
                     placeholder="e.g. Q3 Investor Match Bulletin"
                     value={formName}
                     onChange={(e) => setFormName(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 px-3.5 py-2 rounded text-xs focus:outline-none focus:border-blue-600"
+                    className="w-full input-premium px-3.5 py-2 rounded text-xs focus:outline-none focus:border-blue-600"
                     required
                   />
                 </div>
@@ -482,7 +482,7 @@ export default function BroadcastTemplatesPage() {
                       <select
                         value={formTrigger}
                         onChange={(e) => setFormTrigger(e.target.value)}
-                        className="w-full bg-slate-50 border border-slate-200 px-3.5 py-2 rounded text-xs focus:outline-none focus:border-blue-600"
+                        className="w-full input-premium px-3.5 py-2 rounded text-xs focus:outline-none focus:border-blue-600"
                       >
                         <option value="CUSTOM">CUSTOM (Manual Broadcaster Only)</option>
                         <option value="LEAD_CREATED">LEAD_CREATED</option>
@@ -503,7 +503,7 @@ export default function BroadcastTemplatesPage() {
                         value={formMessage}
                         onChange={(e) => setFormMessage(e.target.value)}
                         rows={6}
-                        className="w-full bg-slate-50 border border-slate-200 p-3.5 rounded text-xs font-mono focus:outline-none focus:border-blue-600 resize-none"
+                        className="w-full input-premium p-3.5 rounded text-xs font-mono focus:outline-none focus:border-blue-600 resize-none"
                         required
                       />
 
@@ -516,7 +516,7 @@ export default function BroadcastTemplatesPage() {
                             onClick={() => handleInsertTag(mt.tag, "wa-message")}
                             className="bg-slate-100 hover:bg-slate-250 text-slate-700 border border-slate-200/80 px-2 py-1 rounded text-[10px] font-medium transition-colors flex items-center gap-0.5"
                           >
-                            <Sparkles size={9} className="text-blue-600" /> {mt.label}
+                            <Sparkles size={9} className="text-accent" /> {mt.label}
                           </button>
                         ))}
                       </div>
@@ -536,7 +536,7 @@ export default function BroadcastTemplatesPage() {
                         placeholder="Welcome {{lead_name}} - Exclusive Bangalore Investment Opportunities"
                         value={formSubject}
                         onChange={(e) => setFormSubject(e.target.value)}
-                        className="w-full bg-slate-50 border border-slate-200 px-3.5 py-2 rounded text-xs focus:outline-none focus:border-blue-600"
+                        className="w-full input-premium px-3.5 py-2 rounded text-xs focus:outline-none focus:border-blue-600"
                         required
                       />
 
@@ -566,7 +566,7 @@ export default function BroadcastTemplatesPage() {
                         value={formBody}
                         onChange={(e) => setFormBody(e.target.value)}
                         rows={7}
-                        className="w-full bg-slate-50 border border-slate-200 p-3.5 rounded text-xs font-mono focus:outline-none focus:border-blue-600 resize-none"
+                        className="w-full input-premium p-3.5 rounded text-xs font-mono focus:outline-none focus:border-blue-600 resize-none"
                         required
                       />
 
@@ -578,7 +578,7 @@ export default function BroadcastTemplatesPage() {
                             onClick={() => handleInsertTag(mt.tag, "email-body")}
                             className="bg-slate-100 hover:bg-slate-250 text-slate-700 border border-slate-200/80 px-2 py-1 rounded text-[10px] font-medium transition-colors flex items-center gap-0.5"
                           >
-                            <Sparkles size={9} className="text-blue-600" /> {mt.label}
+                            <Sparkles size={9} className="text-accent" /> {mt.label}
                           </button>
                         ))}
                       </div>
@@ -598,7 +598,7 @@ export default function BroadcastTemplatesPage() {
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="px-4 py-2 bg-[#2563EB] hover:bg-blue-700 text-white rounded font-bold uppercase tracking-wider text-[10px] transition-colors disabled:opacity-50"
+                  className="px-4 py-2 btn-primary text-white rounded font-bold uppercase tracking-wider text-[10px] transition-colors disabled:opacity-50"
                 >
                   {isSaving ? "Saving..." : "Save Template"}
                 </button>

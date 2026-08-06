@@ -178,7 +178,7 @@ export default function LeadDetailPage({ params }: PageProps) {
         </p>
         <Link 
           href="/admin/leads"
-          className="inline-block px-4 py-2 bg-primary text-surface text-xs font-semibold rounded-tag uppercase tracking-wider"
+          className="btn-primary inline-block"
         >
           Back to Leads
         </Link>
@@ -212,7 +212,7 @@ export default function LeadDetailPage({ params }: PageProps) {
   const searchRecommendations = lead.user?.searches || [];
 
   return (
-    <div className="space-y-6 flex-grow flex flex-col">
+    <div className="space-y-6 flex-grow flex flex-col animate-fade-in">
       {/* Header Back Link */}
       <div>
         <Link 
@@ -224,20 +224,20 @@ export default function LeadDetailPage({ params }: PageProps) {
       </div>
 
       {/* Hero Banner Header */}
-      <div className="bg-surface border border-luxury p-6 rounded-card shadow-sm space-y-4">
+      <div className="card-premium space-y-4">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-[10px] text-accent font-bold uppercase tracking-widest block">
+              <span className="text-[10px] text-text-secondary font-bold uppercase tracking-widest block">
                 Lead Management Portal
               </span>
               {isStale && (
-                <span className="bg-red-50 text-red-600 border border-red-200 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider animate-pulse">
+                <span className="badge-danger animate-pulse">
                   ⚠️ STALE: {activeStageName} ({daysInStage} Days)
                 </span>
               )}
             </div>
-            <h1 className="font-display text-2xl md:text-3xl font-bold text-primary mt-1">
+            <h1 className="font-display text-2xl md:text-3xl font-bold text-text-primary mt-1">
               {lead.name}
             </h1>
           </div>
@@ -250,7 +250,7 @@ export default function LeadDetailPage({ params }: PageProps) {
               <select
                 value={lead.status}
                 onChange={(e) => handleStatusChange(e.target.value)}
-                className="bg-luxury-bg border border-luxury px-3 py-1.5 rounded-tag text-xs font-bold text-primary focus:outline-none"
+                className="input-premium py-1.5"
               >
                 <option value="NEW">NEW</option>
                 <option value="CONTACTED">CONTACTED</option>
@@ -297,24 +297,16 @@ export default function LeadDetailPage({ params }: PageProps) {
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-luxury">
+      <div className="flex border-b border-luxury gap-2 pb-2">
         <button
           onClick={() => setActiveTab("roadmap")}
-          className={`px-5 py-3 text-xs font-bold uppercase tracking-wider border-b-2 -mb-[2px] transition-colors ${
-            activeTab === "roadmap"
-              ? "border-[#0F1F3D] text-[#0F1F3D]"
-              : "border-transparent text-text-secondary hover:text-primary"
-          }`}
+          className={activeTab === "roadmap" ? "filter-pill-active" : "filter-pill"}
         >
           🛣️ Closure Roadmap
         </button>
         <button
           onClick={() => setActiveTab("profile")}
-          className={`px-5 py-3 text-xs font-bold uppercase tracking-wider border-b-2 -mb-[2px] transition-colors ${
-            activeTab === "profile"
-              ? "border-[#0F1F3D] text-[#0F1F3D]"
-              : "border-transparent text-text-secondary hover:text-primary"
-          }`}
+          className={activeTab === "profile" ? "filter-pill-active" : "filter-pill"}
         >
           📋 Client Profile & AI History
         </button>
@@ -330,16 +322,16 @@ export default function LeadDetailPage({ params }: PageProps) {
                 onRefresh={loadData} 
               />
             ) : (
-              <div className="bg-surface border border-luxury p-12 text-center rounded-card shadow-sm space-y-4">
+              <div className="card-premium p-12 text-center shadow-sm space-y-4">
                 <span className="text-4xl block">🛣️</span>
-                <h3 className="font-display text-lg font-bold text-primary">Closure Roadmap Uninitialized</h3>
+                <h3 className="font-display text-lg font-bold text-text-primary">Closure Roadmap Uninitialized</h3>
                 <p className="text-xs text-text-secondary max-w-md mx-auto leading-relaxed">
                   A visual stage-by-stage pipeline roadmap hasn't been set up for this client. Initialize it to seed default verification checkmarks, log timeline dates, and track closure progress.
                 </p>
                 <button
                   onClick={handleInitializeRoadmap}
                   disabled={isInitializingRoadmap}
-                  className="px-5 py-2.5 bg-primary hover:bg-blue-700 text-surface text-xs font-semibold uppercase tracking-wider rounded-tag transition-colors disabled:opacity-50"
+                  className="btn-primary disabled:opacity-50"
                 >
                   {isInitializingRoadmap ? "Initializing..." : "Initialize Closure Roadmap"}
                 </button>
@@ -351,8 +343,8 @@ export default function LeadDetailPage({ params }: PageProps) {
             {/* Left/Middle Column - Profile & AI Search Logs */}
             <div className="lg:col-span-2 space-y-6">
               {/* Profile Card */}
-              <div className="bg-surface border border-luxury p-6 rounded-card shadow-sm space-y-4">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-primary border-b border-luxury pb-2">
+              <div className="card-premium space-y-4">
+                <h3 className="section-header">
                   Client Profile Details
                 </h3>
                 
@@ -373,8 +365,8 @@ export default function LeadDetailPage({ params }: PageProps) {
               </div>
 
               {/* Auto Matched Projects */}
-              <div className="bg-surface border border-luxury p-6 rounded-card shadow-sm space-y-4">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-primary border-b border-luxury pb-2">
+              <div className="card-premium space-y-4">
+                <h3 className="section-header">
                   Auto-Matched Portfolio Projects ({matchedProjects.length})
                 </h3>
                 {isLoadingMatches ? (
@@ -407,8 +399,8 @@ export default function LeadDetailPage({ params }: PageProps) {
               </div>
 
               {/* AI Recommendations Logs */}
-              <div className="bg-surface border border-luxury p-6 rounded-card shadow-sm space-y-4">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-primary border-b border-luxury pb-2">
+              <div className="card-premium space-y-4">
+                <h3 className="section-header">
                   AI Recommendation Logs ({searchRecommendations.length})
                 </h3>
                 {searchRecommendations.length === 0 ? (
@@ -445,9 +437,9 @@ export default function LeadDetailPage({ params }: PageProps) {
 
             {/* Right Column - Notes and Activity Log */}
             <div className="space-y-6">
-              <div className="bg-surface border border-luxury p-6 rounded-card shadow-sm flex flex-col h-full justify-between">
+              <div className="card-premium flex flex-col h-full justify-between">
                 <div className="space-y-4">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-primary border-b border-luxury pb-2">
+                  <h3 className="section-header">
                     CRM Activity Timeline / Notes
                   </h3>
                   
@@ -469,13 +461,13 @@ export default function LeadDetailPage({ params }: PageProps) {
                     value={newNoteText}
                     onChange={(e) => setNewNoteText(e.target.value)}
                     rows={4}
-                    className="w-full bg-surface border border-luxury p-3 rounded-input text-xs text-text-primary focus:outline-none focus:border-accent resize-none"
+                    className="input-premium w-full resize-none"
                     required
                   />
                   <button
                     type="submit"
                     disabled={isSavingNote || !newNoteText.trim()}
-                    className="w-full py-2 bg-primary hover:bg-blue-700 text-surface text-xs font-bold uppercase tracking-wider rounded-tag transition-colors disabled:opacity-50"
+                    className="btn-primary w-full disabled:opacity-50"
                   >
                     {isSavingNote ? "Saving Note..." : "Add Update Note"}
                   </button>

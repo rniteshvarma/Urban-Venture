@@ -158,7 +158,7 @@ export default function ProjectForm({ initialData, isEdit = false }: ProjectForm
   return (
     <form 
       onSubmit={handleSubmit} 
-      className="bg-surface border border-luxury p-6 sm:p-8 rounded-card shadow-sm space-y-6 max-w-3xl w-full text-xs text-text-primary"
+      className="card-premium p-6 sm:p-8 space-y-6 max-w-3xl w-full text-xs text-text-primary"
     >
       <div className="border-b border-luxury pb-3">
         <h2 className="font-display text-lg font-bold text-primary">
@@ -177,7 +177,7 @@ export default function ProjectForm({ initialData, isEdit = false }: ProjectForm
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full bg-luxury-bg border border-luxury px-3 py-2 rounded-input text-xs text-text-primary focus:outline-none focus:border-accent"
+            className="input-premium w-full text-xs"
             placeholder="e.g. Prestige HighLine"
           />
         </div>
@@ -192,7 +192,7 @@ export default function ProjectForm({ initialData, isEdit = false }: ProjectForm
             required
             value={developer}
             onChange={(e) => setDeveloper(e.target.value)}
-            className="w-full bg-luxury-bg border border-luxury px-3 py-2 rounded-input text-xs text-text-primary focus:outline-none focus:border-accent"
+            className="input-premium w-full text-xs"
             placeholder="e.g. Prestige Group"
           />
         </div>
@@ -207,7 +207,7 @@ export default function ProjectForm({ initialData, isEdit = false }: ProjectForm
           <select
             value={corridor}
             onChange={(e) => setCorridor(e.target.value)}
-            className="w-full bg-luxury-bg border border-luxury px-3 py-2 rounded-input text-xs text-text-primary focus:outline-none"
+            className="input-premium w-full text-xs"
           >
             {corridors.map((c) => (
               <option key={c} value={c}>
@@ -227,7 +227,7 @@ export default function ProjectForm({ initialData, isEdit = false }: ProjectForm
             required
             value={city}
             onChange={(e) => setCity(e.target.value)}
-            className="w-full bg-luxury-bg border border-luxury px-3 py-2 rounded-input text-xs text-text-primary focus:outline-none focus:border-accent"
+            className="input-premium w-full text-xs"
           />
         </div>
 
@@ -239,7 +239,7 @@ export default function ProjectForm({ initialData, isEdit = false }: ProjectForm
           <select
             value={propertyType}
             onChange={(e) => setPropertyType(e.target.value)}
-            className="w-full bg-luxury-bg border border-luxury px-3 py-2 rounded-input text-xs text-text-primary focus:outline-none"
+            className="input-premium w-full text-xs"
           >
             <option value="Plots">Plots</option>
             <option value="Residential">Residential</option>
@@ -260,7 +260,7 @@ export default function ProjectForm({ initialData, isEdit = false }: ProjectForm
             required
             value={minBudget}
             onChange={(e) => setMinBudget(Number(e.target.value))}
-            className="w-full bg-luxury-bg border border-luxury px-3 py-2 rounded-input text-xs text-text-primary focus:outline-none focus:border-accent"
+            className="input-premium w-full text-xs"
           />
         </div>
 
@@ -274,7 +274,7 @@ export default function ProjectForm({ initialData, isEdit = false }: ProjectForm
             required
             value={maxBudget}
             onChange={(e) => setMaxBudget(Number(e.target.value))}
-            className="w-full bg-luxury-bg border border-luxury px-3 py-2 rounded-input text-xs text-text-primary focus:outline-none focus:border-accent"
+            className="input-premium w-full text-xs"
           />
         </div>
 
@@ -288,7 +288,7 @@ export default function ProjectForm({ initialData, isEdit = false }: ProjectForm
             required
             value={minHorizon}
             onChange={(e) => setMinHorizon(Number(e.target.value))}
-            className="w-full bg-luxury-bg border border-luxury px-3 py-2 rounded-input text-xs text-text-primary focus:outline-none focus:border-accent"
+            className="input-premium w-full text-xs"
           />
         </div>
 
@@ -302,7 +302,7 @@ export default function ProjectForm({ initialData, isEdit = false }: ProjectForm
             required
             value={maxHorizon}
             onChange={(e) => setMaxHorizon(Number(e.target.value))}
-            className="w-full bg-luxury-bg border border-luxury px-3 py-2 rounded-input text-xs text-text-primary focus:outline-none focus:border-accent"
+            className="input-premium w-full text-xs"
           />
         </div>
       </div>
@@ -316,7 +316,7 @@ export default function ProjectForm({ initialData, isEdit = false }: ProjectForm
           <select
             value={riskLevel}
             onChange={(e) => setRiskLevel(e.target.value as any)}
-            className="w-full bg-luxury-bg border border-luxury px-3 py-2 rounded-input text-xs text-text-primary focus:outline-none"
+            className="input-premium w-full text-xs"
           >
             <option value="LOW">LOW Risk</option>
             <option value="MEDIUM">MEDIUM Risk</option>
@@ -332,7 +332,7 @@ export default function ProjectForm({ initialData, isEdit = false }: ProjectForm
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value)}
-            className="w-full bg-luxury-bg border border-luxury px-3 py-2 rounded-input text-xs text-text-primary focus:outline-none"
+            className="input-premium w-full text-xs"
           >
             <option value="ACTIVE">ACTIVE</option>
             <option value="SOLD_OUT">SOLD OUT</option>
@@ -352,7 +352,7 @@ export default function ProjectForm({ initialData, isEdit = false }: ProjectForm
             type="text"
             value={infraText}
             onChange={(e) => setInfraText(e.target.value)}
-            className="w-full bg-luxury-bg border border-luxury px-3 py-2 rounded-input text-xs text-text-primary focus:outline-none focus:border-accent"
+            className="input-premium w-full text-xs"
             placeholder="e.g. Regional Ring Road, MMTS Extension, Metro Line 2"
           />
         </div>
@@ -365,7 +365,7 @@ export default function ProjectForm({ initialData, isEdit = false }: ProjectForm
             type="text"
             value={exitText}
             onChange={(e) => setExitText(e.target.value)}
-            className="w-full bg-luxury-bg border border-luxury px-3 py-2 rounded-input text-xs text-text-primary focus:outline-none focus:border-accent"
+            className="input-premium w-full text-xs"
             placeholder="e.g. Corporate Lease, NRI Resale, Plot Subdivision"
           />
         </div>
@@ -378,7 +378,7 @@ export default function ProjectForm({ initialData, isEdit = false }: ProjectForm
             type="text"
             value={comparablesText}
             onChange={(e) => setComparablesText(e.target.value)}
-            className="w-full bg-luxury-bg border border-luxury px-3 py-2 rounded-input text-xs text-text-primary focus:outline-none focus:border-accent"
+            className="input-premium w-full text-xs"
             placeholder="e.g. My Home Avatar, Rajapushpa Summit"
           />
         </div>
@@ -394,7 +394,7 @@ export default function ProjectForm({ initialData, isEdit = false }: ProjectForm
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           rows={4}
-          className="w-full bg-luxury-bg border border-luxury p-3 rounded-input text-xs text-text-primary focus:outline-none focus:border-accent resize-y"
+          className="input-premium w-full text-xs resize-y"
           placeholder="Enter project specifications, plot size options, distances to airport or SEZs..."
         />
       </div>

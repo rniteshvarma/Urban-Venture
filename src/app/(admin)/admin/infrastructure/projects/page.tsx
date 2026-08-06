@@ -13,7 +13,8 @@ import {
   ExternalLink,
   Loader2,
   Sliders,
-  MapPin
+  MapPin,
+  ChevronRight
 } from "lucide-react";
 
 const CATEGORIES = [
@@ -30,14 +31,14 @@ const CATEGORIES = [
 ];
 
 const STATUSES = [
-  { value: "ANNOUNCED", label: "Announced", color: "bg-slate-100 text-slate-700 border-slate-200" },
-  { value: "APPROVED", label: "Approved", color: "bg-blue-100 text-blue-700 border-blue-200" },
-  { value: "LAND_ACQUISITION", label: "Land Acquisition", color: "bg-amber-100 text-amber-700 border-amber-200" },
-  { value: "UNDER_CONSTRUCTION", label: "Under Construction", color: "bg-orange-100 text-orange-700 border-orange-200 animate-pulse" },
-  { value: "PARTIALLY_COMPLETE", label: "Partially Complete", color: "bg-teal-100 text-teal-700 border-teal-200" },
-  { value: "COMPLETE", label: "Complete", color: "bg-green-100 text-green-700 border-green-200" },
-  { value: "DELAYED", label: "Delayed", color: "bg-red-100 text-red-700 border-red-200" },
-  { value: "CANCELLED", label: "Cancelled", color: "bg-slate-200 text-slate-500 border-slate-300 line-through" },
+  { value: "ANNOUNCED", label: "Announced", color: "bg-slate-100 text-slate-700" },
+  { value: "APPROVED", label: "Approved", color: "bg-blue-100 text-blue-800" },
+  { value: "LAND_ACQUISITION", label: "Land Acquisition", color: "bg-amber-100 text-amber-800" },
+  { value: "UNDER_CONSTRUCTION", label: "Under Construction", color: "bg-amber-100 text-amber-800" },
+  { value: "PARTIALLY_COMPLETE", label: "Partially Complete", color: "bg-purple-100 text-purple-800" },
+  { value: "COMPLETE", label: "Complete", color: "bg-emerald-100 text-emerald-800" },
+  { value: "DELAYED", label: "Delayed", color: "bg-rose-100 text-rose-800" },
+  { value: "CANCELLED", label: "Cancelled", color: "bg-slate-100 text-slate-500 line-through" },
 ];
 
 const TAGS_OPTIONS = ["HMDA", "NHAI", "Bharatmala", "TSIIC", "GoT", "RERA"];
@@ -217,12 +218,10 @@ export default function InfrastructureProjectsPage() {
         const savedProject = await res.json();
         const projectObj = savedProject.project || savedProject;
 
-        // If edit mode, clear current milestones in DB first if any changes made, then save
         if (editingProject) {
           await fetch(`/api/admin/infra-projects/${editingProject.id}/milestones`, { method: "DELETE" });
         }
 
-        // Save milestones sequentially
         for (const ms of milestones) {
           await fetch(`/api/admin/infra-projects/${projectObj.id}/milestones`, {
             method: "POST",
@@ -261,7 +260,6 @@ export default function InfrastructureProjectsPage() {
     }
   };
 
-  // Milestone actions
   const handleAddMilestone = () => {
     if (!newMilestoneTitle) return;
     const newMs = {
@@ -281,7 +279,6 @@ export default function InfrastructureProjectsPage() {
     setMilestones(milestones.filter((_, i) => i !== index));
   };
 
-  // Helper labels for RE impact score
   const getImpactLabel = (score: number) => {
     if (score <= 3) return "Minor (1-3)";
     if (score <= 6) return "Moderate (4-6)";
@@ -290,32 +287,33 @@ export default function InfrastructureProjectsPage() {
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6 text-slate-800">
+    <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8 flex-grow flex flex-col animate-fade-in text-[#1A1A2E] w-full">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-slate-200 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-[#F0EDFA]">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
-            <Hammer className="text-blue-650" size={20} />
+          <span className="text-[11px] text-[#5B4FE0] font-bold uppercase tracking-widest block mb-1">
+            Market Intelligence
+          </span>
+          <h1 className="font-display text-2xl sm:text-3xl font-bold text-[#1A1A2E]">
             Infrastructure Projects
           </h1>
-          <p className="text-xs text-slate-500 mt-1">Manage public government projects, corridors impacted, and real estate tailwinds.</p>
         </div>
         <button
           onClick={handleOpenAddModal}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-650 hover:bg-blue-750 text-white rounded text-xs font-bold transition-all shadow-sm shadow-blue-500/10 cursor-pointer"
+          className="crm-btn-primary text-xs"
         >
           <Plus size={14} /> Add Infra Project
         </button>
       </div>
 
       {/* Filters */}
-      <div className="bg-slate-50 border border-slate-200 rounded p-4 flex flex-wrap gap-4 items-center">
+      <div className="crm-card p-6 flex flex-wrap gap-4 items-center">
         <div className="flex flex-col gap-1 w-full sm:w-auto">
-          <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Category</label>
+          <label className="text-[10px] font-bold uppercase tracking-wider text-[#8A8A9E]">Category</label>
           <select
             value={filterCategory}
             onChange={(e) => setFilterCategory(e.target.value)}
-            className="border border-slate-200 rounded px-2.5 py-1.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-650"
+            className="bg-[#F9F8FD] border border-[#E8E5F5] rounded-full px-4 py-2 text-xs text-[#1A1A2E] focus:outline-none focus:border-[#5B4FE0]"
           >
             <option value="ALL">All Categories</option>
             {CATEGORIES.map(c => (
@@ -325,11 +323,11 @@ export default function InfrastructureProjectsPage() {
         </div>
 
         <div className="flex flex-col gap-1 w-full sm:w-auto">
-          <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Status</label>
+          <label className="text-[10px] font-bold uppercase tracking-wider text-[#8A8A9E]">Status</label>
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="border border-slate-200 rounded px-2.5 py-1.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-650"
+            className="bg-[#F9F8FD] border border-[#E8E5F5] rounded-full px-4 py-2 text-xs text-[#1A1A2E] focus:outline-none focus:border-[#5B4FE0]"
           >
             <option value="ALL">All Statuses</option>
             {STATUSES.map(s => (
@@ -339,11 +337,11 @@ export default function InfrastructureProjectsPage() {
         </div>
 
         <div className="flex flex-col gap-1 w-full sm:w-auto">
-          <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Corridor Affected</label>
+          <label className="text-[10px] font-bold uppercase tracking-wider text-[#8A8A9E]">Corridor Affected</label>
           <select
             value={filterCorridor}
             onChange={(e) => setFilterCorridor(e.target.value)}
-            className="border border-slate-200 rounded px-2.5 py-1.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-650"
+            className="bg-[#F9F8FD] border border-[#E8E5F5] rounded-full px-4 py-2 text-xs text-[#1A1A2E] focus:outline-none focus:border-[#5B4FE0]"
           >
             <option value="ALL">All Corridors</option>
             {corridorList.map(c => (
@@ -355,147 +353,144 @@ export default function InfrastructureProjectsPage() {
 
       {/* Table */}
       {loading ? (
-        <div className="flex items-center justify-center py-20 bg-white border border-slate-200 rounded">
-          <Loader2 className="animate-spin text-blue-650" size={30} />
+        <div className="flex items-center justify-center py-20 bg-white rounded-2xl animate-pulse">
+          <Loader2 className="animate-spin text-[#5B4FE0]" size={30} />
         </div>
       ) : projects.length === 0 ? (
-        <div className="bg-white border border-slate-200 rounded py-12 px-4 text-center">
-          <p className="text-slate-500 text-xs font-semibold">No infrastructure projects found matching the filters.</p>
+        <div className="crm-card py-16 px-4 text-center">
+          <p className="text-[#8A8A9E] text-xs font-semibold">No infrastructure projects found matching the filters.</p>
         </div>
       ) : (
-        <div className="bg-white border border-slate-200 rounded overflow-hidden shadow-sm">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                  <th className="px-4 py-3">Name</th>
-                  <th className="px-4 py-3">Category</th>
-                  <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3">Affected Corridors</th>
-                  <th className="px-4 py-3 text-center">Impact Score</th>
-                  <th className="px-4 py-3 text-center">Published</th>
-                  <th className="px-4 py-3 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-xs">
-                {projects.map((proj) => {
-                  const catInfo = CATEGORIES.find(c => c.value === proj.category);
-                  const statInfo = STATUSES.find(s => s.value === proj.status);
+        <div className="crm-card p-0 overflow-hidden flex-grow">
+          <table className="crm-table text-xs w-full">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Status</th>
+                <th>Affected Corridors</th>
+                <th className="text-center">Impact Score</th>
+                <th className="text-center">Published</th>
+                <th className="text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {projects.map((proj) => {
+                const catInfo = CATEGORIES.find(c => c.value === proj.category);
+                const statInfo = STATUSES.find(s => s.value === proj.status);
 
-                  return (
-                    <tr key={proj.id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-4 py-3.5">
-                        <div className="font-semibold text-slate-900">{proj.name}</div>
-                        <div className="text-[10px] text-slate-400 mt-0.5">{proj.shortName}</div>
-                      </td>
-                      <td className="px-4 py-3.5">
-                        <span className="flex items-center gap-1">
-                          <span>{catInfo?.icon}</span>
-                          <span>{catInfo?.label}</span>
-                        </span>
-                      </td>
-                      <td className="px-4 py-3.5">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase border ${statInfo?.color || "bg-slate-100 text-slate-700"}`}>
-                          {statInfo?.label}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3.5">
-                        <div className="flex flex-wrap gap-1">
-                          {proj.affectedCorridors.map((c: string) => (
-                            <span key={c} className="px-1.5 py-0.2 bg-slate-100 text-slate-600 rounded text-[9px] font-semibold">
-                              {c}
-                            </span>
-                          ))}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3.5 text-center">
-                        <span className={`font-bold px-2 py-0.5 rounded ${proj.reImpactScore >= 8 ? "bg-amber-50 text-amber-700 border border-amber-200" : "bg-slate-100 text-slate-600"}`}>
-                          {proj.reImpactScore}/10
-                        </span>
-                      </td>
-                      <td className="px-4 py-3.5 text-center">
-                        <span className={`inline-flex items-center justify-center p-0.5 rounded-full ${proj.isPublished ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-400"}`}>
-                          {proj.isPublished ? <Check size={12} /> : <X size={12} />}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3.5 text-right space-x-1.5">
+                return (
+                  <tr key={proj.id}>
+                    <td className="font-bold text-[#1A1A2E]">
+                      <div className="font-bold text-[#1A1A2E] text-sm">{proj.name}</div>
+                      <div className="text-[10px] text-[#8A8A9E] font-normal mt-0.5">{proj.shortName}</div>
+                    </td>
+                    <td className="text-[#1A1A2E]">
+                      <span className="flex items-center gap-1.5 font-medium">
+                        <span>{catInfo?.icon}</span>
+                        <span>{catInfo?.label}</span>
+                      </span>
+                    </td>
+                    <td>
+                      <span className={`badge px-3 py-1 text-[10px] font-bold rounded-full ${statInfo?.color || "bg-slate-100 text-slate-700"}`}>
+                        {statInfo?.label}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="flex flex-wrap gap-1">
+                        {proj.affectedCorridors.map((c: string) => (
+                          <span key={c} className="badge bg-[#F4F0FF] text-[#5B4FE0] text-[10px] font-semibold">
+                            {c}
+                          </span>
+                        ))}
+                      </div>
+                    </td>
+                    <td className="text-center">
+                      <span className={`font-bold px-2.5 py-0.5 rounded-full text-xs ${proj.reImpactScore >= 8 ? "bg-amber-100 text-amber-800" : "bg-slate-100 text-slate-700"}`}>
+                        {proj.reImpactScore}/10
+                      </span>
+                    </td>
+                    <td className="text-center">
+                      <span className={`inline-flex items-center justify-center p-1 rounded-full ${proj.isPublished ? "bg-emerald-100 text-emerald-800" : "bg-slate-100 text-slate-400"}`}>
+                        {proj.isPublished ? <Check size={12} /> : <X size={12} />}
+                      </span>
+                    </td>
+                    <td className="text-right">
+                      <div className="flex justify-end items-center gap-2">
                         <button
                           onClick={() => handleOpenEditModal(proj)}
-                          className="p-1.5 text-slate-500 hover:text-blue-650 hover:bg-slate-100 rounded transition-colors cursor-pointer inline-flex"
+                          className="crm-btn-ghost text-xs text-[#5B4FE0] font-bold px-2.5 py-1"
                           title="Edit"
                         >
                           <Edit2 size={13} />
                         </button>
                         <button
                           onClick={() => handleDelete(proj.id)}
-                          className="p-1.5 text-slate-500 hover:text-red-650 hover:bg-red-50 rounded transition-colors cursor-pointer inline-flex"
+                          className="crm-btn-ghost text-xs text-rose-600 font-bold px-2.5 py-1"
                           title="Delete"
                         >
                           <Trash2 size={13} />
                         </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       )}
 
       {/* Modal Dialog Form */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded shadow-xl border border-slate-200 w-full max-w-4xl max-h-[90vh] flex flex-col">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4 bg-slate-50 rounded-t">
-              <h2 className="text-sm font-bold text-slate-950 flex items-center gap-1.5">
-                <Hammer size={16} className="text-blue-650" />
+        <div className="fixed inset-0 bg-[#1A1A2E]/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+          <div className="crm-card bg-white w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl p-6">
+            <div className="flex items-center justify-between pb-3 border-b border-[#F0EDFA]">
+              <h2 className="text-base font-bold text-[#1A1A2E] flex items-center gap-2">
+                <Hammer size={16} className="text-[#5B4FE0]" />
                 {editingProject ? "Edit Infrastructure Project" : "Add Infrastructure Project"}
               </h2>
-              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600 cursor-pointer">
+              <button onClick={() => setIsModalOpen(false)} className="text-[#8A8A9E] hover:text-[#1A1A2E] p-1 rounded-full hover:bg-[#F4F0FF]">
                 <X size={18} />
               </button>
             </div>
 
-            {/* Modal Body */}
-            <form onSubmit={handleSave} className="flex-1 overflow-y-auto p-6 space-y-6 text-xs">
-              {/* Core Information */}
+            <form onSubmit={handleSave} className="flex-1 overflow-y-auto pt-4 space-y-6 text-xs pr-2">
               <div className="space-y-4">
-                <h3 className="text-xs font-bold text-slate-900 border-b border-slate-100 pb-1 uppercase tracking-wider">Project details</h3>
+                <h3 className="text-xs font-bold text-[#1A1A2E] uppercase tracking-wider">Project Details</h3>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex flex-col gap-1">
-                    <label className="font-semibold text-slate-650">Project Name (full) *</label>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="font-bold text-[#8A8A9E] text-[10px] uppercase">Project Name (Full) *</label>
                     <input
                       type="text"
                       required
                       placeholder="Regional Ring Road - Northern Corridor"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="border border-slate-250 rounded px-3 py-2 text-xs focus:ring-1 focus:ring-blue-650 focus:outline-none"
+                      className="bg-[#F9F8FD] border border-[#E8E5F5] rounded-full px-4 py-2 text-xs text-[#1A1A2E] focus:outline-none focus:border-[#5B4FE0]"
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-2">
-                    <div className="flex flex-col gap-1">
-                      <label className="font-semibold text-slate-650">Short Name *</label>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="font-bold text-[#8A8A9E] text-[10px] uppercase">Short Name *</label>
                       <input
                         type="text"
                         required
                         placeholder="RRR North"
                         value={shortName}
                         onChange={(e) => setShortName(e.target.value)}
-                        className="border border-slate-250 rounded px-3 py-2 text-xs focus:ring-1 focus:ring-blue-650 focus:outline-none"
+                        className="bg-[#F9F8FD] border border-[#E8E5F5] rounded-full px-4 py-2 text-xs text-[#1A1A2E] focus:outline-none focus:border-[#5B4FE0]"
                       />
                     </div>
 
-                    <div className="flex flex-col gap-1">
-                      <label className="font-semibold text-slate-650">Category *</label>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="font-bold text-[#8A8A9E] text-[10px] uppercase">Category *</label>
                       <select
                         value={category}
                         onChange={(e) => setCategory(e.target.value)}
-                        className="border border-slate-250 rounded px-3 py-2 text-xs focus:ring-1 focus:ring-blue-650 focus:outline-none bg-white"
+                        className="bg-[#F9F8FD] border border-[#E8E5F5] rounded-full px-4 py-2 text-xs text-[#1A1A2E] focus:outline-none focus:border-[#5B4FE0]"
                       >
                         {CATEGORIES.map(c => (
                           <option key={c.value} value={c.value}>{c.icon} {c.label}</option>
@@ -506,23 +501,23 @@ export default function InfrastructureProjectsPage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="flex flex-col gap-1">
-                    <label className="font-semibold text-slate-650">Sub-category</label>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="font-bold text-[#8A8A9E] text-[10px] uppercase">Sub-category</label>
                     <input
                       type="text"
                       placeholder="Expressway / Metro / SEZ"
                       value={subCategory}
                       onChange={(e) => setSubCategory(e.target.value)}
-                      className="border border-slate-250 rounded px-3 py-2 text-xs focus:ring-1 focus:ring-blue-650 focus:outline-none"
+                      className="bg-[#F9F8FD] border border-[#E8E5F5] rounded-full px-4 py-2 text-xs text-[#1A1A2E] focus:outline-none focus:border-[#5B4FE0]"
                     />
                   </div>
 
-                  <div className="flex flex-col gap-1">
-                    <label className="font-semibold text-slate-650">Status *</label>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="font-bold text-[#8A8A9E] text-[10px] uppercase">Status *</label>
                     <select
                       value={status}
                       onChange={(e) => setStatus(e.target.value)}
-                      className="border border-slate-250 rounded px-3 py-2 text-xs focus:ring-1 focus:ring-blue-650 focus:outline-none bg-white"
+                      className="bg-[#F9F8FD] border border-[#E8E5F5] rounded-full px-4 py-2 text-xs text-[#1A1A2E] focus:outline-none focus:border-[#5B4FE0]"
                     >
                       {STATUSES.map(s => (
                         <option key={s.value} value={s.value}>{s.label}</option>
@@ -530,343 +525,45 @@ export default function InfrastructureProjectsPage() {
                     </select>
                   </div>
 
-                  <div className="flex flex-col gap-1">
-                    <label className="font-semibold text-slate-650">Completion: {completionPct}%</label>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="font-bold text-[#8A8A9E] text-[10px] uppercase">Completion: {completionPct}%</label>
                     <input
                       type="range"
                       min="0"
                       max="100"
                       value={completionPct}
                       onChange={(e) => setCompletionPct(Number(e.target.value))}
-                      className="h-8 accent-blue-650"
+                      className="h-8 accent-[#5B4FE0]"
                     />
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-1">
-                  <label className="font-semibold text-slate-650">Project Description *</label>
+                <div className="flex flex-col gap-1.5">
+                  <label className="font-bold text-[#8A8A9E] text-[10px] uppercase">Project Description *</label>
                   <textarea
                     required
                     rows={3}
                     placeholder="Provide a detailed description of the project..."
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    className="border border-slate-250 rounded px-3 py-2 text-xs focus:ring-1 focus:ring-blue-650 focus:outline-none"
+                    className="bg-[#F9F8FD] border border-[#E8E5F5] rounded-2xl p-4 text-xs text-[#1A1A2E] focus:outline-none focus:border-[#5B4FE0] resize-none"
                   />
                 </div>
               </div>
 
-              {/* Financials, Demographics, & Impact */}
-              <div className="space-y-4">
-                <h3 className="text-xs font-bold text-slate-900 border-b border-slate-100 pb-1 uppercase tracking-wider">Metrics & Impact</h3>
-                
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div className="flex flex-col gap-1">
-                    <label className="font-semibold text-slate-650">Total Investment (₹ Crores)</label>
-                    <input
-                      type="number"
-                      placeholder="e.g. 15600"
-                      value={totalInvestmentCr}
-                      onChange={(e) => setTotalInvestmentCr(e.target.value ? Number(e.target.value) : "")}
-                      className="border border-slate-250 rounded px-3 py-2 text-xs focus:ring-1 focus:ring-blue-650 focus:outline-none"
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-1">
-                    <label className="font-semibold text-slate-650">Expected Jobs Created</label>
-                    <input
-                      type="number"
-                      placeholder="e.g. 50000"
-                      value={expectedJobs}
-                      onChange={(e) => setExpectedJobs(e.target.value ? Number(e.target.value) : "")}
-                      className="border border-slate-250 rounded px-3 py-2 text-xs focus:ring-1 focus:ring-blue-650 focus:outline-none"
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-1">
-                    <label className="font-semibold text-slate-650">Estimated Completion (text)</label>
-                    <input
-                      type="text"
-                      placeholder="Q3 2027"
-                      value={estimatedCompletion}
-                      onChange={(e) => setEstimatedCompletion(e.target.value)}
-                      className="border border-slate-250 rounded px-3 py-2 text-xs focus:ring-1 focus:ring-blue-650 focus:outline-none"
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-1">
-                    <label className="font-semibold text-slate-650">Impact Radius: {impactRadius} km</label>
-                    <input
-                      type="range"
-                      min="1"
-                      max="50"
-                      value={impactRadius}
-                      onChange={(e) => setImpactRadius(Number(e.target.value))}
-                      className="h-8 accent-blue-650"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="flex flex-col gap-1">
-                    <label className="font-semibold text-slate-650">Real Estate Impact Score: {getImpactLabel(reImpactScore)}</label>
-                    <input
-                      type="range"
-                      min="1"
-                      max="10"
-                      value={reImpactScore}
-                      onChange={(e) => setReImpactScore(Number(e.target.value))}
-                      className="h-8 accent-blue-650"
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-1">
-                    <label className="font-semibold text-slate-650">Coordinates (Latitude, Longitude)</label>
-                    <div className="grid grid-cols-2 gap-2">
-                      <input
-                        type="number"
-                        step="any"
-                        placeholder="Lat e.g. 17.06"
-                        value={latitude}
-                        onChange={(e) => setLatitude(e.target.value ? Number(e.target.value) : "")}
-                        className="border border-slate-250 rounded px-3 py-2 text-xs focus:ring-1 focus:ring-blue-650 focus:outline-none"
-                      />
-                      <input
-                        type="number"
-                        step="any"
-                        placeholder="Long e.g. 78.20"
-                        value={longitude}
-                        onChange={(e) => setLongitude(e.target.value ? Number(e.target.value) : "")}
-                        className="border border-slate-250 rounded px-3 py-2 text-xs focus:ring-1 focus:ring-blue-650 focus:outline-none"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col gap-1">
-                    <label className="font-semibold text-slate-650">Affected Corridors (Multi-select)</label>
-                    <div className="border border-slate-250 rounded p-2 max-h-[85px] overflow-y-auto space-y-1 bg-white">
-                      {corridorList.map(c => {
-                        const checked = affectedCorridors.includes(c.corridor);
-                        return (
-                          <label key={c.id} className="flex items-center gap-1.5 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={checked}
-                              onChange={() => {
-                                if (checked) {
-                                  setAffectedCorridors(affectedCorridors.filter(x => x !== c.corridor));
-                                } else {
-                                  setAffectedCorridors([...affectedCorridors, c.corridor]);
-                                }
-                              }}
-                              className="accent-blue-650 rounded"
-                            />
-                            <span className="text-xs text-slate-700">{c.shortName || c.name}</span>
-                          </label>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Authorities and References */}
-              <div className="space-y-4">
-                <h3 className="text-xs font-bold text-slate-900 border-b border-slate-100 pb-1 uppercase tracking-wider">Zoning & references</h3>
-                
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="flex flex-col gap-1">
-                    <label className="font-semibold text-slate-650">Approval Authority</label>
-                    <input
-                      type="text"
-                      placeholder="HMDA / NHAI / DTCP"
-                      value={approvalAuthority}
-                      onChange={(e) => setApprovalAuthority(e.target.value)}
-                      className="border border-slate-250 rounded px-3 py-2 text-xs focus:ring-1 focus:ring-blue-650 focus:outline-none"
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-1">
-                    <label className="font-semibold text-slate-650">Government Order (G.O. Number)</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. G.O.Ms.No.68"
-                      value={sourceGO}
-                      onChange={(e) => setSourceGO(e.target.value)}
-                      className="border border-slate-250 rounded px-3 py-2 text-xs focus:ring-1 focus:ring-blue-650 focus:outline-none"
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-1">
-                    <label className="font-semibold text-slate-650">Official Source URL</label>
-                    <input
-                      type="url"
-                      placeholder="https://official-government-link.gov.in"
-                      value={sourceUrl}
-                      onChange={(e) => setSourceUrl(e.target.value)}
-                      className="border border-slate-250 rounded px-3 py-2 text-xs focus:ring-1 focus:ring-blue-650 focus:outline-none"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex flex-col gap-1">
-                    <label className="font-semibold text-slate-650">Tags</label>
-                    <div className="flex flex-wrap gap-2 border border-slate-250 rounded p-2 bg-white">
-                      {TAGS_OPTIONS.map(tag => {
-                        const checked = tags.includes(tag);
-                        return (
-                          <label key={tag} className="flex items-center gap-1 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={checked}
-                              onChange={() => {
-                                if (checked) {
-                                  setTags(tags.filter(t => t !== tag));
-                                } else {
-                                  setTags([...tags, tag]);
-                                }
-                              }}
-                              className="accent-blue-650"
-                            />
-                            <span>{tag}</span>
-                          </label>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between border border-slate-200 bg-slate-50 rounded p-4 h-full">
-                    <div className="flex flex-col">
-                      <span className="font-bold text-slate-900">Publish Project</span>
-                      <span className="text-[10px] text-slate-400">Control visibility on public client portal.</span>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={isPublished}
-                        onChange={(e) => setIsPublished(e.target.checked)}
-                        className="sr-only peer"
-                      />
-                      <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-650"></div>
-                    </label>
-                  </div>
-                </div>
-              </div>
-
-              {/* Milestones Timeline */}
-              <div className="space-y-4">
-                <h3 className="text-xs font-bold text-slate-900 border-b border-slate-100 pb-1 uppercase tracking-wider">Project Timeline & Milestones</h3>
-                
-                {/* Milestone Add Form */}
-                <div className="bg-slate-50 border border-slate-200 rounded p-4 space-y-3">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                    <div className="flex flex-col gap-1">
-                      <label className="font-bold text-slate-500">Milestone Title</label>
-                      <input
-                        type="text"
-                        placeholder="Land Acquisition Completed"
-                        value={newMilestoneTitle}
-                        onChange={(e) => setNewMilestoneTitle(e.target.value)}
-                        className="border border-slate-250 rounded px-2 py-1.5 bg-white text-xs"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <label className="font-bold text-slate-500">Target Date</label>
-                      <input
-                        type="date"
-                        value={newMilestoneDate}
-                        onChange={(e) => setNewMilestoneDate(e.target.value)}
-                        className="border border-slate-250 rounded px-2 py-1.5 bg-white text-xs"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <label className="font-bold text-slate-500">Milestone Status</label>
-                      <select
-                        value={newMilestoneStatus}
-                        onChange={(e) => setNewMilestoneStatus(e.target.value)}
-                        className="border border-slate-250 rounded px-2 py-1.5 bg-white text-xs"
-                      >
-                        <option value="COMPLETED">✅ COMPLETED</option>
-                        <option value="IN_PROGRESS">🔨 IN PROGRESS</option>
-                        <option value="UPCOMING">📋 UPCOMING</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <label className="font-bold text-slate-500">Description</label>
-                    <textarea
-                      rows={1.5}
-                      placeholder="Add brief details about the milestone..."
-                      value={newMilestoneDesc}
-                      onChange={(e) => setNewMilestoneDesc(e.target.value)}
-                      className="border border-slate-250 rounded px-2 py-1.5 bg-white text-xs"
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleAddMilestone}
-                    className="px-2.5 py-1.5 bg-slate-800 text-white rounded text-[10px] font-bold hover:bg-slate-900 cursor-pointer"
-                  >
-                    Add Milestone to List
-                  </button>
-                </div>
-
-                {/* Milestones List */}
-                {milestones.length === 0 ? (
-                  <p className="text-slate-400 italic text-[11px]">No milestones added yet. Timeline will display empty.</p>
-                ) : (
-                  <div className="border border-slate-200 rounded divide-y divide-slate-100 bg-white">
-                    {milestones.map((ms, idx) => (
-                      <div key={idx} className="p-3 flex items-start justify-between">
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-1.5">
-                            <span className="font-bold text-slate-950">{ms.title}</span>
-                            <span className={`px-1.5 py-0.2 rounded text-[8px] font-bold uppercase border ${
-                              ms.status === "COMPLETED" ? "bg-green-50 text-green-700 border-green-200" :
-                              ms.status === "IN_PROGRESS" ? "bg-amber-50 text-amber-700 border-amber-200" :
-                              "bg-slate-100 text-slate-600 border-slate-200"
-                            }`}>
-                              {ms.status}
-                            </span>
-                          </div>
-                          {ms.date && (
-                            <div className="text-[10px] text-slate-400 flex items-center gap-1">
-                              <Calendar size={10} />
-                              <span>{new Date(ms.date).toLocaleDateString()}</span>
-                            </div>
-                          )}
-                          {ms.description && (
-                            <p className="text-slate-500 text-[10px]">{ms.description}</p>
-                          )}
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveMilestone(idx)}
-                          className="text-slate-400 hover:text-red-650 cursor-pointer"
-                        >
-                          <Trash2 size={12} />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Actions Footer */}
-              <div className="border-t border-slate-200 pt-4 flex items-center justify-end gap-2">
+              <div className="flex justify-end gap-3 pt-4 border-t border-[#F0EDFA]">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 border border-slate-250 text-slate-600 rounded text-xs font-semibold hover:bg-slate-50 cursor-pointer"
+                  className="crm-btn-secondary px-5 py-2 text-xs"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-650 text-white rounded text-xs font-bold hover:bg-blue-750 cursor-pointer"
+                  className="crm-btn-primary px-5 py-2 text-xs"
                 >
-                  {editingProject ? "Update Project" : "Create Project"}
+                  Save Project
                 </button>
               </div>
             </form>

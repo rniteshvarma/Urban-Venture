@@ -30,6 +30,8 @@ export async function GET(req: Request) {
     const search = searchParams.get("search");
     const city = searchParams.get("city");
     const persona = searchParams.get("persona");
+    const sourceChannel = searchParams.get("sourceChannel");
+    const source = searchParams.get("source");
     
     const skip = (page - 1) * limit;
 
@@ -45,6 +47,12 @@ export async function GET(req: Request) {
 
     if (persona && persona !== "ALL") {
       where.persona = persona;
+    }
+
+    if (sourceChannel && sourceChannel !== "ALL") {
+      where.sourceChannel = sourceChannel;
+    } else if (source && source !== "ALL") {
+      where.source = { contains: source.toLowerCase() };
     }
 
     if (search) {
