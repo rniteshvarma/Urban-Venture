@@ -415,35 +415,34 @@ export default function AdminDashboardPage() {
               </Link>
             </div>
 
-            {recentBroadcasts && recentBroadcasts.length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="crm-table text-xs">
+              <div className="overflow-x-auto w-full">
+                <table className="crm-table text-xs w-full">
                   <thead>
                     <tr>
-                      <th>Campaign</th>
-                      <th>Channel</th>
-                      <th>Recipients</th>
-                      <th className="text-right">Performance</th>
-                      <th className="text-right">Status</th>
+                      <th className="whitespace-nowrap px-3 py-3">Campaign</th>
+                      <th className="whitespace-nowrap px-3 py-3">Channel</th>
+                      <th className="whitespace-nowrap px-3 py-3">Recipients</th>
+                      <th className="text-right whitespace-nowrap px-3 py-3">Performance</th>
+                      <th className="text-right whitespace-nowrap px-3 py-3">Status</th>
                     </tr>
                   </thead>
                   <tbody>
                     {recentBroadcasts.map((b: any) => (
                       <tr key={b.id}>
-                        <td className="font-bold text-[#1A1A2E]">
+                        <td className="font-bold text-[#1A1A2E] whitespace-nowrap px-3 py-3">
                           <Link href={`/admin/broadcasts/history/${b.id}`} className="hover:text-[#5B4FE0]">
                             {b.name}
                           </Link>
                         </td>
-                        <td>
-                          <span className={`badge text-[10px] rounded-full ${b.channel === 'WHATSAPP' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'}`}>
+                        <td className="whitespace-nowrap px-3 py-3">
+                          <span className={`badge text-[10px] font-bold px-2.5 py-0.5 rounded-full ${b.channel === 'WHATSAPP' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'}`}>
                             {b.channel}
                           </span>
                         </td>
-                        <td className="font-medium text-[#8A8A9E]">
+                        <td className="font-medium text-[#8A8A9E] whitespace-nowrap px-3 py-3">
                           {b.recipientCount} leads
                         </td>
-                        <td className="text-right text-xs font-semibold">
+                        <td className="text-right text-xs font-semibold whitespace-nowrap px-3 py-3">
                           {b.channel !== "EMAIL" && (
                             <span className="text-[#1A1A2E]">WA Deliv: <strong className="text-[#5B4FE0]">{b.stats.waDeliveredRate}%</strong></span>
                           )}
@@ -451,8 +450,8 @@ export default function AdminDashboardPage() {
                             <span className="text-[#1A1A2E]">Open: <strong className="text-[#5B4FE0]">{b.stats.emailOpenRate}%</strong></span>
                           )}
                         </td>
-                        <td className="text-right">
-                          <span className={`badge text-[10px] rounded-full ${
+                        <td className="text-right whitespace-nowrap px-3 py-3">
+                          <span className={`badge text-[10px] font-bold px-2.5 py-0.5 rounded-full whitespace-nowrap ${
                             b.status === "SENT" ? "bg-emerald-100 text-emerald-800" :
                             b.status === "SENDING" ? "bg-amber-100 text-amber-800" :
                             b.status === "FAILED" ? "bg-rose-100 text-rose-800" :
