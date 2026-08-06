@@ -118,35 +118,32 @@ export default function IntegrationsHubPage() {
   return (
     <div className="space-y-6">
       {/* Top Header Banner */}
-      <div className="crm-card p-6 lg:p-8 bg-gradient-to-r from-[#1A1A2E] via-[#2A2359] to-[#5B4FE0] text-white rounded-3xl relative overflow-hidden shadow-xl">
-        <div className="absolute right-0 top-0 translate-x-12 -translate-y-12 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md text-xs font-semibold text-white/90">
-              <Zap className="w-3.5 h-3.5 text-amber-300" />
-              Omnichannel Auto-Inbox Integration Engine
-            </div>
-            <h1 className="text-2xl lg:text-3xl font-display font-bold">Integrations Hub</h1>
-            <p className="text-sm text-white/80 max-w-2xl">
-              Automatically capture enquiries from property portals (99acres, MagicBricks, Housing, NoBroker), WhatsApp Business, Gmail, and Website Contact Forms directly into your CRM.
-            </p>
+      <div className="crm-card p-6 lg:p-8 bg-white border border-[#E8E5F5] rounded-3xl relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="space-y-2.5 z-10 relative">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F4F0FF] text-xs font-bold text-[#5B4FE0] border border-[#E0D7FF]">
+            <Zap className="w-3.5 h-3.5 text-[#5B4FE0]" />
+            Omnichannel Auto-Inbox Integration Engine
           </div>
+          <h1 className="text-2xl lg:text-3xl font-display font-bold text-[#1A1A2E]">Integrations Hub</h1>
+          <p className="text-xs sm:text-sm text-[#8A8A9E] max-w-2xl leading-relaxed font-medium">
+            Automatically capture enquiries from property portals (99acres, MagicBricks, Housing, NoBroker), WhatsApp Business, Gmail, and Website Contact Forms directly into your CRM.
+          </p>
+        </div>
 
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
-            <Link
-              href="/admin/integrations/setup-guide"
-              className="px-5 py-2.5 rounded-full bg-white/20 hover:bg-white/30 text-white font-bold text-xs flex items-center justify-center gap-2 backdrop-blur-md transition-all border border-white/20"
-            >
-              <Zap className="w-4 h-4 text-amber-300" /> Setup Guide ({activeCount}/{sources.length || 7} Connected)
-            </Link>
-            <button
-              onClick={fetchSources}
-              className="p-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all flex items-center justify-center"
-              title="Refresh Sources"
-            >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            </button>
-          </div>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0 z-10 relative">
+          <Link
+            href="/admin/integrations/setup-guide"
+            className="crm-btn-primary text-xs px-5 py-2.5 flex items-center justify-center gap-2"
+          >
+            <Zap className="w-4 h-4 text-white" /> Setup Guide ({activeCount}/{sources.length || 7} Connected)
+          </Link>
+          <button
+            onClick={fetchSources}
+            className="crm-btn-secondary p-2.5 rounded-full flex items-center justify-center text-[#5B4FE0]"
+            title="Refresh Sources"
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          </button>
         </div>
       </div>
 
