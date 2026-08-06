@@ -36,30 +36,45 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
+        console.log("🔐 NextAuth Authorize attempt for email:", credentials?.email);
+
         if (!credentials?.email || !credentials?.password) {
+          console.warn("🔐 NextAuth Authorize failed: Missing email or password");
           throw new Error("Missing email or password");
         }
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
-        });
+        try {
+          const user = await prisma.user.findUnique({
+            where: { email: credentials.email },
+          });
 
-        if (!user || !user.password) {
-          throw new Error("Invalid credentials");
+          if (!user || !user.password) {
+            console.warn("🔐 NextAuth Authorize failed: User not found or no password for:", credentials.email);
+            throw new Error("Invalid credentials");
+          }
+
+          const isValid = await bcrypt.compare(credentials.password, user.password);
+
+          if (!isValid) {
+            console.warn("🔐 NextAuth Authorize failed: Password mismatch for:", credentials.email);
+            throw new Error("Invalid credentials");
+          }
+
+          console.log("✅ NextAuth Authorize successful for:", user.email, "role:", user.role);
+
+          return {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+          };
+        } catch (error: any) {
+          console.error("❌ NextAuth Database Error during authorize:", error?.message || error);
+          if (error?.message?.includes("does not exist")) {
+            console.error("⚠️ CRITICAL: The database table 'User' does not exist in your target PostgreSQL database. The schema has not been pushed yet!");
+          }
+          throw error;
         }
-
-        const isValid = await bcrypt.compare(credentials.password, user.password);
-
-        if (!isValid) {
-          throw new Error("Invalid credentials");
-        }
-
-        return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-        };
       },
     }),
   ],
@@ -81,6 +96,7 @@ export const authOptions: NextAuthOptions = {
   },
   pages: {
     signIn: "/admin/login",
+    error: "/admin/login",
   },
   session: {
     strategy: "jwt",
