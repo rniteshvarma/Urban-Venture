@@ -101,8 +101,8 @@ export default function ApprovalsDirectoryPage() {
 
   return (
     <div className="bg-surface-dim text-text-primary min-h-screen font-sans">
-      {/* Header Banner */}
-      <section className="bg-surface py-12 px-6 border-b border-slate-200 shadow-sm gradient-surface">
+      {/* Hero Section */}
+      <section className="bg-surface pt-24 pb-12 px-6 border-b border-slate-200 shadow-sm gradient-surface">
         <div className="max-w-7xl mx-auto space-y-4 text-center">
           <span className="text-[10px] font-bold text-accent uppercase tracking-widest block badge badge-verified inline-flex mb-1">Verifiable Registry Records</span>
           <h1 className="text-3xl md:text-4xl font-display font-extrabold text-text-primary tracking-tight leading-tight">
@@ -114,7 +114,7 @@ export default function ApprovalsDirectoryPage() {
         </div>
       </section>
 
-      <main className="max-w-7xl mx-auto py-12 px-6 space-y-8">
+      <main className="max-w-7xl mx-auto py-8 px-6 space-y-8">
         
         {/* Verification Note Box */}
         <div className="card-premium p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 text-xs max-w-4xl mx-auto bg-blue-50/30">
@@ -124,7 +124,15 @@ export default function ApprovalsDirectoryPage() {
               This directory is maintained by our real estate research team. For official, legally binding verification, always check the RERA Telangana or HMDA portal directly.
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 shrink-0">
+            <a
+              href="https://hmda.gov.in"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-3 py-1.5 border border-slate-200 hover:border-accent text-text-primary font-bold rounded text-[10px] flex items-center gap-1 transition-all bg-white shadow-sm"
+            >
+              hmda.gov.in <ExternalLink size={10} />
+            </a>
             <a
               href="https://rera.telangana.gov.in"
               target="_blank"
@@ -137,14 +145,14 @@ export default function ApprovalsDirectoryPage() {
         </div>
 
         {/* Filters Controls Panel */}
-        <div className="glass-panel p-5 flex flex-wrap gap-4 items-center justify-between">
-          <div className="flex flex-wrap gap-4 items-center w-full md:w-auto">
-            <div className="flex flex-col gap-1 w-full sm:w-auto">
-              <label className="text-[10px] font-bold uppercase tracking-wider text-text-secondary">Corridor Zone</label>
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-end">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Corridor Zone</label>
               <select
                 value={corridor}
                 onChange={(e) => setCorridor(e.target.value)}
-                className="input-premium bg-white px-2.5 py-1.5 text-xs"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:bg-white focus:border-[#7C6EF5] outline-none shadow-sm transition-all cursor-pointer"
               >
                 <option value="ALL">All Corridors</option>
                 {corridors.map(c => (
@@ -153,12 +161,12 @@ export default function ApprovalsDirectoryPage() {
               </select>
             </div>
 
-            <div className="flex flex-col gap-1 w-full sm:w-auto">
-              <label className="text-[10px] font-bold uppercase tracking-wider text-text-secondary">Authority</label>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Authority</label>
               <select
                 value={authority}
                 onChange={(e) => setAuthority(e.target.value)}
-                className="input-premium bg-white px-2.5 py-1.5 text-xs"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:bg-white focus:border-[#7C6EF5] outline-none shadow-sm transition-all cursor-pointer"
               >
                 <option value="ALL">All Authorities</option>
                 {AUTHORITIES.map(a => (
@@ -167,12 +175,12 @@ export default function ApprovalsDirectoryPage() {
               </select>
             </div>
 
-            <div className="flex flex-col gap-1 w-full sm:w-auto">
-              <label className="text-[10px] font-bold uppercase tracking-wider text-text-secondary">Approval Type</label>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Approval Type</label>
               <select
                 value={type}
                 onChange={(e) => setType(e.target.value)}
-                className="input-premium bg-white px-2.5 py-1.5 text-xs"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:bg-white focus:border-[#7C6EF5] outline-none shadow-sm transition-all cursor-pointer"
               >
                 <option value="ALL">All Types</option>
                 {APPROVAL_TYPES.map(t => (
@@ -180,20 +188,20 @@ export default function ApprovalsDirectoryPage() {
                 ))}
               </select>
             </div>
-          </div>
 
-          <div className="flex flex-col gap-1 w-full sm:w-72 mt-2 md:mt-0">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-text-secondary">Search</label>
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search project, developer, LP code..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                onKeyDown={handleKeyPress}
-                className="input-premium bg-white pl-8 pr-2.5 py-1.5 text-xs w-full"
-              />
-              <Search className="absolute left-2.5 top-2.5 text-text-secondary" size={13} />
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Search</label>
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search project, developer, LP..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  onKeyDown={handleKeyPress}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2 text-xs font-medium text-slate-800 focus:bg-white focus:border-[#7C6EF5] outline-none shadow-sm transition-all"
+                />
+                <Search className="absolute left-3 top-2.5 text-slate-400" size={14} />
+              </div>
             </div>
           </div>
         </div>

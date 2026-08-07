@@ -57,22 +57,22 @@ export default function ResearchForm({ onSubmit, isLoading }: ResearchFormProps)
   return (
     <div className="max-w-3xl mx-auto space-y-8 animate-fade-in-up">
       {/* Progress Indicator */}
-      <div className="flex items-center justify-between relative px-4">
-        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-0.5 bg-luxury-border z-0"></div>
+      <div className="flex items-center justify-between relative px-4 py-2">
+        <div className="absolute left-8 right-8 top-1/2 -translate-y-1/2 h-1 bg-[#E8E5F5] z-0 rounded-full"></div>
         <div 
-          className="absolute left-0 top-1/2 -translate-y-1/2 h-0.5 bg-accent z-0 transition-all duration-300"
-          style={{ width: `${((step - 1) / 2) * 100}%` }}
+          className="absolute left-8 top-1/2 -translate-y-1/2 h-1 bg-gradient-to-r from-[#7C6EF5] to-[#5B4FE0] z-0 transition-all duration-300 rounded-full"
+          style={{ width: `${((step - 1) / 2) * 85}%` }}
         ></div>
         
         {[1, 2, 3].map((num) => (
-          <div key={num} className="relative z-10 flex flex-col items-center gap-2 bg-luxury-bg">
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs transition-colors duration-300 ${
-              step >= num ? "bg-accent text-primary" : "bg-surface border-2 border-luxury text-text-tertiary"
+          <div key={num} className="relative z-10 flex flex-col items-center gap-2 bg-[#F4F3FA] px-3">
+            <div className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs transition-all duration-300 ${
+              step >= num ? "bg-gradient-to-r from-[#7C6EF5] to-[#5B4FE0] text-white shadow-md scale-110" : "bg-white border-2 border-[#E8E5F5] text-slate-400"
             }`}>
               {num}
             </div>
             <span className={`text-[10px] uppercase tracking-widest font-bold ${
-              step >= num ? "text-primary" : "text-text-tertiary"
+              step >= num ? "text-[#5B4FE0]" : "text-slate-400"
             }`}>
               {num === 1 ? "Location" : num === 2 ? "Parameters" : "Details"}
             </span>

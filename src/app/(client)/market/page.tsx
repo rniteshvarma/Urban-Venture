@@ -208,19 +208,19 @@ export default function MarketHubPage() {
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 border border-accent/35 text-accent text-[10px] font-mono uppercase tracking-wider mb-2 badge">
             <Sparkles size={11} className="animate-spin" /> Deep Research Edition · Hyderabad Growth Engine
           </div>
-          <h2 className="text-4xl md:text-6xl font-display text-text-primary tracking-tight leading-none">
+          <h2 className="text-4xl md:text-6xl font-display text-white tracking-tight leading-tight">
             Market Intelligence & <br className="hidden md:inline" />
             <span className="text-gradient-accent">Government Infrastructure Data</span>
           </h2>
-          <p className="max-w-2xl mx-auto text-text-secondary text-sm md:text-base font-medium font-sans">
+          <p className="max-w-2xl mx-auto text-white/80 text-sm md:text-base font-medium font-sans">
             A verified research portal integrating HMDA master plans, RERA approvals, official Telangana Government orders, NHAI updates, and real property transaction indices.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-4 pt-3">
-            <Link href="/market/legal" className="px-5 py-2.5 rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] hover:bg-[#E2E8F0]/30 text-xs font-bold text-[#3B82F6] flex items-center gap-2 transition-all shadow-sm">
+            <Link href="/market/legal" className="px-5 py-2.5 rounded-full border border-white/20 bg-white/10 hover:bg-white/20 text-xs font-bold text-white flex items-center gap-2 transition-all shadow-sm backdrop-blur-md">
               <ShieldCheck size={15} /> Open Legal Checkpoints
             </Link>
-            <Link href="/market/forecast" className="px-5 py-2.5 rounded-lg bg-[#2563EB] hover:bg-[#2563EB]/95 text-xs font-bold text-[#FFFFFF] flex items-center gap-2 transition-all shadow-sm hover:shadow-md">
+            <Link href="/market/forecast" className="px-5 py-2.5 rounded-full bg-gradient-to-r from-[#7C6EF5] to-[#5B4FE0] hover:scale-105 text-xs font-bold text-white flex items-center gap-2 transition-all shadow-md">
               <LineChart size={15} /> Run Appreciation Forecasts <ArrowRight size={14} />
             </Link>
           </div>

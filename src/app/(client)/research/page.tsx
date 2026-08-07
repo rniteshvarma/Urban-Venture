@@ -74,7 +74,7 @@ export default function ResearchPage() {
   };
 
   return (
-    <div className="flex-grow py-12 px-4 sm:px-6 lg:px-8 bg-luxury-bg">
+    <div className="flex-grow pt-28 pb-16 px-4 sm:px-6 lg:px-8 bg-[#F4F3FA]">
       <div className="max-w-7xl mx-auto space-y-10">
         
         {/* Page Header (Hide on print) */}
