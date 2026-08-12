@@ -12,14 +12,26 @@ export default withAuth(
     const token = req.nextauth?.token;
     const path = req.nextUrl?.pathname || "";
 
+    // ── Admin routes ──────────────────────────────────────────────────
     // Redirect authenticated admin away from login page to dashboard
     if (path === "/admin/login" && token?.role === "ADMIN") {
       return NextResponse.redirect(new URL("/admin/dashboard", req.url));
     }
 
-    // Protect all other admin pages
+    // Protect all other admin pages — require ADMIN role
     if (path.startsWith("/admin") && path !== "/admin/login" && token?.role !== "ADMIN") {
       return NextResponse.redirect(new URL("/admin/login", req.url));
+    }
+
+    // ── Portal routes ─────────────────────────────────────────────────
+    // Redirect authenticated client away from portal login
+    if (path === "/portal/login" && token?.id) {
+      return NextResponse.redirect(new URL("/portal", req.url));
+    }
+
+    // Protect portal pages — require authenticated user
+    if (path.startsWith("/portal") && path !== "/portal/login" && !token?.id) {
+      return NextResponse.redirect(new URL("/portal/login", req.url));
     }
 
     return NextResponse.next();
@@ -33,5 +45,5 @@ export default withAuth(
 );
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/admin/:path*", "/portal/:path*"],
 };

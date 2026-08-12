@@ -19,6 +19,7 @@ model User {
   createdAt     DateTime @default(now())
   leads         Lead[]
   searches      Search[]
+  purchases     PropertyPurchase[]
 }
 
 enum Role {
@@ -49,6 +50,7 @@ model Project {
   updatedAt         DateTime @updatedAt
   leads             Lead[]
   matches           ProjectLeadMatch[]
+  purchases         PropertyPurchase[]
 }
 
 enum RiskLevel {
@@ -107,6 +109,7 @@ model Lead {
   aiExtractedHorizon  Int?
   aiExtractedProperty String?
   aiConfidenceScore   Int?
+  purchases           PropertyPurchase[]
 }
 
 enum LeadStatus {
@@ -815,5 +818,94 @@ model MarketPulse {
   createdAt             DateTime @default(now())
 }
 
+// ── OWNED PROPERTY TRACKER ─────────────────────────────────────────────────
 
+enum PurchaseStatus {
+  BOOKING_RECEIVED
+  AGREEMENT_SIGNED
+  REGISTERED
+  POSSESSION_RECEIVED
+}
 
+enum PaymentStatus {
+  PENDING
+  PAID
+  OVERDUE
+  PARTIALLY_PAID
+}
+
+enum DocumentType {
+  SALE_AGREEMENT
+  REGISTRATION
+  PAYMENT_RECEIPT
+  ALLOTMENT_LETTER
+  POSSESSION_LETTER
+  TAX_RECEIPT
+  ENCUMBRANCE_CERT
+  OTHER
+}
+
+model PropertyPurchase {
+  id                String           @id @default(cuid())
+  userId            String
+  user              User             @relation(fields: [userId], references: [id])
+  leadId            String?
+  lead              Lead?            @relation(fields: [leadId], references: [id])
+  projectId         String
+  project           Project          @relation(fields: [projectId], references: [id])
+
+  // Purchase details
+  unitNumber        String?          // e.g. "Plot 42", "Flat 3B"
+  areaSqYd          Float?           // Plot area in sq yards
+  areaSqFt          Float?           // Built-up area in sq ft
+  purchasePrice     Float            // Total price in INR
+  pricePerSqYd      Float?           // Derived from purchasePrice / areaSqYd
+  pricePerSqFt      Float?           // Derived from purchasePrice / areaSqFt
+  purchaseDate      DateTime         // Date of booking/agreement
+  registrationDate  DateTime?        // Date of final registration
+  possessionDate    DateTime?        // Expected/actual possession date
+
+  // Financial
+  loanAmount        Float?           // Home loan amount
+  loanBank          String?          // Bank name
+  stampDutyPaid     Float?
+  registrationFee   Float?
+
+  // Status
+  status            PurchaseStatus   @default(BOOKING_RECEIVED)
+  notes             String?          // Admin notes
+
+  // Relations
+  documents         PropertyDocument[]
+  installments      PaymentInstallment[]
+
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  @@index([userId])
+  @@index([projectId])
+  @@index([leadId])
+}
+
+model PropertyDocument {
+  id          String             @id @default(cuid())
+  purchaseId  String
+  purchase    PropertyPurchase   @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  type        DocumentType
+  name        String             // User-friendly name
+  url         String             // File URL
+  uploadedAt  DateTime           @default(now())
+}
+
+model PaymentInstallment {
+  id          String             @id @default(cuid())
+  purchaseId  String
+  purchase    PropertyPurchase   @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  label       String             // e.g. "Booking Amount", "1st EMI", "Registration"
+  amount      Float
+  dueDate     DateTime
+  paidDate    DateTime?
+  status      PaymentStatus      @default(PENDING)
+  receiptUrl  String?
+  createdAt   DateTime           @default(now())
+}

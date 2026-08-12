@@ -74,12 +74,15 @@ export default function ResearchPage() {
   };
 
   return (
-    <div className="flex-grow pt-28 pb-16 px-4 sm:px-6 lg:px-8 bg-[#F4F3FA]">
-      <div className="max-w-7xl mx-auto space-y-10">
+    <div className="flex-grow pt-36 pb-20 px-4 sm:px-6 lg:px-8 bg-[#F4F3FA]">
+      <div className="max-w-4xl mx-auto space-y-10">
         
         {/* Page Header (Hide on print) */}
         <div className="no-print text-center max-w-2xl mx-auto space-y-3">
-          <h1 className="font-display text-3xl sm:text-5xl font-bold text-primary">
+          <span className="badge badge-premium">
+            AI Advisory Engine
+          </span>
+          <h1 className="font-display text-3xl sm:text-5xl font-extrabold text-primary tracking-tight">
             AI Investment Advisory
           </h1>
           <p className="text-sm sm:text-base text-text-secondary leading-relaxed">

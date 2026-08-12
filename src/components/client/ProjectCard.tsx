@@ -39,32 +39,42 @@ export default function ProjectCard({ project }: ProjectCardProps) {
     }
   };
 
-  // Safe image path fallback
-  const imgUrl = (project.imageUrls && project.imageUrls.length > 0) 
-    ? project.imageUrls[0] 
-    : "/placeholder-project.jpg";
+  // Property-type / Corridor specific fallback image provider
+  const getFallbackImage = () => {
+    const type = (project.propertyType || "").toLowerCase();
+    const corridor = (project.corridor || "").toLowerCase();
+    
+    if (type.includes("plot") || corridor.includes("yadadri") || corridor.includes("shadnagar")) {
+      return "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=800&q=80"; // Open plotted green land
+    }
+    if (type.includes("villa") || corridor.includes("kompally")) {
+      return "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=800&q=80"; // Luxury villa
+    }
+    if (corridor.includes("kokapet") || corridor.includes("gachibowli")) {
+      return "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=800&q=80"; // Luxury modern highrise
+    }
+    if (corridor.includes("shamshabad") || corridor.includes("airport")) {
+      return "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=800&q=80"; // Aerotropolis township
+    }
+    return "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800&q=80"; // Modern apartment complex
+  };
+
+  const imgUrl = (project.imageUrls && project.imageUrls.length > 0 && project.imageUrls[0])
+    ? project.imageUrls[0]
+    : getFallbackImage();
 
   return (
     <div className="card-premium h-full flex flex-col group overflow-hidden p-0 border-0 shadow-sm hover:shadow-card">
       {/* Project Image & Status overlay */}
       <div className="relative aspect-video bg-primary-light flex items-center justify-center overflow-hidden">
-        {imgUrl.startsWith("/") && imgUrl !== "/placeholder-project.jpg" ? (
-          <img 
-            src={imgUrl} 
-            alt={project.name}
-            className="w-full h-full object-cover img-hover-zoom"
-            onError={(e) => {
-              // Fallback
-              (e.target as HTMLImageElement).src = `https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=800&q=80`;
-            }}
-          />
-        ) : (
-          <img 
-            src={`https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=800&q=80`} 
-            alt={project.name}
-            className="w-full h-full object-cover img-hover-zoom"
-          />
-        )}
+        <img 
+          src={imgUrl} 
+          alt={project.name}
+          className="w-full h-full object-cover img-hover-zoom"
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = getFallbackImage();
+          }}
+        />
         
         {/* Status Badge */}
         <span className="absolute top-3 left-3 bg-surface/90 text-text-primary text-[10px] font-bold px-2.5 py-1 rounded-[6px] border border-gray-200 uppercase tracking-widest shadow-sm z-10">

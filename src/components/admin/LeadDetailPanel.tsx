@@ -320,27 +320,27 @@ export default function LeadDetailPanel({
     <>
       <div 
         onClick={onClose}
-        className="fixed inset-0 bg-black/20 z-40 transition-opacity"
+        className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-40 transition-opacity"
       />
 
-      <aside className="fixed inset-y-0 right-0 z-50 w-full max-w-lg bg-surface border-l border-luxury shadow-luxury flex flex-col justify-between animate-slide-in">
+      <aside className="fixed inset-y-0 right-0 z-50 w-full max-w-lg bg-white border-l border-slate-200 shadow-2xl flex flex-col animate-slide-in">
         
         {/* Drawer Header */}
-        <div className="px-6 py-4 border-b border-luxury bg-slate-50/50 flex items-center justify-between">
+        <div className="px-6 py-4 border-b border-slate-200 bg-slate-50/80 flex items-center justify-between shrink-0">
           <div>
             <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block">Lead ID: {lead.id.substring(0, 8)}...</span>
             <h2 className="font-display text-lg font-bold text-slate-800">{lead.name}</h2>
           </div>
           <button 
             onClick={onClose}
-            className="text-slate-600 hover:text-slate-900 px-2.5 py-1.5 text-xs border border-slate-200 rounded bg-white hover:bg-slate-50 transition-colors"
+            className="text-slate-600 hover:text-slate-900 px-3 py-1.5 text-xs font-bold border border-slate-200 rounded-md bg-white hover:bg-slate-50 transition-colors shadow-xs"
           >
             ✕ Close
           </button>
         </div>
 
         {/* Tab Controls */}
-        <div className="flex border-b border-luxury bg-slate-50/20 px-6">
+        <div className="flex border-b border-slate-200 bg-slate-50/40 px-6 shrink-0">
           <button
             onClick={() => setActiveTab("details")}
             className={`py-3 text-xs font-bold uppercase tracking-wider border-b-2 -mb-[1px] transition-colors mr-6 ${
@@ -361,7 +361,7 @@ export default function LeadDetailPanel({
         </div>
 
         {/* Scrollable Content */}
-        <div className="flex-grow overflow-y-auto p-6 space-y-6 scrollbar-thin">
+        <div className="flex-1 min-h-0 overflow-y-auto p-6 space-y-6 scrollbar-thin">
           
           {activeTab === "details" ? (
             <>
@@ -541,6 +541,21 @@ export default function LeadDetailPanel({
                   🛣️ Open Lead Closure Roadmap
                 </Link>
               </div>
+
+              {/* Record Purchase — visible for NEGOTIATING and CONVERTED leads */}
+              {(lead.status === "CONVERTED" || lead.status === "NEGOTIATING") && (
+                <div className="card-premium bg-emerald-50/80 border-emerald-200/60 text-center space-y-2">
+                  <span className="text-xs text-emerald-700 block font-semibold">
+                    {lead.status === "CONVERTED" ? "Lead converted! Record the purchase details." : "Ready to close? Record the purchase."}
+                  </span>
+                  <Link 
+                    href={`/admin/purchases/new?leadId=${lead.id}&clientName=${encodeURIComponent(lead.name)}&clientEmail=${encodeURIComponent(lead.email)}`}
+                    className="w-full flex items-center justify-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-semibold text-sm transition-colors"
+                  >
+                    🏠 Record Purchase
+                  </Link>
+                </div>
+              )}
 
               {/* Investment Profile */}
               <section className="space-y-3">
@@ -726,7 +741,7 @@ export default function LeadDetailPanel({
 
         {/* Activity timeline / Notes form in details tab only */}
         {activeTab === "details" && (
-          <div className="px-6 py-4 border-t border-luxury bg-slate-50/50">
+          <div className="px-6 py-4 border-t border-slate-200 bg-white shrink-0 z-10 shadow-[0_-4px_12px_rgba(0,0,0,0.05)]">
             <form onSubmit={handleAddNote} className="space-y-2">
               <textarea
                 placeholder="Type a new update note (e.g. Called client, interested in site visit...)"

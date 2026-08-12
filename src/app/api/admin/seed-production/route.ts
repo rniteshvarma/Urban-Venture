@@ -163,8 +163,8 @@ export async function GET(req: Request) {
     for (const c of sampleCorridors) {
       await prisma.corridorProfile.upsert({
         where: { slug: c.slug },
-        update: c,
-        create: c
+        update: c as any,
+        create: { ...c, riskLevel: (c as any).riskLevel || "MEDIUM" } as any
       });
       logs.push(`✅ Corridor Profile upserted: ${c.name}`);
     }

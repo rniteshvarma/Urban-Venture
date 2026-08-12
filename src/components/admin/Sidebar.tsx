@@ -27,7 +27,8 @@ import {
   ChevronRight,
   User,
   Zap,
-  Plug
+  Plug,
+  Home
 } from "lucide-react";
 
 export default function Sidebar() {
@@ -117,6 +118,11 @@ export default function Sidebar() {
       name: "Customers",
       path: "/admin/customers",
       icon: <UserCheck size={17} />,
+    },
+    {
+      name: "Purchases",
+      path: "/admin/purchases",
+      icon: <Home size={17} />,
     },
     {
       name: "Analytics",

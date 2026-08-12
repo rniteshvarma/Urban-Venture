@@ -218,14 +218,14 @@ function CalculatorContent() {
   const selectedCorridor = corridors.find(c => c.id === selectedCorridorId);
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8 space-y-10 animate-fade-in">
+    <div className="max-w-6xl mx-auto px-4 pt-28 pb-12 space-y-10 animate-fade-in">
       {/* Header Banner */}
       <div className="text-center max-w-2xl mx-auto space-y-3">
         <span className="badge badge-premium">
           Investment Intelligence
         </span>
         <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-text-primary tracking-tight">
-          Hyderabad ROI & Appreciation Simulator
+          Hyderabad ROI &amp; Appreciation Simulator
         </h1>
         <p className="text-sm text-text-secondary leading-relaxed">
           Simulate compounding returns in major Hyderabad real estate corridors. Contrast appreciation + rental yield projections with liquid equity, gold, and debt benchmarks.
@@ -243,9 +243,9 @@ function CalculatorContent() {
 
           {/* Initial Capital Slider */}
           <div className="space-y-2">
-            <div className="flex justify-between text-xs font-semibold text-white/80">
+            <div className="flex justify-between text-xs font-semibold text-white/90">
               <span>Investment Amount</span>
-              <span className="text-accent font-bold">₹{initialAmount} Lakhs</span>
+              <span className="text-cyan-400 font-bold">₹{initialAmount} Lakhs</span>
             </div>
             <input 
               type="range" 
@@ -254,9 +254,9 @@ function CalculatorContent() {
               step="5"
               value={initialAmount}
               onChange={(e) => setInitialAmount(parseFloat(e.target.value))}
-              className="w-full h-1.5 bg-white/20 rounded-lg appearance-none cursor-pointer accent-[#00B4D8]"
+              className="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-[#00B4D8]"
             />
-            <div className="flex justify-between text-[10px] text-white/50">
+            <div className="flex justify-between text-[10px] text-white/60 font-medium">
               <span>₹10L</span>
               <span>₹5.0Cr</span>
             </div>
@@ -264,9 +264,9 @@ function CalculatorContent() {
 
           {/* Horizon Slider */}
           <div className="space-y-2">
-            <div className="flex justify-between text-xs font-semibold text-white/80">
+            <div className="flex justify-between text-xs font-semibold text-white/90">
               <span>Investment Horizon</span>
-              <span className="text-accent font-bold">{years} Years</span>
+              <span className="text-cyan-400 font-bold">{years} Years</span>
             </div>
             <input 
               type="range" 
@@ -275,9 +275,9 @@ function CalculatorContent() {
               step="1"
               value={years}
               onChange={(e) => setYears(parseInt(e.target.value))}
-              className="w-full h-1.5 bg-white/20 rounded-lg appearance-none cursor-pointer accent-[#00B4D8]"
+              className="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-[#00B4D8]"
             />
-            <div className="flex justify-between text-[10px] text-white/50">
+            <div className="flex justify-between text-[10px] text-white/60 font-medium">
               <span>3 Years</span>
               <span>15 Years</span>
             </div>
@@ -285,11 +285,11 @@ function CalculatorContent() {
 
           {/* Corridor Selection */}
           <div className="space-y-2">
-            <label className="block text-xs font-bold text-white/80 uppercase tracking-wider">Select Growth Corridor</label>
+            <label className="block text-xs font-bold text-white/90 uppercase tracking-wider">Select Growth Corridor</label>
             <select
               value={selectedCorridorId}
               onChange={(e) => setSelectedCorridorId(e.target.value)}
-              className="w-full bg-white/10 border border-white/20 px-3.5 py-2.5 rounded-[8px] text-xs text-white focus:outline-none focus:border-accent transition-colors [&>option]:text-text-primary"
+              className="w-full bg-slate-800/90 border border-slate-700 px-3.5 py-2.5 rounded-[8px] text-xs text-white font-medium focus:outline-none focus:border-cyan-400 transition-colors [&>option]:bg-slate-900 [&>option]:text-white"
             >
               <option value="CUSTOM">Custom Parameters (Configure Below)</option>
               {corridors.map((c) => (
@@ -302,14 +302,14 @@ function CalculatorContent() {
 
           {/* Custom / Corridor Stats parameters block */}
           {selectedCorridorId === "CUSTOM" ? (
-            <div className="bg-slate-50 p-4 rounded-xl border border-slate-150 space-y-4">
-              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Custom ROI Parameters</span>
+            <div className="bg-slate-800/80 p-4 rounded-xl border border-slate-700/80 space-y-4">
+              <span className="text-[10px] text-cyan-400 font-bold uppercase tracking-wider block">Custom ROI Parameters</span>
               
               {/* Custom CAGR slider */}
-              <div className="space-y-1 text-xs">
-                <div className="flex justify-between font-semibold text-slate-700">
+              <div className="space-y-1.5 text-xs">
+                <div className="flex justify-between font-semibold text-slate-200">
                   <span>Appreciation CAGR Min</span>
-                  <span className="text-slate-800 font-bold">{customCagrMin}%</span>
+                  <span className="text-cyan-400 font-bold">{customCagrMin}%</span>
                 </div>
                 <input 
                   type="range" 
@@ -322,14 +322,14 @@ function CalculatorContent() {
                     setCustomCagrMin(val);
                     if (val > customCagrMax) setCustomCagrMax(val);
                   }}
-                  className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#2563EB]"
+                  className="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-[#00B4D8]"
                 />
               </div>
 
-              <div className="space-y-1 text-xs">
-                <div className="flex justify-between font-semibold text-slate-700">
+              <div className="space-y-1.5 text-xs">
+                <div className="flex justify-between font-semibold text-slate-200">
                   <span>Appreciation CAGR Max</span>
-                  <span className="text-slate-800 font-bold">{customCagrMax}%</span>
+                  <span className="text-cyan-400 font-bold">{customCagrMax}%</span>
                 </div>
                 <input 
                   type="range" 
@@ -342,15 +342,15 @@ function CalculatorContent() {
                     setCustomCagrMax(val);
                     if (val < customCagrMin) setCustomCagrMin(val);
                   }}
-                  className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#2563EB]"
+                  className="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-[#00B4D8]"
                 />
               </div>
 
               {/* Custom rent slider */}
-              <div className="space-y-1 text-xs">
-                <div className="flex justify-between font-semibold text-slate-700">
+              <div className="space-y-1.5 text-xs">
+                <div className="flex justify-between font-semibold text-slate-200">
                   <span>Rental Yield Min</span>
-                  <span className="text-slate-800 font-bold">{customRentMin}%</span>
+                  <span className="text-cyan-400 font-bold">{customRentMin}%</span>
                 </div>
                 <input 
                   type="range" 
@@ -363,14 +363,14 @@ function CalculatorContent() {
                     setCustomRentMin(val);
                     if (val > customRentMax) setCustomRentMax(val);
                   }}
-                  className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#2563EB]"
+                  className="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-[#00B4D8]"
                 />
               </div>
 
-              <div className="space-y-1 text-xs">
-                <div className="flex justify-between font-semibold text-slate-700">
+              <div className="space-y-1.5 text-xs">
+                <div className="flex justify-between font-semibold text-slate-200">
                   <span>Rental Yield Max</span>
-                  <span className="text-slate-800 font-bold">{customRentMax}%</span>
+                  <span className="text-cyan-400 font-bold">{customRentMax}%</span>
                 </div>
                 <input 
                   type="range" 
@@ -383,33 +383,33 @@ function CalculatorContent() {
                     setCustomRentMax(val);
                     if (val < customRentMin) setCustomRentMin(val);
                   }}
-                  className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#2563EB]"
+                  className="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-[#00B4D8]"
                 />
               </div>
             </div>
           ) : (
             selectedCorridor && (
-              <div className="bg-blue-50/20 p-4 rounded-xl border border-blue-100/50 space-y-3 text-xs">
-                <div className="flex items-center gap-1 text-[#2563EB] font-bold">
+              <div className="bg-slate-800/80 p-4 rounded-xl border border-slate-700/80 space-y-3 text-xs">
+                <div className="flex items-center gap-1 text-cyan-400 font-bold">
                   <MapPin className="w-3.5 h-3.5" />
                   <span>Corridor Highlights</span>
                 </div>
                 <div className="grid grid-cols-2 gap-3 text-[11px] pt-1">
                   <div>
                     <span className="text-slate-400 block font-semibold">Risk Rating</span>
-                    <span className="font-bold text-slate-700 uppercase tracking-wide">{selectedCorridor.riskLevel}</span>
+                    <span className="font-bold text-white uppercase tracking-wide">{selectedCorridor.riskLevel}</span>
                   </div>
                   <div>
                     <span className="text-slate-400 block font-semibold">Historical CAGR</span>
-                    <span className="font-bold text-slate-700">{selectedCorridor.historicalCAGR}%</span>
+                    <span className="font-bold text-white">{selectedCorridor.historicalCAGR}%</span>
                   </div>
                   <div>
                     <span className="text-slate-400 block font-semibold">Infrastructure</span>
-                    <span className="font-bold text-slate-700">{selectedCorridor.infraScore} / 10</span>
+                    <span className="font-bold text-white">{selectedCorridor.infraScore} / 10</span>
                   </div>
                   <div>
                     <span className="text-slate-400 block font-semibold">Market Demand</span>
-                    <span className="font-bold text-slate-700">{selectedCorridor.demandScore} / 10</span>
+                    <span className="font-bold text-white">{selectedCorridor.demandScore} / 10</span>
                   </div>
                 </div>
               </div>

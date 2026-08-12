@@ -55,24 +55,26 @@ export default function ResearchForm({ onSubmit, isLoading }: ResearchFormProps)
   const cities = ["Hyderabad", "Bengaluru", "Chennai", "Mumbai", "Pune"];
 
   return (
-    <div className="max-w-3xl mx-auto space-y-8 animate-fade-in-up">
+    <div className="max-w-2xl mx-auto space-y-8 animate-fade-in-up">
       {/* Progress Indicator */}
-      <div className="flex items-center justify-between relative px-4 py-2">
-        <div className="absolute left-8 right-8 top-1/2 -translate-y-1/2 h-1 bg-[#E8E5F5] z-0 rounded-full"></div>
+      <div className="flex items-center justify-between relative px-6 py-3 max-w-lg mx-auto">
+        <div className="absolute left-10 right-10 top-1/2 -translate-y-1/2 h-1 bg-slate-200 z-0 rounded-full"></div>
         <div 
-          className="absolute left-8 top-1/2 -translate-y-1/2 h-1 bg-gradient-to-r from-[#7C6EF5] to-[#5B4FE0] z-0 transition-all duration-300 rounded-full"
-          style={{ width: `${((step - 1) / 2) * 85}%` }}
+          className="absolute left-10 top-1/2 -translate-y-1/2 h-1 bg-gradient-to-r from-blue-600 to-indigo-600 z-0 transition-all duration-300 rounded-full"
+          style={{ width: `${((step - 1) / 2) * 78}%` }}
         ></div>
         
         {[1, 2, 3].map((num) => (
-          <div key={num} className="relative z-10 flex flex-col items-center gap-2 bg-[#F4F3FA] px-3">
-            <div className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs transition-all duration-300 ${
-              step >= num ? "bg-gradient-to-r from-[#7C6EF5] to-[#5B4FE0] text-white shadow-md scale-110" : "bg-white border-2 border-[#E8E5F5] text-slate-400"
+          <div key={num} className="relative z-10 flex flex-col items-center gap-1.5 bg-[#F4F3FA] px-3">
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 ${
+              step >= num 
+                ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/25 scale-105" 
+                : "bg-white border-2 border-slate-200 text-slate-400"
             }`}>
               {num}
             </div>
-            <span className={`text-[10px] uppercase tracking-widest font-bold ${
-              step >= num ? "text-[#5B4FE0]" : "text-slate-400"
+            <span className={`text-[10px] uppercase tracking-widest font-extrabold ${
+              step >= num ? "text-blue-600" : "text-slate-400"
             }`}>
               {num === 1 ? "Location" : num === 2 ? "Parameters" : "Details"}
             </span>
@@ -80,25 +82,29 @@ export default function ResearchForm({ onSubmit, isLoading }: ResearchFormProps)
         ))}
       </div>
 
-      <form onSubmit={handleSubmit} className="card-premium p-6 sm:p-8">
+      <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-200/80 space-y-6">
         
         {/* Step 1: City Selection */}
         {step === 1 && (
-          <div className="space-y-6 animate-fade-in">
-            <h2 className="section-header text-primary mb-4">Target Location</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+          <div className="space-y-8 animate-fade-in">
+            <div>
+              <h2 className="font-display text-xl font-extrabold text-slate-900 mb-1">Target Location</h2>
+              <p className="text-xs text-slate-500">Select your preferred investment destination</p>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5">
               {cities.map((c) => (
                 <div 
                   key={c}
                   onClick={() => setCity(c)}
-                  className={`cursor-pointer rounded-[12px] border p-4 flex flex-col items-center justify-center gap-2 transition-all duration-200 ${
+                  className={`cursor-pointer rounded-xl border p-4 flex flex-col items-center justify-center gap-2.5 transition-all duration-200 ${
                     city === c 
-                      ? "border-accent bg-accent-light/10 shadow-glow-cyan" 
-                      : "border-luxury bg-surface hover:border-accent/50"
+                      ? "border-blue-600 bg-blue-50/60 text-blue-700 shadow-sm ring-2 ring-blue-600/20 font-bold" 
+                      : "border-slate-200 bg-white hover:border-blue-300 hover:bg-slate-50 text-slate-600 font-semibold"
                   }`}
                 >
-                  <MapPin className={`w-6 h-6 ${city === c ? "text-accent" : "text-text-secondary"}`} />
-                  <span className={`text-sm font-bold ${city === c ? "text-primary" : "text-text-secondary"}`}>
+                  <MapPin className={`w-5 h-5 ${city === c ? "text-blue-600" : "text-slate-400"}`} />
+                  <span className="text-sm">
                     {c}
                   </span>
                 </div>
@@ -106,12 +112,12 @@ export default function ResearchForm({ onSubmit, isLoading }: ResearchFormProps)
             </div>
 
             {/* Budget Selector */}
-            <div>
+            <div className="pt-4 border-t border-slate-100">
               <div className="flex justify-between items-center mb-3">
-                <label className="block text-xs font-semibold uppercase tracking-wider text-text-secondary">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">
                   Investment Budget
                 </label>
-                <span className="text-lg font-bold text-accent font-display">
+                <span className="text-xl font-black text-blue-600 font-display">
                   {formatBudgetDisplay(budget)}
                 </span>
               </div>
@@ -124,10 +130,10 @@ export default function ResearchForm({ onSubmit, isLoading }: ResearchFormProps)
                   step="5"
                   value={budget}
                   onChange={(e) => setBudget(Number(e.target.value))}
-                  className="w-full h-1.5 bg-luxury rounded-lg appearance-none cursor-pointer accent-accent"
+                  className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
                 />
                 
-                <div className="flex justify-between items-center text-xs text-text-secondary pt-2">
+                <div className="flex justify-between items-center text-xs font-semibold text-slate-400 pt-1">
                   <span>10L</span>
                   <span>50L</span>
                   <span>1Cr</span>

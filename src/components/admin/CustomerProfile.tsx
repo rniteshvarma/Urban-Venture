@@ -79,28 +79,28 @@ export default function CustomerProfile({
       {/* Backdrop overlay */}
       <div 
         onClick={onClose}
-        className="fixed inset-0 bg-black/40 z-40 transition-opacity"
+        className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-40 transition-opacity"
       />
 
       {/* Profile Sidebar */}
-      <aside className="fixed inset-y-0 right-0 z-50 w-full max-w-lg bg-surface border-l border-luxury shadow-luxury flex flex-col justify-between animate-slide-in text-xs text-text-primary">
+      <aside className="fixed inset-y-0 right-0 z-50 w-full max-w-lg bg-white border-l border-slate-200 shadow-2xl flex flex-col animate-slide-in text-xs text-text-primary">
         
         {/* Header */}
-        <div className="px-6 py-4 border-b border-luxury bg-luxury-bg/40 flex items-center justify-between">
+        <div className="px-6 py-4 border-b border-slate-200 bg-slate-50/80 flex items-center justify-between shrink-0">
           <div>
             <span className="text-[9px] text-text-secondary font-bold uppercase tracking-widest block">Customer Directory Profile</span>
             <h2 className="font-display text-lg font-bold text-text-primary">{customer.name}</h2>
           </div>
           <button 
             onClick={onClose}
-            className="text-text-secondary hover:text-primary p-1 text-sm border border-luxury rounded-[4px] bg-surface"
+            className="text-text-secondary hover:text-primary p-1 px-2.5 py-1 text-xs border border-slate-200 rounded-md bg-white hover:bg-slate-50 shadow-xs font-semibold"
           >
             ✕ Close
           </button>
         </div>
 
         {/* Content */}
-        <div className="flex-grow overflow-y-auto p-6 space-y-6 scrollbar-thin">
+        <div className="flex-1 min-h-0 overflow-y-auto p-6 space-y-6 scrollbar-thin">
           
           {/* Editable Contact Info */}
           <section className="card-premium space-y-4">
