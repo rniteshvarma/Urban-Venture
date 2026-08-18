@@ -197,9 +197,9 @@ export default function HomePage() {
           title="Featured projects"
           action={<Link href="/projects" className="uv-btn uv-btn-ghost" style={{ padding: "9px 16px", fontSize: "0.8125rem" }}>All projects <ArrowRight size={15} /></Link>}
         />
-        <div style={{ display: "flex", gap: 18, overflowX: "auto", scrollSnapType: "x mandatory", paddingBottom: 12 }} className="hide-scrollbar">
+        <div style={{ display: "flex", gap: 18, overflowX: "auto", scrollSnapType: "x mandatory", paddingBottom: 12, alignItems: "stretch" }} className="hide-scrollbar">
           {projects === null
-            ? Array.from({ length: 4 }).map((_, i) => <div key={i} style={{ minWidth: 288 }}><SkeletonCard variant="project" /></div>)
+            ? Array.from({ length: 4 }).map((_, i) => <div key={i} style={{ minWidth: 288, display: "flex" }}><SkeletonCard variant="project" /></div>)
             : projects.slice(0, 8).map((p) => <ProjectCard key={p.id} project={p} variant="carousel" />)}
         </div>
       </section>

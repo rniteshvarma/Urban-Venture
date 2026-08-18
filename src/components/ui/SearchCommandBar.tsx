@@ -285,7 +285,7 @@ export default function SearchCommandBar({ corridors = [], quickChips = [], clas
               onChange={(e) => setLocation(e.target.value)}
               style={{ flex: 1, minWidth: 220 }}
             />
-            <button type="button" className="uv-btn uv-btn-primary" onClick={() => go(`/explore${location ? `?q=${encodeURIComponent(location)}` : ""}`)}>
+            <button type="button" className="uv-btn uv-btn-primary" onClick={() => go(`/market${location ? `?q=${encodeURIComponent(location)}` : ""}#explore-map`)}>
               Open Map View <ArrowRight size={16} />
             </button>
           </div>

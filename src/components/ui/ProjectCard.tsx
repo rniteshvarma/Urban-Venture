@@ -96,11 +96,11 @@ export default function ProjectCard({ project: p, variant = "grid", className = 
     );
   }
 
-  const width = variant === "carousel" ? { minWidth: 288, width: 288, scrollSnapAlign: "start" as const } : {};
+  const width = variant === "carousel" ? { minWidth: 288, width: 288, flexShrink: 0, scrollSnapAlign: "start" as const } : {};
 
   return (
     <div className={`uv-card uv-card-hover ${className}`} style={{ display: "flex", flexDirection: "column", overflow: "hidden", height: "100%", ...width }}>
-      <div style={{ position: "relative", width: "100%", paddingTop: "75%", background: "var(--color-ink-soft)" }}>
+      <div style={{ position: "relative", width: "100%", paddingTop: "68%", background: "var(--color-ink-soft)", flexShrink: 0 }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={img} alt={p.name} loading="lazy" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
         <div style={{ position: "absolute", top: 10, right: 10 }}>
@@ -134,25 +134,67 @@ export default function ProjectCard({ project: p, variant = "grid", className = 
 
       <div style={{ padding: "1rem 1.1rem 0", flex: 1, display: "flex", flexDirection: "column", gap: 8 }}>
         <div>
-          <h3 style={{ fontFamily: "var(--font-jakarta)", fontWeight: 700, fontSize: "1.0625rem", color: "var(--color-text-hi)", lineHeight: 1.3 }}>
+          <h3 
+            style={{ 
+              fontFamily: "var(--font-jakarta)", 
+              fontWeight: 700, 
+              fontSize: "1.0625rem", 
+              color: "var(--color-text-hi)", 
+              lineHeight: 1.3,
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis"
+            }}
+            title={p.name}
+          >
             {p.name}
           </h3>
-          <div style={{ fontSize: "0.75rem", color: "var(--color-text-lo)" }}>by {p.developer}</div>
+          <div style={{ fontSize: "0.75rem", color: "var(--color-text-lo)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+            by {p.developer}
+          </div>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: "0.75rem", color: "var(--color-text-mid)" }}>
-          <MapPin size={13} /> {p.corridor} · {p.city}
+        <div 
+          style={{ 
+            display: "flex", 
+            alignItems: "center", 
+            gap: 5, 
+            fontSize: "0.75rem", 
+            color: "var(--color-text-mid)",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis"
+          }}
+          title={`${p.corridor} · ${p.city}`}
+        >
+          <MapPin size={13} style={{ flexShrink: 0 }} /> 
+          <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+            {p.corridor} · {p.city}
+          </span>
         </div>
         <div>
           <div style={{ fontFamily: "var(--font-mono)", fontWeight: 600, fontSize: "1.25rem", color: "var(--color-text-hi)" }}>
             {formatLakhRange(p.minBudgetLakhs, p.maxBudgetLakhs)}
           </div>
-          <div style={{ fontFamily: "var(--font-mono)", fontSize: "0.75rem", color: "var(--color-text-lo)", marginTop: 2 }}>{emi}</div>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: "0.75rem", color: "var(--color-text-lo)", marginTop: 2, minHeight: "1.1rem" }}>
+            {emi}
+          </div>
         </div>
-        {chips}
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, minHeight: 52, alignItems: "flex-start" }}>
+          <InfoChip variant="navy">{p.propertyType}</InfoChip>
+          <span
+            className="uv-chip"
+            style={{ background: risk.bg, color: risk.fg }}
+          >
+            {risk.label}
+          </span>
+          <InfoChip variant="ghost">
+            {p.minHorizonYears}–{p.maxHorizonYears} yr hold
+          </InfoChip>
+        </div>
       </div>
 
-      <div style={{ display: "flex", gap: 8, padding: "1rem 1.1rem 1.15rem", marginTop: 12 }}>
-        <Link href={`/projects/${p.id}`} className="uv-btn uv-btn-ghost" style={{ flex: 1, fontSize: "0.8125rem", padding: "9px 14px" }}>
+      <div style={{ display: "flex", gap: 8, padding: "1rem 1.1rem 1.15rem", marginTop: "auto" }}>
+        <Link href={`/projects/${p.id}`} className="uv-btn uv-btn-ghost" style={{ flex: 1, fontSize: "0.8125rem", padding: "9px 14px", textAlign: "center" }}>
           View Details
         </Link>
         <Link

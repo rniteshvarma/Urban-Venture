@@ -159,7 +159,7 @@ export default function CorridorCard({ corridor: c, className = "" }: CorridorCa
       {/* Footer */}
       <div
         style={{
-          marginTop: 14,
+          marginTop: "auto",
           padding: "12px 1.15rem",
           borderTop: "1px solid var(--color-line)",
           display: "flex",

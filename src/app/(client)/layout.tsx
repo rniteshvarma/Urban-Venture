@@ -97,6 +97,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
               </div>
 
               <Link href="/projects" className={linkCls(pathname?.startsWith("/projects"))}>Projects</Link>
+              <Link href="/news" className={linkCls(pathname?.startsWith("/news"))}>News</Link>
               <Link href="/calculator" className={linkCls(pathname?.startsWith("/calculator"))}>Tools</Link>
             </nav>
           </div>
@@ -152,6 +153,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
                 </div>
               </div>
               <Link href="/projects" className="text-base font-medium">Projects</Link>
+              <Link href="/news" className="text-base font-medium">News</Link>
               <Link href="/calculator" className="text-base font-medium">Tools</Link>
               <div className="flex gap-3" style={{ marginTop: 8, paddingTop: 16, borderTop: "1px solid var(--color-ink-line)" }}>
                 {isAuthed ? (

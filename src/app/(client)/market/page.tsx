@@ -475,7 +475,7 @@ export default function MarketHubPage() {
       </section>
 
       {/* Map Section */}
-      <section className="bg-surface border-b border-slate-200 py-12 md:py-16 px-6 w-full">
+      <section id="explore-map" className="scroll-mt-24 bg-surface border-b border-slate-200 py-12 md:py-16 px-6 w-full">
         <div className="max-w-7xl mx-auto space-y-8">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div className="section-header">
