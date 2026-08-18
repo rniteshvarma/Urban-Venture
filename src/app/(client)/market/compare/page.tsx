@@ -152,7 +152,7 @@ export function ComparePageContent() {
     router.push(`/market/compare?${params.toString()}`);
   };
 
-  const lineColors = ["#00B4D8", "#10B981", "#8b5cf6"];
+  const lineColors = ["#FFB400", "#10B981", "#10233F"];
   const overlaidData = getOverlaidChartData();
 
   return (
@@ -163,7 +163,7 @@ export function ComparePageContent() {
           <Link href="/market" className="inline-flex items-center gap-1.5 text-xs font-semibold text-text-secondary hover:text-text-primary transition-colors">
             <ArrowLeft size={13} /> Back to Market Hub
           </Link>
-          <span className="text-xs text-accent font-bold uppercase tracking-wider">Corridor Comparison Tool</span>
+          <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "var(--color-saffron-deep)" }}>Corridor Comparison Tool</span>
         </div>
       </div>
 
@@ -171,7 +171,7 @@ export function ComparePageContent() {
         {/* Selector Panel */}
         <div className="glass-panel p-5 space-y-4">
           <h1 className="text-lg font-bold text-text-primary flex items-center gap-1.5">
-            <Sparkles size={18} className="text-accent" /> Compare Hyderabad Corridors
+            <Sparkles size={18} className="text-navy-ink" /> Compare Hyderabad Corridors
           </h1>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="flex flex-col gap-1.5">
@@ -289,7 +289,7 @@ export function ComparePageContent() {
             {/* Row 2: Overlaid Appreciation Line Chart */}
             <div className="card-premium p-5">
               <h2 className="text-xs font-bold text-text-primary uppercase tracking-wider mb-4 flex items-center gap-1.5 section-header border-l-4 border-accent pl-2">
-                <TrendingUp size={14} className="text-accent" /> Overlaid 5-Year price Appreciation (₹/sqft)
+                <TrendingUp size={14} className="text-navy-ink" /> Overlaid 5-Year price Appreciation (₹/sqft)
               </h2>
               <div className="h-[250px] w-full text-[10px] text-text-secondary">
                 <ResponsiveContainer width="100%" height="100%">
@@ -376,7 +376,7 @@ export function ComparePageContent() {
               {comparisons.map((c) => (
                 <div key={c.corridor} className="card-premium p-5 space-y-4">
                   <h3 className="text-xs font-bold text-text-primary uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-200 pb-2">
-                    <Hammer size={14} className="text-accent" /> Infra tailwinds: {c.shortName || c.name}
+                    <Hammer size={14} className="text-navy-ink" /> Infra tailwinds: {c.shortName || c.name}
                   </h3>
                   {c.infraProjects?.length === 0 ? (
                     <p className="text-text-secondary text-[11px] italic">No public projects mapped.</p>
@@ -446,7 +446,7 @@ export function ComparePageContent() {
             <div className="card-premium p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 max-w-4xl mx-auto">
               <div className="space-y-1.5">
                 <h3 className="text-sm font-bold text-text-primary flex items-center gap-1.5">
-                  <Brain className="text-accent" size={16} /> AI Research Report Builder
+                  <Brain className="text-navy-ink" size={16} /> AI Research Report Builder
                 </h3>
                 <p className="text-text-secondary text-xs leading-relaxed max-w-xl">
                   Ready to draft a detailed investor proposal? Transfer these compared corridors directly into our AI Research compiler to generate a customized PDF proposal document.

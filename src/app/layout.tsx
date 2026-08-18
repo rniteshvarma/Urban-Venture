@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Inter, Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
+import { Playfair_Display, Inter, Plus_Jakarta_Sans, JetBrains_Mono, Instrument_Serif } from "next/font/google";
 import { Providers } from "@/components/Providers";
 import "./globals.css";
 
@@ -23,6 +23,14 @@ const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
 });
 
+// Editorial accent — v2 client redesign (section eyebrows, market-intelligence notes)
+const instrumentSerif = Instrument_Serif({
+  variable: "--font-instrument-serif",
+  subsets: ["latin"],
+  weight: "400",
+  style: ["normal", "italic"],
+});
+
 export const metadata: Metadata = {
   title: "Urban Ventures | AI Investment Advisory",
   description: "AI-Powered Real Estate Investment Research Portal for Hyderabad's fastest-growing corridors.",
@@ -36,7 +44,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${playfair.variable} ${inter.variable} ${plusJakarta.variable} ${jetbrainsMono.variable} h-full antialiased`}
+      className={`${playfair.variable} ${inter.variable} ${plusJakarta.variable} ${jetbrainsMono.variable} ${instrumentSerif.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col font-sans bg-luxury-bg text-text-primary" suppressHydrationWarning>

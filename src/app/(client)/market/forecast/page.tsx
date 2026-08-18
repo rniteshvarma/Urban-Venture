@@ -100,8 +100,8 @@ export default function ForecastHubPage() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-40 min-h-screen bg-surface-dim text-text-primary">
-        <Loader2 className="animate-spin text-accent" size={36} />
-        <span className="text-xs text-accent font-semibold uppercase tracking-wider mt-4">Running Monte Carlo Simulations...</span>
+        <Loader2 className="animate-spin text-navy-ink" size={36} />
+        <span className="text-xs text-navy-ink font-semibold uppercase tracking-wider mt-4">Running Monte Carlo Simulations...</span>
       </div>
     );
   }
@@ -110,25 +110,25 @@ export default function ForecastHubPage() {
     <div className="bg-surface-dim text-text-primary min-h-screen font-sans flex flex-col justify-between selection:bg-accent/20">
       
       {/* Back Header */}
-      <div className="glass-header sticky top-16 z-30">
+      <div className="sticky z-30 px-6 py-2.5" style={{ background: "var(--color-ink-soft)", borderBottom: "1px solid var(--color-ink-line)", top: 68 }}>
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <Link href="/market" className="nav-link inline-flex items-center gap-1.5 text-xs font-semibold">
+          <Link href="/market" className="inline-flex items-center gap-1.5 text-xs font-semibold" style={{ color: "var(--color-text-invert-mid)" }}>
             <ArrowLeft size={13} /> Back to Market Hub
           </Link>
-          <span className="text-xs text-primary-light font-bold uppercase tracking-wider">Growth & Price Forecasting Center</span>
+          <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "var(--color-text-invert-mid)" }}>Growth & Price Forecasting Center</span>
         </div>
       </div>
 
       {/* Hero Header */}
-      <section className="bg-surface border-b border-gray-200 py-12 px-6 gradient-surface">
+      <section className="px-6 py-12" style={{ background: "var(--color-ink)" }}>
         <div className="max-w-4xl mx-auto text-center space-y-4 animate-fade-in-up">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent-light text-accent text-[10px] font-mono uppercase tracking-wider">
-            <TrendingUp size={12} className="animate-pulse" /> Real Estate Price Forecast (2026 - 2036)
+          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-mono uppercase tracking-wider" style={{ background: "var(--color-ink-soft)", border: "1px solid var(--color-ink-line)", color: "var(--color-saffron)" }}>
+            <TrendingUp size={12} /> Real Estate Price Forecast (2026 – 2036)
           </div>
-          <h2 className="text-3xl md:text-5xl font-display text-text-primary">
+          <h2 className="text-3xl md:text-5xl tracking-tight" style={{ fontFamily: "var(--font-jakarta)", fontWeight: 800, letterSpacing: "-0.02em", color: "#fff" }}>
             10-Year Growth Forecasting Model
           </h2>
-          <p className="text-text-secondary text-xs md:text-sm max-w-xl mx-auto leading-relaxed">
+          <p className="text-sm max-w-xl mx-auto leading-relaxed" style={{ color: "var(--color-text-invert-mid)" }}>
             Examine compound growth corridors with RRR transport triggers, metro expansion schedules, and institutional GCC multipliers.
           </p>
         </div>
@@ -162,11 +162,11 @@ export default function ForecastHubPage() {
                 </div>
                 <div className="flex justify-between border-b border-gray-100 pb-2">
                   <span className="text-text-secondary">Base CAGR Range</span>
-                  <span className="font-bold text-accent">{selectedCorridor.projectedCAGRMin}% - {selectedCorridor.projectedCAGRMax}%</span>
+                  <span className="font-bold text-navy-ink">{selectedCorridor.projectedCAGRMin}% - {selectedCorridor.projectedCAGRMax}%</span>
                 </div>
                 <div className="flex justify-between border-b border-gray-100 pb-2">
                   <span className="text-text-secondary">Sentiment Index</span>
-                  <span className="font-bold text-accent">{selectedCorridor.investorSentiment}</span>
+                  <span className="font-bold text-navy-ink">{selectedCorridor.investorSentiment}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-text-secondary">Investment Cycle</span>
@@ -179,7 +179,7 @@ export default function ForecastHubPage() {
           {/* GCC Multiplier Impact details */}
           <div className="card-premium space-y-4 border-t-4 border-t-warning">
             <h3 className="section-header text-base flex items-center gap-1">
-              <Building size={16} className="text-accent" />
+              <Building size={16} className="text-navy-ink" />
               GCC Multiplier Impact
             </h3>
             <p className="text-text-secondary text-[11px] leading-relaxed">
@@ -197,11 +197,11 @@ export default function ForecastHubPage() {
               </div>
               <div className="flex justify-between p-1.5 bg-surface-dim rounded">
                 <span>NORTH (Medchal)</span>
-                <span className="font-bold text-accent">+0.4% CAGR</span>
+                <span className="font-bold text-navy-ink">+0.4% CAGR</span>
               </div>
               <div className="flex justify-between p-1.5 bg-surface-dim rounded">
                 <span>EAST (Ghatkesar)</span>
-                <span className="font-bold text-accent">+0.3% CAGR</span>
+                <span className="font-bold text-navy-ink">+0.3% CAGR</span>
               </div>
             </div>
           </div>
@@ -216,7 +216,7 @@ export default function ForecastHubPage() {
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
                   <h3 className="section-header text-lg flex items-center gap-1.5">
-                    <TrendingUp className="text-accent" size={18} />
+                    <TrendingUp className="text-navy-ink" size={18} />
                     Price Index Projection: {selectedCorridor.name}
                   </h3>
                   <p className="text-text-secondary text-[11px] mt-0.5">
@@ -247,8 +247,8 @@ export default function ForecastHubPage() {
                   >
                     <defs>
                       <linearGradient id="colorBase" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#00B4D8" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="#00B4D8" stopOpacity={0}/>
+                        <stop offset="5%" stopColor="#FFB400" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#FFB400" stopOpacity={0}/>
                       </linearGradient>
                       <linearGradient id="colorOpt" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#10B981" stopOpacity={0.15}/>
@@ -276,7 +276,7 @@ export default function ForecastHubPage() {
                     <Area
                       type="monotone"
                       dataKey="Base Case Estimate"
-                      stroke="#00B4D8"
+                      stroke="#FFB400"
                       fillOpacity={1}
                       fill="url(#colorBase)"
                       strokeWidth={3}
@@ -333,7 +333,7 @@ export default function ForecastHubPage() {
 
           {/* Model Information Notice */}
           <div className="card-premium flex gap-4 text-xs bg-luxury-bg border-none shadow-none">
-            <Info size={24} className="text-accent shrink-0 mt-0.5" />
+            <Info size={24} className="text-navy-ink shrink-0 mt-0.5" />
             <div className="space-y-1.5 leading-relaxed text-text-secondary">
               <strong className="text-text-primary font-bold">About the Forecasting Model</strong>
               <p>

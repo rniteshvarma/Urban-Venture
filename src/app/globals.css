@@ -702,3 +702,262 @@ body {
 .crm-table tbody tr:last-child td {
   border-bottom: none;
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   CLIENT REDESIGN v2 — "Know where Hyderabad grows next"
+   Indian real-estate research portal design system.
+   ADDITIVE ONLY — does not touch the navy/gold Admin + CRM tokens above.
+   Prefix: --uv-* for CSS vars, .uv-* for component classes.
+   ═══════════════════════════════════════════════════════════════════ */
+
+@theme {
+  /* ── Surfaces ── */
+  --color-ink: #0D0D12;          /* hero, nav, footer, map chrome — near-black */
+  --color-ink-soft: #1A1A22;     /* elevated dark cards, dark section bands */
+  --color-ink-line: #2A2A35;     /* borders on dark surfaces */
+
+  --color-paper: #FAF9F6;        /* main page background — warm off-white */
+  --color-line: #E9E5DD;         /* light borders, 1px (client v2) */
+
+  /* ── Brand accent — saffron (used sparingly, confidently) ── */
+  --color-saffron: #FFB400;      /* primary CTA, active tab, key numbers, heat */
+  --color-saffron-deep: #E09600; /* hover */
+  --color-saffron-wash: #FFF6E0; /* tinted bg, selected chips */
+
+  /* ── Secondary — trust/authority (data sections) ── */
+  --color-navy-ink: #10233F;
+  --color-navy-wash: #EEF2F8;
+
+  /* ── Semantic ── */
+  --color-growth: #0F9D58;       /* appreciation positive, BULLISH */
+  --color-growth-wash: #E7F6EE;
+  --color-caution: #E8A33D;      /* NEUTRAL sentiment, medium risk */
+  --color-caution-wash: #FBF0DE;
+  --color-alert: #D93B30;        /* CAUTIOUS, high risk, RED legal flags */
+  --color-alert-wash: #FDECEA;
+
+  /* ── Text ── */
+  --color-text-hi: #12121A;      /* on light */
+  --color-text-mid: #5A5A66;
+  --color-text-lo: #8B8B96;
+  --color-text-invert: #FFFFFF;  /* on dark */
+  --color-text-invert-mid: #A8A8B8;
+
+  /* ── Typography families (v2) ── */
+  --font-jakarta: var(--font-plus-jakarta), sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+  --font-instrument: var(--font-instrument-serif), serif;
+
+  /* ── Radius (v2) ── */
+  --radius-pill: 999px;
+  --radius-uv-card: 14px;
+  --radius-uv-lg: 20px;
+}
+
+/* Non-color design vars (shadows, motion) live on :root */
+:root {
+  --uv-sh-1: 0 1px 2px rgba(16, 16, 26, 0.05);
+  --uv-sh-2: 0 4px 20px rgba(16, 16, 26, 0.08);
+  --uv-sh-lift: 0 12px 32px rgba(16, 16, 26, 0.12);
+  --uv-ease: 150ms ease-out;
+  --uv-panel: 300ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* ── Shadow utilities (so `shadow-uv-2` etc. are available) ── */
+@theme {
+  --shadow-uv-1: 0 1px 2px rgba(16, 16, 26, 0.05);
+  --shadow-uv-2: 0 4px 20px rgba(16, 16, 26, 0.08);
+  --shadow-uv-lift: 0 12px 32px rgba(16, 16, 26, 0.12);
+}
+
+/* ═══════════════ v2 PRIMITIVES ═══════════════ */
+
+/* Buttons */
+.uv-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--font-inter), sans-serif;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  line-height: 1;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background var(--uv-ease), color var(--uv-ease), transform var(--uv-ease), box-shadow var(--uv-ease);
+  white-space: nowrap;
+  text-decoration: none;
+}
+.uv-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.uv-btn-primary {
+  background: var(--color-saffron);
+  color: var(--color-ink);       /* text on saffron must be ink (AA) */
+  padding: 12px 22px;
+  box-shadow: var(--uv-sh-1);
+}
+.uv-btn-primary:hover { background: var(--color-saffron-deep); transform: translateY(-1px); box-shadow: var(--uv-sh-2); }
+.uv-btn-primary:active { transform: translateY(0); }
+
+.uv-btn-ghost {
+  background: var(--color-surface);
+  color: var(--color-text-hi);
+  border-color: var(--color-line);
+  padding: 12px 22px;
+}
+.uv-btn-ghost:hover { border-color: var(--color-text-lo); background: #fff; }
+
+.uv-btn-dark {
+  background: var(--color-ink);
+  color: var(--color-text-invert);
+  padding: 12px 22px;
+}
+.uv-btn-dark:hover { background: var(--color-ink-soft); }
+
+/* Chips / pills */
+.uv-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-inter), sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  line-height: 1.2;
+  white-space: nowrap;
+}
+.uv-chip-navy   { background: var(--color-navy-wash);    color: var(--color-navy-ink); }
+.uv-chip-saffron{ background: var(--color-saffron-wash); color: var(--color-saffron-deep); }
+.uv-chip-growth { background: var(--color-growth-wash);  color: var(--color-growth); }
+.uv-chip-alert  { background: var(--color-alert-wash);   color: var(--color-alert); }
+.uv-chip-caution{ background: var(--color-caution-wash); color: #9A6A1E; }
+.uv-chip-ghost  { background: transparent; color: var(--color-text-mid); border: 1px solid var(--color-line); }
+
+/* Cards */
+.uv-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-uv-card);
+  box-shadow: var(--uv-sh-1);
+  transition: transform var(--uv-ease), box-shadow var(--uv-ease), border-color var(--uv-ease);
+}
+.uv-card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--uv-sh-lift);
+  border-color: #DED8CC;
+}
+
+/* Editorial eyebrow (Instrument Serif italic) */
+.uv-eyebrow {
+  font-family: var(--font-instrument), serif;
+  font-style: italic;
+  font-size: 1.0625rem;
+  color: var(--color-text-mid);
+  letter-spacing: 0.01em;
+}
+
+/* Mono metric text */
+.uv-mono { font-family: var(--font-mono), monospace; font-weight: 500; font-feature-settings: "tnum" 1; }
+
+/* Section heading */
+.uv-h2 {
+  font-family: var(--font-jakarta), sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  color: var(--color-text-hi);
+}
+
+/* Marquee (infrastructure ticker) */
+@keyframes uv-marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.uv-marquee-track {
+  display: inline-flex;
+  gap: 0.75rem;
+  animation: uv-marquee 40s linear infinite;
+  will-change: transform;
+}
+.uv-marquee:hover .uv-marquee-track { animation-play-state: paused; }
+
+/* Skeleton shimmer (reuses existing @keyframes shimmer) */
+.uv-skeleton {
+  background: linear-gradient(90deg, #EFEBE3 0%, #F6F3EC 50%, #EFEBE3 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  border-radius: 8px;
+}
+
+/* ── Scoped legacy→v2 overrides: shift shared blue/indigo accents to saffron
+   ONLY inside the client app (.uv-client). Admin/CRM keep the originals. ── */
+.uv-client .filter-pill-active {
+  background: var(--color-saffron) !important;
+  color: var(--color-ink) !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+.uv-client .filter-pill-active:hover {
+  background: var(--color-saffron-deep) !important;
+  color: var(--color-ink) !important;
+  box-shadow: none !important;
+}
+.uv-client .filter-pill:hover {
+  border-color: var(--color-saffron) !important;
+  color: var(--color-saffron-deep) !important;
+  background: var(--color-saffron-wash) !important;
+}
+.uv-client .btn-primary {
+  background: var(--color-saffron);
+  color: var(--color-ink);
+  box-shadow: var(--uv-sh-1);
+}
+.uv-client .btn-primary:hover {
+  background: var(--color-saffron-deep);
+  color: var(--color-ink);
+  box-shadow: var(--uv-sh-2);
+}
+
+/* Saffron-accented native range input (v2) */
+.uv-range {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--color-line);
+  accent-color: var(--color-saffron);
+  cursor: pointer;
+}
+.uv-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: #fff;
+  border: 2px solid var(--color-saffron);
+  box-shadow: var(--uv-sh-1);
+}
+.uv-range::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: #fff;
+  border: 2px solid var(--color-saffron);
+}
+
+/* Hide scrollbar on horizontal carousels (Featured Projects, Welcome-back) */
+.hide-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+
+/* Reduced-motion: honour user preference across v2 motion */
+@media (prefers-reduced-motion: reduce) {
+  .uv-marquee-track { animation: none; }
+  .uv-skeleton { animation: none; }
+  .uv-card-hover:hover { transform: none; }
+}

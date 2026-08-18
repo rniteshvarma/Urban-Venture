@@ -1,38 +1,76 @@
 "use client";
 
 import React, { useState } from "react";
-import { ArrowRight, MapPin, Wallet, Clock, User } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { MapPin } from "lucide-react";
 
 interface ResearchFormProps {
-  onSubmit: (data: {
-    budget: number;
-    horizon: number;
-    city: string;
-    name?: string;
-    email?: string;
-    phone?: string;
-  }) => void;
+  onSubmit: (data: { budget: number; horizon: number; city: string; name?: string; email?: string; phone?: string }) => void;
   isLoading: boolean;
 }
 
+// Maps budget in Lakhs (10..500) to slider percentage position (0..100)
+function budgetToSlider(val: number): number {
+  if (val <= 10) return 0;
+  if (val <= 50) return ((val - 10) / 40) * 25;
+  if (val <= 100) return 25 + ((val - 50) / 50) * 25;
+  if (val <= 300) return 50 + ((val - 100) / 200) * 25;
+  if (val < 500) return 75 + ((val - 300) / 200) * 25;
+  return 100;
+}
+
+// Maps slider percentage position (0..100) back to budget in Lakhs
+function sliderToBudget(pos: number): number {
+  if (pos <= 0) return 10;
+  if (pos <= 25) {
+    const raw = 10 + (pos / 25) * 40;
+    return Math.round(raw / 5) * 5;
+  }
+  if (pos <= 50) {
+    const raw = 50 + ((pos - 25) / 25) * 50;
+    return Math.round(raw / 5) * 5;
+  }
+  if (pos <= 75) {
+    const raw = 100 + ((pos - 50) / 25) * 200;
+    return Math.round(raw / 10) * 10;
+  }
+  const raw = 300 + ((pos - 75) / 25) * 200;
+  return Math.min(500, Math.round(raw / 25) * 25);
+}
+
 export default function ResearchForm({ onSubmit, isLoading }: ResearchFormProps) {
+  const searchParams = useSearchParams();
+  const initialBudgetParam = searchParams.get("budget");
+  const initialHorizonParam = searchParams.get("horizon");
+  const initialCityParam = searchParams.get("city");
+
   const [step, setStep] = useState(1);
-  const [budget, setBudget] = useState<number>(50); // Default 50 Lakhs
-  const [horizon, setHorizon] = useState<number>(5); // Default 5 years
-  const [city, setCity] = useState<string>("Hyderabad");
-  
-  // Lead info
+  const [budget, setBudget] = useState<number>(() => {
+    if (initialBudgetParam) {
+      const parsed = parseFloat(initialBudgetParam);
+      if (!isNaN(parsed) && parsed >= 10 && parsed <= 500) return parsed;
+    }
+    return 50;
+  });
+  const [horizon, setHorizon] = useState<number>(() => {
+    if (initialHorizonParam) {
+      const parsed = parseInt(initialHorizonParam);
+      if (!isNaN(parsed) && parsed > 0) return parsed;
+    }
+    return 5;
+  });
+  const [city, setCity] = useState<string>(() => {
+    if (initialCityParam) return initialCityParam;
+    return "Hyderabad";
+  });
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
 
   const formatBudgetDisplay = (val: number) => {
-    if (val < 100) {
-      return `₹${val} Lakhs`;
-    } else {
-      const crVal = (val / 100).toFixed(2);
-      return `₹${crVal} Crores`;
-    }
+    if (val < 100) return `₹${val} Lakhs`;
+    const cr = val / 100;
+    return Number.isInteger(cr) ? `₹${cr} Crore${cr > 1 ? "s" : ""}` : `₹${cr.toFixed(2)} Crores`;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -41,222 +79,124 @@ export default function ResearchForm({ onSubmit, isLoading }: ResearchFormProps)
       setStep(step + 1);
       return;
     }
-    onSubmit({
-      budget,
-      horizon,
-      city,
-      name: name || undefined,
-      email: email || undefined,
-      phone: phone || undefined,
-    });
+    onSubmit({ budget, horizon, city, name: name || undefined, email: email || undefined, phone: phone || undefined });
   };
 
   const horizons = [1, 2, 3, 5, 7, 10];
   const cities = ["Hyderabad", "Bengaluru", "Chennai", "Mumbai", "Pune"];
 
+  const sliderPos = budgetToSlider(budget);
+
   return (
-    <div className="max-w-2xl mx-auto space-y-8 animate-fade-in-up">
-      {/* Progress Indicator */}
-      <div className="flex items-center justify-between relative px-6 py-3 max-w-lg mx-auto">
-        <div className="absolute left-10 right-10 top-1/2 -translate-y-1/2 h-1 bg-slate-200 z-0 rounded-full"></div>
-        <div 
-          className="absolute left-10 top-1/2 -translate-y-1/2 h-1 bg-gradient-to-r from-blue-600 to-indigo-600 z-0 transition-all duration-300 rounded-full"
-          style={{ width: `${((step - 1) / 2) * 78}%` }}
-        ></div>
-        
+    <div className="max-w-2xl mx-auto animate-fade-in-up" style={{ display: "flex", flexDirection: "column", gap: 28 }}>
+      {/* Progress */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", position: "relative", maxWidth: 460, margin: "0 auto", width: "100%", padding: "0 12px" }}>
+        <div style={{ position: "absolute", left: 34, right: 34, top: 20, height: 3, background: "var(--color-line)", borderRadius: 999, zIndex: 0 }} />
+        <div style={{ position: "absolute", left: 34, top: 20, height: 3, background: "var(--color-saffron)", borderRadius: 999, zIndex: 0, transition: "width 300ms ease", width: `${((step - 1) / 2) * 78}%` }} />
         {[1, 2, 3].map((num) => (
-          <div key={num} className="relative z-10 flex flex-col items-center gap-1.5 bg-[#F4F3FA] px-3">
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 ${
-              step >= num 
-                ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/25 scale-105" 
-                : "bg-white border-2 border-slate-200 text-slate-400"
-            }`}>
+          <div key={num} style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 6, background: "var(--color-paper)", padding: "0 8px" }}>
+            <div style={{ width: 40, height: 40, borderRadius: 999, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "0.875rem", fontFamily: "var(--font-mono)", transition: "all 300ms ease", background: step >= num ? "var(--color-saffron)" : "var(--color-surface)", color: step >= num ? "var(--color-ink)" : "var(--color-text-lo)", border: step >= num ? "none" : "2px solid var(--color-line)" }}>
               {num}
             </div>
-            <span className={`text-[10px] uppercase tracking-widest font-extrabold ${
-              step >= num ? "text-blue-600" : "text-slate-400"
-            }`}>
+            <span style={{ fontSize: "0.625rem", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 800, color: step >= num ? "var(--color-saffron-deep)" : "var(--color-text-lo)" }}>
               {num === 1 ? "Location" : num === 2 ? "Parameters" : "Details"}
             </span>
           </div>
         ))}
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-200/80 space-y-6">
-        
-        {/* Step 1: City Selection */}
+      <form onSubmit={handleSubmit} className="uv-card" style={{ padding: "clamp(1.5rem, 4vw, 2rem)", display: "flex", flexDirection: "column", gap: 24 }}>
         {step === 1 && (
-          <div className="space-y-8 animate-fade-in">
+          <div className="animate-fade-in" style={{ display: "flex", flexDirection: "column", gap: 28 }}>
             <div>
-              <h2 className="font-display text-xl font-extrabold text-slate-900 mb-1">Target Location</h2>
-              <p className="text-xs text-slate-500">Select your preferred investment destination</p>
+              <h2 style={{ fontFamily: "var(--font-jakarta)", fontWeight: 800, fontSize: "1.25rem", color: "var(--color-text-hi)" }}>Target Location</h2>
+              <p style={{ fontSize: "0.8125rem", color: "var(--color-text-mid)", marginTop: 2 }}>Select your preferred investment destination</p>
             </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5">
-              {cities.map((c) => (
-                <div 
-                  key={c}
-                  onClick={() => setCity(c)}
-                  className={`cursor-pointer rounded-xl border p-4 flex flex-col items-center justify-center gap-2.5 transition-all duration-200 ${
-                    city === c 
-                      ? "border-blue-600 bg-blue-50/60 text-blue-700 shadow-sm ring-2 ring-blue-600/20 font-bold" 
-                      : "border-slate-200 bg-white hover:border-blue-300 hover:bg-slate-50 text-slate-600 font-semibold"
-                  }`}
-                >
-                  <MapPin className={`w-5 h-5 ${city === c ? "text-blue-600" : "text-slate-400"}`} />
-                  <span className="text-sm">
-                    {c}
-                  </span>
-                </div>
-              ))}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 14 }}>
+              {cities.map((c) => {
+                const active = city === c;
+                return (
+                  <div key={c} onClick={() => setCity(c)} style={{ cursor: "pointer", borderRadius: 14, padding: "1.1rem", display: "flex", flexDirection: "column", alignItems: "center", gap: 10, transition: "all 150ms ease", border: `1px solid ${active ? "var(--color-saffron)" : "var(--color-line)"}`, background: active ? "var(--color-saffron-wash)" : "var(--color-surface)", boxShadow: active ? "0 0 0 3px rgba(255,180,0,0.15)" : "none" }}>
+                    <MapPin size={20} style={{ color: active ? "var(--color-saffron-deep)" : "var(--color-text-lo)" }} />
+                    <span style={{ fontSize: "0.875rem", fontWeight: active ? 700 : 600, color: active ? "var(--color-saffron-deep)" : "var(--color-text-mid)" }}>{c}</span>
+                  </div>
+                );
+              })}
             </div>
-
-            {/* Budget Selector */}
-            <div className="pt-4 border-t border-slate-100">
-              <div className="flex justify-between items-center mb-3">
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">
-                  Investment Budget
-                </label>
-                <span className="text-xl font-black text-blue-600 font-display">
-                  {formatBudgetDisplay(budget)}
-                </span>
+            <div style={{ paddingTop: 16, borderTop: "1px solid var(--color-line)" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                <label style={{ fontSize: "0.6875rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--color-text-mid)" }}>Investment Budget</label>
+                <span style={{ fontFamily: "var(--font-mono)", fontWeight: 600, fontSize: "1.25rem", color: "var(--color-saffron-deep)" }}>{formatBudgetDisplay(budget)}</span>
               </div>
-              
-              <div className="space-y-4">
-                <input
-                  type="range"
-                  min="10"
-                  max="500"
-                  step="5"
-                  value={budget}
-                  onChange={(e) => setBudget(Number(e.target.value))}
-                  className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
-                />
-                
-                <div className="flex justify-between items-center text-xs font-semibold text-slate-400 pt-1">
-                  <span>10L</span>
-                  <span>50L</span>
-                  <span>1Cr</span>
-                  <span>3Cr</span>
-                  <span>5Cr</span>
-                </div>
+              <input 
+                type="range" 
+                min={0} 
+                max={100} 
+                step={0.5} 
+                value={sliderPos} 
+                onChange={(e) => setBudget(sliderToBudget(parseFloat(e.target.value)))} 
+                className="uv-range" 
+                style={{ width: "100%" }} 
+              />
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.6875rem", fontWeight: 600, color: "var(--color-text-lo)", marginTop: 6, fontFamily: "var(--font-mono)" }}>
+                <span>10L</span><span>50L</span><span>1Cr</span><span>3Cr</span><span>5Cr</span>
               </div>
             </div>
           </div>
         )}
 
         {step === 2 && (
-          <div className="space-y-8 animate-fade-in-up">
-            <div className="text-center mb-6">
-              <h2 className="font-display text-2xl font-bold text-primary mb-2">Investment Horizon</h2>
-              <p className="text-sm text-text-secondary">How long do you plan to hold the investment?</p>
+          <div className="animate-fade-in-up" style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+            <div style={{ textAlign: "center" }}>
+              <h2 style={{ fontFamily: "var(--font-jakarta)", fontWeight: 800, fontSize: "1.5rem", color: "var(--color-text-hi)" }}>Investment Horizon</h2>
+              <p style={{ fontSize: "0.875rem", color: "var(--color-text-mid)", marginTop: 4 }}>How long do you plan to hold the investment?</p>
             </div>
-
-            {/* Horizon Selector */}
-            <div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {horizons.map((h) => (
-                  <button
-                    key={h}
-                    type="button"
-                    onClick={() => setHorizon(h)}
-                    className={`py-4 px-3 border rounded-[8px] text-sm font-bold uppercase tracking-wider transition-all duration-300 ${
-                      horizon === h
-                        ? "bg-primary border-primary text-surface shadow-md transform scale-105"
-                        : "border-luxury hover:border-accent bg-surface text-text-secondary hover:text-primary"
-                    }`}
-                  >
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: 12 }}>
+              {horizons.map((h) => {
+                const active = horizon === h;
+                return (
+                  <button key={h} type="button" onClick={() => setHorizon(h)} style={{ padding: "16px 12px", borderRadius: 12, fontSize: "0.875rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em", cursor: "pointer", transition: "all 150ms ease", background: active ? "var(--color-ink)" : "var(--color-surface)", color: active ? "#fff" : "var(--color-text-mid)", border: `1px solid ${active ? "var(--color-ink)" : "var(--color-line)"}` }}>
                     {h} {h === 1 ? "Year" : "Years"}
                   </button>
-                ))}
-              </div>
+                );
+              })}
             </div>
           </div>
         )}
 
         {step === 3 && (
-          <div className="space-y-8 animate-fade-in-up">
-            <div className="text-center mb-6">
-              <h2 className="font-display text-2xl font-bold text-primary mb-2">Save Report & Updates (Optional)</h2>
-              <p className="text-sm text-text-secondary">Enter details to automatically receive curated project listings.</p>
+          <div className="animate-fade-in-up" style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+            <div style={{ textAlign: "center" }}>
+              <h2 style={{ fontFamily: "var(--font-jakarta)", fontWeight: 800, fontSize: "1.5rem", color: "var(--color-text-hi)" }}>Save Report & Updates</h2>
+              <p style={{ fontSize: "0.875rem", color: "var(--color-text-mid)", marginTop: 4 }}>Optional — enter details to receive curated project listings.</p>
             </div>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs font-medium text-text-secondary mb-1.5">
-                  Full Name
-                </label>
-                <input
-                  type="text"
-                  placeholder="Nitesh Varma"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="input-premium w-full text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-text-secondary mb-1.5">
-                  Email Address
-                </label>
-                <input
-                  type="email"
-                  placeholder="name@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="input-premium w-full text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-text-secondary mb-1.5">
-                  Phone Number
-                </label>
-                <input
-                  type="tel"
-                  placeholder="+91 99999 99999"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="input-premium w-full text-sm"
-                />
-              </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              {[
+                { label: "Full Name", el: <input type="text" placeholder="Nitesh Varma" value={name} onChange={(e) => setName(e.target.value)} className="input-premium w-full text-sm" /> },
+                { label: "Email Address", el: <input type="email" placeholder="name@example.com" value={email} onChange={(e) => setEmail(e.target.value)} className="input-premium w-full text-sm" /> },
+                { label: "Phone Number", el: <input type="tel" placeholder="+91 99999 99999" value={phone} onChange={(e) => setPhone(e.target.value)} className="input-premium w-full text-sm" /> },
+              ].map((f) => (
+                <div key={f.label}>
+                  <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 500, color: "var(--color-text-mid)", marginBottom: 6 }}>{f.label}</label>
+                  {f.el}
+                </div>
+              ))}
             </div>
           </div>
         )}
-      
-      {/* Footer Navigation */}
-      <div className="mt-8 pt-6 border-t border-luxury flex justify-between gap-4">
-        {step > 1 ? (
-          <button
-            type="button"
-            onClick={() => setStep(step - 1)}
-            className="btn-secondary w-1/3"
-          >
-            Back
-          </button>
-        ) : (
-          <div className="w-1/3"></div> // spacer
-        )}
 
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="btn-primary flex-1"
-        >
-          {isLoading ? (
-            <span className="flex items-center justify-center gap-2">
-              <svg className="animate-spin h-4 w-4 text-surface" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-              </svg>
-              Analyzing...
-            </span>
-          ) : step === 3 ? (
-            "Generate Report"
+        {/* Footer nav */}
+        <div style={{ marginTop: 8, paddingTop: 20, borderTop: "1px solid var(--color-line)", display: "flex", justifyContent: "space-between", gap: 16 }}>
+          {step > 1 ? (
+            <button type="button" onClick={() => setStep(step - 1)} className="uv-btn uv-btn-ghost" style={{ width: "33%" }}>Back</button>
           ) : (
-            "Next Step"
+            <div style={{ width: "33%" }} />
           )}
-        </button>
-      </div>
-    </form>
+          <button type="submit" disabled={isLoading} className="uv-btn uv-btn-primary" style={{ flex: 1 }}>
+            {isLoading ? "Analyzing…" : step === 3 ? "Generate Report" : "Next Step"}
+          </button>
+        </div>
+      </form>
     </div>
   );
 }

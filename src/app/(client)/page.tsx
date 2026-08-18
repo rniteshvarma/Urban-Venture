@@ -1,293 +1,274 @@
-import Link from "next/link";
-import { ArrowRight, MapPin, TrendingUp, ShieldCheck, Zap, Activity, Building, BarChart3, CheckCircle2 } from "lucide-react";
+"use client";
 
-export default function ClientLandingPage() {
-  const featuredProjects = [
-    {
-      id: "aura-symphony",
-      name: "Aura Symphony Residency",
-      location: "Financial District",
-      price: "From ₹2.5 Cr",
-      image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80",
-      description: "Ultra-luxury 3 & 4 BHK apartments with panoramic views and world-class amenities in the heart of the IT hub.",
-      configs: ["3, 4 BHK", "Under Construction"],
-      status: "RERA Approved"
-    },
-    {
-      id: "neopolis-horizon",
-      name: "Neopolis Horizon Towers",
-      location: "Kokapet Neopolis",
-      price: "From ₹1.8 Cr",
-      image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=800&q=80",
-      description: "High-density commercial and residential high-rises connected directly to Neopolis SEZ & ORR Exit 1.",
-      configs: ["2, 3 BHK", "Newly Launched"],
-      status: "HMDA Approved"
-    },
-    {
-      id: "pharma-city-meadows",
-      name: "Pharma City Eco Meadows",
-      location: "Shamshabad Belt",
-      price: "From ₹45 Lakhs",
-      image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80",
-      description: "Gated plotting community adjacent to the Srisailam Highway growth corridor and airport expansion zone.",
-      configs: ["Plots (200-500 sq.yds)", "Ready for Reg."],
-      status: "DTCP Approved"
-    }
-  ];
+export const dynamic = "force-dynamic";
+
+import Link from "next/link";
+import React, { useEffect, useState } from "react";
+import { ArrowRight, Search, Bot, Building2, CheckCircle2, Calculator, Ruler, FileText, Repeat } from "lucide-react";
+import {
+  SearchCommandBar,
+  SectionHeader,
+  CorridorCard,
+  ProjectCard,
+  MetricStat,
+  SkeletonCard,
+  SourceTag,
+  type CorridorCardData,
+  type ProjectCardData,
+  CYCLE,
+  type InvCycle,
+} from "@/components/ui";
+import { formatDate, formatCount } from "@/lib/format";
+
+interface Pulse {
+  totalRegistrations?: number | null;
+  totalValueCr?: number | null;
+  yoyGrowthPct?: number | null;
+  avgAskingPriceSqFt?: number | null;
+  gccTotalPct?: number | null;
+  source?: string | null;
+  reportDate?: string | null;
+}
+
+// Homepage positioning copy — swappable (spec Part 1).
+const HERO = {
+  badge: "Trusted by Hyderabad investors",
+  h1: "Know where Hyderabad grows next.",
+  sub: "AI-powered investment research for Hyderabad land and property — built on verified government infrastructure data, corridor by corridor.",
+  micro: "Not a listing site. A research platform.",
+};
+
+const HERO_IMG =
+  "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1920&q=80";
+
+const CYCLE_FILTERS: (InvCycle | "ALL")[] = ["ALL", "ACT_NOW", "MID_CYCLE", "WATCH_AND_BUY", "PATIENT_CAPITAL"];
+
+export default function HomePage() {
+  const [corridors, setCorridors] = useState<CorridorCardData[] | null>(null);
+  const [projects, setProjects] = useState<ProjectCardData[] | null>(null);
+  const [pulse, setPulse] = useState<Pulse | null>(null);
+  const [infraCount, setInfraCount] = useState<number | null>(null);
+  const [cycleFilter, setCycleFilter] = useState<InvCycle | "ALL">("ALL");
+
+  useEffect(() => {
+    const j = (r: Response) => (r.ok ? r.json() : Promise.reject(r.status));
+    fetch("/api/market/corridors").then(j).then(setCorridors).catch(() => setCorridors([]));
+    fetch("/api/projects").then(j).then(setProjects).catch(() => setProjects([]));
+    fetch("/api/market/pulse").then(j).then((d) => setPulse(d?.pulse ?? null)).catch(() => setPulse(null));
+    fetch("/api/market/infrastructure")
+      .then(j)
+      .then((d) => setInfraCount(Array.isArray(d) ? d.length : Array.isArray(d?.projects) ? d.projects.length : null))
+      .catch(() => setInfraCount(null));
+  }, []);
+
+  const corridorOptions = (corridors ?? []).map((c) => ({ slug: c.corridor, name: c.name }));
+  const quickChips = (corridors ?? []).slice(0, 5).map((c) => ({
+    label: c.shortName || c.name,
+    href: `/market/${c.corridor}`,
+  }));
+
+  const filteredCorridors = (corridors ?? []).filter(
+    (c) => cycleFilter === "ALL" || (c as any).investmentCycle === cycleFilter
+  );
+
+  const lastUpdated = pulse?.reportDate
+    ? formatDate(pulse.reportDate)
+    : corridors?.[0]?.["lastComputedAt" as keyof CorridorCardData]
+    ? formatDate(corridors[0]["lastComputedAt" as keyof CorridorCardData] as any)
+    : formatDate(new Date());
 
   return (
-    <div className="flex flex-col min-h-screen">
-      {/* Hero Section */}
-      <section className="relative w-full min-h-[85vh] flex items-center justify-center gradient-hero overflow-hidden pt-24 pb-16">
-        <div className="absolute inset-0 pattern-grid opacity-20 pointer-events-none"></div>
-        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-accent/20 rounded-full blur-[120px] pointer-events-none"></div>
-        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-primary-light/40 rounded-full blur-[100px] pointer-events-none"></div>
-
-        <div className="relative z-10 container mx-auto px-4 flex flex-col items-center text-center animate-fade-in">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/15 bg-white/10 mb-8 backdrop-blur-md animate-fade-in-up stagger-1">
-            <span className="w-2 h-2 rounded-full bg-accent animate-pulse-glow" />
-            <span className="text-xs font-semibold uppercase tracking-wider text-accent-cyan">
-              Hyderabad Real Estate Intelligence
+    <div className="flex flex-col">
+      {/* ═══ 5.1 HERO ═══ */}
+      <section style={{ position: "relative", background: "var(--color-ink)", overflow: "hidden" }}>
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          poster={HERO_IMG}
+          aria-hidden
+          onCanPlay={(e) => { e.currentTarget.muted = true; e.currentTarget.play().catch(() => {}); }}
+          onLoadedData={(e) => { e.currentTarget.muted = true; e.currentTarget.play().catch(() => {}); }}
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.5 }}
+          src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260405_170732_8a9ccda6-5cff-4628-b164-059c500a2b41.mp4"
+        />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(0deg, var(--color-ink) 8%, rgba(13,13,18,0.55) 60%, rgba(13,13,18,0.75) 100%)" }} />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ position: "relative", zIndex: 2, paddingTop: "clamp(4rem, 9vw, 8rem)", paddingBottom: "5.5rem" }}>
+          <div style={{ maxWidth: 720 }}>
+            <span className="animate-fade-in-up" style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(255,255,255,0.08)", border: "1px solid var(--color-ink-line)", color: "#fff", padding: "6px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600 }}>
+              ⭐ {HERO.badge}
             </span>
-          </div>
-
-          <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-white tracking-tight leading-tight mb-6 max-w-4xl animate-fade-in-up stagger-2">
-            AI-Powered Real Estate <br />
-            <span className="text-gradient-accent">Investment Research</span>
-          </h1>
-
-          <p className="font-sans text-lg md:text-xl text-white/80 max-w-2xl mb-10 leading-relaxed animate-fade-in-up stagger-3">
-            Personalized corridor recommendations for Hyderabad's fastest-growing micro-markets. Analyze budgets, investment horizons, and local infrastructure developments in seconds.
-          </p>
-
-          <div className="glass-panel p-6 md:p-8 rounded-[16px] shadow-luxury max-w-lg w-full mb-16 animate-fade-in-up stagger-4">
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/research" className="btn-primary w-full sm:w-auto">
-                Start Your Analysis <ArrowRight className="ml-2 w-4 h-4" />
-              </Link>
-              <Link href="/market" className="btn-secondary w-full sm:w-auto text-white border-white/20 hover:bg-white/10">
-                Explore Corridors
-              </Link>
-            </div>
-          </div>
-
-          {/* Stats Row */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-12 w-full max-w-4xl">
-            <div className="flex flex-col items-center animate-fade-in-up stagger-4">
-              <div className="font-display text-4xl font-bold text-white mb-2">12+</div>
-              <div className="text-sm font-medium text-white/60 uppercase tracking-widest">Corridors</div>
-            </div>
-            <div className="flex flex-col items-center animate-fade-in-up stagger-5">
-              <div className="font-display text-4xl font-bold text-white mb-2">₹34,420 Cr</div>
-              <div className="text-sm font-medium text-white/60 uppercase tracking-widest">Data Processed</div>
-            </div>
-            <div className="flex flex-col items-center animate-fade-in-up stagger-6">
-              <div className="font-display text-4xl font-bold text-white mb-2">100%</div>
-              <div className="text-sm font-medium text-white/60 uppercase tracking-widest">AI-Powered</div>
-            </div>
+            <h1 className="animate-fade-in-up stagger-1" style={{ fontFamily: "var(--font-jakarta)", fontWeight: 800, letterSpacing: "-0.02em", lineHeight: 1.02, color: "#fff", fontSize: "clamp(2.75rem, 6vw, 4.5rem)", marginTop: 20 }}>
+              {HERO.h1}
+            </h1>
+            <p className="animate-fade-in-up stagger-2" style={{ color: "var(--color-text-invert-mid)", fontSize: "clamp(1rem, 1.6vw, 1.25rem)", lineHeight: 1.6, marginTop: 18, maxWidth: 620 }}>
+              {HERO.sub}
+            </p>
+            <p className="animate-fade-in-up stagger-3" style={{ fontFamily: "var(--font-instrument)", fontStyle: "italic", color: "var(--color-saffron)", fontSize: "1.25rem", marginTop: 14 }}>
+              {HERO.micro}
+            </p>
           </div>
         </div>
       </section>
 
-      {/* Why Urban Ventures */}
-      <section className="py-16 md:py-24 bg-surface relative z-20">
-        <div className="container mx-auto px-4">
-          <div className="mb-12">
-            <h2 className="section-header font-display text-3xl md:text-4xl font-bold text-text-primary pl-4">Why Urban Ventures</h2>
-            <p className="font-sans text-text-secondary mt-4 max-w-2xl pl-4">Data-driven insights that empower you to make confident real estate investments in Hyderabad.</p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="card-premium p-8 animate-fade-in-up stagger-1">
-              <div className="w-12 h-12 rounded-full bg-accent-light flex items-center justify-center mb-6">
-                <Zap className="w-6 h-6 text-accent" />
-              </div>
-              <h3 className="font-display text-xl font-bold text-text-primary mb-3">Instant Analysis</h3>
-              <p className="font-sans text-text-secondary leading-relaxed">
-                Get comprehensive insights on properties, infrastructure, and ROI projections in seconds, not days.
-              </p>
-            </div>
-            <div className="card-premium p-8 animate-fade-in-up stagger-2">
-              <div className="w-12 h-12 rounded-full bg-success-light flex items-center justify-center mb-6">
-                <TrendingUp className="w-6 h-6 text-success" />
-              </div>
-              <h3 className="font-display text-xl font-bold text-text-primary mb-3">Growth Forecasting</h3>
-              <p className="font-sans text-text-secondary leading-relaxed">
-                Proprietary AI models predict capital appreciation based on upcoming infrastructure and zoning changes.
-              </p>
-            </div>
-            <div className="card-premium p-8 animate-fade-in-up stagger-3">
-              <div className="w-12 h-12 rounded-full bg-warning-light flex items-center justify-center mb-6">
-                <ShieldCheck className="w-6 h-6 text-warning" />
-              </div>
-              <h3 className="font-display text-xl font-bold text-text-primary mb-3">Verified Data</h3>
-              <p className="font-sans text-text-secondary leading-relaxed">
-                Every data point is cross-referenced with official RERA records, HMDA master plans, and market transactions.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* ═══ 5.2 SEARCH COMMAND BAR (overlaps hero) ═══ */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full" style={{ position: "relative", zIndex: 5, marginTop: -48 }}>
+        <SearchCommandBar corridors={corridorOptions} quickChips={quickChips} />
+      </div>
 
-      {/* Corridor highlights */}
-      <section className="py-16 md:py-24 bg-surface-dim overflow-hidden">
-        <div className="container mx-auto px-4 mb-12">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <div>
-              <h2 className="section-header font-display text-3xl md:text-4xl font-bold text-text-primary pl-4">Prime Corridors</h2>
-              <p className="font-sans text-text-secondary mt-4 max-w-2xl pl-4">Discover the high-growth zones shaping the future of Hyderabad.</p>
-            </div>
-            <Link href="/market" className="text-accent font-medium hover:underline flex items-center">
-              View All Corridors <ArrowRight className="ml-1 w-4 h-4" />
-            </Link>
-          </div>
+      {/* ═══ 5.3 TRUST BAR ═══ */}
+      <div className="max-w-7xl mx-auto px-4 w-full" style={{ marginTop: 20 }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "8px 22px", justifyContent: "center", fontFamily: "var(--font-mono)", fontSize: "0.75rem", color: "var(--color-text-mid)" }}>
+          <span>✅ {corridors ? corridors.length : "…"} Corridors Tracked</span>
+          <span style={{ color: "var(--color-line)" }}>·</span>
+          <span>✅ {infraCount ?? "12"} Govt Projects Monitored</span>
+          <span style={{ color: "var(--color-line)" }}>·</span>
+          <span>✅ HMDA / RERA Verified</span>
+          <span style={{ color: "var(--color-line)" }}>·</span>
+          <span>✅ Data updated {lastUpdated}</span>
         </div>
+      </div>
 
-        {/* Carousel container */}
-        <div className="flex overflow-x-auto gap-6 px-4 md:px-8 pb-8 snap-x hide-scrollbar max-w-[100vw]">
+      {/* ═══ 5.4 HOW IT WORKS ═══ */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full" style={{ paddingTop: "4.5rem", paddingBottom: "1rem" }}>
+        <SectionHeader eyebrow="Not a listing site." title="How it works" subtitle="Three inputs. A research report backed by real government data." />
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 18 }}>
           {[
-            { name: "Neopolis & Kokapet", growth: "+24%", dir: "West", desc: "The next financial district with premium skyscrapers." },
-            { name: "Tellapur - Nallagandla", growth: "+18%", dir: "West", desc: "Luxury residential hub favored by IT executives." },
-            { name: "Airport Corridor", growth: "+32%", dir: "South", desc: "Rapidly expanding logistics and aerospace ecosystem." },
-            { name: "Uppal - Pocharam", growth: "+15%", dir: "East", desc: "Emerging IT destination with excellent metro connectivity." }
-          ].map((corridor, idx) => (
-            <div key={idx} className="card-interactive min-w-[300px] md:min-w-[350px] p-6 snap-start">
-              <div className="flex justify-between items-start mb-4">
-                <span className="badge-hot">{corridor.growth} Growth</span>
-                <span className="text-xs font-semibold uppercase tracking-wider text-text-tertiary">{corridor.dir}</span>
-              </div>
-              <h3 className="font-display text-xl font-bold text-text-primary mb-2">{corridor.name}</h3>
-              <p className="font-sans text-text-secondary text-sm mb-6">{corridor.desc}</p>
-              <Link href={`/market`} className="text-sm font-medium text-primary hover:text-accent flex items-center transition-colors">
-                Explore <ArrowRight className="ml-1 w-4 h-4" />
-              </Link>
+            { n: "01", icon: <Search size={22} />, label: "Tell us your budget", body: "Budget, horizon, city. Three inputs." },
+            { n: "02", icon: <Bot size={22} />, label: "AI researches the market", body: "Corridors, risk scores, exit timing." },
+            { n: "03", icon: <Building2 size={22} />, label: "Backed by real govt data", body: "RRR, Metro Phase 2, Pharma City, HMDA." },
+          ].map((s) => (
+            <div key={s.n} className="uv-card" style={{ position: "relative", padding: "1.75rem 1.5rem" }}>
+              <span style={{ position: "absolute", top: 14, right: 18, fontFamily: "var(--font-mono)", fontWeight: 600, fontSize: "1.75rem", color: "var(--color-saffron)" }}>{s.n}</span>
+              <div style={{ color: "var(--color-saffron-deep)", marginBottom: 14 }}>{s.icon}</div>
+              <h3 style={{ fontFamily: "var(--font-jakarta)", fontWeight: 700, fontSize: "1.125rem", color: "var(--color-text-hi)" }}>{s.label}</h3>
+              <p style={{ marginTop: 6, color: "var(--color-text-mid)", fontSize: "0.9375rem" }}>{s.body}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Featured Projects */}
-      <section className="py-16 md:py-24 bg-surface">
-        <div className="container mx-auto px-4">
-          <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <div>
-              <h2 className="section-header font-display text-3xl md:text-4xl font-bold text-text-primary pl-4">Featured Projects</h2>
-              <p className="font-sans text-text-secondary mt-4 max-w-2xl pl-4">Handpicked developments offering exceptional value and growth potential.</p>
-            </div>
-            <Link href="/projects" className="text-accent font-medium hover:underline flex items-center">
-              View All Projects <ArrowRight className="ml-1 w-4 h-4" />
-            </Link>
+      {/* ═══ 5.6 CORRIDOR HEAT GRID ═══ */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full" style={{ paddingTop: "4rem" }}>
+        <SectionHeader
+          title="Where Hyderabad is moving"
+          action={<Link href="/market" className="uv-btn uv-btn-ghost" style={{ padding: "9px 16px", fontSize: "0.8125rem" }}>View all corridors <ArrowRight size={15} /></Link>}
+        />
+        {/* Filter chips */}
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 22 }}>
+          {CYCLE_FILTERS.map((f) => {
+            const active = f === cycleFilter;
+            const label = f === "ALL" ? "All" : CYCLE[f].label;
+            return (
+              <button key={f} type="button" onClick={() => setCycleFilter(f)} className="uv-chip"
+                style={{ cursor: "pointer", border: "1px solid var(--color-line)", background: active ? "var(--color-saffron)" : "var(--color-surface)", color: active ? "var(--color-ink)" : "var(--color-text-mid)" }}>
+                {f !== "ALL" && CYCLE[f].emoji ? `${CYCLE[f].emoji} ` : ""}{label}
+              </button>
+            );
+          })}
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 20 }}>
+          {corridors === null
+            ? Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} variant="corridor" />)
+            : filteredCorridors.slice(0, 9).map((c) => <CorridorCard key={c.corridor} corridor={c} />)}
+        </div>
+      </section>
+
+      {/* ═══ 5.7 LIVE MARKET PULSE (dark band) ═══ */}
+      <section style={{ background: "var(--color-ink)", marginTop: "4.5rem", padding: "3.25rem 0" }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 28 }}>
+            <MetricStat value={pulse?.totalRegistrations ?? 51089} label="Registrations" sub="FY 2025-26" />
+            <MetricStat value={pulse?.totalValueCr ?? 34420} prefix="₹" suffix=" Cr" label="Transaction Value" />
+            <MetricStat value={pulse?.yoyGrowthPct ?? 40} prefix="+" suffix="%" label="YoY Growth" sub="Mar 2026" />
+            <MetricStat value={pulse?.avgAskingPriceSqFt ?? 9430} prefix="₹" label="Avg / sq.ft" />
+            <MetricStat value={pulse?.gccTotalPct ?? 20} suffix="%" label="of India's GCCs" />
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {featuredProjects.map((project) => (
-              <div key={project.id} className="card-premium overflow-hidden group flex flex-col justify-between">
-                <div>
-                  <div className="relative h-60 overflow-hidden bg-slate-900">
-                    <img 
-                      src={project.image} 
-                      alt={project.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 brightness-95"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-                    
-                    <div className="absolute top-3 left-3 z-10">
-                      <span className="bg-emerald-500/90 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1 rounded-full flex items-center gap-1 shadow-sm">
-                        <CheckCircle2 className="w-3 h-3" /> {project.status}
-                      </span>
-                    </div>
-                    <div className="absolute bottom-3 left-3 z-10">
-                      <span className="bg-[#0B1D3A]/90 backdrop-blur-md text-white text-xs font-bold px-3.5 py-1.2 rounded-full border border-white/20 shadow-md">
-                        {project.price}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="p-6 space-y-3">
-                    <div className="flex items-center gap-1.5 text-text-tertiary text-xs font-semibold">
-                      <MapPin className="w-3.5 h-3.5 text-accent" />
-                      <span>{project.location}</span>
-                    </div>
-                    <h3 className="font-display text-xl font-bold text-text-primary group-hover:text-accent transition-colors">
-                      {project.name}
-                    </h3>
-                    <p className="font-sans text-text-secondary text-xs leading-relaxed line-clamp-2">
-                      {project.description}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="px-6 pb-6 pt-2 flex items-center justify-between border-t border-slate-100 mt-2">
-                  <div className="flex gap-1.5">
-                    {project.configs.map((cfg, i) => (
-                      <span key={i} className="px-2.5 py-0.5 bg-[#F0EEFA] text-[#5B4FE0] text-[10px] font-bold rounded-full">
-                        {cfg}
-                      </span>
-                    ))}
-                  </div>
-                  <Link href={`/projects`} className="text-xs font-bold text-[#5B4FE0] hover:text-primary flex items-center gap-1">
-                    Details <ArrowRight size={12} />
-                  </Link>
-                </div>
-              </div>
-            ))}
+          <div style={{ marginTop: 22, textAlign: "right" }}>
+            <SourceTag align="right">{pulse?.source || "Knight Frank · SquareYards · TG-RERA"}</SourceTag>
           </div>
         </div>
       </section>
 
-      {/* Market Pulse */}
-      <section className="py-16 md:py-24 bg-[#0B1D3A] text-white relative overflow-hidden">
-        <div className="absolute inset-0 pattern-dots opacity-10 pointer-events-none"></div>
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="text-center mb-12">
-            <h2 className="font-display text-3xl md:text-4xl font-bold mb-4 text-white">Hyderabad Market Pulse</h2>
-            <p className="font-sans text-white/70 max-w-2xl mx-auto">Real-time indicators tracking the city's real estate trajectory for this quarter.</p>
-          </div>
+      {/* ═══ 5.8 FEATURED PROJECTS (carousel) ═══ */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full" style={{ paddingTop: "4.5rem" }}>
+        <SectionHeader
+          title="Featured projects"
+          action={<Link href="/projects" className="uv-btn uv-btn-ghost" style={{ padding: "9px 16px", fontSize: "0.8125rem" }}>All projects <ArrowRight size={15} /></Link>}
+        />
+        <div style={{ display: "flex", gap: 18, overflowX: "auto", scrollSnapType: "x mandatory", paddingBottom: 12 }} className="hide-scrollbar">
+          {projects === null
+            ? Array.from({ length: 4 }).map((_, i) => <div key={i} style={{ minWidth: 288 }}><SkeletonCard variant="project" /></div>)
+            : projects.slice(0, 8).map((p) => <ProjectCard key={p.id} project={p} variant="carousel" />)}
+        </div>
+      </section>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-white/5 border border-white/10 backdrop-blur-md p-6 rounded-2xl">
-              <div className="w-10 h-10 rounded-xl bg-accent-cyan/20 text-accent-cyan flex items-center justify-center mb-4">
-                <Activity className="w-5 h-5" />
+      {/* ═══ 5.10 TOOLS STRIP ═══ */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full" style={{ paddingTop: "4.5rem" }}>
+        <SectionHeader title="Tools for the numbers" />
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16 }}>
+          {[
+            { icon: <Calculator size={20} />, name: "ROI Calculator", desc: "Project appreciation vs Nifty, gold, FD." },
+            { icon: <FileText size={20} />, name: "EMI Calculator", desc: "Monthly outgo at current home-loan rates." },
+            { icon: <Ruler size={20} />, name: "Stamp Duty", desc: "Registration + stamp duty for Telangana." },
+            { icon: <Repeat size={20} />, name: "Unit Converter", desc: "sq.yd ↔ sq.ft ↔ acre ↔ guntha ↔ cent." },
+          ].map((t) => (
+            <Link key={t.name} href="/calculator" className="uv-card uv-card-hover" style={{ padding: "1.4rem 1.35rem", display: "flex", flexDirection: "column", gap: 8, textDecoration: "none" }}>
+              <div style={{ color: "var(--color-saffron-deep)" }}>{t.icon}</div>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <h3 style={{ fontFamily: "var(--font-jakarta)", fontWeight: 700, fontSize: "1rem", color: "var(--color-text-hi)" }}>{t.name}</h3>
+                <ArrowRight size={16} color="var(--color-text-lo)" />
               </div>
-              <div className="text-3xl md:text-4xl font-display font-bold text-white mb-1">14,250</div>
-              <div className="text-white/70 text-xs font-semibold uppercase tracking-wider mb-3">Units Launched (Q3)</div>
-              <div className="flex items-center text-emerald-400 text-xs font-bold">
-                <TrendingUp className="w-4 h-4 mr-1" /> +12.5% YoY
-              </div>
-            </div>
-            
-            <div className="bg-white/5 border border-white/10 backdrop-blur-md p-6 rounded-2xl">
-              <div className="w-10 h-10 rounded-xl bg-amber-400/20 text-amber-300 flex items-center justify-center mb-4">
-                <Building className="w-5 h-5" />
-              </div>
-              <div className="text-3xl md:text-4xl font-display font-bold text-white mb-1">₹7,200</div>
-              <div className="text-white/70 text-xs font-semibold uppercase tracking-wider mb-3">Avg. Price / Sq.Ft</div>
-              <div className="flex items-center text-emerald-400 text-xs font-bold">
-                <TrendingUp className="w-4 h-4 mr-1" /> +8.2% YoY
-              </div>
-            </div>
-            
-            <div className="bg-white/5 border border-white/10 backdrop-blur-md p-6 rounded-2xl">
-              <div className="w-10 h-10 rounded-xl bg-emerald-400/20 text-emerald-300 flex items-center justify-center mb-4">
-                <BarChart3 className="w-5 h-5" />
-              </div>
-              <div className="text-3xl md:text-4xl font-display font-bold text-white mb-1">3.2M</div>
-              <div className="text-white/70 text-xs font-semibold uppercase tracking-wider mb-3">Commercial Leasing (Sq.Ft)</div>
-              <div className="flex items-center text-emerald-400 text-xs font-bold">
-                <TrendingUp className="w-4 h-4 mr-1" /> +15.4% YoY
-              </div>
-            </div>
-            
-            <div className="bg-white/5 border border-white/10 backdrop-blur-md p-6 rounded-2xl">
-              <div className="w-10 h-10 rounded-xl bg-purple-400/20 text-purple-300 flex items-center justify-center mb-4">
-                <MapPin className="w-5 h-5" />
-              </div>
-              <div className="text-3xl md:text-4xl font-display font-bold text-white mb-1">42</div>
-              <div className="text-white/70 text-xs font-semibold uppercase tracking-wider mb-3">Active Infra Projects</div>
-              <div className="text-white/70 text-xs font-bold">
-                Worth ₹45k+ Cr
-              </div>
-            </div>
+              <p style={{ color: "var(--color-text-mid)", fontSize: "0.8125rem" }}>{t.desc}</p>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* ═══ 5.11 WHY US ═══ */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full" style={{ paddingTop: "4.5rem", paddingBottom: "5rem" }}>
+        <SectionHeader eyebrow="Direct, and confident." title="Why us" />
+        <div className="uv-card" style={{ overflow: "hidden", padding: 0 }}>
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 520, tableLayout: "fixed" }}>
+              <colgroup>
+                <col style={{ width: "50%" }} />
+                <col style={{ width: "25%" }} />
+                <col style={{ width: "25%" }} />
+              </colgroup>
+              <thead>
+                <tr>
+                  <th style={{ textAlign: "left", padding: "16px 20px", fontSize: "0.8125rem", color: "var(--color-text-mid)", fontWeight: 600 }}></th>
+                  <th style={{ textAlign: "center", padding: "16px 20px", fontSize: "0.8125rem", color: "var(--color-text-mid)", fontWeight: 600 }}>Listing Portals</th>
+                  <th style={{ textAlign: "center", padding: "16px 20px", fontSize: "0.8125rem", color: "var(--color-saffron-deep)", fontWeight: 700, background: "var(--color-saffron-wash)" }}>This Platform</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  ["Property listings", true, true],
+                  ["Government infrastructure data", false, true],
+                  ["Corridor appreciation history", false, true],
+                  ["AI investment recommendations", false, true],
+                  ["Legal due-diligence guidance", false, true],
+                  ["Post-purchase value tracking", false, true],
+                ].map(([label, them, us], i) => (
+                  <tr key={i} style={{ borderTop: "1px solid var(--color-line)" }}>
+                    <td style={{ padding: "14px 20px", fontSize: "0.9375rem", color: "var(--color-text-hi)" }}>{label as string}</td>
+                    <td style={{ padding: "14px 20px", textAlign: "center", color: them ? "var(--color-text-mid)" : "var(--color-text-lo)", verticalAlign: "middle" }}>
+                      <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 24, height: 24, margin: "0 auto" }}>
+                        {them ? <CheckCircle2 size={18} /> : "—"}
+                      </span>
+                    </td>
+                    <td style={{ padding: "14px 20px", textAlign: "center", background: "var(--color-saffron-wash)", color: "var(--color-growth)", verticalAlign: "middle" }}>
+                      <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 24, height: 24, margin: "0 auto" }}>
+                        {us ? <CheckCircle2 size={18} /> : "—"}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </section>

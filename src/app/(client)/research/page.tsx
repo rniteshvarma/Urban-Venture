@@ -3,6 +3,15 @@
 import React, { useState, useEffect } from "react";
 import ResearchForm from "@/components/client/ResearchForm";
 import ReportCard from "@/components/client/ReportCard";
+import { PageHero } from "@/components/ui";
+import { Bot } from "lucide-react";
+
+const RESEARCH_STEPS = [
+  "Analysing 15 Hyderabad corridors…",
+  "Cross-referencing 12 government infrastructure projects…",
+  "Checking HMDA & RERA approval records…",
+  "Modelling 5-year appreciation scenarios…",
+];
 
 export default function ResearchPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -10,23 +19,14 @@ export default function ResearchPage() {
   const [searchId, setSearchId] = useState<string>("");
   const [allProjects, setAllProjects] = useState<any[]>([]);
   const [contactProvided, setContactProvided] = useState(false);
-  
-  // Save form parameters to pass back to ReportCard if they request consultation later
-  const [formData, setFormData] = useState({
-    budget: 0,
-    horizon: 0,
-    city: "",
-  });
+  const [formData, setFormData] = useState({ budget: 0, horizon: 0, city: "" });
+  const [stepIdx, setStepIdx] = useState(0);
 
-  // Fetch projects on load to use as comparables
   useEffect(() => {
     async function loadProjects() {
       try {
         const res = await fetch("/api/projects");
-        if (res.ok) {
-          const data = await res.ok ? await res.json() : [];
-          setAllProjects(data);
-        }
+        if (res.ok) setAllProjects(await res.json());
       } catch (err) {
         console.error("Failed to load projects:", err);
       }
@@ -34,22 +34,21 @@ export default function ResearchPage() {
     loadProjects();
   }, []);
 
-  const handleFormSubmit = async (data: {
-    budget: number;
-    horizon: number;
-    city: string;
-    name?: string;
-    email?: string;
-    phone?: string;
-  }) => {
+  // cycle the "researching…" status lines while loading
+  useEffect(() => {
+    if (!isLoading) {
+      setStepIdx(0);
+      return;
+    }
+    const id = setInterval(() => setStepIdx((i) => Math.min(i + 1, RESEARCH_STEPS.length - 1)), 1100);
+    return () => clearInterval(id);
+  }, [isLoading]);
+
+  const handleFormSubmit = async (data: { budget: number; horizon: number; city: string; name?: string; email?: string; phone?: string }) => {
     setIsLoading(true);
     setReportData(null);
     setContactProvided(!!data.email);
-    setFormData({
-      budget: data.budget,
-      horizon: data.horizon,
-      city: data.city,
-    });
+    setFormData({ budget: data.budget, horizon: data.horizon, city: data.city });
 
     try {
       const res = await fetch("/api/research", {
@@ -57,13 +56,12 @@ export default function ResearchPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
-
       const responseData = await res.json();
       if (responseData.success) {
         setReportData(responseData.recommendations);
         setSearchId(responseData.searchId);
       } else {
-        alert(responseData.details ? `${responseData.error}: ${responseData.details}` : (responseData.error || "An error occurred during recommendations generation."));
+        alert(responseData.details ? `${responseData.error}: ${responseData.details}` : responseData.error || "An error occurred during recommendations generation.");
       }
     } catch (err: any) {
       console.error(err);
@@ -74,62 +72,55 @@ export default function ResearchPage() {
   };
 
   return (
-    <div className="flex-grow pt-36 pb-20 px-4 sm:px-6 lg:px-8 bg-[#F4F3FA]">
-      <div className="max-w-4xl mx-auto space-y-10">
-        
-        {/* Page Header (Hide on print) */}
-        <div className="no-print text-center max-w-2xl mx-auto space-y-3">
-          <span className="badge badge-premium">
-            AI Advisory Engine
-          </span>
-          <h1 className="font-display text-3xl sm:text-5xl font-extrabold text-primary tracking-tight">
-            AI Investment Advisory
-          </h1>
-          <p className="text-sm sm:text-base text-text-secondary leading-relaxed">
-            Specify your parameters below to generate a tailored market intelligence report covering Hyderabad's growth corridors, risk indexes, and projected appreciation.
-          </p>
+    <div style={{ background: "var(--color-paper)", minHeight: "100vh" }}>
+      {!reportData && (
+        <div className="no-print">
+          <PageHero
+            eyebrow={<><Bot size={12} /> AI Advisory Engine</>}
+            title="AI Investment Advisory"
+            subtitle="Three inputs — budget, horizon, city. We generate a tailored research report covering Hyderabad's growth corridors, risk indexes, and projected appreciation."
+          />
         </div>
+      )}
 
-        {/* Form or Report */}
-        {!reportData && !isLoading ? (
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8" style={{ paddingTop: reportData ? "2rem" : "2.5rem", paddingBottom: "4rem" }}>
+        {!reportData && !isLoading && (
           <div className="no-print animate-fade-in">
-            <ResearchForm onSubmit={handleFormSubmit} isLoading={isLoading} />
+            <React.Suspense fallback={<div className="h-64 flex items-center justify-center text-sm text-slate-400">Loading form…</div>}>
+              <ResearchForm onSubmit={handleFormSubmit} isLoading={isLoading} />
+            </React.Suspense>
           </div>
-        ) : null}
+        )}
 
-        {/* Loading Skeleton */}
-        {isLoading ? (
-          <div className="no-print max-w-2xl mx-auto bg-surface border border-luxury p-8 rounded-card shadow-sm space-y-6 animate-pulse">
-            <div className="h-4 bg-luxury-border rounded w-1/3 mx-auto" />
-            <div className="h-8 bg-luxury-border rounded w-2/3 mx-auto" />
-            <div className="space-y-3 pt-6">
-              <div className="h-4 bg-luxury-border rounded" />
-              <div className="h-4 bg-luxury-border rounded w-5/6" />
-              <div className="h-4 bg-luxury-border rounded w-4/5" />
+        {/* Dark "researching" state with sequential status lines */}
+        {isLoading && (
+          <div className="no-print" style={{ background: "var(--color-ink)", borderRadius: "var(--radius-uv-lg)", padding: "clamp(2rem, 5vw, 3.5rem)", maxWidth: 620, margin: "0 auto" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, color: "var(--color-saffron)", fontFamily: "var(--font-mono)", fontSize: "0.75rem", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+              <span className="animate-pulse-glow" style={{ width: 8, height: 8, borderRadius: 999, background: "var(--color-saffron)" }} /> Researching {formData.city || "Hyderabad"}
             </div>
-            <div className="grid grid-cols-2 gap-4 pt-6">
-              <div className="h-20 bg-luxury-border rounded" />
-              <div className="h-20 bg-luxury-border rounded" />
-            </div>
-            <div className="h-12 bg-primary/20 rounded w-full pt-4 flex items-center justify-center text-xs font-semibold text-primary uppercase tracking-widest">
-              Analyzing {formData.city} real estate patterns...
+            <div style={{ marginTop: 24, display: "flex", flexDirection: "column", gap: 14 }}>
+              {RESEARCH_STEPS.map((s, i) => {
+                const state = i < stepIdx ? "done" : i === stepIdx ? "active" : "pending";
+                return (
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, opacity: state === "pending" ? 0.35 : 1, transition: "opacity 300ms ease" }}>
+                    <span style={{ width: 18, height: 18, borderRadius: 999, flexShrink: 0, display: "inline-flex", alignItems: "center", justifyContent: "center", border: `2px solid ${state === "pending" ? "var(--color-ink-line)" : "var(--color-saffron)"}`, background: state === "done" ? "var(--color-saffron)" : "transparent", color: "var(--color-ink)", fontSize: 11, fontWeight: 800 }}>
+                      {state === "done" ? "✓" : ""}
+                    </span>
+                    <span style={{ color: state === "active" ? "#fff" : "var(--color-text-invert-mid)", fontSize: "0.9375rem" }}>{s}</span>
+                  </div>
+                );
+              })}
             </div>
           </div>
-        ) : null}
+        )}
 
-        {/* Report Output */}
-        {reportData && !isLoading ? (
+        {reportData && !isLoading && (
           <div className="animate-fade-in">
-            {/* Back to Form Button (Hide on print) */}
-            <div className="no-print max-w-4xl mx-auto mb-4">
-              <button
-                onClick={() => setReportData(null)}
-                className="text-xs font-bold text-primary hover:text-accent border border-luxury px-3 py-1.5 rounded-tag bg-surface uppercase tracking-wider transition-colors"
-              >
+            <div className="no-print" style={{ marginBottom: 16 }}>
+              <button onClick={() => setReportData(null)} className="uv-btn uv-btn-ghost" style={{ padding: "8px 14px", fontSize: "0.8125rem" }}>
                 ← Edit Parameters
               </button>
             </div>
-            
             <ReportCard
               searchId={searchId}
               report={reportData}
@@ -140,8 +131,7 @@ export default function ResearchPage() {
               city={formData.city}
             />
           </div>
-        ) : null}
-
+        )}
       </div>
     </div>
   );

@@ -1,51 +1,81 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import ProjectCard from "@/components/client/ProjectCard";
-import { SlidersHorizontal, Loader2, MapPin, Building, Activity, IndianRupee } from "lucide-react";
+import React, { useState, useEffect, useMemo } from "react";
+import { SlidersHorizontal, MapPin, Building, Activity, IndianRupee, Search, X } from "lucide-react";
+import { PageHero, ProjectCard, SkeletonCard, EmptyState, type ProjectCardData } from "@/components/ui";
+
+type SortKey = "relevance" | "price_asc" | "price_desc" | "newest";
+
+const CORRIDORS = [
+  "Shadnagar Corridor",
+  "Pharma City Influence Zone",
+  "Sangareddy Industrial Belt",
+  "Kokapet / Financial District Extension",
+  "Shamshabad / Aerospace SEZ",
+  "Yadadri / Outer Ring Road East",
+  "Kompally / NH44 Corridor",
+  "Adibatla IT Corridor",
+];
+
+const BUDGETS = [
+  { id: "ALL", label: "Any Budget" },
+  { id: "<30L", label: "Under ₹30 Lakhs" },
+  { id: "30-60L", label: "₹30L – ₹60 Lakhs" },
+  { id: "60-120L", label: "₹60L – ₹1.2 Crores" },
+  { id: ">120L", label: "Above ₹1.2 Crores" },
+];
+
+function Chip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="uv-chip"
+      style={{
+        cursor: "pointer",
+        border: "1px solid var(--color-line)",
+        background: active ? "var(--color-saffron)" : "var(--color-surface)",
+        color: active ? "var(--color-ink)" : "var(--color-text-mid)",
+        whiteSpace: "nowrap",
+      }}
+    >
+      {children}
+    </button>
+  );
+}
 
 export default function PublicProjectsPage() {
-  const [projects, setProjects] = useState<any[]>([]);
+  const [projects, setProjects] = useState<ProjectCardData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  
-  // Filter states
+
   const [selectedCorridor, setSelectedCorridor] = useState("ALL");
   const [selectedRisk, setSelectedRisk] = useState("ALL");
   const [selectedType, setSelectedType] = useState("ALL");
-  const [budgetRange, setBudgetRange] = useState("ALL"); // ALL, <30L, 30-60L, 60-120L, >120L
+  const [budgetRange, setBudgetRange] = useState("ALL");
+  const [sort, setSort] = useState<SortKey>("relevance");
+
+  const clearAll = () => {
+    setSelectedCorridor("ALL");
+    setSelectedRisk("ALL");
+    setSelectedType("ALL");
+    setBudgetRange("ALL");
+  };
 
   useEffect(() => {
     async function fetchProjects() {
       setIsLoading(true);
       try {
         let url = `/api/projects?status=ACTIVE`;
-        
-        if (selectedCorridor !== "ALL") {
-          url += `&corridor=${encodeURIComponent(selectedCorridor)}`;
-        }
-        if (selectedRisk !== "ALL") {
-          url += `&risk=${selectedRisk}`;
-        }
-        if (selectedType !== "ALL") {
-          url += `&type=${selectedType}`;
-        }
-        
-        // Add budget filters
-        if (budgetRange === "<30L") {
-          url += `&maxBudget=30`;
-        } else if (budgetRange === "30-60L") {
-          url += `&minBudget=30&maxBudget=60`;
-        } else if (budgetRange === "60-120L") {
-          url += `&minBudget=60&maxBudget=120`;
-        } else if (budgetRange === ">120L") {
-          url += `&minBudget=120`;
-        }
+        if (selectedCorridor !== "ALL") url += `&corridor=${encodeURIComponent(selectedCorridor)}`;
+        if (selectedRisk !== "ALL") url += `&risk=${selectedRisk}`;
+        if (selectedType !== "ALL") url += `&type=${selectedType}`;
+        if (budgetRange === "<30L") url += `&maxBudget=30`;
+        else if (budgetRange === "30-60L") url += `&minBudget=30&maxBudget=60`;
+        else if (budgetRange === "60-120L") url += `&minBudget=60&maxBudget=120`;
+        else if (budgetRange === ">120L") url += `&minBudget=120`;
 
         const res = await fetch(url);
-        if (res.ok) {
-          const data = await res.json();
-          setProjects(data);
-        }
+        if (res.ok) setProjects(await res.json());
       } catch (err) {
         console.error("Error loading projects:", err);
       } finally {
@@ -55,183 +85,109 @@ export default function PublicProjectsPage() {
     fetchProjects();
   }, [selectedCorridor, selectedRisk, selectedType, budgetRange]);
 
-  const corridors = [
-    "Shadnagar Corridor",
-    "Pharma City Influence Zone",
-    "Sangareddy Industrial Belt",
-    "Kokapet / Financial District Extension",
-    "Shamshabad / Aerospace SEZ",
-    "Yadadri / Outer Ring Road East",
-    "Kompally / NH44 Corridor",
-    "Adibatla IT Corridor"
-  ];
+  const sorted = useMemo(() => {
+    const arr = [...projects];
+    if (sort === "price_asc") arr.sort((a, b) => a.minBudgetLakhs - b.minBudgetLakhs);
+    else if (sort === "price_desc") arr.sort((a, b) => b.minBudgetLakhs - a.minBudgetLakhs);
+    return arr;
+  }, [projects, sort]);
+
+  // Applied filters as removable chips
+  const applied: { label: string; clear: () => void }[] = [];
+  if (selectedCorridor !== "ALL") applied.push({ label: selectedCorridor, clear: () => setSelectedCorridor("ALL") });
+  if (budgetRange !== "ALL") applied.push({ label: BUDGETS.find((b) => b.id === budgetRange)!.label, clear: () => setBudgetRange("ALL") });
+  if (selectedRisk !== "ALL") applied.push({ label: `${selectedRisk} risk`, clear: () => setSelectedRisk("ALL") });
+  if (selectedType !== "ALL") applied.push({ label: selectedType, clear: () => setSelectedType("ALL") });
 
   return (
-    <div className="flex-grow py-12 px-4 sm:px-6 lg:px-8 bg-surface-dim font-sans min-h-screen">
-      <div className="max-w-7xl mx-auto space-y-10">
-        
-        {/* Header */}
-        <div className="text-center max-w-2xl mx-auto space-y-4 animate-fade-in-down">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent-light text-accent text-[10px] font-mono uppercase tracking-wider">
-            <Building size={12} /> Investment Grade Properties
-          </div>
-          <h1 className="font-display text-3xl sm:text-5xl font-bold text-text-primary">
-            Curated Premium Projects
-          </h1>
-          <p className="text-sm text-text-secondary leading-relaxed">
-            Browse premium investment-mapped properties across Hyderabad's highest performing growth vectors. Verified for title clarity and growth potential.
-          </p>
-        </div>
+    <div style={{ background: "var(--color-paper)", minHeight: "100vh" }}>
+      <PageHero
+        eyebrow={<><Building size={12} /> Investment Grade Properties</>}
+        title="Curated Premium Projects"
+        subtitle="Browse premium, investment-mapped properties across Hyderabad's highest-performing growth corridors — verified for title clarity and growth potential."
+        size="md"
+      />
 
-        {/* Filter Bar - Horizontal Scrollable */}
-        <div className="bg-surface border border-gray-200 rounded-[12px] p-4 shadow-sm space-y-4 stagger-1 animate-fade-in-up">
-          <div className="flex items-center gap-2 text-text-primary font-display font-bold border-b border-gray-100 pb-3">
-            <SlidersHorizontal size={18} className="text-accent" />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ paddingTop: "2.25rem", paddingBottom: "4rem" }}>
+        {/* Filter panel */}
+        <div className="uv-card" style={{ padding: "1.15rem 1.35rem", marginBottom: 20 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, paddingBottom: 12, borderBottom: "1px solid var(--color-line)", color: "var(--color-text-hi)", fontWeight: 700, fontFamily: "var(--font-jakarta)" }}>
+            <SlidersHorizontal size={17} style={{ color: "var(--color-saffron-deep)" }} />
             <span>Refine Search</span>
-            <button
-              onClick={() => {
-                setSelectedCorridor("ALL");
-                setSelectedRisk("ALL");
-                setSelectedType("ALL");
-                setBudgetRange("ALL");
-              }}
-              className="ml-auto text-[10px] text-text-secondary hover:text-danger uppercase tracking-wider font-bold transition-colors"
-            >
+            <button onClick={clearAll} style={{ marginLeft: "auto", fontSize: "0.6875rem", fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", color: "var(--color-text-lo)", background: "none", border: "none", cursor: "pointer" }}>
               Clear All
             </button>
           </div>
 
-          <div className="space-y-4">
-            {/* Corridor Filters */}
-            <div className="flex items-center gap-3">
-              <span className="text-[10px] uppercase font-bold text-text-secondary tracking-wider flex items-center gap-1 min-w-[80px]">
-                <MapPin size={12} /> Corridor
-              </span>
-              <div className="flex overflow-x-auto pb-2 -mb-2 gap-2 hide-scrollbar">
-                <button
-                  onClick={() => setSelectedCorridor("ALL")}
-                  className={selectedCorridor === "ALL" ? "filter-pill-active whitespace-nowrap text-[11px]" : "filter-pill whitespace-nowrap text-[11px]"}
-                >
-                  All Corridors
-                </button>
-                {corridors.map((c) => (
-                  <button
-                    key={c}
-                    onClick={() => setSelectedCorridor(c)}
-                    className={selectedCorridor === c ? "filter-pill-active whitespace-nowrap text-[11px]" : "filter-pill whitespace-nowrap text-[11px]"}
-                  >
-                    {c}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Budget Filters */}
-            <div className="flex items-center gap-3">
-              <span className="text-[10px] uppercase font-bold text-text-secondary tracking-wider flex items-center gap-1 min-w-[80px]">
-                <IndianRupee size={12} /> Budget
-              </span>
-              <div className="flex overflow-x-auto pb-2 -mb-2 gap-2 hide-scrollbar">
-                {[
-                  { id: "ALL", label: "Any Budget" },
-                  { id: "<30L", label: "Under ₹30 Lakhs" },
-                  { id: "30-60L", label: "₹30L - ₹60 Lakhs" },
-                  { id: "60-120L", label: "₹60L - ₹1.2 Crores" },
-                  { id: ">120L", label: "Above ₹1.2 Crores" }
-                ].map((b) => (
-                  <button
-                    key={b.id}
-                    onClick={() => setBudgetRange(b.id)}
-                    className={budgetRange === b.id ? "filter-pill-active whitespace-nowrap text-[11px]" : "filter-pill whitespace-nowrap text-[11px]"}
-                  >
-                    {b.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Combined Risk & Type Filters */}
-            <div className="flex flex-col md:flex-row gap-6 border-t border-gray-100 pt-3 mt-1">
-              <div className="flex items-center gap-3">
-                <span className="text-[10px] uppercase font-bold text-text-secondary tracking-wider flex items-center gap-1 min-w-[80px]">
-                  <Activity size={12} /> Risk Rating
-                </span>
-                <div className="flex gap-2">
-                  {["ALL", "LOW", "MEDIUM", "HIGH"].map((r) => (
-                    <button
-                      key={r}
-                      onClick={() => setSelectedRisk(r)}
-                      className={selectedRisk === r ? "filter-pill-active whitespace-nowrap text-[11px]" : "filter-pill whitespace-nowrap text-[11px]"}
-                    >
-                      {r === "ALL" ? "All" : r}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <span className="text-[10px] uppercase font-bold text-text-secondary tracking-wider flex items-center gap-1 min-w-[80px]">
-                  <Building size={12} /> Type
-                </span>
-                <div className="flex gap-2">
-                  {["ALL", "Plots", "Residential", "Villa", "Commercial"].map((t) => (
-                    <button
-                      key={t}
-                      onClick={() => setSelectedType(t)}
-                      className={selectedType === t ? "filter-pill-active whitespace-nowrap text-[11px]" : "filter-pill whitespace-nowrap text-[11px]"}
-                    >
-                      {t}
-                    </button>
-                  ))}
-                </div>
-              </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 14, paddingTop: 14 }}>
+            <FilterRow icon={<MapPin size={12} />} label="Corridor">
+              <Chip active={selectedCorridor === "ALL"} onClick={() => setSelectedCorridor("ALL")}>All Corridors</Chip>
+              {CORRIDORS.map((c) => <Chip key={c} active={selectedCorridor === c} onClick={() => setSelectedCorridor(c)}>{c}</Chip>)}
+            </FilterRow>
+            <FilterRow icon={<IndianRupee size={12} />} label="Budget">
+              {BUDGETS.map((b) => <Chip key={b.id} active={budgetRange === b.id} onClick={() => setBudgetRange(b.id)}>{b.label}</Chip>)}
+            </FilterRow>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 24, borderTop: "1px solid var(--color-line)", paddingTop: 14 }}>
+              <FilterRow icon={<Activity size={12} />} label="Risk Rating" inline>
+                {["ALL", "LOW", "MEDIUM", "HIGH"].map((r) => <Chip key={r} active={selectedRisk === r} onClick={() => setSelectedRisk(r)}>{r === "ALL" ? "All" : r}</Chip>)}
+              </FilterRow>
+              <FilterRow icon={<Building size={12} />} label="Type" inline>
+                {["ALL", "Plots", "Residential", "Villa", "Commercial"].map((t) => <Chip key={t} active={selectedType === t} onClick={() => setSelectedType(t)}>{t === "ALL" ? "All" : t}</Chip>)}
+              </FilterRow>
             </div>
           </div>
         </div>
 
-        {/* Listings Grid */}
-        <div className="stagger-2 animate-fade-in-up">
-          {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className="card-premium h-80 animate-pulse p-4 space-y-4">
-                  <div className="bg-gray-200 h-48 rounded-lg" />
-                  <div className="h-4 bg-gray-200 rounded w-1/2" />
-                  <div className="h-4 bg-gray-200 rounded w-3/4" />
-                </div>
-              ))}
-            </div>
-          ) : projects.length === 0 ? (
-            <div className="card-premium p-16 text-center space-y-4 border-dashed border-2">
-              <span className="text-4xl">🔍</span>
-              <h3 className="font-display text-xl font-bold text-text-primary">No Matching Projects Found</h3>
-              <p className="text-sm text-text-secondary max-w-sm mx-auto leading-relaxed">
-                We couldn't find any projects matching your exact criteria. Try broadening your filters or contact our advisory team for off-market listings.
-              </p>
-              <button
-                onClick={() => {
-                  setSelectedCorridor("ALL");
-                  setSelectedRisk("ALL");
-                  setSelectedType("ALL");
-                  setBudgetRange("ALL");
-                }}
-                className="btn-secondary mt-4 inline-block"
-              >
-                Clear Filters
-              </button>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {projects.map((project) => (
-                <div key={project.id} className="w-full">
-                  <ProjectCard project={project} />
-                </div>
-              ))}
-            </div>
-          )}
+        {/* Result count + applied chips + sort */}
+        <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 18 }}>
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.8125rem", color: "var(--color-text-mid)" }}>
+            {isLoading ? "Loading…" : `${sorted.length} project${sorted.length === 1 ? "" : "s"}`}
+          </span>
+          {applied.map((a) => (
+            <button key={a.label} onClick={a.clear} className="uv-chip uv-chip-saffron" style={{ cursor: "pointer", border: "none" }}>
+              {a.label} <X size={12} />
+            </button>
+          ))}
+          <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ fontSize: "0.75rem", color: "var(--color-text-lo)" }}>Sort</span>
+            <select value={sort} onChange={(e) => setSort(e.target.value as SortKey)} className="input-premium" style={{ padding: "8px 12px", fontSize: "0.8125rem", width: "auto" }}>
+              <option value="relevance">Relevance</option>
+              <option value="price_asc">Price ↑</option>
+              <option value="price_desc">Price ↓</option>
+              <option value="newest">Newest</option>
+            </select>
+          </div>
         </div>
 
+        {/* Grid */}
+        {isLoading ? (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 20 }}>
+            {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} variant="project" />)}
+          </div>
+        ) : sorted.length === 0 ? (
+          <EmptyState
+            icon={<Search size={24} />}
+            title="No matching projects found"
+            description="We couldn't find projects matching your exact criteria. Try broadening your filters, or contact our advisory team for off-market listings."
+            action={<button onClick={clearAll} className="uv-btn uv-btn-ghost">Clear filters</button>}
+          />
+        ) : (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 20 }}>
+            {sorted.map((p) => <ProjectCard key={p.id} project={p} variant="grid" />)}
+          </div>
+        )}
       </div>
+    </div>
+  );
+}
+
+function FilterRow({ icon, label, children, inline }: { icon: React.ReactNode; label: string; children: React.ReactNode; inline?: boolean }) {
+  return (
+    <div style={{ display: "flex", alignItems: inline ? "center" : "flex-start", gap: 12 }}>
+      <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: "0.625rem", fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase", color: "var(--color-text-mid)", minWidth: 84, paddingTop: inline ? 0 : 4 }}>
+        {icon} {label}
+      </span>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>{children}</div>
     </div>
   );
 }

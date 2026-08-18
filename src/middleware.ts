@@ -23,15 +23,24 @@ export default withAuth(
       return NextResponse.redirect(new URL("/admin/login", req.url));
     }
 
-    // ── Portal routes ─────────────────────────────────────────────────
-    // Redirect authenticated client away from portal login
-    if (path === "/portal/login" && token?.id) {
-      return NextResponse.redirect(new URL("/portal", req.url));
+    // ── Legacy portal → new client dashboard ─────────────────────────
+    if (path === "/portal/login") {
+      return NextResponse.redirect(new URL("/login", req.url));
+    }
+    if (path === "/portal" || path.startsWith("/portal/")) {
+      return NextResponse.redirect(new URL("/dashboard", req.url));
     }
 
-    // Protect portal pages — require authenticated user
-    if (path.startsWith("/portal") && path !== "/portal/login" && !token?.id) {
-      return NextResponse.redirect(new URL("/portal/login", req.url));
+    // ── Client dashboard routes (separate from CRM) ──────────────────
+    // Signed-in clients shouldn't sit on the auth pages.
+    if ((path === "/login" || path === "/signup") && token?.id) {
+      return NextResponse.redirect(new URL("/dashboard", req.url));
+    }
+    // Protect the dashboard — any authenticated user; unauth → /login?next=
+    if (path.startsWith("/dashboard") && !token?.id) {
+      const url = new URL("/login", req.url);
+      url.searchParams.set("next", path);
+      return NextResponse.redirect(url);
     }
 
     return NextResponse.next();
@@ -45,5 +54,5 @@ export default withAuth(
 );
 
 export const config = {
-  matcher: ["/admin/:path*", "/portal/:path*"],
+  matcher: ["/admin/:path*", "/portal/:path*", "/dashboard/:path*", "/login", "/signup"],
 };

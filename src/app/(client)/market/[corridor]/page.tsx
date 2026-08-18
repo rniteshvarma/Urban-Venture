@@ -168,8 +168,8 @@ export default function CorridorDetailPage() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-40 min-h-screen bg-[#F8FAFC] text-[#0F172A]">
-        <Loader2 className="animate-spin text-[#2563EB]" size={36} />
-        <span className="text-xs text-[#3B82F6] font-semibold uppercase tracking-wider mt-4">Analyzing Corridor Layers...</span>
+        <Loader2 className="animate-spin text-[#10233F]" size={36} />
+        <span className="text-xs text-[#10233F] font-semibold uppercase tracking-wider mt-4">Analyzing Corridor Layers...</span>
       </div>
     );
   }
@@ -180,7 +180,7 @@ export default function CorridorDetailPage() {
         <AlertTriangle size={32} className="text-[#EF4444]" />
         <h1 className="text-xl font-bold font-display">Corridor Not Found</h1>
         <p className="text-[#475569] text-xs max-w-sm">We could not retrieve details for &quot;{rawCorridor}&quot;. Please verify the URL or select a different corridor.</p>
-        <Link href="/market" className="text-xs text-[#2563EB] font-bold hover:underline flex items-center gap-1">
+        <Link href="/market" className="text-xs text-[#10233F] font-bold hover:underline flex items-center gap-1">
           <ArrowLeft size={12} /> Back to Market Hub
         </Link>
       </div>
@@ -220,12 +220,12 @@ export default function CorridorDetailPage() {
       </div>
 
       {/* SECTION 1: Intelligence Score Header Banner */}
-      <section className="gradient-hero py-16 px-6 border-b border-luxury shadow-sm">
+      <section className="py-16 px-6" style={{ background: "var(--color-ink)" }}>
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
           {/* Corridor Info */}
           <div className="space-y-4 lg:col-span-2">
             <div>
-              <span className="text-[10px] font-bold text-accent-light uppercase tracking-widest block mb-1">Corridor Profile Deep Dive</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest block mb-1" style={{ color: "var(--color-saffron)", fontFamily: "var(--font-mono)" }}>Corridor Profile Deep Dive</span>
               <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight font-display capitalize">
                 {profile.corridor}
               </h1>
@@ -257,7 +257,7 @@ export default function CorridorDetailPage() {
 
             {/* Gold-bordered Quote block (Admin/AI commentary) */}
             {profile.adminNote && (
-              <div className="border-l-4 border-accent bg-black/20 backdrop-blur-sm px-4 py-3 rounded-r text-xs text-slate-200 italic max-w-2xl leading-relaxed">
+              <div className="border-l-4 bg-black/20 backdrop-blur-sm px-4 py-3 rounded-r text-xs text-slate-200 italic max-w-2xl leading-relaxed" style={{ borderColor: "var(--color-saffron)" }}>
                 &quot;{profile.adminNote}&quot;
               </div>
             )}
@@ -274,7 +274,7 @@ export default function CorridorDetailPage() {
                   cx="56" 
                   cy="56" 
                   r="48" 
-                  stroke="#00B4D8" 
+                  stroke="#FFB400" 
                   strokeWidth="8" 
                   fill="transparent" 
                   strokeDasharray="301"
@@ -289,9 +289,9 @@ export default function CorridorDetailPage() {
             </div>
 
             <span className={`mt-4 px-3 py-0.5 rounded text-[10px] font-mono font-bold border uppercase tracking-wider ${
-              profile.investorSentiment === "BULLISH" ? "bg-emerald-50 text-[#3B82F6] border-emerald-200" :
-              profile.investorSentiment === "CAUTIOUS" ? "bg-red-50 text-[#EF4444] border-red-200" :
-              "bg-amber-50 text-[#2563EB] border-amber-200"
+              profile.investorSentiment === "BULLISH" ? "bg-emerald-50 text-[#0F9D58] border-emerald-200" :
+              profile.investorSentiment === "CAUTIOUS" ? "bg-red-50 text-[#D93B30] border-red-200" :
+              "bg-amber-50 text-[#9A6A1E] border-amber-200"
             }`}>
               {profile.investorSentiment} sentiment
             </span>
@@ -300,7 +300,7 @@ export default function CorridorDetailPage() {
       </section>
 
       {/* Tabs Menu Navigation */}
-      <section className="bg-white border-b border-[#E2E8F0] px-6 sticky top-16 z-30 backdrop-blur-md shadow-sm">
+      <section className="bg-white border-b border-[#E2E8F0] px-6 sticky z-30 backdrop-blur-md shadow-sm" style={{ top: 68 }}>
         <div className="max-w-7xl mx-auto flex overflow-x-auto whitespace-nowrap gap-6">
           {[
             { id: "pricing", label: "Price History", icon: <TrendingUp size={14} /> },
@@ -316,7 +316,7 @@ export default function CorridorDetailPage() {
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-1.5 py-4 text-xs font-bold transition-all border-b-2 cursor-pointer ${
                 activeTab === tab.id
-                  ? "border-[#2563EB] text-[#2563EB]"
+                  ? "border-[#FFB400] text-text-primary"
                   : "border-transparent text-text-secondary hover:text-text-primary"
               }`}
             >
@@ -336,7 +336,7 @@ export default function CorridorDetailPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Chart 1: Price per SqFt vs Benchmark */}
               <div className="card-premium p-5 flex flex-col">
-                <div className="section-header border-l-4 border-accent pl-3 mb-4">
+                <div className="section-header border-l-4 border-saffron pl-3 mb-4">
                   <h3 className="text-xs font-bold text-text-primary uppercase tracking-wider flex items-center gap-1.5">
                     <TrendingUp size={14} className="text-accent" /> Price per SqFt (₹) vs Hyderabad Average
                   </h3>
@@ -352,7 +352,7 @@ export default function CorridorDetailPage() {
                         <YAxis stroke="#94A3B8" />
                         <Tooltip contentStyle={{ backgroundColor: "#FFFFFF", borderColor: "#E2E8F0", fontSize: "11px", color: "#0F172A" }} />
                         <Legend wrapperStyle={{ fontSize: "10px" }} />
-                        <Line type="monotone" dataKey="price" stroke="#00B4D8" strokeWidth={2.5} name={profile.corridor} dot={{ r: 4 }} />
+                        <Line type="monotone" dataKey="price" stroke="#FFB400" strokeWidth={2.5} name={profile.corridor} dot={{ r: 4 }} />
                         <Line type="monotone" dataKey="benchmark" stroke="#94A3B8" strokeDasharray="4 4" strokeWidth={1.5} name="Hyd Metro Average" dot={false} />
                       </LineChart>
                     </ResponsiveContainer>
@@ -377,7 +377,7 @@ export default function CorridorDetailPage() {
                         <XAxis dataKey="year" stroke="#94A3B8" />
                         <YAxis stroke="#94A3B8" />
                         <Tooltip contentStyle={{ backgroundColor: "#FFFFFF", borderColor: "#E2E8F0", fontSize: "11px", color: "#0F172A" }} />
-                        <Bar dataKey="yoy" fill="#00B4D8" name="YoY Change %" radius={[2, 2, 0, 0]} />
+                        <Bar dataKey="yoy" fill="#FFB400" name="YoY Change %" radius={[2, 2, 0, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
@@ -492,7 +492,7 @@ export default function CorridorDetailPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Chart 1: Dual axis inquiry vs absorption */}
               <div className="card-premium p-5 flex flex-col">
-                <div className="section-header border-l-4 border-accent pl-3 mb-4">
+                <div className="section-header border-l-4 border-saffron pl-3 mb-4">
                   <h3 className="text-xs font-bold text-text-primary uppercase tracking-wider flex items-center gap-1.5">
                     <TrendingDown size={14} className="text-accent" /> Inquiries vs Absorption Rate % (Last 24 Months)
                   </h3>
@@ -509,7 +509,7 @@ export default function CorridorDetailPage() {
                         <YAxis yAxisId="right" orientation="right" stroke="#94A3B8" />
                         <Tooltip contentStyle={{ backgroundColor: "#FFFFFF", borderColor: "#E2E8F0", fontSize: "11px", color: "#0F172A" }} />
                         <Legend wrapperStyle={{ fontSize: "10px" }} />
-                        <Bar yAxisId="left" dataKey="inquiries" fill="#00B4D8" name="Inquiries" radius={[2, 2, 0, 0]} />
+                        <Bar yAxisId="left" dataKey="inquiries" fill="#FFB400" name="Inquiries" radius={[2, 2, 0, 0]} />
                         <Bar yAxisId="right" dataKey="absorption" fill="#10B981" name="Absorption %" radius={[2, 2, 0, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
@@ -519,7 +519,7 @@ export default function CorridorDetailPage() {
 
               {/* Chart 2: Inventory vs Sold units */}
               <div className="card-premium p-5 flex flex-col">
-                <div className="section-header border-l-4 border-accent-purple pl-3 mb-4">
+                <div className="section-header border-l-4 border-saffron pl-3 mb-4">
                   <h3 className="text-xs font-bold text-text-primary uppercase tracking-wider flex items-center gap-1.5">
                     <TrendingDown size={14} className="text-accent-purple" /> Available Inventory vs Sold Units (Monthly)
                   </h3>
@@ -536,7 +536,7 @@ export default function CorridorDetailPage() {
                         <Tooltip contentStyle={{ backgroundColor: "#FFFFFF", borderColor: "#E2E8F0", fontSize: "11px", color: "#0F172A" }} />
                         <Legend wrapperStyle={{ fontSize: "10px" }} />
                         <Bar dataKey="inventory" fill="#94A3B8" name="Total Inventory" stackId="a" />
-                        <Bar dataKey="sold" fill="#8B5CF6" name="Units Sold" stackId="a" />
+                        <Bar dataKey="sold" fill="#10233F" name="Units Sold" stackId="a" />
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
@@ -549,7 +549,7 @@ export default function CorridorDetailPage() {
         {/* Tab 3: Infrastructure timeline pipeline */}
         {activeTab === "infra" && (
           <div className="space-y-10 animate-fade-in">
-            <div className="section-header border-l-4 border-accent pl-4">
+            <div className="section-header border-l-4 border-saffron pl-4">
               <h3 className="text-sm font-bold text-text-primary uppercase tracking-wider mb-2">Government Infrastructure pipeline</h3>
               <p className="text-text-secondary text-xs">Timeline of public expressway, metro link, and industrial developments affecting {profile.corridor} corridor growth.</p>
             </div>
@@ -899,7 +899,7 @@ export default function CorridorDetailPage() {
           <div className="space-y-8 animate-fade-in max-w-4xl text-text-primary">
             <div>
               <h3 className="text-lg font-display text-[#0F172A] flex items-center gap-2">
-                <Calendar size={18} className="text-[#2563EB]" />
+                <Calendar size={18} className="text-[#10233F]" />
                 50-Year Urban Expansion & Historical Analogue
               </h3>
               <p className="text-text-secondary text-xs mt-1">
@@ -910,7 +910,7 @@ export default function CorridorDetailPage() {
             <div className="bg-white border border-[#E2E8F0] rounded-lg p-6 space-y-6 shadow-sm">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <span className="font-mono text-[10px] font-bold text-[#3B82F6] uppercase tracking-wider block">Historical Analogue</span>
+                  <span className="font-mono text-[10px] font-bold text-[#10233F] uppercase tracking-wider block">Historical Analogue</span>
                   <div className="text-xl font-display text-[#0F172A]">
                     {profile.historicalAnalog || "N/A"}
                   </div>
@@ -920,7 +920,7 @@ export default function CorridorDetailPage() {
                 </div>
 
                 <div className="space-y-2 bg-[#F8FAFC]/40 p-4 rounded-md border border-[#E2E8F0]">
-                  <span className="font-mono text-[10px] font-bold text-[#2563EB] uppercase tracking-wider block">Geographical Corridor Zone</span>
+                  <span className="font-mono text-[10px] font-bold text-[#10233F] uppercase tracking-wider block">Geographical Corridor Zone</span>
                   <div className="text-lg font-display text-[#0F172A]">{profile.zone}</div>
                   <p className="text-xs text-[#475569] leading-relaxed">
                     Centred in the <strong>{profile.direction}</strong> region of Hyderabad under the district administration of <strong>{profile.district}</strong>.
@@ -944,7 +944,7 @@ export default function CorridorDetailPage() {
                     <span className="text-xs font-bold text-text-secondary">2015 - 2025: Kokapet Neopolis High-Rise Era (Established Node)</span>
                   </div>
                   <div className="relative">
-                    <span className="absolute -left-9 top-0.5 bg-[#2563EB] text-white rounded-full w-5 h-5 flex items-center justify-center text-[9px] font-mono font-bold">4</span>
+                    <span className="absolute -left-9 top-0.5 bg-[#FFB400] text-white rounded-full w-5 h-5 flex items-center justify-center text-[9px] font-mono font-bold">4</span>
                     <span className="text-xs font-bold text-[#0F172A]">2025 - 2035+: Mucherla FCDA Future City & RRR Expansion (Active Phase)</span>
                     <p className="text-[11px] text-[#475569] mt-1 leading-relaxed max-w-xl">
                       {profile.shortName} is a direct beneficiary of the active Growth Era 4, fueled by the Regional Ring Road (RRR) alignments and FCDA planning approvals.
@@ -961,7 +961,7 @@ export default function CorridorDetailPage() {
           <div className="space-y-8 animate-fade-in max-w-4xl text-text-primary">
             <div>
               <h3 className="text-lg font-display text-[#0F172A] flex items-center gap-2">
-                <ShieldCheck size={18} className="text-[#2563EB]" />
+                <ShieldCheck size={18} className="text-[#10233F]" />
                 Legal Audit & Due Diligence Checklist
               </h3>
               <p className="text-[#475569] text-xs mt-1">
@@ -984,22 +984,22 @@ export default function CorridorDetailPage() {
                       key={risk.id}
                       className={`bg-white border rounded-lg p-5 space-y-4 shadow-sm border-l-4 ${
                         isRed ? "border-l-[#EF4444]" :
-                        isOrange ? "border-l-[#2563EB]" :
-                        "border-l-[#3B82F6]"
+                        isOrange ? "border-l-[#FFB400]" :
+                        "border-l-[#E09600]"
                       }`}
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div>
                           <span className={`px-2 py-0.5 rounded text-[8px] font-mono font-bold border uppercase tracking-wider ${
                             isRed ? "bg-red-50 text-[#EF4444] border-red-200" :
-                            isOrange ? "bg-amber-50 text-[#2563EB] border-amber-200" :
-                            "bg-emerald-50 text-[#3B82F6] border-emerald-200"
+                            isOrange ? "bg-amber-50 text-[#10233F] border-amber-200" :
+                            "bg-emerald-50 text-[#10233F] border-emerald-200"
                           }`}>
                             {risk.severity} SEVERITY RISK
                           </span>
                           <h4 className="font-display text-base text-[#0F172A] mt-1.5">{risk.title}</h4>
                         </div>
-                        <span className="text-[10px] font-mono font-bold text-[#3B82F6] bg-[#3B82F6]/15 px-2 py-0.5 rounded animate-pulse">
+                        <span className="text-[10px] font-mono font-bold text-[#10233F] bg-[#FFB400]/15 px-2 py-0.5 rounded animate-pulse">
                           {risk.category.replace(/_/g, " ")}
                         </span>
                       </div>
@@ -1015,7 +1015,7 @@ export default function CorridorDetailPage() {
                         </div>
                         {risk.govReference && (
                           <div className="flex items-center gap-1.5 pt-1.5 border-t border-[#E2E8F0]/60">
-                            <span className="text-[10px] font-mono text-[#3B82F6] font-bold">GOV REF:</span>
+                            <span className="text-[10px] font-mono text-[#10233F] font-bold">GOV REF:</span>
                             <span className="font-mono text-[11px] text-text-secondary">{risk.govReference}</span>
                           </div>
                         )}
@@ -1025,7 +1025,7 @@ export default function CorridorDetailPage() {
                               href={risk.checkUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1 font-mono text-[10px] text-[#2563EB] hover:text-[#3B82F6] font-bold"
+                              className="inline-flex items-center gap-1 font-mono text-[10px] text-[#10233F] hover:text-[#10233F] font-bold"
                             >
                               Open Verification Portal <ExternalLink size={10} />
                             </a>

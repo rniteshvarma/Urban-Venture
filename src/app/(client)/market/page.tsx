@@ -26,8 +26,8 @@ const MarketMap = dynamic(() => import("@/components/market/MarketMap"), {
   ssr: false,
   loading: () => (
     <div className="w-full h-[350px] md:h-[450px] bg-[#E2E8F0]/20 border border-[#E2E8F0] rounded flex items-center justify-center">
-      <Loader2 className="animate-spin text-[#3B82F6]" size={24} />
-      <span className="text-xs text-[#3B82F6] font-semibold ml-2">Loading Map Layers...</span>
+      <Loader2 className="animate-spin text-navy-ink" size={24} />
+      <span className="text-xs text-navy-ink font-semibold ml-2">Loading Map Layers...</span>
     </div>
   )
 });
@@ -159,7 +159,7 @@ export default function MarketHubPage() {
     }).join(" ");
 
     return (
-      <svg className="w-16 h-8 text-[#3B82F6] overflow-visible animate-pulse" viewBox={`0 0 ${width} ${height}`}>
+      <svg className="w-16 h-8 text-navy-ink overflow-visible animate-pulse" viewBox={`0 0 ${width} ${height}`}>
         <polyline
           fill="none"
           stroke="currentColor"
@@ -174,9 +174,9 @@ export default function MarketHubPage() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center py-40 min-h-screen bg-[#F8FAFC] text-[#0F172A]">
-        <Loader2 className="animate-spin text-[#2563EB]" size={40} />
-        <span className="text-xs font-mono tracking-widest text-[#3B82F6] mt-4 uppercase">Initializing Deep Research Node...</span>
+      <div className="flex flex-col items-center justify-center py-40 min-h-screen" style={{ background: "var(--color-paper)", color: "var(--color-text-hi)" }}>
+        <Loader2 className="animate-spin" size={40} style={{ color: "var(--color-saffron-deep)" }} />
+        <span className="text-xs font-mono tracking-widest mt-4 uppercase" style={{ color: "var(--color-text-mid)" }}>Initializing Deep Research Node…</span>
       </div>
     );
   }
@@ -185,17 +185,17 @@ export default function MarketHubPage() {
     <div className="bg-surface-dim text-text-primary min-h-screen font-sans flex flex-col justify-between selection:bg-accent/20">
       
       {/* Secondary Sub-navigation Bar */}
-      <div className="bg-white border-b border-[#E2E8F0] py-3.5 px-6 sticky top-16 z-30">
+      <div className="py-3.5 px-6 sticky z-30" style={{ background: "var(--color-surface)", borderBottom: "1px solid var(--color-line)", top: 68 }}>
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <span className="text-xs text-text-secondary font-semibold uppercase tracking-wider">Market Intelligence Hub</span>
+          <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--color-text-mid)" }}>Market Intelligence Hub</span>
           <nav className="flex items-center gap-6">
-            <Link href="/market" className="text-xs font-bold text-primary border-b-2 border-primary pb-1">
+            <Link href="/market" className="text-xs font-bold pb-1" style={{ color: "var(--color-text-hi)", borderBottom: "2px solid var(--color-saffron)" }}>
               Corridor Hub
             </Link>
-            <Link href="/market/legal" className="text-xs font-semibold text-text-secondary hover:text-primary transition-colors flex items-center gap-1">
+            <Link href="/market/legal" className="text-xs font-semibold transition-colors flex items-center gap-1" style={{ color: "var(--color-text-mid)" }}>
               <ShieldCheck size={13} /> Legal Hub
             </Link>
-            <Link href="/market/forecast" className="text-xs font-semibold text-text-secondary hover:text-primary transition-colors flex items-center gap-1">
+            <Link href="/market/forecast" className="text-xs font-semibold transition-colors flex items-center gap-1" style={{ color: "var(--color-text-mid)" }}>
               <LineChart size={13} /> Forecast Center
             </Link>
           </nav>
@@ -203,69 +203,68 @@ export default function MarketHubPage() {
       </div>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-surface py-16 px-6 border-b border-slate-200 shadow-sm gradient-hero">
+      <section className="relative overflow-hidden py-16 px-6" style={{ background: "var(--color-ink)" }}>
         <div className="max-w-7xl mx-auto text-center space-y-6 relative z-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 border border-accent/35 text-accent text-[10px] font-mono uppercase tracking-wider mb-2 badge">
-            <Sparkles size={11} className="animate-spin" /> Deep Research Edition · Hyderabad Growth Engine
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-mono uppercase tracking-wider" style={{ background: "var(--color-ink-soft)", border: "1px solid var(--color-ink-line)", color: "var(--color-saffron)" }}>
+            <Sparkles size={11} /> Deep Research Edition · Hyderabad Growth Engine
           </div>
-          <h2 className="text-4xl md:text-6xl font-display text-white tracking-tight leading-tight">
+          <h2 className="text-4xl md:text-6xl tracking-tight leading-tight" style={{ fontFamily: "var(--font-jakarta)", fontWeight: 800, letterSpacing: "-0.02em", color: "#fff" }}>
             Market Intelligence & <br className="hidden md:inline" />
-            <span className="text-gradient-accent">Government Infrastructure Data</span>
+            Government Infrastructure Data
           </h2>
-          <p className="max-w-2xl mx-auto text-white/80 text-sm md:text-base font-medium font-sans">
+          <p className="max-w-2xl mx-auto text-sm md:text-base font-medium" style={{ color: "var(--color-text-invert-mid)" }}>
             A verified research portal integrating HMDA master plans, RERA approvals, official Telangana Government orders, NHAI updates, and real property transaction indices.
           </p>
 
-          <div className="flex flex-wrap items-center justify-center gap-4 pt-3">
-            <Link href="/market/legal" className="px-5 py-2.5 rounded-full border border-white/20 bg-white/10 hover:bg-white/20 text-xs font-bold text-white flex items-center gap-2 transition-all shadow-sm backdrop-blur-md">
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-3">
+            <Link href="/market/legal" className="uv-btn uv-btn-dark" style={{ background: "var(--color-ink-soft)", border: "1px solid var(--color-ink-line)", fontSize: "0.8125rem", padding: "10px 18px" }}>
               <ShieldCheck size={15} /> Open Legal Checkpoints
             </Link>
-            <Link href="/market/forecast" className="px-5 py-2.5 rounded-full bg-gradient-to-r from-[#7C6EF5] to-[#5B4FE0] hover:scale-105 text-xs font-bold text-white flex items-center gap-2 transition-all shadow-md">
+            <Link href="/market/forecast" className="uv-btn uv-btn-primary" style={{ fontSize: "0.8125rem", padding: "10px 18px" }}>
               <LineChart size={15} /> Run Appreciation Forecasts <ArrowRight size={14} />
             </Link>
           </div>
         </div>
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#2563EB]/5 rounded-full filter blur-3xl pointer-events-none z-0" />
       </section>
 
       {/* Live Stats Bar - Seeded Real Data */}
       <section className="bg-surface border-b border-slate-200 py-12 md:py-16 px-6 shadow-sm">
         <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
           <div className="stat-card animate-fade-in-up stagger-1">
-            <div className="stat-icon bg-accent-light text-accent mx-auto mb-3">
+            <div className="stat-icon bg-saffron-wash text-saffron-deep mx-auto mb-3">
               <FileCheck size={20} />
             </div>
             <div className="stat-value font-display">
               {pulseData?.totalRegistrations?.toLocaleString() || "51,089"}
             </div>
-            <div className="stat-label font-mono text-accent uppercase tracking-widest font-bold mt-1">Total Registrations (FY26)</div>
+            <div className="stat-label font-mono text-navy-ink uppercase tracking-widest font-bold mt-1">Total Registrations (FY26)</div>
           </div>
           <div className="stat-card animate-fade-in-up stagger-2">
-            <div className="stat-icon bg-success-light text-success mx-auto mb-3">
+            <div className="stat-icon bg-saffron-wash text-saffron-deep mx-auto mb-3">
               <TrendingUp size={20} />
             </div>
             <div className="stat-value font-display">
               ₹{(pulseData?.totalValueCr)?.toLocaleString() || "34,420"} Cr
             </div>
-            <div className="stat-label font-mono text-accent uppercase tracking-widest font-bold mt-1">Transaction Value</div>
+            <div className="stat-label font-mono text-navy-ink uppercase tracking-widest font-bold mt-1">Transaction Value</div>
           </div>
           <div className="stat-card animate-fade-in-up stagger-3">
-            <div className="stat-icon bg-warning-light text-warning mx-auto mb-3">
+            <div className="stat-icon bg-saffron-wash text-saffron-deep mx-auto mb-3">
               <LineChart size={20} />
             </div>
             <div className="stat-value font-display stat-trend stat-trend-up">
               {pulseData?.yoyGrowthPct || "40"}%
             </div>
-            <div className="stat-label font-mono text-accent uppercase tracking-widest font-bold mt-1">YoY Growth Index</div>
+            <div className="stat-label font-mono text-navy-ink uppercase tracking-widest font-bold mt-1">YoY Growth Index</div>
           </div>
           <div className="stat-card animate-fade-in-up stagger-4">
-            <div className="stat-icon bg-accent-light text-accent-indigo mx-auto mb-3">
+            <div className="stat-icon bg-saffron-wash text-saffron-deep mx-auto mb-3">
               <MapPin size={20} />
             </div>
             <div className="stat-value font-display">
               ₹{(pulseData?.avgGovtCircleRateSqFt || 3654).toLocaleString()} / sqft
             </div>
-            <div className="stat-label font-mono text-accent uppercase tracking-widest font-bold mt-1">Avg Circle Rate</div>
+            <div className="stat-label font-mono text-navy-ink uppercase tracking-widest font-bold mt-1">Avg Circle Rate</div>
           </div>
         </div>
       </section>
@@ -274,7 +273,7 @@ export default function MarketHubPage() {
       <section className="max-w-7xl mx-auto py-12 md:py-16 px-6 w-full space-y-6">
         <div className="section-header">
           <h3 className="text-2xl font-display text-text-primary flex items-center gap-2">
-            <Compass className="text-accent" size={20} />
+            <Compass className="text-navy-ink" size={20} />
             Directional Corridors & Economic Anchors
           </h3>
           <p className="text-text-secondary text-xs mt-1">Understanding Hyderabad's radial growth driven by dedicated industrial and service sector nodes.</p>
@@ -283,42 +282,42 @@ export default function MarketHubPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <div className="card-premium p-5 space-y-3 animate-fade-in-up stagger-1">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-mono font-bold text-accent uppercase tracking-wider badge bg-accent-light text-accent">WEST ZONE</span>
-              <span className="badge badge-verified">IT & FINANCE</span>
+              <span className="text-xs font-mono font-bold text-navy-ink uppercase tracking-wider badge bg-navy-wash text-navy-ink">WEST ZONE</span>
+              <span className="badge" style={{ background: "var(--color-saffron-wash)", color: "var(--color-saffron-deep)" }}>IT & FINANCE</span>
             </div>
             <h4 className="font-display text-lg text-text-primary">Kokapet-Shankarpally Belt</h4>
             <p className="text-xs text-text-secondary">Cmds premium high-rises and luxury villa sanctuary plots. Driven by Hitec City spillover and Neopolis SEZ expansion.</p>
-            <div className="text-[10px] font-mono text-accent font-bold">Anchors: Neopolis IT SEZ, Financial District, ORR Exit 1.</div>
+            <div className="text-[10px] font-mono text-navy-ink font-bold">Anchors: Neopolis IT SEZ, Financial District, ORR Exit 1.</div>
           </div>
 
           <div className="card-premium p-5 space-y-3 animate-fade-in-up stagger-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-mono font-bold text-accent uppercase tracking-wider badge bg-blue-100 text-blue-700">SOUTH ZONE</span>
-              <span className="badge badge-verified">AEROSPACE & MFG</span>
+              <span className="text-xs font-mono font-bold text-navy-ink uppercase tracking-wider badge bg-navy-wash text-navy-ink">SOUTH ZONE</span>
+              <span className="badge" style={{ background: "var(--color-saffron-wash)", color: "var(--color-saffron-deep)" }}>AEROSPACE & MFG</span>
             </div>
             <h4 className="font-display text-lg text-text-primary">Tukkuguda-Shamshabad</h4>
             <p className="text-xs text-text-secondary">Gateway to Mucherla Future City and Srisailam Highway. Commands rapid appreciation from airport expansions.</p>
-            <div className="text-[10px] font-mono text-accent font-bold">Anchors: RGIA Airport, Fab City, Aerospace SEZ.</div>
+            <div className="text-[10px] font-mono text-navy-ink font-bold">Anchors: RGIA Airport, Fab City, Aerospace SEZ.</div>
           </div>
 
           <div className="card-premium p-5 space-y-3 animate-fade-in-up stagger-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-mono font-bold text-accent uppercase tracking-wider badge bg-warning-light text-warning">NORTH ZONE</span>
-              <span className="badge badge-warning">LOGISTICS & MFG</span>
+              <span className="text-xs font-mono font-bold text-navy-ink uppercase tracking-wider badge bg-navy-wash text-navy-ink">NORTH ZONE</span>
+              <span className="badge" style={{ background: "var(--color-saffron-wash)", color: "var(--color-saffron-deep)" }}>LOGISTICS & MFG</span>
             </div>
             <h4 className="font-display text-lg text-text-primary">Medchal-Kompally Belt</h4>
             <p className="text-xs text-text-secondary">An established warehousing powerhouse transitioning to high-density budget-friendly residential housing layouts.</p>
-            <div className="text-[10px] font-mono text-accent font-bold">Anchors: NH-44 Logistics parks, Gundlapochampally MMTS.</div>
+            <div className="text-[10px] font-mono text-navy-ink font-bold">Anchors: NH-44 Logistics parks, Gundlapochampally MMTS.</div>
           </div>
 
           <div className="card-premium p-5 space-y-3 animate-fade-in-up stagger-4">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-mono font-bold text-accent uppercase tracking-wider badge bg-purple-100 text-purple-700">EAST ZONE</span>
-              <span className="badge badge-premium">HEALTH & TECH</span>
+              <span className="text-xs font-mono font-bold text-navy-ink uppercase tracking-wider badge bg-navy-wash text-navy-ink">EAST ZONE</span>
+              <span className="badge" style={{ background: "var(--color-saffron-wash)", color: "var(--color-saffron-deep)" }}>HEALTH & TECH</span>
             </div>
             <h4 className="font-display text-lg text-text-primary">Ghatkesar-Bibinagar</h4>
             <p className="text-xs text-text-secondary">Anchored by medical universities, spiritual tourism (Yadadri), and suburban tech offices Pocharam.</p>
-            <div className="text-[10px] font-mono text-accent font-bold">Anchors: Pocharam IT Campus, AIIMS Medical Hub, NH-163.</div>
+            <div className="text-[10px] font-mono text-navy-ink font-bold">Anchors: Pocharam IT Campus, AIIMS Medical Hub, NH-163.</div>
           </div>
         </div>
       </section>
@@ -346,10 +345,10 @@ export default function MarketHubPage() {
                 <div className="space-y-4">
                   <div className="flex items-start justify-between">
                     <div>
-                      <h4 className="font-display text-lg text-text-primary tracking-tight group-hover:text-accent transition-colors leading-tight">
+                      <h4 className="font-display text-lg text-text-primary tracking-tight group-hover:text-navy-ink transition-colors leading-tight">
                         {c.name}
                       </h4>
-                      <p className="text-[10px] text-accent font-mono uppercase tracking-wider font-bold mt-1.5">
+                      <p className="text-[10px] text-navy-ink font-mono uppercase tracking-wider font-bold mt-1.5">
                         {ZONE_DESCRIPTIONS[c.corridor] || "Hyderabad Zone Corridor"}
                       </p>
                     </div>
@@ -362,8 +361,8 @@ export default function MarketHubPage() {
                           cx="24" 
                           cy="24" 
                           r="21" 
-                          stroke="#00B4D8" 
-                          strokeWidth="4" 
+                          stroke="var(--color-saffron)"
+                          strokeWidth="4"
                           fill="transparent" 
                           strokeDasharray="132"
                           strokeDashoffset={132 - (132 * c.overallScore) / 100}
@@ -392,7 +391,7 @@ export default function MarketHubPage() {
                     <ul className="text-xs text-text-secondary space-y-1.5">
                       {c.keyDrivers?.slice(0, 2).map((d: string, idx: number) => (
                         <li key={idx} className="flex items-start gap-1">
-                          <span className="text-accent mt-1 font-bold">•</span>
+                          <span className="text-navy-ink mt-1 font-bold">•</span>
                           <span className="line-clamp-1">{d}</span>
                         </li>
                       ))}
@@ -402,10 +401,10 @@ export default function MarketHubPage() {
 
                 {/* Deep Dive Action */}
                 <div className="pt-4 mt-4 border-t border-slate-200 flex items-center justify-between">
-                  <span className="text-[10px] font-mono text-text-secondary">CAGR: <strong className="text-accent badge-hot">{c.projectedCAGRMin || 12}% - {c.projectedCAGRMax || 16}%</strong></span>
+                  <span className="text-[10px] font-mono text-text-secondary">CAGR: <strong className="text-navy-ink badge-hot">{c.projectedCAGRMin || 12}% - {c.projectedCAGRMax || 16}%</strong></span>
                   <Link
                     href={`/market/${c.corridor}`}
-                    className="inline-flex items-center gap-1 text-xs font-bold text-accent hover:text-blue-500 transition-colors"
+                    className="inline-flex items-center gap-1 text-xs font-bold text-navy-ink hover:text-blue-500 transition-colors"
                   >
                     Deep Dive Audit <ArrowUpRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
                   </Link>
@@ -421,7 +420,7 @@ export default function MarketHubPage() {
         <div className="max-w-7xl mx-auto space-y-8">
           <div className="section-header">
             <h3 className="text-2xl font-display text-text-primary flex items-center gap-2">
-              <Calendar className="text-accent" size={20} />
+              <Calendar className="text-navy-ink" size={20} />
               50-Year Hyderabad Urban Expansion Timeline
             </h3>
             <p className="text-text-secondary text-xs mt-1">Trace the geographical shift of investment value anchors from core cities to high-growth outer corridors.</p>
@@ -429,46 +428,46 @@ export default function MarketHubPage() {
 
           <div className="relative border-l-2 border-[#E2E8F0] ml-4 pl-8 space-y-8 py-2">
             <div className="relative">
-              <span className="absolute -left-11 top-1 bg-[#2563EB] text-white rounded-full w-6 h-6 flex items-center justify-center text-[10px] font-mono font-bold">1</span>
+              <span className="absolute -left-11 top-1 bg-ink text-white rounded-full w-6 h-6 flex items-center justify-center text-[10px] font-mono font-bold">1</span>
               <div className="space-y-1.5">
-                <span className="text-[#2563EB] font-mono text-sm font-bold">1990 - 2000: The Hitec City Inflection</span>
+                <span className="text-navy-ink font-mono text-sm font-bold">1990 - 2000: The Hitec City Inflection</span>
                 <p className="text-xs text-[#475569] max-w-3xl">
                   Madhapur, Kondapur, and Gachibowli transition from dry rocky scrublands to global IT SEZ clusters. Focus shifts entirely to West Hyderabad.
                 </p>
-                <div className="text-[10px] font-mono text-[#3B82F6] font-bold">Zone Status: Madhapur (🔥 FIRE), Kondapur (🔥 VERY HOT)</div>
+                <div className="text-[10px] font-mono text-navy-ink font-bold">Zone Status: Madhapur (🔥 FIRE), Kondapur (🔥 VERY HOT)</div>
               </div>
             </div>
 
             <div className="relative">
-              <span className="absolute -left-11 top-1 bg-[#3B82F6] text-white rounded-full w-6 h-6 flex items-center justify-center text-[10px] font-mono font-bold">2</span>
+              <span className="absolute -left-11 top-1 bg-saffron text-ink rounded-full w-6 h-6 flex items-center justify-center text-[10px] font-mono font-bold">2</span>
               <div className="space-y-1.5">
-                <span className="text-[#3B82F6] font-mono text-sm font-bold">2000 - 2015: ORR & Financial District Era</span>
+                <span className="text-navy-ink font-mono text-sm font-bold">2000 - 2015: ORR & Financial District Era</span>
                 <p className="text-xs text-[#475569] max-w-3xl">
                   The Outer Ring Road (ORR) is commissioned. Gachibowli solidifies its status as a financial hub. Suburbs like Kompally and Adibatla emerge.
                 </p>
-                <div className="text-[10px] font-mono text-[#3B82F6] font-bold">Zone Status: Gachibowli (COMPLETE), Kompally (MID-CYCLE)</div>
+                <div className="text-[10px] font-mono text-navy-ink font-bold">Zone Status: Gachibowli (COMPLETE), Kompally (MID-CYCLE)</div>
               </div>
             </div>
 
             <div className="relative">
-              <span className="absolute -left-11 top-1 bg-[#3B82F6] text-white rounded-full w-6 h-6 flex items-center justify-center text-[10px] font-mono font-bold">3</span>
+              <span className="absolute -left-11 top-1 bg-saffron text-ink rounded-full w-6 h-6 flex items-center justify-center text-[10px] font-mono font-bold">3</span>
               <div className="space-y-1.5">
-                <span className="text-[#3B82F6] font-mono text-sm font-bold">2015 - 2025: Vertical Rise & Neopolis Boom</span>
+                <span className="text-navy-ink font-mono text-sm font-bold">2015 - 2025: Vertical Rise & Neopolis Boom</span>
                 <p className="text-xs text-[#475569] max-w-3xl">
                   Land auctions in Kokapet Neopolis reach record-breaking levels. High-rise residential complexes dominate Gachibowli boundaries.
                 </p>
-                <div className="text-[10px] font-mono text-[#3B82F6] font-bold">Zone Status: Kokapet Neopolis (🔥 FIRE), Mokila (🔥 VERY HOT)</div>
+                <div className="text-[10px] font-mono text-navy-ink font-bold">Zone Status: Kokapet Neopolis (🔥 FIRE), Mokila (🔥 VERY HOT)</div>
               </div>
             </div>
 
             <div className="relative">
-              <span className="absolute -left-11 top-1 bg-[#2563EB] text-white rounded-full w-6 h-6 flex items-center justify-center text-[10px] font-mono font-bold">4</span>
+              <span className="absolute -left-11 top-1 bg-ink text-white rounded-full w-6 h-6 flex items-center justify-center text-[10px] font-mono font-bold">4</span>
               <div className="space-y-1.5">
-                <span className="text-[#2563EB] font-mono text-sm font-bold">2025 - 2035+: Mucherla FCDA Future City & RRR Expansion</span>
+                <span className="text-navy-ink font-mono text-sm font-bold">2025 - 2035+: Mucherla FCDA Future City & RRR Expansion</span>
                 <p className="text-xs text-[#475569] max-w-3xl">
                   Telangana Government triggers the Regional Ring Road (RRR) and Mucherla AI sports hub master plans, shifting focus to Southeast and South growth corridors.
                 </p>
-                <div className="text-[10px] font-mono text-[#3B82F6] font-bold">Zone Status: Kadthal FCDA (🔥 FIRE), Maheshwaram (🔥 VERY HOT)</div>
+                <div className="text-[10px] font-mono text-navy-ink font-bold">Zone Status: Kadthal FCDA (🔥 FIRE), Maheshwaram (🔥 VERY HOT)</div>
               </div>
             </div>
           </div>
@@ -491,7 +490,7 @@ export default function MarketHubPage() {
               <button
                 onClick={() => handleFilterCategory("ALL")}
                 className={`px-3 py-1.5 rounded text-[10px] font-mono font-bold uppercase transition-all cursor-pointer ${
-                  activeCategory === "ALL" ? "bg-[#3B82F6] text-white" : "text-[#475569] hover:text-[#0F172A]"
+                  activeCategory === "ALL" ? "bg-saffron text-ink" : "text-[#475569] hover:text-[#0F172A]"
                 }`}
               >
                 All
@@ -499,7 +498,7 @@ export default function MarketHubPage() {
               <button
                 onClick={() => handleFilterCategory("ROAD_HIGHWAY")}
                 className={`px-3 py-1.5 rounded text-[10px] font-mono font-bold uppercase transition-all cursor-pointer ${
-                  activeCategory === "ROAD_HIGHWAY" ? "bg-[#3B82F6] text-white" : "text-[#475569] hover:text-[#0F172A]"
+                  activeCategory === "ROAD_HIGHWAY" ? "bg-saffron text-ink" : "text-[#475569] hover:text-[#0F172A]"
                 }`}
               >
                 Roads
@@ -507,7 +506,7 @@ export default function MarketHubPage() {
               <button
                 onClick={() => handleFilterCategory("METRO_RAIL")}
                 className={`px-3 py-1.5 rounded text-[10px] font-mono font-bold uppercase transition-all cursor-pointer ${
-                  activeCategory === "METRO_RAIL" ? "bg-[#3B82F6] text-white" : "text-[#475569] hover:text-[#0F172A]"
+                  activeCategory === "METRO_RAIL" ? "bg-saffron text-ink" : "text-[#475569] hover:text-[#0F172A]"
                 }`}
               >
                 Metro
@@ -515,7 +514,7 @@ export default function MarketHubPage() {
               <button
                 onClick={() => handleFilterCategory("INDUSTRIAL_ZONE")}
                 className={`px-3 py-1.5 rounded text-[10px] font-mono font-bold uppercase transition-all cursor-pointer ${
-                  activeCategory === "INDUSTRIAL_ZONE" ? "bg-[#3B82F6] text-white" : "text-[#475569] hover:text-[#0F172A]"
+                  activeCategory === "INDUSTRIAL_ZONE" ? "bg-saffron text-ink" : "text-[#475569] hover:text-[#0F172A]"
                 }`}
               >
                 Industrial
@@ -523,7 +522,7 @@ export default function MarketHubPage() {
               <button
                 onClick={() => handleFilterCategory("PHARMA_BIOTECH")}
                 className={`px-3 py-1.5 rounded text-[10px] font-mono font-bold uppercase transition-all cursor-pointer ${
-                  activeCategory === "PHARMA_BIOTECH" ? "bg-[#3B82F6] text-white" : "text-[#475569] hover:text-[#0F172A]"
+                  activeCategory === "PHARMA_BIOTECH" ? "bg-saffron text-ink" : "text-[#475569] hover:text-[#0F172A]"
                 }`}
               >
                 Pharma
@@ -546,7 +545,7 @@ export default function MarketHubPage() {
               <span key={idx} className="inline-flex items-center gap-1.5 text-[11px] font-medium text-[#475569]">
                 <span className="text-emerald-500">✅</span>
                 <strong className="text-[#0F172A] font-bold font-mono">{a.authority} {a.approvalNumber || "LP"}</strong> · 
-                <span className="text-[#2563EB] font-semibold">{a.projectName}</span> · 
+                <span className="text-navy-ink font-semibold">{a.projectName}</span> · 
                 <span className="font-mono text-[10px]">{a.corridor}</span> · 
                 <span className="text-[#475569]">{a.areaAcres ? `${a.areaAcres} acres` : ""}</span>
               </span>
@@ -558,7 +557,7 @@ export default function MarketHubPage() {
               <span key={`dup-${idx}`} className="inline-flex items-center gap-1.5 text-[11px] font-medium text-[#475569]">
                 <span className="text-emerald-500">✅</span>
                 <strong className="text-[#0F172A] font-bold font-mono">{a.authority} {a.approvalNumber || "LP"}</strong> · 
-                <span className="text-[#2563EB] font-semibold">{a.projectName}</span> · 
+                <span className="text-navy-ink font-semibold">{a.projectName}</span> · 
                 <span className="font-mono text-[10px]">{a.corridor}</span> · 
                 <span className="text-[#475569]">{a.areaAcres ? `${a.areaAcres} acres` : ""}</span>
               </span>

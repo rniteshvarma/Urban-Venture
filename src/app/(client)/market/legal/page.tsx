@@ -53,8 +53,8 @@ export default function LegalHubPage() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-40 min-h-screen bg-surface-dim text-text-primary">
-        <Loader2 className="animate-spin text-accent" size={36} />
-        <span className="text-xs text-accent font-semibold uppercase tracking-wider mt-4">Opening Legal Registers...</span>
+        <Loader2 className="animate-spin text-navy-ink" size={36} />
+        <span className="text-xs text-navy-ink font-semibold uppercase tracking-wider mt-4">Opening Legal Registers...</span>
       </div>
     );
   }
@@ -63,25 +63,25 @@ export default function LegalHubPage() {
     <div className="bg-surface-dim text-text-primary min-h-screen font-sans flex flex-col justify-between selection:bg-accent/20">
       
       {/* Back Header */}
-      <div className="glass-header sticky top-16 z-30">
+      <div className="sticky z-30 px-6 py-2.5" style={{ background: "var(--color-ink-soft)", borderBottom: "1px solid var(--color-ink-line)", top: 68 }}>
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <Link href="/market" className="nav-link inline-flex items-center gap-1.5 text-xs font-semibold">
+          <Link href="/market" className="inline-flex items-center gap-1.5 text-xs font-semibold" style={{ color: "var(--color-text-invert-mid)" }}>
             <ArrowLeft size={13} /> Back to Market Hub
           </Link>
-          <span className="text-xs text-primary-light font-bold uppercase tracking-wider">Land Registry & Legal Audit</span>
+          <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "var(--color-text-invert-mid)" }}>Land Registry & Legal Audit</span>
         </div>
       </div>
 
       {/* Hero Header */}
-      <section className="bg-surface border-b border-gray-200 py-12 px-6 gradient-surface">
+      <section className="px-6 py-12" style={{ background: "var(--color-ink)" }}>
         <div className="max-w-4xl mx-auto text-center space-y-4 animate-fade-in-up">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-danger/10 border border-danger/20 text-danger text-[10px] font-mono uppercase tracking-wider">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-mono uppercase tracking-wider" style={{ background: "var(--color-alert-wash)", border: "1px solid rgba(217,59,48,0.25)", color: "var(--color-alert)" }}>
             <Scale size={12} /> Legal Protection & Due Diligence Stack
           </div>
-          <h2 className="text-3xl md:text-5xl font-display text-text-primary">
+          <h2 className="text-3xl md:text-5xl tracking-tight" style={{ fontFamily: "var(--font-jakarta)", fontWeight: 800, letterSpacing: "-0.02em", color: "#fff" }}>
             Hyderabad Land Registry Audit
           </h2>
-          <p className="text-text-secondary text-xs md:text-sm max-w-xl mx-auto leading-relaxed">
+          <p className="text-sm max-w-xl mx-auto leading-relaxed" style={{ color: "var(--color-text-invert-mid)" }}>
             Protect your investments from prohibited properties, mutation delays, lake encroachments, and unapproved plotting layouts using official Telangana verification nodes.
           </p>
         </div>
@@ -144,7 +144,7 @@ export default function LegalHubPage() {
                 href="https://dharani.telangana.gov.in"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="card-interactive flex items-center justify-between p-3 font-bold text-accent"
+                className="card-interactive flex items-center justify-between p-3 font-bold text-navy-ink"
               >
                 <span>Dharani Land Portal</span> <ExternalLink size={12} />
               </a>
@@ -152,7 +152,7 @@ export default function LegalHubPage() {
                 href="https://rera.telangana.gov.in"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="card-interactive flex items-center justify-between p-3 font-bold text-accent"
+                className="card-interactive flex items-center justify-between p-3 font-bold text-navy-ink"
               >
                 <span>TG-RERA Portal</span> <ExternalLink size={12} />
               </a>
@@ -160,7 +160,7 @@ export default function LegalHubPage() {
                 href="https://hmda.gov.in"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="card-interactive flex items-center justify-between p-3 font-bold text-accent"
+                className="card-interactive flex items-center justify-between p-3 font-bold text-navy-ink"
               >
                 <span>HMDA Planning Maps</span> <ExternalLink size={12} />
               </a>
@@ -172,19 +172,20 @@ export default function LegalHubPage() {
         <div className="lg:col-span-2 space-y-6 stagger-2 animate-fade-in-up">
           
           {/* Filters Row */}
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4 card-premium !py-3">
-            <div className="relative w-full md:w-72">
-              <Search className="absolute left-3 top-2.5 text-text-secondary" size={15} />
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 card-premium !py-4">
+            <div className="relative w-full md:w-72 md:shrink-0">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none" size={15} />
               <input
                 type="text"
                 placeholder="Search survey risks, corridors..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="input-premium w-full pl-9 pr-3 py-1.5"
+                className="input-premium w-full"
+                style={{ paddingLeft: 38, paddingRight: 14 }}
               />
             </div>
 
-            <div className="flex flex-wrap gap-1 w-full md:w-auto">
+            <div className="flex flex-wrap gap-2 md:justify-end">
               {["ALL", "LAND_RECORDS", "RESTRICTIONS", "APPROVALS", "RERA"].map(cat => (
                 <button
                   key={cat}
@@ -223,7 +224,7 @@ export default function LegalHubPage() {
                         </span>
                         <h4 className="font-display text-lg text-text-primary mt-1">{risk.title}</h4>
                       </div>
-                      <span className="text-[10px] font-mono text-accent bg-accent/10 px-2 py-0.5 rounded uppercase">
+                      <span className="text-[10px] font-mono text-navy-ink bg-accent/10 px-2 py-0.5 rounded uppercase">
                         {risk.category.replace(/_/g, " ")}
                       </span>
                     </div>
@@ -246,7 +247,7 @@ export default function LegalHubPage() {
                             href={risk.checkUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 font-mono text-[10px] text-accent hover:text-accent-gold font-bold transition-colors"
+                            className="inline-flex items-center gap-1 font-mono text-[10px] text-navy-ink hover:text-accent-gold font-bold transition-colors"
                           >
                             Verify Online <ExternalLink size={10} />
                           </a>

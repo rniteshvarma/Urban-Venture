@@ -13,18 +13,52 @@ model User {
   id            String   @id @default(cuid())
   name          String?
   email         String   @unique
-  password      String?  // Admin/Client credentials password
-  phone         String?
+  password      String?  // Admin/Client credentials password (bcrypt). Reused as passwordHash.
+  phone         String?  // uniqueness enforced in app auth logic (see resolveLeadIdentity/signup)
   role          Role     @default(CLIENT)
   createdAt     DateTime @default(now())
+
+  // ── Client portal auth (v4-extend, JWT sessions) ──
+  googleId      String?      // uniqueness enforced in the NextAuth signIn callback (Google linking)
+  emailVerified DateTime?
+  phoneVerified Boolean      @default(false)
+  authProvider  AuthProvider @default(EMAIL)
+
+  // ── Progressive profile ──
+  budget        Float?       // Lakhs
+  horizon       Int?         // years
+  preferredCity String?      @default("Hyderabad")
+  riskAppetite  RiskLevel?
+  profileScore  Int          @default(0)   // 0-100 completeness
+
+  // ── Activity ──
+  lastLoginAt          DateTime?
+  lastDashboardVisitAt DateTime?
+  updatedAt            DateTime  @default(now()) @updatedAt
+
+  // ── Relations ──
   leads         Lead[]
   searches      Search[]
   purchases     PropertyPurchase[]
+  savedProjects SavedProject[]
+  watchlist     CorridorWatch[]
+  savedReports  SavedReport[]
+  compareItems  CompareItem[]
+  passwordResetTokens PasswordResetToken[]
+
+  @@index([googleId])
+  @@index([phone])
 }
 
 enum Role {
   CLIENT
   ADMIN
+}
+
+enum AuthProvider {
+  EMAIL
+  GOOGLE
+  BOTH
 }
 
 model Project {
@@ -51,6 +85,7 @@ model Project {
   leads             Lead[]
   matches           ProjectLeadMatch[]
   purchases         PropertyPurchase[]
+  savedBy           SavedProject[]
 }
 
 enum RiskLevel {
@@ -205,6 +240,7 @@ model Search {
   city       String
   aiResponse Json     // Store full AI recommendation response
   createdAt  DateTime @default(now())
+  savedReport SavedReport?
 }
 
 model LeadRoadmap {
@@ -888,13 +924,17 @@ model PropertyPurchase {
 }
 
 model PropertyDocument {
-  id          String             @id @default(cuid())
-  purchaseId  String
-  purchase    PropertyPurchase   @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
-  type        DocumentType
-  name        String             // User-friendly name
-  url         String             // File URL
-  uploadedAt  DateTime           @default(now())
+  id               String             @id @default(cuid())
+  purchaseId       String
+  purchase         PropertyPurchase   @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  type             DocumentType
+  name             String             // User-friendly name
+  url              String             // File URL
+  uploadedAt       DateTime           @default(now())
+  // ── Client portal additions ──
+  isVisibleToClient Boolean           @default(true)   // gate for the client Document Vault
+  sizeBytes        Int?                                // for "PDF · 2.4 MB" display
+  uploadedBy       String?                             // User.id when a client uploads a "pending" doc
 }
 
 model PaymentInstallment {
@@ -908,4 +948,542 @@ model PaymentInstallment {
   status      PaymentStatus      @default(PENDING)
   receiptUrl  String?
   createdAt   DateTime           @default(now())
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// CLIENT PORTAL — additive models (dashboard, saving, anon merge, auth)
+// ADMIN CRM is unaffected: nothing above is modified except additive
+// columns on User and PropertyDocument.
+// ═══════════════════════════════════════════════════════════════════
+
+/// Anonymous activity captured before signup, merged into a User on account creation.
+model AnonymousSession {
+  id               String    @id @default(cuid())
+  token            String    @unique   // httpOnly cookie 'anon_sid'
+  searchIds        String[]  @default([])
+  savedProjectIds  String[]  @default([])
+  watchedCorridors String[]  @default([])
+  lastActiveAt     DateTime  @default(now())
+  mergedIntoUserId String?
+  mergedAt         DateTime?
+  createdAt        DateTime  @default(now())
+}
+
+model SavedProject {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id])
+  note      String?
+  savedAt   DateTime @default(now())
+
+  @@unique([userId, projectId])
+  @@index([userId])
+}
+
+model CorridorWatch {
+  id               String   @id @default(cuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  corridorSlug     String
+  // Snapshot at time of watching — powers "since you started watching" math
+  priceAtWatchSqYd Float?
+  scoreAtWatch     Int?
+  watchedAt        DateTime @default(now())
+  alertsEnabled    Boolean  @default(true)
+
+  @@unique([userId, corridorSlug])
+  @@index([userId])
+}
+
+model SavedReport {
+  id       String   @id @default(cuid())
+  userId   String
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  searchId String   @unique
+  search   Search   @relation(fields: [searchId], references: [id])
+  title    String   // auto: "₹25L · 5yr · Hyderabad — 12 Aug 2026"
+  isPinned Boolean  @default(false)
+  savedAt  DateTime @default(now())
+
+  @@index([userId])
+}
+
+model CompareItem {
+  id       String      @id @default(cuid())
+  userId   String
+  user     User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  itemType CompareType
+  itemId   String      // projectId or corridorSlug
+  addedAt  DateTime    @default(now())
+
+  @@unique([userId, itemType, itemId])
+  @@index([userId])
+}
+
+enum CompareType {
+  PROJECT
+  CORRIDOR
+}
+
+/// Password recovery — 1h expiry, single use (replaces NextAuth VerificationToken since we stay on JWT).
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// GEOGRAPHIC FOUNDATION — TG/AP village resolution layer (AGENTS.md geo spec)
+//
+// Authoritative geographic spine (LGD hierarchy) + a crosswalk that resolves
+// any source's inconsistently-spelled place-name to a canonical village.
+// Requires PostGIS: the `boundary` geometry column and its GIST index are
+// created by prisma/sql/postgis-setup.sql, NOT by `prisma db push`.
+//
+// NOTE: these models are purely additive — nothing above is modified.
+// ═══════════════════════════════════════════════════════════════════
+
+model State {
+  id        String     @id @default(cuid())
+  code      String     @unique // "TG", "AP"
+  name      String
+  lgdCode   String     @unique
+  districts District[]
+}
+
+model District {
+  id                String    @id @default(cuid())
+  stateId           String
+  state             State     @relation(fields: [stateId], references: [id])
+  name              String
+  code              String? // short code (LANDIQ) — optional; lgdCode remains the canonical join key
+  lgdCode           String    @unique
+  censusCode        String?
+  formedOn          DateTime? // TG reorg 2016, AP reorg 2022
+  supersededOn      DateTime? // null = currently active
+  parentDistrictLgd String? // district it was carved out of
+  mandals           Mandal[]
+
+  @@unique([stateId, code])
+  @@index([stateId])
+}
+
+model Mandal {
+  id           String           @id @default(cuid())
+  districtId   String
+  district     District         @relation(fields: [districtId], references: [id])
+  name         String
+  lgdCode      String           @unique
+  censusCode   String?
+  formedOn     DateTime?
+  supersededOn DateTime?
+  villages     RevenueVillage[]
+
+  @@index([districtId])
+}
+
+model RevenueVillage {
+  id             String  @id @default(cuid())
+  mandalId       String
+  mandal         Mandal  @relation(fields: [mandalId], references: [id])
+  name           String // canonical English name from LGD
+  nameTelugu     String?
+  lgdCode        String  @unique
+  censusCode2011 String?
+
+  // Normalised forms — computed once (lib/geo/normalise.ts), indexed, used for matching
+  nameNormalised String // lowercase, stripped, substituted
+  namePhonetic   String // Double Metaphone key
+  nameTranslit   String? // Telugu -> romanised phonetic key
+
+  // Geometry. `boundaryGeoJSON` is a dependency-free GeoJSON polygon (works
+  // without PostGIS); a PostGIS `boundary` column can be added later via
+  // postgis-setup.sql for indexed spatial queries.
+  centroidLat    Float?
+  centroidLng    Float?
+  areaHectare    Float?
+  boundaryGeoJSON Json?
+  geomSource     String? // "datameet" | "bhuvan" | "manual"
+  geomQuality    GeomQuality @default(NONE)
+
+  // ── LANDIQ classification & jurisdiction (drive RZT / RSK pillars) ──
+  landUseClass    String? // Agricultural | Residential | Industrial | Mixed
+  urbanRuralClass String? // Urban | Peri-Urban | Rural
+  underHMDA       Boolean @default(false)
+  underGHMC       Boolean @default(false)
+  underDTCP       Boolean @default(false)
+  underFCDA       Boolean @default(false)
+  underUDA        String? // AP: VMRDA, CRDA, etc.
+  masterPlanZone  String? // R1/R2/Industrial/Green/Conservation
+
+  // ── Denormalised current scores (recomputed nightly by the scorer) ──
+  landIQScore     Int?
+  momentum90d     Float?
+  convictionScore Int?
+  fairValueSqYd   Float?
+  entryWindow     EntryWindow?
+  lastScoredAt    DateTime?
+
+  // Status
+  isActive     Boolean   @default(true)
+  supersededBy String? // lgdCode of merged-into village
+  supersededOn DateTime?
+
+  aliases VillageAlias[]
+  history AdminBoundaryHistory[]
+
+  // Validation Lab (analytics) back-relations
+  priceObservations PriceObservation[]
+  registrationStats RegistrationStat[]
+  infraProximities  VillageInfraProximity[]
+  features          VillageFeature[]
+
+  // LANDIQ back-relations
+  scores        VillageScore[]
+  corridorLinks CorridorVillage[]
+  riskFlags     VillageRiskFlag[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([mandalId])
+  @@index([nameNormalised])
+  @@index([namePhonetic])
+}
+
+enum GeomQuality {
+  NONE // no geometry
+  CENTROID_ONLY // point only
+  APPROX_POLYGON // low-precision boundary
+  SURVEYED // authoritative boundary
+}
+
+/// The crosswalk. This is the core artefact of this module.
+model VillageAlias {
+  id          String         @id @default(cuid())
+  villageId   String
+  village     RevenueVillage @relation(fields: [villageId], references: [id])
+  source      String // "IGRS_TG" | "MEEBHOOMI" | "RERA_TG" | "GAZETTE" ...
+  sourceIdent String? // source's own ID for the place, if any
+  rawName     String // exactly as it appears in the source
+  rawDistrict String?
+  rawMandal   String?
+
+  matchMethod MatchMethod
+  confidence  Float // 0-1
+  verifiedBy  String? // user id, null = auto-accepted
+  verifiedAt  DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@unique([source, rawName, rawDistrict, rawMandal])
+  @@index([source, rawName])
+  @@index([villageId])
+}
+
+enum MatchMethod {
+  EXACT_LGD // source supplied an LGD code
+  EXACT_NAME // normalised name + mandal exact match
+  GEOMETRY // point-in-polygon from lat/lng
+  FUZZY_HIGH // >= 0.95 composite score
+  FUZZY_REVIEWED // human-confirmed a fuzzy candidate
+  MANUAL // human entered directly
+}
+
+/// Boundary reorganisation history — TG 2016 (10->33 districts),
+/// AP 2022 (13->26 districts). Historical data MUST resolve through this.
+model AdminBoundaryHistory {
+  id            String         @id @default(cuid())
+  villageId     String
+  village       RevenueVillage @relation(fields: [villageId], references: [id])
+  effectiveFrom DateTime
+  effectiveTo   DateTime? // null = current
+  districtLgd   String
+  districtName  String
+  mandalLgd     String
+  mandalName    String
+  changeReason  String? // "TG District Reorganisation 2016"
+  sourceGO      String?
+
+  @@index([villageId, effectiveFrom])
+}
+
+/// Anything the resolver could not confidently match
+model ResolutionQueue {
+  id           String      @id @default(cuid())
+  source       String
+  rawName      String
+  rawDistrict  String?
+  rawMandal    String?
+  rawPayload   Json // full source record for context
+  candidates   Json // [{villageId, name, mandal, score, method}]
+  topScore     Float?
+  status       QueueStatus @default(PENDING)
+  resolvedToId String?
+  resolvedBy   String?
+  resolvedAt   DateTime?
+  notes        String?
+  occurrences  Int         @default(1) // dedupe: same raw name seen N times
+  createdAt    DateTime    @default(now())
+
+  @@unique([source, rawName, rawDistrict, rawMandal])
+  @@index([status, topScore])
+}
+
+enum QueueStatus {
+  PENDING
+  RESOLVED
+  REJECTED
+  NO_MATCH
+}
+
+/// Hand-labelled ground truth for measuring resolver accuracy
+model GoldenTestCase {
+  id          String   @id @default(cuid())
+  source      String
+  rawName     String
+  rawDistrict String?
+  rawMandal   String?
+  expectedLgd String? // null = correctly has no match
+  labelledBy  String
+  labelledAt  DateTime @default(now())
+  notes       String?
+}
+
+model ResolverEvalRun {
+  id              String   @id @default(cuid())
+  resolverVersion String
+  runAt           DateTime @default(now())
+  totalCases      Int
+  correct         Int
+  incorrect       Int
+  unresolved      Int
+  precision       Float
+  recall          Float
+  f1              Float
+  failureDetail   Json // the cases it got wrong, for debugging
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// VALIDATION LAB — bi-temporal observation layer (Validation Lab spec, Part 1)
+//
+// Every fact carries TWO timestamps:
+//   observedAt : when the fact was true in the world
+//   knownAt    : when we learned it
+// Point-in-time queries filter knownAt <= asOfDate AND observedAt <= asOfDate.
+// This must be present from the first migration — retrofitting is painful, and
+// it is what prevents lookahead bias in the backtest (see getFeaturesAsOf).
+// ═══════════════════════════════════════════════════════════════════
+
+model PriceObservation {
+  id            String         @id @default(cuid())
+  villageId     String
+  village       RevenueVillage @relation(fields: [villageId], references: [id])
+  observedAt    DateTime // the period this price refers to
+  knownAt       DateTime // when it entered our system
+  periodYear    Int
+  periodMonth   Int?
+  periodQuarter Int?
+  priceType     PriceType
+  pricePerSqYd  Float?
+  pricePerAcre  Float?
+  sampleSize    Int? // number of transactions behind it
+  source        String
+  sourceUrl     String?
+  confidence    Float          @default(0.7)
+
+  @@unique([villageId, periodYear, periodMonth, priceType, source])
+  @@index([villageId, observedAt])
+  @@index([knownAt])
+}
+
+enum PriceType {
+  CIRCLE_RATE
+  REGISTERED_MEDIAN
+  REGISTERED_MEAN
+  ASKING_MEDIAN
+  BROKER_QUOTE
+  TRANSACTION_ACTUAL
+}
+
+model RegistrationStat {
+  id              String         @id @default(cuid())
+  villageId       String
+  village         RevenueVillage @relation(fields: [villageId], references: [id])
+  observedAt      DateTime
+  knownAt         DateTime
+  periodYear      Int
+  periodMonth     Int
+  docCount        Int
+  saleDeedCount   Int?
+  totalValueLakh  Float?
+  medianPriceSqYd Float?
+  p25PriceSqYd    Float?
+  p75PriceSqYd    Float?
+  totalExtentSqYd Float?
+  source          String
+
+  @@unique([villageId, periodYear, periodMonth, source])
+  @@index([villageId, observedAt])
+}
+
+/// Point-in-time infrastructure status — status as KNOWN at a given date.
+/// A project COMPLETE today was ANNOUNCED in 2018; scoring as of 2018 must see
+/// ANNOUNCED. `infraProjectId` references InfraProject.id (kept scalar per spec).
+model InfraStatusHistory {
+  id             String      @id @default(cuid())
+  infraProjectId String
+  status         InfraStatus
+  completionPct  Int?
+  observedAt     DateTime // date this status became true
+  knownAt        DateTime // date it was publicly known
+  sourceRef      String? // GO number, tender ID, news date
+  sourceUrl      String?
+
+  @@index([infraProjectId, observedAt])
+}
+
+model VillageInfraProximity {
+  id             String         @id @default(cuid())
+  villageId      String
+  village        RevenueVillage @relation(fields: [villageId], references: [id])
+  infraProjectId String
+  straightLineKm Float
+  roadDistanceKm Float?
+  commuteMinutes Int?
+  computedAt     DateTime       @default(now())
+
+  @@unique([villageId, infraProjectId])
+  @@index([villageId])
+}
+
+model VillageFeature {
+  id         String         @id @default(cuid())
+  villageId  String
+  village    RevenueVillage @relation(fields: [villageId], references: [id])
+  featureKey String // "ndbi", "population_2011", "discom_new_conn"
+  observedAt DateTime
+  knownAt    DateTime
+  value      Float
+  source     String
+
+  @@unique([villageId, featureKey, observedAt, source])
+  @@index([villageId, featureKey, observedAt])
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// LANDIQ — village-level quantitative scoring (LANDIQ spec)
+//
+// Extends the geo + bi-temporal layers rather than duplicating them:
+// reuses RevenueVillage, the resolver/ResolutionQueue, and the bi-temporal
+// PriceObservation/RegistrationStat already present above.
+// ═══════════════════════════════════════════════════════════════════
+
+enum EntryWindow {
+  ACT_NOW // undervalued + accelerating + catalyst within 24 months
+  ACCUMULATE // fair value, strong pipeline, build position over time
+  WATCH // catalyst too distant or data too thin
+  FAIRLY_PRICED // score justified but upside already captured
+  AVOID // risk flags or negative momentum
+}
+
+/// Corridors as aggregations of villages — existing CorridorProfile is kept as
+/// an editorial overlay; this table is the many-to-many village membership.
+model CorridorVillage {
+  id           String         @id @default(cuid())
+  corridorSlug String
+  villageId    String
+  village      RevenueVillage @relation(fields: [villageId], references: [id])
+  weight       Float          @default(1.0) // core village vs periphery
+
+  @@unique([corridorSlug, villageId])
+  @@index([villageId])
+}
+
+model VillageRiskFlag {
+  id            String         @id @default(cuid())
+  villageId     String
+  village       RevenueVillage @relation(fields: [villageId], references: [id])
+  flagType      String // "SECTION_22A", "FTL_BUFFER", "GO_111", ...
+  severity      RiskSeverity
+  detail        String?
+  surveyNumbers String[]
+  source        String
+  detectedAt    DateTime       @default(now())
+  isActive      Boolean        @default(true)
+
+  @@index([villageId, isActive])
+}
+
+/// One scored snapshot of a village under a given weight profile. Model +
+/// weight-profile versions are stored so any historical score is reproducible.
+model VillageScore {
+  id            String         @id @default(cuid())
+  villageId     String
+  village       RevenueVillage @relation(fields: [villageId], references: [id])
+  weightProfile String // ScoringWeightProfile.name, e.g. "BALANCED_3_5Y"
+  modelVersion  String         @default("1.0.0")
+  scoredAt      DateTime       @default(now())
+
+  landIQScore Int
+  ippScore    Int
+  pmvScore    Int
+  tvlScore    Int
+  eegScore    Int
+  devScore    Int
+  rztScore    Int
+  demScore    Int
+  rskScore    Int
+
+  convictionScore Int
+  momentum90d     Float?
+  momentum365d    Float?
+
+  fairValueP25 Float?
+  fairValueP50 Float?
+  fairValueP75 Float?
+  valuationGap Float?
+
+  return3yP10  Float?
+  return3yP50  Float?
+  return3yP90  Float?
+  return5yP50  Float?
+  return10yP50 Float?
+
+  entryWindow EntryWindow
+  topDrivers  Json // [{pillar, contribution, explanation}]
+  topRisks    Json
+  aiNarrative String? // Claude-generated, grounded in the numbers only
+
+  @@index([villageId, weightProfile, scoredAt])
+  @@index([landIQScore])
+}
+
+/// Tunable, versioned horizon weight profiles (LANDIQ 3.2). Editable in admin
+/// without a deploy; versioned so historical VillageScore rows stay reproducible.
+model ScoringWeightProfile {
+  id              String  @id @default(cuid())
+  name            String  @unique // "TRADER_1_3Y" | "BALANCED_3_5Y" | ...
+  label           String
+  version         Int     @default(1)
+  horizonYearsMin Int
+  horizonYearsMax Int?
+  wIPP            Float
+  wPMV            Float
+  wTVL            Float
+  wEEG            Float
+  wDEV            Float
+  wRZT            Float
+  wDEM            Float
+  rskExponent     Float   @default(0.5) // (RSK/100)^rskExponent multiplier
+  isActive        Boolean @default(true)
+  createdAt       DateTime @default(now())
 }

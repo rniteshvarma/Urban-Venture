@@ -102,13 +102,13 @@ export default function ApprovalsDirectoryPage() {
   return (
     <div className="bg-surface-dim text-text-primary min-h-screen font-sans">
       {/* Hero Section */}
-      <section className="bg-surface pt-24 pb-12 px-6 border-b border-slate-200 shadow-sm gradient-surface">
+      <section className="px-6 py-14" style={{ background: "var(--color-ink)" }}>
         <div className="max-w-7xl mx-auto space-y-4 text-center">
-          <span className="text-[10px] font-bold text-accent uppercase tracking-widest block badge badge-verified inline-flex mb-1">Verifiable Registry Records</span>
-          <h1 className="text-3xl md:text-4xl font-display font-extrabold text-text-primary tracking-tight leading-tight">
+          <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full" style={{ background: "var(--color-ink-soft)", border: "1px solid var(--color-ink-line)", color: "var(--color-saffron)", fontFamily: "var(--font-mono)" }}>Verifiable Registry Records</span>
+          <h1 className="text-3xl md:text-5xl tracking-tight leading-tight" style={{ fontFamily: "var(--font-jakarta)", fontWeight: 800, letterSpacing: "-0.02em", color: "#fff" }}>
             HMDA / DTCP & RERA Layout Directory
           </h1>
-          <p className="max-w-xl mx-auto text-text-secondary text-xs md:text-sm leading-relaxed">
+          <p className="max-w-xl mx-auto text-sm leading-relaxed" style={{ color: "var(--color-text-invert-mid)" }}>
             Search our legally audited database of land layouts, housing projects, building permits, and RERA registration codes across major Hyderabad growth corridors.
           </p>
         </div>
@@ -152,7 +152,7 @@ export default function ApprovalsDirectoryPage() {
               <select
                 value={corridor}
                 onChange={(e) => setCorridor(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:bg-white focus:border-[#7C6EF5] outline-none shadow-sm transition-all cursor-pointer"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:bg-white focus:border-[#FFB400] outline-none shadow-sm transition-all cursor-pointer"
               >
                 <option value="ALL">All Corridors</option>
                 {corridors.map(c => (
@@ -166,7 +166,7 @@ export default function ApprovalsDirectoryPage() {
               <select
                 value={authority}
                 onChange={(e) => setAuthority(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:bg-white focus:border-[#7C6EF5] outline-none shadow-sm transition-all cursor-pointer"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:bg-white focus:border-[#FFB400] outline-none shadow-sm transition-all cursor-pointer"
               >
                 <option value="ALL">All Authorities</option>
                 {AUTHORITIES.map(a => (
@@ -180,7 +180,7 @@ export default function ApprovalsDirectoryPage() {
               <select
                 value={type}
                 onChange={(e) => setType(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:bg-white focus:border-[#7C6EF5] outline-none shadow-sm transition-all cursor-pointer"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:bg-white focus:border-[#FFB400] outline-none shadow-sm transition-all cursor-pointer"
               >
                 <option value="ALL">All Types</option>
                 {APPROVAL_TYPES.map(t => (
@@ -198,7 +198,7 @@ export default function ApprovalsDirectoryPage() {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   onKeyDown={handleKeyPress}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2 text-xs font-medium text-slate-800 focus:bg-white focus:border-[#7C6EF5] outline-none shadow-sm transition-all"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2 text-xs font-medium text-slate-800 focus:bg-white focus:border-[#FFB400] outline-none shadow-sm transition-all"
                 />
                 <Search className="absolute left-3 top-2.5 text-slate-400" size={14} />
               </div>
@@ -209,7 +209,7 @@ export default function ApprovalsDirectoryPage() {
         {/* Results List */}
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="animate-spin text-accent" size={32} />
+            <Loader2 className="animate-spin text-navy-ink" size={32} />
           </div>
         ) : approvals.length === 0 ? (
           <div className="card-premium py-12 text-center text-text-secondary text-xs italic shadow-sm">
@@ -260,7 +260,7 @@ export default function ApprovalsDirectoryPage() {
                         {app.corridor || app.corridorProfileSlug ? (
                           <Link
                             href={`/market/${(app.corridor || app.corridorProfileSlug).toLowerCase()}`}
-                            className="inline-flex items-center gap-1 text-[10px] font-bold text-accent hover:text-accent-indigo hover:underline cursor-pointer"
+                            className="inline-flex items-center gap-1 text-[10px] font-bold text-navy-ink hover:text-accent-indigo hover:underline cursor-pointer"
                           >
                             Corridor details <ArrowRight size={10} />
                           </Link>

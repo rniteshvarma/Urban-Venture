@@ -152,7 +152,8 @@ export default function ReportCard({
         </div>
         <button
           onClick={handlePrint}
-          className="btn-secondary text-xs py-2 px-4"
+          className="uv-btn uv-btn-ghost text-xs"
+          style={{ padding: "8px 16px" }}
         >
           🖨️ Print / Download PDF
         </button>
@@ -211,10 +212,10 @@ export default function ReportCard({
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs font-semibold">
                 <span className="text-slate-700">Real Estate (Appreciation + Rent Yield)</span>
-                <span className="text-[#2563EB] font-bold">{formatPriceLocal(finalRETotalMin)} - {formatPriceLocal(finalRETotalMax)}</span>
+                <span className="text-[#10233F] font-bold">{formatPriceLocal(finalRETotalMin)} - {formatPriceLocal(finalRETotalMax)}</span>
               </div>
               <div className="w-full h-2 rounded-full bg-slate-200 overflow-hidden flex">
-                <div className="h-full bg-[#2563EB]" style={{ width: "100%" }} />
+                <div className="h-full bg-saffron" style={{ width: "100%" }} />
               </div>
             </div>
 
@@ -461,7 +462,7 @@ export default function ReportCard({
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="btn-primary w-full py-3 text-xs"
+                className="uv-btn uv-btn-primary w-full"
               >
                 {isSubmitting ? "Saving Report..." : "Save Report & Schedule Consultation"}
               </button>
