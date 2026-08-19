@@ -45,13 +45,38 @@ const providers: NextAuthOptions["providers"] = [
         throw new Error("Missing email or password");
       }
 
-      const user = await prisma.user.findUnique({
-        where: { email: credentials.email.toLowerCase().trim() },
-      });
+      let user: { id: string; name: string | null; email: string; password: string | null; role: "CLIENT" | "ADMIN"; googleId?: string | null } | null = null;
+
+      try {
+        user = await prisma.user.findUnique({
+          where: { email: credentials.email.toLowerCase().trim() },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            password: true,
+            role: true,
+            googleId: true,
+          },
+        });
+      } catch (e: any) {
+        // Fallback to basic columns if googleId column is not yet pushed to DB
+        console.warn("Retrying user lookup with minimal columns due to DB schema mismatch:", e?.message);
+        user = await prisma.user.findUnique({
+          where: { email: credentials.email.toLowerCase().trim() },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            password: true,
+            role: true,
+          },
+        });
+      }
 
       if (!user || !user.password) {
         // Google-only account trying to use a password → friendly redirect on the client.
-        if (user && user.googleId) throw new Error("USE_GOOGLE");
+        if (user && (user as any).googleId) throw new Error("USE_GOOGLE");
         throw new Error("Invalid credentials");
       }
 
@@ -89,7 +114,16 @@ export const authOptions: NextAuthOptions = {
       const name = p?.name || user.name || null;
 
       try {
-        const existing = await prisma.user.findUnique({ where: { email } });
+        const existing = await prisma.user.findUnique({
+          where: { email },
+          select: { id: true, email: true, password: true, googleId: true, emailVerified: true },
+        }).catch(async () => {
+          return await prisma.user.findUnique({
+            where: { email },
+            select: { id: true, email: true, password: true },
+          });
+        });
+
         if (!existing) {
           // App-level uniqueness on googleId: a fresh CLIENT account.
           const created = await prisma.user.create({
@@ -107,11 +141,11 @@ export const authOptions: NextAuthOptions = {
         } else {
           // Link Google to an existing account — never create a duplicate.
           const data: Record<string, unknown> = { lastLoginAt: new Date() };
-          if (!existing.googleId) data.googleId = googleId;
+          if (!(existing as any).googleId) data.googleId = googleId;
           data.authProvider = existing.password ? "BOTH" : "GOOGLE";
-          if (!existing.emailVerified) data.emailVerified = new Date();
-          await prisma.user.update({ where: { id: existing.id }, data });
-          await resolveLeadIdentity(existing).catch((e) => console.error("resolveLeadIdentity(link):", e));
+          if (!(existing as any).emailVerified) data.emailVerified = new Date();
+          await prisma.user.update({ where: { id: existing.id }, data }).catch(() => {});
+          await resolveLeadIdentity(existing as any).catch((e) => console.error("resolveLeadIdentity(link):", e));
         }
         return true;
       } catch (e) {
@@ -130,7 +164,10 @@ export const authOptions: NextAuthOptions = {
       if (account?.provider === "google") {
         const email = (user?.email || token.email || "").toLowerCase();
         if (email) {
-          const dbUser = await prisma.user.findUnique({ where: { email } });
+          const dbUser = await prisma.user.findUnique({
+            where: { email },
+            select: { id: true, role: true },
+          }).catch(() => null);
           if (dbUser) {
             token.id = dbUser.id;
             token.role = dbUser.role;

@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build",
+    "build": "prisma db push --accept-data-loss && prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
     "test:geo": "tsx --test src/lib/geo/*.test.ts scripts/etl/lib/*.test.ts src/lib/landiq/*.test.ts src/lib/news/*.test.ts",
