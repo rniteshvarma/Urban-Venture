@@ -3,6 +3,7 @@ import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { resolveLeadIdentity } from "@/lib/lead-resolution";
 import { refreshProfileScore } from "@/lib/profile-score";
+import { createAndSendVerification } from "@/lib/email/verification";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_RE = /^[6-9]\d{9}$/;
@@ -46,6 +47,9 @@ export async function POST(req: Request) {
     // Link to existing CRM lead(s) or create a portal lead (fires automations).
     await resolveLeadIdentity(user).catch((e) => console.error("signup: resolveLeadIdentity:", e));
     await refreshProfileScore(user.id).catch(() => {});
+
+    // Send the email-verification link (fire-and-forget — never blocks signup).
+    createAndSendVerification(user).catch((e) => console.error("signup: verification email:", e));
 
     // Client then calls signIn("credentials") + POST /api/auth/merge-anonymous.
     return NextResponse.json({ success: true, userId: user.id });

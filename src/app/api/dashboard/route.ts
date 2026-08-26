@@ -107,7 +107,7 @@ export async function GET() {
   const continueSearch = lastSearch ? { budget: lastSearch.budget, horizon: lastSearch.horizon, city: lastSearch.city } : null;
 
   // ── Advisor (generic until AGENT users exist) ──
-  const advisor = { generic: true as const, name: "Urban Ventures Advisory", role: "Talk to an investment advisor", whatsapp: "+919876543210" };
+  const advisor = { generic: true as const, name: "Property Tiger Advisory", role: "Talk to an investment advisor", whatsapp: "+919876543210" };
 
   return NextResponse.json({
     state,

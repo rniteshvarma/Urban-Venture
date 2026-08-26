@@ -9,8 +9,22 @@ import {
   Bookmark, Eye, FileText, Pin, Building2,
 } from "lucide-react";
 import SignOutButton from "@/components/client/auth/SignOutButton";
-import { SkeletonCard, InfoChip } from "@/components/ui";
+import { SkeletonCard, InfoChip, Wordmark } from "@/components/ui";
 import { formatLakhRange, formatINRFull, formatPct, formatDate } from "@/lib/format";
+import SellingMode from "@/components/seller/SellingMode";
+
+type DashMode = "buying" | "selling";
+
+function readCookie(name: string): string | null {
+  if (typeof document === "undefined") return null;
+  const m = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
+  return m ? decodeURIComponent(m[1]) : null;
+}
+function writeCookie(name: string, value: string) {
+  document.cookie = `${name}=${encodeURIComponent(value)}; path=/; max-age=${60 * 60 * 24 * 180}`;
+}
+
+interface SellerStatus { hasProfile: boolean; unread: number }
 
 interface DashData {
   state: "EXPLORER" | "ACTIVE_BUYER" | "OWNER";
@@ -31,19 +45,44 @@ const ACTION_ICON: Record<string, React.ReactNode> = {
 export default function DashboardPage() {
   const [data, setData] = useState<DashData | null>(null);
   const [tab, setTab] = useState<"projects" | "corridors" | "reports">("projects");
+  const [seller, setSeller] = useState<SellerStatus>({ hasProfile: false, unread: 0 });
+  const [mode, setMode] = useState<DashMode>("buying");
 
   useEffect(() => {
     fetch("/api/dashboard")
       .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
       .then((d) => { setData(d); fetch("/api/dashboard/mark-seen", { method: "POST" }).catch(() => {}); })
-      .catch(() => setData(null));
+      .catch((status) => {
+        // Session cookie is valid but the user row is gone (e.g. after a DB
+        // reset) or unauthenticated — bounce to login instead of hanging on
+        // skeletons forever.
+        if (status === 401 || status === 404) {
+          window.location.href = "/login?next=/dashboard";
+          return;
+        }
+        setData(null);
+      });
+
+    // Seller status — governs the mode toggle. Buying path is untouched.
+    fetch("/api/seller/profile")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        const hasProfile = !!d?.profile;
+        if (hasProfile) {
+          if (readCookie("dash_mode") === "selling") setMode("selling");
+          fetch("/api/seller/enquiries?status=NEW").then((r) => r.json()).then((e) => setSeller({ hasProfile, unread: e.enquiries?.length ?? 0 })).catch(() => setSeller({ hasProfile, unread: 0 }));
+        }
+      })
+      .catch(() => {});
   }, []);
+
+  const changeMode = (m: DashMode) => { setMode(m); writeCookie("dash_mode", m); };
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--color-paper)" }}>
       <header style={{ background: "var(--color-ink)", padding: "0 1.25rem", height: 60, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <Link href="/" style={{ fontFamily: "var(--font-jakarta)", fontWeight: 800, color: "#fff", textDecoration: "none", fontSize: "1.05rem" }}>
-          URBAN VENTURES<span style={{ color: "var(--color-saffron)" }}>.</span>
+          <Wordmark />
         </Link>
         <SignOutButton />
       </header>
@@ -59,11 +98,17 @@ export default function DashboardPage() {
           </>
         ) : (
           <>
-            <GreetingBlock data={data} />
-            <NextActionBlock a={data.nextAction} />
-            <SavedBlock data={data} tab={tab} setTab={setTab} />
-            {data.saved.corridors.length > 0 && <CorridorGrowthBlock corridors={data.saved.corridors} />}
-            <AdvisorBlock advisor={data.advisor} name={data.user.firstName} />
+            <GreetingBlock data={data} mode={mode} setMode={changeMode} seller={seller} />
+            {mode === "selling" && seller.hasProfile ? (
+              <SellingMode userName={data.user.firstName} />
+            ) : (
+              <>
+                <NextActionBlock a={data.nextAction} />
+                <SavedBlock data={data} tab={tab} setTab={setTab} />
+                {data.saved.corridors.length > 0 && <CorridorGrowthBlock corridors={data.saved.corridors} />}
+                <AdvisorBlock advisor={data.advisor} name={data.user.firstName} />
+              </>
+            )}
           </>
         )}
       </main>
@@ -71,18 +116,45 @@ export default function DashboardPage() {
   );
 }
 
+// ── Mode toggle ──
+function ModeToggle({ mode, setMode, unread }: { mode: DashMode; setMode: (m: DashMode) => void; unread: number }) {
+  return (
+    <div style={{ display: "inline-flex", background: "var(--color-ink-soft)", border: "1px solid var(--color-ink-line)", borderRadius: 999, padding: 3 }}>
+      {(["buying", "selling"] as DashMode[]).map((m) => {
+        const active = mode === m;
+        return (
+          <button key={m} onClick={() => setMode(m)}
+            style={{ position: "relative", border: "none", cursor: "pointer", padding: "6px 16px", borderRadius: 999, fontSize: "0.8125rem", fontWeight: 700, textTransform: "capitalize", background: active ? "var(--color-saffron)" : "transparent", color: active ? "var(--color-ink)" : "var(--color-text-invert-mid)" }}>
+            {m}
+            {m === "selling" && unread > 0 && <span style={{ position: "absolute", top: -3, right: -3, minWidth: 16, height: 16, padding: "0 4px", borderRadius: 999, background: "var(--color-alert)", color: "#fff", fontSize: 10, fontWeight: 700, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>{unread}</span>}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 // ── Block A ──
-function GreetingBlock({ data }: { data: DashData }) {
+function GreetingBlock({ data, mode, setMode, seller }: { data: DashData; mode: DashMode; setMode: (m: DashMode) => void; seller: SellerStatus }) {
   const { user, greeting, resume } = data;
   return (
     <section style={{ background: "var(--color-ink)", borderRadius: "var(--radius-uv-lg)", padding: "clamp(1.4rem, 3vw, 2rem)", color: "#fff" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12 }}>
         <div>
-          <h1 style={{ fontFamily: "var(--font-jakarta)", fontWeight: 800, fontSize: "clamp(1.4rem, 3vw, 1.9rem)", letterSpacing: "-0.02em" }}>
-            {greeting}, {user.firstName}
-          </h1>
+          <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+            <h1 style={{ fontFamily: "var(--font-jakarta)", fontWeight: 800, fontSize: "clamp(1.4rem, 3vw, 1.9rem)", letterSpacing: "-0.02em" }}>
+              {greeting}, {user.firstName}
+            </h1>
+            {seller.hasProfile && <ModeToggle mode={mode} setMode={setMode} unread={seller.unread} />}
+          </div>
           <p style={{ color: "var(--color-text-invert-mid)", fontSize: "0.8125rem", marginTop: 4 }}>
             {user.lastDashboardVisitAt ? `Last visit ${formatDate(user.lastDashboardVisitAt)}` : "Welcome to your dashboard"}
+            {!seller.hasProfile && (
+              <>
+                {" · "}
+                <Link href="/dashboard/selling/new" style={{ color: "var(--color-saffron)", fontWeight: 600, textDecoration: "none" }}>List a property →</Link>
+              </>
+            )}
           </p>
         </div>
         <div style={{ minWidth: 160 }}>
@@ -95,7 +167,7 @@ function GreetingBlock({ data }: { data: DashData }) {
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 12, marginTop: 20 }}>
+      <div style={{ display: mode === "selling" ? "none" : "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 12, marginTop: 20 }}>
         {resume.lastReport ? (
           <ResumeCard icon="📄" title="Your last report" line={resume.lastReport.title}>
             <Link href="/research" className="uv-btn uv-btn-primary" style={{ fontSize: "0.75rem", padding: "7px 12px" }}>View again</Link>

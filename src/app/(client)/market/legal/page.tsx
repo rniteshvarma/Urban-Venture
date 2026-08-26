@@ -275,7 +275,7 @@ export default function LegalHubPage() {
 
       {/* Disclaimer block */}
       <div className="bg-surface-dim border-t border-gray-200 py-6 text-center text-[10px] text-text-secondary font-mono">
-        <p>UrbanVenture Legal Advisory. Compiled from Dharani, RERA Telangana, and HMDA layout notifications.</p>
+        <p>Property Tiger Legal Advisory. Compiled from Dharani, RERA Telangana, and HMDA layout notifications.</p>
       </div>
     </div>
   );

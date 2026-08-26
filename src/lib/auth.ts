@@ -83,6 +83,16 @@ const providers: NextAuthOptions["providers"] = [
       const isValid = await bcrypt.compare(credentials.password, user.password);
       if (!isValid) throw new Error("Invalid credentials");
 
+      // Hard email-verification gate — OFF unless EMAIL_VERIFICATION_REQUIRED=true.
+      // Keep it off until a real verification email is confirmed delivering, or
+      // this can lock out email/password users. Google sign-ins are auto-verified.
+      if (process.env.EMAIL_VERIFICATION_REQUIRED === "true") {
+        const v = await prisma.user
+          .findUnique({ where: { id: user.id }, select: { emailVerified: true } })
+          .catch(() => null);
+        if (v && !v.emailVerified) throw new Error("EMAIL_NOT_VERIFIED");
+      }
+
       // best-effort last-login stamp (never blocks auth)
       prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } }).catch(() => {});
 
@@ -196,5 +206,5 @@ export const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt",
   },
-  secret: process.env.NEXTAUTH_SECRET || "urban-venture-fallback-super-secret-key-12345-aura-luxury",
+  secret: process.env.NEXTAUTH_SECRET || "property-tiger-fallback-super-secret-key-12345-aura-luxury",
 };

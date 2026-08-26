@@ -1,6 +1,7 @@
 import Link from "next/link";
 import React from "react";
 import { Check } from "lucide-react";
+import { Wordmark } from "@/components/ui";
 
 const BENEFITS = [
   "Save AI research reports and re-run them anytime",
@@ -25,7 +26,7 @@ export default function AuthShell({ children }: { children: React.ReactNode }) {
         }}
       >
         <Link href="/" className="text-xl font-extrabold" style={{ fontFamily: "var(--font-jakarta)", color: "#fff", textDecoration: "none" }}>
-          URBAN VENTURES<span style={{ color: "var(--color-saffron)" }}>.</span>
+          <Wordmark />
         </Link>
 
         <div style={{ maxWidth: 420 }}>
@@ -56,7 +57,7 @@ export default function AuthShell({ children }: { children: React.ReactNode }) {
         <div style={{ width: "100%", maxWidth: 400 }}>
           {/* Mobile logo */}
           <Link href="/" className="lg:hidden" style={{ display: "inline-block", marginBottom: "1.75rem", fontFamily: "var(--font-jakarta)", fontWeight: 800, fontSize: "1.25rem", color: "var(--color-text-hi)", textDecoration: "none" }}>
-            URBAN VENTURES<span style={{ color: "var(--color-saffron-deep)" }}>.</span>
+            <Wordmark />
           </Link>
           {children}
         </div>

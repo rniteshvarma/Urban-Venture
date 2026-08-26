@@ -35,12 +35,17 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const search = searchParams.get("search");
     const status = searchParams.get("status");
+    const source = searchParams.get("source"); // ADMIN | SELLER (Seller Mode queue)
+    const listingStatus = searchParams.get("listingStatus"); // PENDING_REVIEW, etc.
 
     const where: any = {};
 
     if (status && status !== "ALL") {
       where.status = status;
     }
+
+    if (source) where.listingSource = source;
+    if (listingStatus && listingStatus !== "ALL") where.listingStatus = listingStatus;
 
     if (search) {
       where.OR = [

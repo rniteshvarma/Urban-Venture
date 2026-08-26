@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import ProjectCard from "./ProjectCard";
+import EmailReportButton from "./EmailReportButton";
+import { Wordmark } from "@/components/ui";
 
 interface CorridorRecommendation {
   name: string;
@@ -150,13 +152,16 @@ export default function ReportCard({
           <span className="text-[10px] text-text-secondary uppercase tracking-widest font-bold">Report Generated</span>
           <span className="text-xs font-semibold text-text-primary">Search ID: {searchId}</span>
         </div>
-        <button
-          onClick={handlePrint}
-          className="uv-btn uv-btn-ghost text-xs"
-          style={{ padding: "8px 16px" }}
-        >
-          🖨️ Print / Download PDF
-        </button>
+        <div className="flex items-center gap-2">
+          <EmailReportButton searchId={searchId} />
+          <button
+            onClick={handlePrint}
+            className="uv-btn uv-btn-ghost text-xs"
+            style={{ padding: "8px 16px" }}
+          >
+            🖨️ Print / Download PDF
+          </button>
+        </div>
       </div>
 
       {/* Main Report Document */}
@@ -168,7 +173,7 @@ export default function ReportCard({
         {/* Luxury Watermark Header (Only visible on print/PDF) */}
         <div className="hidden print:flex justify-between items-center border-b border-luxury pb-6 mb-8">
           <div>
-            <span className="font-display text-2xl font-bold tracking-widest text-primary">URBAN VENTURES</span>
+            <Wordmark className="font-display text-2xl font-bold tracking-widest text-primary" gap="0.2em" />
             <span className="text-xs text-accent font-semibold ml-2 uppercase tracking-widest">Investment Report</span>
           </div>
           <div className="text-right text-xs text-text-secondary">

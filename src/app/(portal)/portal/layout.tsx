@@ -128,7 +128,7 @@ function PortalLayoutContent({ children }: { children: React.ReactNode }) {
             <Building2 size={16} className="text-indigo-600" />
             <span className="font-semibold text-gray-700">UrbanAI</span>
           </div>
-          <p>&copy; {new Date().getFullYear()} Urban Venture. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} Property Tiger. All rights reserved.</p>
         </div>
       </footer>
     </div>

@@ -8,6 +8,7 @@ export { default as ScoreRing } from "./ScoreRing";
 export { default as PriceTag } from "./PriceTag";
 export { default as TrendDelta } from "./TrendDelta";
 export { default as InfoChip } from "./InfoChip";
+export { default as Wordmark } from "./Wordmark";
 export { default as VerifiedBadge } from "./VerifiedBadge";
 export { default as SourceTag } from "./SourceTag";
 export { default as SectionHeader } from "./SectionHeader";

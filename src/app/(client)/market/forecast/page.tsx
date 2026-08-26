@@ -346,7 +346,7 @@ export default function ForecastHubPage() {
 
       {/* Disclaimer block */}
       <div className="bg-surface-dim border-t border-gray-200 py-6 text-center text-[10px] text-text-secondary font-mono">
-        <p>UrbanVenture advisory services. Forecasting algorithms based on verified PropTech analytics model sets.</p>
+        <p>Property Tiger advisory services. Forecasting algorithms based on verified PropTech analytics model sets.</p>
       </div>
     </div>
   );

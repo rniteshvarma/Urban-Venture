@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { gradeFor } from "@/lib/listings/score";
 
 export async function GET(
   req: Request,
@@ -15,7 +16,13 @@ export async function GET(
       return NextResponse.json({ error: "Project not found" }, { status: 404 });
     }
 
-    return NextResponse.json(project);
+    // Constraint 7: strip the raw seller score; expose a grade instead.
+    const { listingScore, scoreBreakdown, ...pub } = project;
+    return NextResponse.json({
+      ...pub,
+      isVerifiedInventory: project.listingSource === "ADMIN",
+      listingGrade: project.listingSource === "SELLER" && listingScore != null ? gradeFor(listingScore) : null,
+    });
   } catch (error: any) {
     console.error(`Error fetching project ${id}:`, error);
     return NextResponse.json(

@@ -51,7 +51,7 @@ export async function GET(req: Request) {
       update: { password: hashedPassword, role: "ADMIN" },
       create: {
         email: "uv@gmail.com",
-        name: "Urban Ventures Admin",
+        name: "Property Tiger Admin",
         phone: "+919999999999",
         password: hashedPassword,
         role: "ADMIN",

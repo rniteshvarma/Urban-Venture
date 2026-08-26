@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { Wordmark } from "@/components/ui";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -51,9 +52,8 @@ export default function AdminLoginPage() {
         <div className="absolute inset-0 z-0 gradient-hero opacity-90" />
         
         <div className="relative z-10">
-          <span className="font-display text-3xl font-bold tracking-widest text-white">
-            URBAN VENTURES
-          </span>
+          <Wordmark className="font-display text-3xl font-bold tracking-widest text-white" gap="0.2em" />
+
           <div className="mt-2 text-accent-light text-sm font-medium tracking-wide uppercase">
             Exclusive Real Estate Intelligence
           </div>
@@ -61,7 +61,7 @@ export default function AdminLoginPage() {
 
         <div className="relative z-10 max-w-md animate-fade-in-up">
           <h1 className="font-display text-4xl sm:text-5xl font-bold text-white leading-tight">
-            Urban Ventures CRM
+            Property Tiger CRM
           </h1>
           <p className="mt-4 text-lg text-white/80 font-sans">
             Streamline your investment pipeline, manage high-value leads, and monitor premium real estate portfolios from a single command center.
@@ -74,8 +74,8 @@ export default function AdminLoginPage() {
         <div className="max-w-md w-full space-y-8">
           
           <div className="text-center lg:text-left">
-            <span className="lg:hidden font-display text-2xl font-bold tracking-widest text-primary block mb-6">
-              URBAN VENTURES
+            <span className="lg:hidden block mb-6">
+              <Wordmark className="font-display text-2xl font-bold tracking-widest text-primary" gap="0.2em" />
             </span>
             <h2 className="text-3xl font-bold text-text-primary font-display">
               Welcome back
@@ -97,7 +97,7 @@ export default function AdminLoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="input-premium w-full"
-                  placeholder="admin@urbanventures.com"
+                  placeholder="admin@propertytiger.com"
                 />
               </div>
               
@@ -135,7 +135,7 @@ export default function AdminLoginPage() {
 
           <div className="mt-8 pt-6 border-t border-luxury text-center">
             <p className="text-xs text-text-tertiary">
-              &copy; {new Date().getFullYear()} Urban Ventures. Secure Internal Access Only.
+              &copy; {new Date().getFullYear()} Property Tiger. Secure Internal Access Only.
             </p>
           </div>
         </div>

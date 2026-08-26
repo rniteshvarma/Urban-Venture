@@ -38,7 +38,7 @@ export async function GET(
       <!DOCTYPE html>
       <html>
       <head>
-        <title>Unsubscribed Successfully | Urban Ventures</title>
+        <title>Unsubscribed Successfully | Property Tiger</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
         <style>
@@ -102,7 +102,7 @@ export async function GET(
         <div class="card">
           <div class="icon">🔕</div>
           <h1>Unsubscribed Successfully</h1>
-          <p>You have been successfully removed from our marketing email lists. You will no longer receive investment broadcasts from Urban Ventures.</p>
+          <p>You have been successfully removed from our marketing email lists. You will no longer receive investment broadcasts from Property Tiger.</p>
           <a href="${portalUrl}" class="btn">Go to Portal</a>
         </div>
       </body>

@@ -204,7 +204,7 @@ export default function GeneratedNewsVisual({
       {/* Bottom Overlay Title Bar (Micro-Watermark) */}
       <div className="absolute bottom-2.5 left-3 right-3 z-10 flex items-center justify-between pointer-events-none">
         <span className="text-[10px] font-mono font-medium text-white/70 tracking-widest uppercase">
-          URBAN VENTURES · INTELLIGENCE
+          PROPERTY TIGER · INTELLIGENCE
         </span>
       </div>
     </div>

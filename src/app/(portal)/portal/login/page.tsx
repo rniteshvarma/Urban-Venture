@@ -132,7 +132,7 @@ export default function PortalLoginPage() {
 
           <div className="mt-8 pt-6 border-t border-gray-100 text-center">
             <p className="text-xs text-gray-400">
-              &copy; {new Date().getFullYear()} Urban Venture. All rights reserved.
+              &copy; {new Date().getFullYear()} Property Tiger. All rights reserved.
             </p>
           </div>
         </div>

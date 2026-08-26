@@ -104,7 +104,7 @@ export default function AdminCustomersPage() {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `urban_ventures_crm_customers_${Date.now()}.csv`);
+    link.setAttribute("download", `property_tiger_crm_customers_${Date.now()}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

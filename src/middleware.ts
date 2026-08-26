@@ -49,7 +49,7 @@ export default withAuth(
     callbacks: {
       authorized: () => true,
     },
-    secret: process.env.NEXTAUTH_SECRET || "urban-venture-fallback-super-secret-key-12345-aura-luxury",
+    secret: process.env.NEXTAUTH_SECRET || "property-tiger-fallback-super-secret-key-12345-aura-luxury",
   }
 );
 

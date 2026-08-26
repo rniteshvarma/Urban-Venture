@@ -45,6 +45,11 @@ model User {
   savedReports  SavedReport[]
   compareItems  CompareItem[]
   passwordResetTokens PasswordResetToken[]
+  emailVerificationTokens EmailVerificationToken[]
+
+  // ── Seller Mode ──
+  sellerProfile SellerProfile?
+  ownedProjects Project[]      @relation("OwnedProjects")
 
   @@index([googleId])
   @@index([phone])
@@ -86,6 +91,101 @@ model Project {
   matches           ProjectLeadMatch[]
   purchases         PropertyPurchase[]
   savedBy           SavedProject[]
+
+  // ── Brochure Ingestion: publication state + provenance ──
+  // Existing projects default PUBLISHED so nothing changes; extracted ones start DRAFT.
+  reviewState     ReviewState   @default(PUBLISHED)
+  sourceType      ProjectSource @default(MANUAL)
+  extractionJobId String?
+  extractionJob   ExtractionJob? @relation(fields: [extractionJobId], references: [id])
+
+  // Richer brochure-sourced fields (all additive/optional)
+  reraNumber     String?
+  reraUrl        String?
+  possessionDate DateTime?
+  possessionText String?
+  totalLandAcres Float?
+  totalUnits     Int?
+  openSpacePct   Float?
+  towerCount     Int?
+  floorsPerTower String?
+  amenities      String[]
+  specifications Json?
+  paymentPlan    Json?
+  addressLine    String?
+  landmark       String?
+  latitude       Float?
+  longitude      Float?
+  approvals      String[]
+
+  unitTypes   ProjectUnitType[]
+  media       ProjectMedia[]
+  fieldAudits ProjectFieldAudit[]
+
+  // ══ SELLER MODE (dashboard extension) ══════════════════════════════
+  // Seller listings ARE Project records. These fields are additive; admin
+  // projects keep listingSource=ADMIN + listingStatus=APPROVED and behave
+  // exactly as before. See AGENTS "Seller Mode" spec.
+
+  // Ownership — null for admin-created projects
+  ownerId        String?
+  owner          User?         @relation("OwnedProjects", fields: [ownerId], references: [id])
+  listingSource  ListingSource @default(ADMIN)
+
+  // Review gate — admin projects default APPROVED, seller ones start DRAFT
+  listingStatus  ListingStatus @default(APPROVED)
+  submittedAt    DateTime?
+  approvedAt     DateTime?
+  reviewedBy     String?
+  reviewNote     String?          // internal, never shown to seller
+  sellerFeedback String?          // shown to the seller on CHANGES_REQUESTED
+  rejectReason   String?
+
+  // Validity
+  expiresAt       DateTime?       // approvedAt + 90 days
+  lastRefreshedAt DateTime?       // seller confirmed still available
+  soldAt          DateTime?
+
+  // Location precision (reuses existing latitude/longitude above)
+  villageId        String?
+  village          RevenueVillage? @relation("VillageListings", fields: [villageId], references: [id])
+  surveyNumbers    String[]
+  pinInsideVillage Boolean?
+
+  // Land specifics
+  totalAreaSqYd      Float?
+  totalPlots         Int?
+  availablePlots     Int?
+  plotSizesSqYd      Float[]
+  facingOptions      String[]
+  roadWidthFeet      Int?
+  ownershipType      String?
+  landClassification String?
+  approvalStatus     String?         // HMDA_APPROVED | DTCP_APPROVED | UNAPPROVED ...
+  approvalNumber     String?
+  approvalVerified   Boolean @default(false)
+  reraVerified       Boolean @default(false)   // reuses existing reraNumber above
+
+  // Scoring
+  listingScore   Int?             // 0-100 composite
+  scoreBreakdown Json?
+  scoredAt       DateTime?
+
+  // Counters
+  viewCount    Int  @default(0)
+  saveCount    Int  @default(0)
+  enquiryCount Int  @default(0)
+
+  scoreHistory ListingScoreSnapshot[]
+  enquiries    ListingEnquiry[]
+  activityLog  ListingActivity[]
+
+  @@index([listingStatus, listingScore])
+  @@index([ownerId, listingStatus])
+  // Explore Map bbox queries. PostGIS is not available in this deployment, so
+  // the viewport query is an indexed lat/lng range scan rather than
+  // ST_MakeEnvelope. Revisit if PostGIS is ever installed.
+  @@index([listingStatus, latitude, longitude])
 }
 
 enum RiskLevel {
@@ -409,6 +509,12 @@ model CorridorProfile {
   ghmc2025              Boolean           @default(false)  // Included in Dec 2025 GHMC expansion
   hmdaJurisdiction      Boolean           @default(true)
   fcdaZone              Boolean           @default(false)  // Inside FCDA Future City boundary
+  // Explore Map: where to fly the camera when a corridor is picked in search.
+  // Null until populated — search still returns the corridor and filters by it,
+  // it just cannot recentre the map. Never used to position a property pin.
+  centroidLat           Float?
+  centroidLng           Float?
+  defaultZoom           Int?              // optional per-corridor zoom, else 12
   rrrAlignment          RRRAlignment?     // NORTH_CORRIDOR, SOUTH_CORRIDOR, BOTH, NONE
   
   // Price data 2026
@@ -1040,6 +1146,19 @@ model PasswordResetToken {
   @@index([userId])
 }
 
+/// Email verification — 24h expiry, single use. Sets User.emailVerified on confirm.
+model EmailVerificationToken {
+  id        String    @id @default(cuid())
+  token     String    @unique
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
 // ═══════════════════════════════════════════════════════════════════
 // GEOGRAPHIC FOUNDATION — TG/AP village resolution layer (AGENTS.md geo spec)
 //
@@ -1150,6 +1269,9 @@ model RevenueVillage {
   scores        VillageScore[]
   corridorLinks CorridorVillage[]
   riskFlags     VillageRiskFlag[]
+
+  // Seller Mode — listings located in this village
+  sellerListings Project[] @relation("VillageListings")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1607,4 +1729,438 @@ model NewsIngestRun {
   enriched     Int       @default(0)
   stored       Int       @default(0)
   errorSummary String?
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// BROCHURE INGESTION — PDF/image → structured project (base spec + image
+// addendum). Architecture C: Claude-native extraction, no worker/queue.
+// Extraction always produces a DRAFT; a human reviews and publishes.
+// ═══════════════════════════════════════════════════════════════════
+
+enum ReviewState {
+  DRAFT
+  IN_REVIEW
+  NEEDS_ATTENTION
+  PUBLISHED
+  REJECTED
+}
+
+enum ProjectSource {
+  MANUAL
+  BROCHURE_PDF
+  BROCHURE_IMAGES
+  CSV_IMPORT
+}
+
+enum SourceFormat {
+  PDF
+  IMAGE_SET
+  MIXED
+}
+
+model ExtractionJob {
+  id String @id @default(cuid())
+
+  sourceFormat   SourceFormat @default(PDF)
+  inputFileCount Int          @default(1)
+  inputs         ExtractionInput[]
+
+  pageCount         Int?
+  hasTextLayer      Boolean?
+  usedOCR           Boolean  @default(false)
+  detectedLanguages String[]
+
+  // Image quality summary (worst across inputs)
+  qualityScore  Float?
+  qualityIssues String[]
+
+  status      JobStatus @default(QUEUED)
+  stage       String?
+  progressPct Int       @default(0)
+
+  rawExtraction Json?
+  normalised    Json?
+  validation    Json?
+
+  overallConfidence   Float?
+  fieldsExtracted     Int?
+  fieldsLowConfidence Int?
+
+  tokensUsed      Int?
+  costEstimateUsd Float?
+  durationMs      Int?
+
+  errorMessage String?
+  errorStage   String?
+  retryCount   Int     @default(0)
+
+  createdBy String
+  projectId String? // set once the draft is created (informational)
+  projects  Project[]
+  media     ProjectMedia[]
+  pages     ExtractionPage[]
+
+  createdAt   DateTime  @default(now())
+  completedAt DateTime?
+}
+
+enum JobStatus {
+  QUEUED
+  PARSING
+  RASTERISING
+  EXTRACTING_IMAGES
+  OCR
+  ANALYSING
+  CLASSIFYING
+  NORMALISING
+  VALIDATING
+  READY_FOR_REVIEW
+  FAILED
+  CANCELLED
+}
+
+/// One row per uploaded file. A PDF creates one; an image set creates N.
+model ExtractionInput {
+  id    String        @id @default(cuid())
+  jobId String
+  job   ExtractionJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  originalFileName String
+  mimeType         String
+  fileSizeKb       Int
+  originalUrl      String
+  processedUrl     String?
+  displayOrder     Int     @default(0)
+
+  widthPx          Int?
+  heightPx         Int?
+  exifOrientation  Int?
+  wasHeicConverted Boolean @default(false)
+
+  qualityScore   Float?
+  blurScore      Float?
+  brightnessMean Float?
+  skewAngleDeg   Float?
+  qualityIssues  String[]
+  qualityVerdict QualityVerdict @default(UNKNOWN)
+
+  declaredRole ImageRole?
+
+  cropRegion     Json?
+  rotationDeg    Int     @default(0)
+  enhanceApplied Boolean @default(false)
+
+  pageId    String?
+  createdAt DateTime @default(now())
+
+  @@index([jobId, displayOrder])
+}
+
+enum QualityVerdict {
+  GOOD
+  USABLE
+  POOR
+  UNUSABLE
+  UNKNOWN
+}
+
+enum ImageRole {
+  BROCHURE_PAGE
+  PRICE_LIST
+  MASTER_PLAN
+  FLOOR_PLAN
+  UNIT_PLAN
+  ELEVATION_RENDER
+  AMENITY_LIST
+  SPECIFICATION
+  LOCATION_MAP
+  SITE_PHOTO
+  LISTING_SCREENSHOT
+  OTHER
+}
+
+/// One visual unit (PDF page or uploaded image) — powers the review viewer.
+model ExtractionPage {
+  id           String        @id @default(cuid())
+  jobId        String
+  job          ExtractionJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  pageNumber   Int
+  imageUrl     String
+  textContent  String?       @db.Text
+  inputId      String? // set for IMAGE_SET jobs, null for PDF pages
+  originFormat SourceFormat  @default(PDF)
+
+  @@unique([jobId, pageNumber])
+}
+
+model ProjectUnitType {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  label        String
+  unitCategory UnitCategory
+  bedrooms     Int?
+  bathrooms    Int?
+  balconies    Int?
+
+  areaValue        Float?
+  areaUnit         AreaUnit?
+  areaSqFt         Float?
+  areaSqYd         Float?
+  carpetAreaSqFt   Float?
+  builtUpSqFt      Float?
+  superBuiltUpSqFt Float?
+
+  priceValue Float?
+  priceLakh  Float?
+  ratePerSqFt Float?
+  ratePerSqYd Float?
+  priceNote  String?
+
+  facing         String?
+  availableUnits Int?
+  isSoldOut      Boolean @default(false)
+
+  floorPlanMediaId String?
+  displayOrder     Int     @default(0)
+
+  confidence    Float?
+  sourcePage    Int?
+  sourceSnippet String?
+
+  @@index([projectId])
+}
+
+enum UnitCategory {
+  APARTMENT
+  PLOT
+  VILLA
+  ROWHOUSE
+  COMMERCIAL
+  OFFICE
+  OTHER
+}
+
+enum AreaUnit {
+  SQFT
+  SQYD
+  SQM
+  ACRE
+  GUNTHA
+  CENT
+  ANKANAM
+}
+
+model ProjectMedia {
+  id        String         @id @default(cuid())
+  projectId String?
+  project   Project?       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  jobId     String?
+  job       ExtractionJob? @relation(fields: [jobId], references: [id])
+
+  fileUrl        String
+  thumbnailUrl   String?
+  mimeType       String
+  widthPx        Int?
+  heightPx       Int?
+  fileSizeKb     Int?
+  perceptualHash String?
+
+  mediaType      MediaType
+  typeConfidence Float?
+  aiCaption      String?
+  altText        String?
+
+  sourcePage    Int?
+  extractMethod ExtractMethod
+
+  rightsStatus RightsStatus @default(UNVERIFIED)
+  rightsNote   String?
+  isPublic     Boolean      @default(false)
+  isPrimary    Boolean      @default(false)
+  isRejected   Boolean      @default(false)
+  displayOrder Int          @default(0)
+
+  createdAt DateTime @default(now())
+
+  @@index([projectId, mediaType])
+  @@index([jobId])
+}
+
+enum MediaType {
+  MASTER_PLAN
+  FLOOR_PLAN
+  UNIT_PLAN
+  ELEVATION
+  INTERIOR_RENDER
+  AMENITY
+  LOCATION_MAP
+  SITE_PHOTO
+  SPECIFICATION_TABLE
+  PRICE_TABLE
+  LOGO
+  DECORATIVE
+  UNKNOWN
+}
+
+enum ExtractMethod {
+  EMBEDDED_IMAGE
+  PAGE_RASTER
+  PAGE_CROP
+  DIRECT_UPLOAD
+}
+
+enum RightsStatus {
+  UNVERIFIED
+  CLEARED
+  RESTRICTED
+  INTERNAL_ONLY
+}
+
+/// Every field: what the AI said vs. what the human changed it to.
+model ProjectFieldAudit {
+  id        String  @id @default(cuid())
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  jobId     String?
+
+  fieldPath      String
+  extractedValue String?  @db.Text
+  finalValue     String?  @db.Text
+  confidence     Float?
+  sourcePage     Int?
+  sourceSnippet  String?  @db.Text
+  wasCorrected   Boolean  @default(false)
+  correctedBy    String?
+  correctedAt    DateTime?
+
+  @@index([projectId])
+  @@index([fieldPath, wasCorrected])
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// SELLER MODE — dashboard extension. Seller listings are Project records
+// (see Project model above). These enums + support models add the seller
+// profile, buyer enquiries, activity log, and weekly score snapshots.
+// ═══════════════════════════════════════════════════════════════════
+
+enum ListingSource {
+  ADMIN
+  SELLER
+}
+
+enum ListingStatus {
+  DRAFT               // seller editing, not submitted
+  PENDING_REVIEW      // submitted, in admin queue
+  CHANGES_REQUESTED   // admin asked for something specific
+  APPROVED            // live on the public Properties tab
+  PAUSED              // seller paused
+  EXPIRED             // 90 days without refresh
+  SOLD
+  REJECTED
+}
+
+/// Capability layer on the existing User — not a role swap. A user can be a
+/// buyer and a seller simultaneously.
+model SellerProfile {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  sellerType      SellerType
+  displayName     String
+  firmName        String?
+  reraAgentNumber String? // required when sellerType is AGENT or BUILDER
+  logoUrl         String?
+
+  isVerified    Boolean   @default(false)
+  verifiedAt    DateTime?
+  isSuspended   Boolean   @default(false)
+  suspendReason String?
+
+  maxActiveListings Int @default(10)
+
+  // Responsiveness — feeds the FreshnessScore component
+  totalEnquiries     Int    @default(0)
+  respondedEnquiries Int    @default(0)
+  avgResponseHours   Float?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum SellerType {
+  OWNER
+  AGENT
+  BUILDER
+}
+
+model ListingEnquiry {
+  id        String  @id @default(cuid())
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  buyerUserId String?
+  buyerName   String
+  buyerPhone  String
+  buyerEmail  String?
+  message     String? @db.Text
+  budgetLakh  Float?
+
+  leadId            String? // Lead created in the existing CRM
+  status            EnquiryStatus @default(NEW)
+  sellerViewedAt    DateTime?
+  sellerRespondedAt DateTime?
+  contactReleased   Boolean       @default(false) // admin releases buyer contact
+
+  createdAt DateTime @default(now())
+
+  @@index([projectId, createdAt])
+}
+
+enum EnquiryStatus {
+  NEW
+  VIEWED
+  RESPONDED
+  CLOSED
+  SPAM
+}
+
+model ListingActivity {
+  id        String  @id @default(cuid())
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  eventType String  // SUBMITTED | APPROVED | CHANGES_REQUESTED | EDITED | REFRESHED | PAUSED | SOLD
+  actorId   String?
+  actorRole String? // SELLER | ADMIN | SYSTEM
+  detail    String?
+
+  createdAt DateTime @default(now())
+
+  @@index([projectId, createdAt])
+}
+
+/// Weekly snapshot — powers the seller's performance trend chart.
+model ListingScoreSnapshot {
+  id         String   @id @default(cuid())
+  projectId  String
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  capturedAt DateTime @default(now())
+
+  listingScore   Int
+  locationScore  Int
+  priceScore     Int
+  qualityScore   Int
+  trustScore     Int
+  freshnessScore Int
+
+  viewCount    Int
+  enquiryCount Int
+
+  localityAvgViews     Float? // benchmark, for the comparison chart
+  localityAvgEnquiries Float?
+
+  @@index([projectId, capturedAt])
 }

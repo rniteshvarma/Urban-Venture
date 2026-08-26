@@ -119,7 +119,7 @@ export async function processBroadcastSend(broadcastId: string) {
 
           // --- EMAIL DISPATCH ---
           if (needsEmail && lead.email && !lead.emailOptOut) {
-            const subjectText = broadcast.emailSubject || "Urban Ventures Investment Update";
+            const subjectText = broadcast.emailSubject || "Property Tiger Investment Update";
             const bodyText = broadcast.emailBody || "";
 
             // Resolve email subject & body merge tags
@@ -360,7 +360,7 @@ export async function processBroadcastRetry(broadcastId: string) {
 
           // --- RETRY EMAIL ---
           if (emailFailed && lead.email && !lead.emailOptOut) {
-            const subjectText = broadcast.emailSubject || "Urban Ventures Investment Update";
+            const subjectText = broadcast.emailSubject || "Property Tiger Investment Update";
             const bodyText = broadcast.emailBody || "";
 
             const resolvedSubject = await resolveMergeTags(subjectText, lead.id);

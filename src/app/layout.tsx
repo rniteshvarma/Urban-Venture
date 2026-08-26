@@ -32,7 +32,7 @@ const instrumentSerif = Instrument_Serif({
 });
 
 export const metadata: Metadata = {
-  title: "Urban Ventures | AI Investment Advisory",
+  title: "Property Tiger | AI Investment Advisory",
   description: "AI-Powered Real Estate Investment Research Portal for Hyderabad's fastest-growing corridors.",
 };
 

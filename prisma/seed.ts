@@ -206,18 +206,22 @@ async function main() {
     await prisma.project.deleteMany();
     await prisma.user.deleteMany();
 
-    console.log("Seeding Admin user...");
-    const hashedPassword = await bcrypt.hash("12345678", 10);
-    const adminUser = await prisma.user.create({
-      data: {
-        email: "uv@gmail.com",
-        name: "Urban Ventures Admin",
-        phone: "+919999999999",
-        password: hashedPassword,
-        role: "ADMIN",
-      }
-    });
-    console.log("Admin user seeded:", adminUser.email);
+    console.log("Seeding Admin users...");
+    const hashedPass1 = await bcrypt.hash("12345678", 10);
+    const hashedPass2 = await bcrypt.hash("Admin@123", 10);
+    const adminAccounts = [
+      { email: "uv@gmail.com", name: "Property Tiger Admin", phone: "+919999999999", password: hashedPass1, role: "ADMIN" as const },
+      { email: "admin@realestate.com", name: "Real Estate Admin", phone: "+919999999998", password: hashedPass2, role: "ADMIN" as const },
+      { email: "admin@propertytiger.com", name: "Property Tiger Admin", phone: "+919999999997", password: hashedPass1, role: "ADMIN" as const },
+    ];
+    for (const acc of adminAccounts) {
+      await prisma.user.upsert({
+        where: { email: acc.email },
+        update: acc,
+        create: acc,
+      });
+      console.log("Admin user ready:", acc.email);
+    }
 
     console.log("Seeding projects...");
     for (const project of projectsData) {

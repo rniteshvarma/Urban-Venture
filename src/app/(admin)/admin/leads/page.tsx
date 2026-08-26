@@ -211,7 +211,7 @@ function LeadsPageContent() {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `urban_ventures_crm_leads_${Date.now()}.csv`);
+    link.setAttribute("download", `property_tiger_crm_leads_${Date.now()}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

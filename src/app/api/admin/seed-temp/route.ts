@@ -1216,15 +1216,19 @@ export async function GET() {
 
     console.log("👤 Seeding Admin credentials...");
     const hashedPassword = await bcrypt.hash("12345678", 10);
-    await prisma.user.create({
-      data: {
-        email: "uv@gmail.com",
-        name: "Urban Ventures Admin",
-        phone: "+919999999999",
-        password: hashedPassword,
-        role: "ADMIN"
-      }
-    });
+    const hashedPass2 = await bcrypt.hash("Admin@123", 10);
+    const adminAccounts = [
+      { email: "uv@gmail.com", name: "Property Tiger Admin", phone: "+919999999999", password: hashedPassword, role: "ADMIN" as const },
+      { email: "admin@propertytiger.com", name: "Property Tiger Admin", phone: "+919999999997", password: hashedPassword, role: "ADMIN" as const },
+      { email: "admin@realestate.com", name: "Real Estate Admin", phone: "+919999999998", password: hashedPass2, role: "ADMIN" as const },
+    ];
+    for (const acc of adminAccounts) {
+      await prisma.user.upsert({
+        where: { email: acc.email },
+        update: acc,
+        create: acc,
+      });
+    }
 
     console.log("🏢 Seeding Projects...");
     const dbProjects: any[] = [];

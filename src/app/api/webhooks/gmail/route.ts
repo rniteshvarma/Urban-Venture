@@ -12,7 +12,7 @@ function shouldIgnoreEmail(from: string, subject: string): boolean {
   if (autoIgnorePrefixes.some(p => fromLower.includes(p))) return true;
 
   // Skip self domain emails if configured
-  const ownDomain = process.env.ADMIN_EMAIL_DOMAIN || 'urbanventure.com';
+  const ownDomain = process.env.ADMIN_EMAIL_DOMAIN || 'propertytiger.com';
   if (fromLower.endsWith(`@${ownDomain}`)) return true;
 
   return false;

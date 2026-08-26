@@ -20,7 +20,7 @@ function askQuestion(query: string): Promise<string> {
 
 async function main() {
   console.log("\n=======================================================");
-  console.log("🚀 URBAN VENTURES - PRODUCTION DATABASE SEED & VALIDATE");
+  console.log("🚀 PROPERTY TIGER - PRODUCTION DATABASE SEED & VALIDATE");
   console.log("=======================================================\n");
 
   let dbUrl = process.env.DATABASE_URL;

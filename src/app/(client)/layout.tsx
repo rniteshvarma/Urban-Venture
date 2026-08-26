@@ -7,6 +7,7 @@ import React, { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Menu, X, ChevronDown, ArrowRight, LogIn, LayoutDashboard } from "lucide-react";
+import { Wordmark } from "@/components/ui";
 
 interface NavChild {
   label: string;
@@ -60,9 +61,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between" style={{ height: 68 }}>
           <div className="flex items-center gap-9">
             <Link href="/" className="flex items-center gap-1">
-              <span className="text-xl font-extrabold tracking-tight text-text-invert" style={{ fontFamily: "var(--font-jakarta)" }}>
-                URBAN VENTURES<span style={{ color: "var(--color-saffron)" }}>.</span>
-              </span>
+              <Wordmark className="text-xl font-extrabold tracking-tight text-text-invert" style={{ fontFamily: "var(--font-jakarta)" }} />
             </Link>
 
             <nav className="hidden lg:flex items-center gap-7">
@@ -96,6 +95,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
                 </div>
               </div>
 
+              <Link href="/explore" className={linkCls(pathname?.startsWith("/explore"))}>Explore Map</Link>
               <Link href="/projects" className={linkCls(pathname?.startsWith("/projects"))}>Projects</Link>
               <Link href="/news" className={linkCls(pathname?.startsWith("/news"))}>News</Link>
               <Link href="/calculator" className={linkCls(pathname?.startsWith("/calculator"))}>Tools</Link>
@@ -134,9 +134,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
           <div className="fixed inset-0 animate-fade-in" style={{ background: "rgba(0,0,0,0.6)" }} onClick={() => setMobileMenuOpen(false)} />
           <div className="fixed inset-0 flex flex-col animate-slide-in-right" style={{ background: "var(--color-ink)", color: "#fff" }}>
             <div className="flex items-center justify-between px-5" style={{ height: 68, borderBottom: "1px solid var(--color-ink-line)" }}>
-              <span className="text-lg font-extrabold" style={{ fontFamily: "var(--font-jakarta)" }}>
-                URBAN VENTURES<span style={{ color: "var(--color-saffron)" }}>.</span>
-              </span>
+              <Wordmark className="text-lg font-extrabold" style={{ fontFamily: "var(--font-jakarta)" }} />
               <button onClick={() => setMobileMenuOpen(false)} className="p-2 text-text-invert-mid" aria-label="Close menu"><X className="w-6 h-6" /></button>
             </div>
             <div className="p-5 flex-1 overflow-y-auto flex flex-col gap-6">
@@ -152,6 +150,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
                   {MARKET_MENU.map((c) => <Link key={c.href} href={c.href} className="text-sm text-text-invert-mid hover:text-text-invert">{c.label}</Link>)}
                 </div>
               </div>
+              <Link href="/explore" className="text-base font-medium">Explore Map</Link>
               <Link href="/projects" className="text-base font-medium">Projects</Link>
               <Link href="/news" className="text-base font-medium">News</Link>
               <Link href="/calculator" className="text-base font-medium">Tools</Link>
@@ -182,9 +181,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 lg:grid-cols-5 gap-10">
             <div className="col-span-2">
-              <span className="text-2xl font-extrabold text-text-invert" style={{ fontFamily: "var(--font-jakarta)" }}>
-                URBAN VENTURES<span style={{ color: "var(--color-saffron)" }}>.</span>
-              </span>
+              <Wordmark className="text-2xl font-extrabold text-text-invert" style={{ fontFamily: "var(--font-jakarta)" }} />
               <p className="mt-4 text-sm leading-relaxed text-text-invert-mid" style={{ maxWidth: 360 }}>
                 Not a listing site. A research platform. AI-powered investment research for Hyderabad land and property, built on verified government infrastructure data.
               </p>
@@ -230,7 +227,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
             <p className="text-xs leading-relaxed text-text-invert-mid" style={{ maxWidth: 640 }}>
               <strong className="text-text-invert">Disclaimer:</strong> Recommendations are generated using AI-assisted calculations based on historical trends and published infrastructure plans. Past performance does not guarantee future results. Perform independent legal due diligence before investing.
             </p>
-            <p className="text-xs text-text-invert-mid whitespace-nowrap">© {new Date().getFullYear()} Urban Ventures</p>
+            <p className="text-xs text-text-invert-mid whitespace-nowrap">© {new Date().getFullYear()} Property Tiger</p>
           </div>
         </div>
       </footer>

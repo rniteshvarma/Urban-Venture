@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { gradeFor } from "@/lib/listings/score";
 
 export async function GET(req: Request) {
   try {
@@ -47,14 +48,29 @@ export async function GET(req: Request) {
       ];
     }
 
+    // Seller Mode: never surface low-quality seller listings in the default feed.
+    // (Non-approved seller listings are already excluded — their ProjectStatus is
+    // not ACTIVE — so the status filter above handles them.)
+    where.NOT = { listingSource: "SELLER", listingScore: { lt: 40 } };
+
     const projects = await prisma.project.findMany({
       where,
-      orderBy: {
-        createdAt: "desc"
-      }
+      // Ranking (Part 4.3): ADMIN inventory first (ADMIN < SELLER), then listing
+      // score desc, then recency. All-admin feeds fall through to createdAt desc,
+      // preserving the previous ordering.
+      orderBy: [{ listingSource: "asc" }, { listingScore: "desc" }, { createdAt: "desc" }],
     });
 
-    return NextResponse.json(projects);
+    // Constraint 7: never expose the raw seller score publicly — a grade (A/B/C)
+    // communicates the same thing without inviting arguments. Strip the internal
+    // fields; add `listingGrade` + `isVerifiedInventory` for the UI.
+    const publicProjects = projects.map(({ listingScore, scoreBreakdown, ...p }) => ({
+      ...p,
+      isVerifiedInventory: p.listingSource === "ADMIN",
+      listingGrade: p.listingSource === "SELLER" && listingScore != null ? gradeFor(listingScore) : null,
+    }));
+
+    return NextResponse.json(publicProjects);
   } catch (error: any) {
     console.error("Error fetching projects:", error);
     return NextResponse.json(

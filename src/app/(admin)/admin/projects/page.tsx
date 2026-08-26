@@ -263,7 +263,10 @@ export default function AdminProjectsPage() {
         </div>
         
         {activeTab === "projects" ? (
-          <div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <Link href="/admin/projects/review" className="crm-btn-secondary text-xs" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+              <Building2 size={14} /> Seller listings
+            </Link>
             <Link
               href="/admin/projects/new"
               className="crm-btn-primary text-xs"

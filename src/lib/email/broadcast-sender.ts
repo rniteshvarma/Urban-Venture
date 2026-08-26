@@ -1,7 +1,10 @@
-import { Resend } from "resend";
+/**
+ * Broadcast email sender — now a thin wrapper over the central email layer
+ * (src/lib/email/client.ts). Keeps the legacy { data, error } return shape the
+ * broadcast worker reads, and appends the required unsubscribe footer.
+ */
 
-const apiKey = process.env.RESEND_API_KEY || "mock_key";
-const resend = new Resend(apiKey);
+import { sendEmail } from "./client";
 
 export async function sendBroadcastEmail(params: {
   leadId: string;
@@ -13,7 +16,7 @@ export async function sendBroadcastEmail(params: {
   const token = Buffer.from(params.leadId).toString("base64");
   const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
   const unsubscribeLink = `${baseUrl}/api/unsubscribe/${token}`;
-  
+
   const footerHtml = `
     <br/><br/>
     <hr style="border: none; border-top: 1px solid #eaeaea; margin: 20px 0;"/>
@@ -24,24 +27,13 @@ export async function sendBroadcastEmail(params: {
     </p>
   `;
 
-  const finalHtml = params.htmlBody + footerHtml;
+  const res = await sendEmail({
+    to: params.to,
+    subject: params.subject,
+    html: params.htmlBody + footerHtml,
+    tags: { type: "broadcast" },
+  });
 
-  if (!process.env.RESEND_API_KEY || process.env.RESEND_API_KEY === "mock_key") {
-    // Mock Mode
-    console.log(`[MOCK EMAIL SENT] To: ${params.to}, Subject: ${params.subject}, Link: ${unsubscribeLink}`);
-    return { data: { id: `mock_email_${Date.now()}` }, error: null };
-  }
-
-  try {
-    const response = await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev',
-      to: params.to,
-      subject: params.subject,
-      html: finalHtml,
-    });
-    return response;
-  } catch (err: any) {
-    console.error("Resend API error:", err);
-    return { data: null, error: err };
-  }
+  // Preserve the shape the broadcast worker expects.
+  return res.ok ? { data: { id: res.id }, error: null } : { data: null, error: res.error };
 }

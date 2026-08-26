@@ -3,10 +3,10 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import * as Slider from "@radix-ui/react-slider";
-import { Bot, Map, Building2, BarChart3, Calculator, ArrowRight, ChevronDown } from "lucide-react";
+import { Bot, Building2, BarChart3, Calculator, ArrowRight, ChevronDown } from "lucide-react";
 import { formatLakh } from "@/lib/format";
 
-type TabKey = "ai" | "map" | "projects" | "corridor" | "calc";
+type TabKey = "ai" | "projects" | "corridor" | "calc";
 
 interface CorridorOption {
   slug: string;
@@ -23,7 +23,6 @@ interface SearchCommandBarProps {
 
 const TABS: { key: TabKey; label: string; icon: React.ComponentType<{ size?: number }>; badge?: string }[] = [
   { key: "ai", label: "AI Research", icon: Bot, badge: "NEW" },
-  { key: "map", label: "Explore Map", icon: Map },
   { key: "projects", label: "Projects", icon: Building2 },
   { key: "corridor", label: "Corridor Data", icon: BarChart3 },
   { key: "calc", label: "Calculate", icon: Calculator, badge: "FREE" },
@@ -272,21 +271,6 @@ export default function SearchCommandBar({ corridors = [], quickChips = [], clas
               style={{ marginLeft: "auto" }}
             >
               Generate Free Report <ArrowRight size={16} />
-            </button>
-          </div>
-        )}
-
-        {tab === "map" && (
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-            <input
-              className="input-premium"
-              placeholder="Search a location — Kokapet, Adibatla, Shankarpally…"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              style={{ flex: 1, minWidth: 220 }}
-            />
-            <button type="button" className="uv-btn uv-btn-primary" onClick={() => go(`/market${location ? `?q=${encodeURIComponent(location)}` : ""}#explore-map`)}>
-              Open Map View <ArrowRight size={16} />
             </button>
           </div>
         )}
