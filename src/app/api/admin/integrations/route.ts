@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import crypto from 'crypto';
+import { requireAdmin } from "@/lib/admin-auth";
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth.res;
+
   try {
     const sources = await prisma.inboundSource.findMany({
       orderBy: { createdAt: 'asc' },
@@ -53,6 +57,9 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth.res;
+
   try {
     const body = await req.json();
     const { name, type, fieldMapping, autoAssignTo, defaultStatus, dedupeWindow } = body;

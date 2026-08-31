@@ -171,7 +171,7 @@ export default function AdminDashboardPage() {
         <div className="space-y-2 z-10 relative">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-[#5B4FE0] animate-pulse" />
-            <span className="text-xs font-bold uppercase tracking-widest block text-black">LoopAI Executive Console</span>
+            <span className="text-xs font-bold uppercase tracking-widest block text-black">Executive Console</span>
           </div>
           <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-black tracking-tight">
             Real Estate Analytics & Growth Hub
@@ -209,7 +209,7 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
-      {/* 1. LoopAI KPI Cards (Hero Numerals, Soft Two-Tone Gradient Bars, Pill Badges) */}
+      {/* 1. KPI cards (hero numerals, soft two-tone gradient bars, pill badges) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         {/* KPI Card 1 */}
         <div className="crm-card p-6 flex flex-col justify-between space-y-4 group">
@@ -381,7 +381,7 @@ export default function AdminDashboardPage() {
               </div>
             )}
 
-            {/* LoopAI Insight Callout Box */}
+            {/* Insight callout box */}
             <div className="crm-insight-box">
               <Sparkles className="w-4 h-4 text-[#5B4FE0] shrink-0 mt-0.5" />
               <span>Fast initial responses within 30 minutes build trust and boost conversion rates by 4x.</span>
@@ -481,7 +481,7 @@ export default function AdminDashboardPage() {
               </div>
             )}
 
-            {/* LoopAI Insight Callout Box */}
+            {/* Insight callout box */}
             <div className="crm-insight-box">
               <Sparkles className="w-4 h-4 text-[#5B4FE0] shrink-0 mt-0.5" />
               <span>WhatsApp broadcasts deliver 98% open rates compared to traditional email campaigns.</span>

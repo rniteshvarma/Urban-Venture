@@ -1,15 +1,14 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { assertCron } from '@/lib/cron-auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
-  try {
-    const authHeader = req.headers.get('authorization');
-    if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-      // Allow local testing if no secret set
-    }
+  const denied = assertCron(req);
+  if (denied) return denied;
 
+  try {
     const now = new Date();
     const expiryWindow = new Date(now.getTime() + 24 * 60 * 60 * 1000); // 24 hours from now
 

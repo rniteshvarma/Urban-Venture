@@ -4,6 +4,7 @@ import GoogleProvider from "next-auth/providers/google";
 import prisma from "./prisma";
 import bcrypt from "bcryptjs";
 import { resolveLeadIdentity } from "./lead-resolution";
+import { authSecret } from "./env";
 
 declare module "next-auth" {
   interface Session {
@@ -206,5 +207,5 @@ export const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt",
   },
-  secret: process.env.NEXTAUTH_SECRET || "property-tiger-fallback-super-secret-key-12345-aura-luxury",
+  secret: authSecret(),
 };

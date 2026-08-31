@@ -97,13 +97,13 @@ export default function AdminPersonasPage() {
         </button>
       </div>
 
-      {/* LoopAI Insight Box */}
+      {/* Insight box */}
       <div className="crm-insight-box">
         <Sparkles className="w-4 h-4 text-[#5B4FE0] shrink-0 mt-0.5" />
         <span>Leads are automatically assigned to one of six buyer personas upon creation based on their budget range, investment horizon, preferred corridor, and context notes. Personas drive automated recommendations and targeted WhatsApp broadcasts.</span>
       </div>
 
-      {/* Grid of 6 LoopAI Persona Cards */}
+      {/* Grid of 6 persona cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {stats.map((p, index) => (
           <div

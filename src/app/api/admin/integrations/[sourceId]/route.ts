@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import crypto from 'crypto';
+import { requireAdmin } from "@/lib/admin-auth";
 
 export const dynamic = 'force-dynamic';
 
@@ -8,6 +9,9 @@ export async function GET(
   req: Request,
   { params }: { params: Promise<{ sourceId: string }> }
 ) {
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth.res;
+
   try {
     const { sourceId } = await params;
     const source = await prisma.inboundSource.findUnique({
@@ -31,6 +35,9 @@ export async function PUT(
   req: Request,
   { params }: { params: Promise<{ sourceId: string }> }
 ) {
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth.res;
+
   try {
     const { sourceId } = await params;
     const body = await req.json();
@@ -64,6 +71,9 @@ export async function DELETE(
   req: Request,
   { params }: { params: Promise<{ sourceId: string }> }
 ) {
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth.res;
+
   try {
     const { sourceId } = await params;
     await prisma.inboundSource.delete({

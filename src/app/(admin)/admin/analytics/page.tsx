@@ -107,7 +107,7 @@ export default function AdminAnalyticsPage() {
         </div>
       </div>
 
-      {/* LoopAI Pill Tabs */}
+      {/* Pill tabs */}
       <div className="flex items-center gap-3">
         <div className="crm-pill-nav">
           <button

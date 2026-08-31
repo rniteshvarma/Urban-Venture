@@ -221,7 +221,7 @@ export default function AdminWhatsAppPage() {
         </div>
       </div>
 
-      {/* LoopAI Top Pill Navigation Bar */}
+      {/* Top pill navigation bar */}
       <div className="flex items-center gap-3">
         <div className="crm-pill-nav">
           <button

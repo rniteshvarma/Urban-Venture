@@ -22,7 +22,7 @@ export default function LeadsByStatus({ data }: LeadsByStatusProps) {
     );
   }
 
-  // LoopAI vibrant color palette matching pill badges across CRM
+  // Vibrant colour palette matching the pill badges across the CRM
   const COLORS = ["#5B4FE0", "#7C6EF5", "#3B82F6", "#10B981", "#F59E0B", "#E11D48"];
 
   return (

@@ -1,51 +1,31 @@
-import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+/**
+ * Corridor + appreciation-history seeder.
+ *
+ *   npm run seed:appreciation
+ *
+ * This was previously an unauthenticated-in-practice GET at
+ * /api/admin/seed-production?key=urban2026 — the key was hardcoded in source,
+ * and the route reset the admin password. It is a bootstrap tool, not an
+ * endpoint.
+ *
+ * The old "self-healing schema" ALTER TABLE block was removed: schema changes
+ * are now applied by `prisma migrate deploy` at build time, which is the single
+ * source of truth. Hand-patching columns here is what let schema drift hide.
+ */
+import "dotenv/config";
+import prisma from "../src/lib/prisma";
 import bcrypt from "bcryptjs";
-import { computeAllCorridorScores } from "@/lib/corridor-intelligence";
+import { computeAllCorridorScores } from "../src/lib/corridor-intelligence";
+import { seedAdminPassword } from "./lib/seed-password";
 
-export const dynamic = "force-dynamic";
-
-export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url);
-  const key = searchParams.get("key");
-
-  if (key !== "urban2026") {
-    return NextResponse.json({ error: "Unauthorized. Pass ?key=urban2026" }, { status: 401 });
-  }
-
+async function main() {
   const logs: string[] = [];
 
   try {
-    logs.push("🌱 Starting Production DB Migration, Sync & Validation...");
+    logs.push("🌱 Starting corridor + appreciation seed...");
 
-    // 1. Ensure Missing DB Columns on PostgreSQL (Self-Healing Schema)
-    const schemaFixQueries = [
-      `ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "googleId" TEXT;`,
-      `ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "emailVerified" TIMESTAMP(3);`,
-      `ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "phoneVerified" BOOLEAN DEFAULT false;`,
-      `ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "authProvider" TEXT DEFAULT 'EMAIL';`,
-      `ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "budget" DOUBLE PRECISION;`,
-      `ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "horizon" INTEGER;`,
-      `ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "preferredCity" TEXT DEFAULT 'Hyderabad';`,
-      `ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "riskAppetite" TEXT;`,
-      `ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "profileScore" INTEGER DEFAULT 0;`,
-      `ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "lastLoginAt" TIMESTAMP(3);`,
-      `ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "lastDashboardVisitAt" TIMESTAMP(3);`,
-      `CREATE INDEX IF NOT EXISTS "User_googleId_idx" ON "User"("googleId");`,
-      `CREATE INDEX IF NOT EXISTS "User_phone_idx" ON "User"("phone");`,
-    ];
-
-    for (const sql of schemaFixQueries) {
-      try {
-        await prisma.$executeRawUnsafe(sql);
-      } catch (e: any) {
-        logs.push(`⚠️ SQL Notice: ${e.message}`);
-      }
-    }
-    logs.push("✅ Verified & updated User table schema columns in database.");
-
-    // 2. Seed Admin User
-    const hashedPassword = await bcrypt.hash("12345678", 10);
+    // 1. Seed Admin User
+    const hashedPassword = await bcrypt.hash(seedAdminPassword(), 10);
     const adminUser = await prisma.user.upsert({
       where: { email: "uv@gmail.com" },
       update: { password: hashedPassword, role: "ADMIN" },
@@ -511,20 +491,17 @@ export async function GET(req: Request) {
     logs.push(`Appreciation History Points Count: ${aCount}`);
     logs.push("🎉 All production database tables & scores are 100% verified and operational!");
 
-    return NextResponse.json({
-      success: true,
-      message: "Production DB successfully synchronized, schema updated, and corridor intelligence seeded.",
-      logs,
-    });
+    logs.forEach((l) => console.log(l));
   } catch (err: any) {
-    console.error("Critical error in GET /api/admin/seed-production:", err);
-    return NextResponse.json(
-      {
-        error: "Internal Server Error",
-        details: err.message,
-        logs,
-      },
-      { status: 500 }
-    );
+    logs.forEach((l) => console.log(l));
+    console.error("Critical error in seed-appreciation:", err);
+    throw err;
+  } finally {
+    await prisma.$disconnect();
   }
 }
+
+main().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

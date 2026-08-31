@@ -3,7 +3,24 @@ import prisma from "@/lib/prisma";
 import { WAStatus } from "@prisma/client";
 
 // POST /api/admin/whatsapp/webhook - Receive status updates from WATI
+//
+// This is an inbound webhook, so it cannot use a session guard. It is
+// authenticated with a shared secret instead, and fails closed: if
+// WATI_WEBHOOK_SECRET is not configured the endpoint is disabled rather than
+// left open for anyone to forge delivery receipts.
 export async function POST(req: Request) {
+  const secret = process.env.WATI_WEBHOOK_SECRET;
+  if (!secret) {
+    console.error("[WATI Webhook] WATI_WEBHOOK_SECRET is not set — rejecting.");
+    return NextResponse.json({ error: "Webhook not configured" }, { status: 503 });
+  }
+  const provided =
+    req.headers.get("x-wati-signature") ??
+    req.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
+  if (provided !== secret) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const body = await req.json();
     console.log("[WATI Webhook Received]", JSON.stringify(body, null, 2));

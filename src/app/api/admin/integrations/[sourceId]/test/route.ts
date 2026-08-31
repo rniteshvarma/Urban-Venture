@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { applyFieldMapping } from '@/lib/inbound/field-mapping';
 import { processInboundLead } from '@/lib/inbound/handler';
+import { requireAdmin } from "@/lib/admin-auth";
 
 export const dynamic = 'force-dynamic';
 
@@ -9,6 +10,9 @@ export async function POST(
   req: Request,
   { params }: { params: Promise<{ sourceId: string }> }
 ) {
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth.res;
+
   try {
     const { sourceId } = await params;
     const source = await prisma.inboundSource.findUnique({

@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --webpack",
-    "build": "prisma db push --accept-data-loss && prisma generate && next build",
+    "build": "prisma migrate deploy && prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
     "test:geo": "tsx --test src/lib/geo/*.test.ts scripts/etl/lib/*.test.ts src/lib/landiq/*.test.ts src/lib/news/*.test.ts src/lib/extraction/*.test.ts src/lib/listings/*.test.ts",
@@ -15,7 +15,10 @@
     "golden:import": "tsx scripts/eval/golden-set.ts --import",
     "golden:export": "tsx scripts/eval/golden-set.ts --export",
     "landiq:seed-weights": "tsx scripts/landiq/seed-weight-profiles.ts",
-    "news:seed": "tsx scripts/news/seed-and-ingest.ts"
+    "news:seed": "tsx scripts/news/seed-and-ingest.ts",
+    "test:func": "tsx --test scripts/test/functional.test.ts",
+    "seed:market": "tsx scripts/seed-market-data.ts",
+    "seed:appreciation": "tsx scripts/seed-appreciation.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.102.0",

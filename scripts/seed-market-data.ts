@@ -1,20 +1,31 @@
-import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+/**
+ * Market-data seeder — corridors, infra projects, legal risks, market pulse,
+ * persona configs and WhatsApp templates.
+ *
+ *   npm run seed:market
+ *
+ * This was previously exposed as an unauthenticated GET at
+ * /api/admin/seed-temp, where any visitor could wipe the database. It is a
+ * destructive local/bootstrap tool and must never be reachable over HTTP.
+ */
+import "dotenv/config";
+import prisma from "../src/lib/prisma";
 import bcrypt from "bcryptjs";
-import { 
-  Direction, 
-  HeatRating, 
-  InvCycle, 
-  RRRAlignment, 
-  Sentiment, 
-  RiskLevel, 
-  RiskSeverity, 
-  LegalCategory, 
-  InfraCategory, 
-  InfraStatus, 
-  MilestoneStatus 
+import {
+  Direction,
+  HeatRating,
+  InvCycle,
+  RRRAlignment,
+  Sentiment,
+  RiskLevel,
+  RiskSeverity,
+  LegalCategory,
+  InfraCategory,
+  InfraStatus,
+  MilestoneStatus
 } from "@prisma/client";
-import { computeAllCorridorScores } from "@/lib/corridor-intelligence";
+import { computeAllCorridorScores } from "../src/lib/corridor-intelligence";
+import { seedAdminPassword } from "./lib/seed-password";
 
 const projectsData = [
   {
@@ -1183,7 +1194,21 @@ const templatesData = [
   }
 ];
 
-export async function GET() {
+async function main() {
+  // This wipes ~15 tables. Refuse to run against anything that isn't an
+  // explicitly local database unless the operator opts in.
+  const url = process.env.DATABASE_URL ?? "";
+  const isLocal = url.includes("localhost") || url.includes("127.0.0.1");
+  if (!isLocal && process.env.SEED_ALLOW_REMOTE !== "true") {
+    console.error(
+      "❌ Refusing to run: DATABASE_URL is not local and SEED_ALLOW_REMOTE!=true.\n" +
+      "   This script DELETES all leads, projects, corridors and research data.\n" +
+      "   To run it against a remote database on purpose:\n" +
+      "     SEED_ALLOW_REMOTE=true npm run seed:market"
+    );
+    process.exit(1);
+  }
+
   try {
     console.log("🧹 Combined Database cleanup started...");
     
@@ -1215,7 +1240,7 @@ export async function GET() {
     console.log("🧹 Cleanup successful!");
 
     console.log("👤 Seeding Admin credentials...");
-    const hashedPassword = await bcrypt.hash("12345678", 10);
+    const hashedPassword = await bcrypt.hash(seedAdminPassword(), 10);
     const hashedPass2 = await bcrypt.hash("Admin@123", 10);
     const adminAccounts = [
       { email: "uv@gmail.com", name: "Property Tiger Admin", phone: "+919999999999", password: hashedPassword, role: "ADMIN" as const },
@@ -1436,12 +1461,16 @@ export async function GET() {
     console.log(`Recomputed scores for ${scores.length} corridors.`);
 
     console.log("🎉 Seeding completed successfully!");
-    return NextResponse.json({ 
-      success: true, 
-      message: "Production database successfully cleaned, seeded with admin (uv@gmail.com / 12345678), projects, corridors, persona rules, templates, and full research datasets!"
-    });
+    console.log("   Admin: uv@gmail.com — password set from SEED_ADMIN_PASSWORD.");
   } catch (error: any) {
-    console.error("Temp seed error:", error);
-    return NextResponse.json({ error: "Database seeding failed", details: error.message }, { status: 500 });
+    console.error("Market-data seed error:", error);
+    throw error;
+  } finally {
+    await prisma.$disconnect();
   }
 }
+
+main().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

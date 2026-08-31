@@ -1,5 +1,6 @@
 import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
+import { authSecret } from "@/lib/env";
 
 if (!process.env.NEXTAUTH_URL) {
   process.env.NEXTAUTH_URL = process.env.VERCEL_URL 
@@ -49,7 +50,7 @@ export default withAuth(
     callbacks: {
       authorized: () => true,
     },
-    secret: process.env.NEXTAUTH_SECRET || "property-tiger-fallback-super-secret-key-12345-aura-luxury",
+    secret: authSecret(),
   }
 );
 
