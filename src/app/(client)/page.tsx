@@ -5,6 +5,7 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { ArrowRight, Search, Bot, Building2, CheckCircle2, Calculator, Ruler, FileText, Repeat } from "lucide-react";
+import HeroAppShowcase from "@/components/home/HeroAppShowcase";
 import {
   SearchCommandBar,
   SectionHeader,
@@ -94,20 +95,23 @@ export default function HomePage() {
           src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260405_170732_8a9ccda6-5cff-4628-b164-059c500a2b41.mp4"
         />
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(0deg, var(--color-ink) 8%, rgba(13,13,18,0.55) 60%, rgba(13,13,18,0.75) 100%)" }} />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ position: "relative", zIndex: 2, paddingTop: "clamp(4rem, 9vw, 8rem)", paddingBottom: "5.5rem" }}>
-          <div style={{ maxWidth: 720 }}>
-            <span className="animate-fade-in-up" style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(255,255,255,0.08)", border: "1px solid var(--color-ink-line)", color: "#fff", padding: "6px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600 }}>
-              ⭐ {HERO.badge}
-            </span>
-            <h1 className="animate-fade-in-up stagger-1" style={{ fontFamily: "var(--font-jakarta)", fontWeight: 800, letterSpacing: "-0.02em", lineHeight: 1.02, color: "#fff", fontSize: "clamp(2.75rem, 6vw, 4.5rem)", marginTop: 20 }}>
-              {HERO.h1}
-            </h1>
-            <p className="animate-fade-in-up stagger-2" style={{ color: "var(--color-text-invert-mid)", fontSize: "clamp(1rem, 1.6vw, 1.25rem)", lineHeight: 1.6, marginTop: 18, maxWidth: 620 }}>
-              {HERO.sub}
-            </p>
-            <p className="animate-fade-in-up stagger-3" style={{ fontFamily: "var(--font-instrument)", fontStyle: "italic", color: "var(--color-saffron)", fontSize: "1.25rem", marginTop: 14 }}>
-              {HERO.micro}
-            </p>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ position: "relative", zIndex: 2, paddingTop: "clamp(4rem, 9vw, 7rem)", paddingBottom: "5.5rem" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 48, flexWrap: "wrap" }}>
+            <div style={{ maxWidth: 600, flex: "1 1 380px", minWidth: 320 }}>
+              <span className="animate-fade-in-up" style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(255,255,255,0.08)", border: "1px solid var(--color-ink-line)", color: "#fff", padding: "6px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600 }}>
+                ⭐ {HERO.badge}
+              </span>
+              <h1 className="animate-fade-in-up stagger-1" style={{ fontFamily: "var(--font-jakarta)", fontWeight: 800, letterSpacing: "-0.02em", lineHeight: 1.02, color: "#fff", fontSize: "clamp(2.5rem, 5vw, 4rem)", marginTop: 20 }}>
+                {HERO.h1}
+              </h1>
+              <p className="animate-fade-in-up stagger-2" style={{ color: "var(--color-text-invert-mid)", fontSize: "clamp(1rem, 1.6vw, 1.25rem)", lineHeight: 1.6, marginTop: 18, maxWidth: 560 }}>
+                {HERO.sub}
+              </p>
+              <p className="animate-fade-in-up stagger-3" style={{ fontFamily: "var(--font-instrument)", fontStyle: "italic", color: "var(--color-saffron)", fontSize: "1.25rem", marginTop: 14 }}>
+                {HERO.micro}
+              </p>
+            </div>
+            <HeroAppShowcase />
           </div>
         </div>
       </section>
