@@ -120,8 +120,7 @@ function SignupInner() {
         <p style={{ color: "var(--color-text-mid)", fontSize: "0.875rem", marginTop: 4, marginBottom: 24 }}>
           Already have one? <Link href="/login" style={{ color: "var(--color-saffron-deep)", fontWeight: 600 }}>Sign in →</Link>
         </p>
-        <GoogleButton callbackUrl={next} label="Continue with Google" />
-        <Divider />
+        <GoogleButton callbackUrl={next} label="Continue with Google" divider={<Divider />} />
         <form onSubmit={nextStep1} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           <input className="input-premium w-full" placeholder="Full name" value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" />
           <input type="email" className="input-premium w-full" placeholder="Email address" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />

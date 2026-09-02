@@ -196,13 +196,19 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
   },
-  // Admin default sign-in page. Clients call signIn() with an explicit
-  // callbackUrl from /login, and client-route protection is handled by
-  // middleware redirecting to /login — so this default never sends a client
-  // to the admin page in normal flows.
+  // These are the pages NextAuth falls back to on its own — an OAuth error, or
+  // any visit to /api/auth/signin without a provider. They must point at the
+  // public sign-in page: the CRM is staff-only and is reached by typing /admin,
+  // never by being redirected there.
+  //
+  // They previously pointed at /admin/login, which is why a failing Google
+  // sign-in dumped customers on the CRM login screen.
+  //
+  // /admin/login is unaffected: it calls signIn("credentials", { redirect:
+  // false }) directly and renders its own errors, so it never relies on these.
   pages: {
-    signIn: "/admin/login",
-    error: "/admin/login",
+    signIn: "/login",
+    error: "/login",
   },
   session: {
     strategy: "jwt",

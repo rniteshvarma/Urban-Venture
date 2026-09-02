@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense, useState } from "react";
+import React, { Suspense, useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
@@ -25,6 +25,20 @@ function LoginInner() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<React.ReactNode>("");
   const [loading, setLoading] = useState(false);
+
+  // NextAuth redirects here with ?error=... when a provider flow fails (this is
+  // its configured error page). Without surfacing it the user lands back on a
+  // blank sign-in form with no idea why, which is how a broken Google sign-in
+  // looked like the page had simply reloaded.
+  const authError = params.get("error");
+  useEffect(() => {
+    if (!authError) return;
+    setError(
+      authError === "OAuthAccountNotLinked"
+        ? "That email is already registered with a password. Sign in with your password instead."
+        : "Sign-in with Google could not be completed. Use your email and password, or try again."
+    );
+  }, [authError]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,8 +74,7 @@ function LoginInner() {
         <Link href={`/signup${next !== "/dashboard" ? `?next=${encodeURIComponent(next)}` : ""}`} style={{ color: "var(--color-saffron-deep)", fontWeight: 600 }}>Create an account</Link>
       </p>
 
-      <GoogleButton callbackUrl={next} />
-      <Divider />
+      <GoogleButton callbackUrl={next} divider={<Divider />} />
 
       <form onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
         <input type="email" className="input-premium w-full" placeholder="Email address" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />

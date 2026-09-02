@@ -3,9 +3,38 @@
 import React, { useEffect, useState } from "react";
 import { signIn } from "next-auth/react";
 
-/** "Continue with Google" — visually dominant, full width. */
-export default function GoogleButton({ callbackUrl = "/dashboard", label = "Continue with Google" }: { callbackUrl?: string; label?: string }) {
+/**
+ * "Continue with Google" — visually dominant, full width.
+ *
+ * Renders nothing unless the Google provider is actually registered. The
+ * provider is only added when GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are
+ * present, so without them signIn("google") targets a provider that does not
+ * exist and NextAuth bounces the user to its error page. Offering a sign-in
+ * method that cannot work is worse than not offering it.
+ *
+ * `divider` renders directly beneath the button, so the "or" rule disappears
+ * with it rather than dangling above the password form.
+ */
+export default function GoogleButton({
+  callbackUrl = "/dashboard",
+  label = "Continue with Google",
+  divider,
+}: {
+  callbackUrl?: string;
+  label?: string;
+  divider?: React.ReactNode;
+}) {
   const [loading, setLoading] = useState(false);
+  const [available, setAvailable] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    fetch("/api/auth/providers")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((providers) => { if (alive) setAvailable(Boolean(providers && providers.google)); })
+      .catch(() => { if (alive) setAvailable(false); });
+    return () => { alive = false; };
+  }, []);
 
   // Reset the spinner if the user returns via the browser Back button
   // (bfcache restores component state, otherwise the button stays "Connecting…").
@@ -18,7 +47,10 @@ export default function GoogleButton({ callbackUrl = "/dashboard", label = "Cont
       window.removeEventListener("focus", reset);
     };
   }, []);
+  if (available !== true) return null;
+
   return (
+    <>
     <button
       type="button"
       onClick={() => {
@@ -52,5 +84,7 @@ export default function GoogleButton({ callbackUrl = "/dashboard", label = "Cont
       </svg>
       {loading ? "Connecting…" : label}
     </button>
+    {divider}
+    </>
   );
 }
