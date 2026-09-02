@@ -747,6 +747,11 @@ model InfraProject {
   updatedAt             DateTime       @updatedAt
   affectedCorridors     String[]       // keeping for backward compatibility
   impactRadius          Float          @default(10) // keeping for backward compatibility
+  // Still written by the CRM: /api/admin/infra-projects validates `tags` and
+  // spreads it into the create/update, and the admin form reads proj.tags.
+  // It had been dropped from the schema while that code kept using it, so
+  // Prisma Client rejected the unknown argument and the endpoint failed.
+  tags                  String[]
 }
 
 model InfraMilestone {
