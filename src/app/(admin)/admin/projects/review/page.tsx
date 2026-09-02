@@ -14,6 +14,11 @@ interface SellerListing {
 }
 
 const STATUS_TABS = [
+  // Drafts are listings the seller started but never submitted. They are not
+  // actionable yet, but they must stay reachable — they are deliberately hidden
+  // from the public feed and from ADMIN inventory, so this is the only place
+  // they surface.
+  { key: "DRAFT", label: "Drafts" },
   { key: "PENDING_REVIEW", label: "Pending review" },
   { key: "CHANGES_REQUESTED", label: "Changes requested" },
   { key: "APPROVED", label: "Live" },

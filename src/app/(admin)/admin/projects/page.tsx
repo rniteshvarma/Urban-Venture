@@ -88,7 +88,11 @@ export default function AdminProjectsPage() {
   async function loadProjects() {
     setIsLoading(true);
     try {
-      let url = `/api/admin/projects?`;
+      // Inventory means ADMIN-owned inventory. Seller listings have their own
+      // lifecycle and live in the review queue at /admin/projects/review —
+      // without this filter, unsubmitted seller drafts appeared here as though
+      // they were published inventory, while the public feed correctly hid them.
+      let url = `/api/admin/projects?source=ADMIN&`;
       if (statusFilter !== "ALL") {
         url += `status=${statusFilter}&`;
       }
