@@ -29,11 +29,20 @@ if (!process.env.DATABASE_URL) {
  * works with no extra environment variables.
  *
  * This file configures the Prisma CLI only. The application runtime builds its
- * own client in src/lib/prisma.ts and keeps using the pooled DATABASE_URL,
- * which is the right connection for serverless request handling.
+ * own client in src/lib/prisma.ts and keeps using the pooled connection, which
+ * is the right one for serverless request handling.
  */
 function schemaUrl(): string | undefined {
-  const db = process.env["DATABASE_URL"];
+  // Must mirror the runtime's precedence in src/lib/prisma.ts exactly. Vercel's
+  // Postgres integration injects POSTGRES_PRISMA_URL / POSTGRES_URL, and the
+  // runtime prefers those over DATABASE_URL. When this file read DATABASE_URL
+  // alone, `db push` reported "in sync" against one database while the app
+  // queried another — the sync looked successful and production stayed broken.
+  const db =
+    process.env["POSTGRES_PRISMA_URL"] ||
+    process.env["POSTGRES_URL"] ||
+    process.env["DATABASE_URL"] ||
+    process.env["POSTGRES_URL_NON_POOLING"];
   const direct = process.env["DIRECT_URL"]?.trim();
 
   // Supabase exposes three endpoints, and only one of them suits schema work
