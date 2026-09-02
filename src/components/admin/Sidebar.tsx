@@ -28,7 +28,9 @@ import {
   User,
   Zap,
   Plug,
-  Home
+  Home,
+  Inbox,
+  Store
 } from "lucide-react";
 
 export default function Sidebar() {
@@ -118,6 +120,16 @@ export default function Sidebar() {
       name: "Customers",
       path: "/admin/customers",
       icon: <UserCheck size={17} />,
+    },
+    {
+      name: "Sellers",
+      path: "/admin/sellers",
+      icon: <Store size={17} />,
+    },
+    {
+      name: "Enquiries",
+      path: "/admin/enquiries",
+      icon: <Inbox size={17} />,
     },
     {
       name: "Purchases",

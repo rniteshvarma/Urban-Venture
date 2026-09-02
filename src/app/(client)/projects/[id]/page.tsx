@@ -78,25 +78,27 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
     setErrorMsg("");
 
     try {
-      // Create user and lead by posting to /api/research
-      const res = await fetch("/api/research", {
+      // Enquire against THIS listing. The route creates a ListingEnquiry (which
+      // reaches the seller who posted it) alongside a CRM Lead, and increments
+      // the listing's enquiry counters. Posting to /api/research instead created
+      // an unattached research lead, so seller listings never received enquiries.
+      const res = await fetch(`/api/projects/${project.id}/enquiry`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          budget: project.minBudgetLakhs,
-          horizon: project.minHorizonYears,
-          city: project.city,
           name,
-          email,
           phone,
+          email: email || null,
+          message: notes || null,
+          budgetLakh: project.minBudgetLakhs ?? null,
         }),
       });
 
       const data = await res.json();
-      if (data.success) {
+      if (res.ok && data.ok) {
         setSubmitSuccess(true);
       } else {
-        setErrorMsg(data.error || "Failed to submit request.");
+        setErrorMsg(data.error || "Failed to submit your enquiry.");
       }
     } catch (err) {
       setErrorMsg("An error occurred. Please try again.");
@@ -114,11 +116,11 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
   const getRiskBadge = (level: string) => {
     switch (level) {
       case "LOW":
-        return <span className="bg-success/10 text-success border border-success/20 px-2.5 py-1 rounded-[6px] text-[10px] font-bold uppercase tracking-wider">LOW RISK</span>;
+        return <span className="uv-chip uv-chip-growth text-[10px] font-bold uppercase tracking-wider">LOW RISK</span>;
       case "MEDIUM":
-        return <span className="bg-warning/10 text-warning border border-warning/20 px-2.5 py-1 rounded-[6px] text-[10px] font-bold uppercase tracking-wider">MEDIUM RISK</span>;
+        return <span className="uv-chip uv-chip-caution text-[10px] font-bold uppercase tracking-wider">MEDIUM RISK</span>;
       case "HIGH":
-        return <span className="bg-danger/10 text-danger border border-danger/20 px-2.5 py-1 rounded-[6px] text-[10px] font-bold uppercase tracking-wider">HIGH RISK</span>;
+        return <span className="uv-chip uv-chip-alert text-[10px] font-bold uppercase tracking-wider">HIGH RISK</span>;
       default:
         return null;
     }
@@ -128,7 +130,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
     return (
       <div className="flex-grow flex flex-col justify-center items-center py-40 bg-surface-dim font-sans min-h-screen">
         <div className="animate-pulse flex flex-col items-center">
-          <div className="h-12 w-12 border-4 border-accent border-t-transparent rounded-full animate-spin mb-4"></div>
+          <div className="h-12 w-12 border-4 border-saffron border-t-transparent rounded-full animate-spin mb-4"></div>
           <div className="h-4 bg-gray-200 w-48 rounded"></div>
         </div>
       </div>
@@ -155,12 +157,18 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
     <div className="flex-grow bg-surface-dim font-sans min-h-screen">
       
       {/* Back Nav */}
-      <div className="glass-header sticky top-16 z-30">
+      <div
+        className="sticky top-[69px] z-30 backdrop-blur-xl border-b py-2.5"
+        style={{ background: "rgba(13, 13, 18, 0.85)", borderColor: "var(--color-ink-line)" }}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-          <Link href="/projects" className="nav-link inline-flex items-center gap-1.5 text-xs font-semibold">
+          <Link
+            href="/projects"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-white/80 hover:text-saffron transition-colors"
+          >
             <ArrowLeft size={13} /> Back to Listings
           </Link>
-          <span className="text-xs text-text-secondary font-bold uppercase tracking-wider hidden sm:block">
+          <span className="text-xs text-white/55 font-bold uppercase tracking-wider hidden sm:block">
             {project.city} / {project.corridor}
           </span>
         </div>
@@ -186,14 +194,14 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
         )}
         
         {/* Gradient Overlays */}
-        <div className="absolute inset-0 bg-gradient-to-t from-primary/95 via-primary/50 to-transparent flex items-end">
+        <div className="absolute inset-0 bg-gradient-to-t from-ink/95 via-ink/60 to-transparent flex items-end">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full pb-10 sm:pb-16 animate-fade-in-up">
             <div className="space-y-4 max-w-3xl">
               <div className="flex flex-wrap items-center gap-3">
-                <span className="text-[10px] font-bold text-surface bg-accent px-3 py-1 rounded-full uppercase tracking-widest shadow-sm">
+                <span className="text-[10px] font-bold text-ink bg-saffron px-3 py-1 rounded-full uppercase tracking-widest shadow-sm">
                   {project.status.replace("_", " ")}
                 </span>
-                <span className="text-[10px] font-bold text-accent bg-accent/20 border border-accent/30 px-3 py-1 rounded-full uppercase tracking-widest flex items-center gap-1 backdrop-blur-sm">
+                <span className="text-[10px] font-bold text-saffron bg-saffron/15 border border-saffron/30 px-3 py-1 rounded-full uppercase tracking-widest flex items-center gap-1 backdrop-blur-sm">
                   <MapPin size={10} /> {project.corridor}
                 </span>
               </div>
@@ -204,12 +212,12 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
               
               <div className="flex flex-wrap items-center gap-4 text-sm text-gray-300">
                 <p className="flex items-center gap-1.5">
-                  <Building size={16} className="text-accent" />
+                  <Building size={16} className="text-saffron" />
                   Developed by <strong className="text-surface font-semibold">{project.developer}</strong>
                 </p>
                 <span className="hidden sm:inline text-gray-500">•</span>
                 <p className="flex items-center gap-1.5">
-                  <Landmark size={16} className="text-accent" />
+                  <Landmark size={16} className="text-saffron" />
                   {project.propertyType}
                 </p>
               </div>
@@ -229,28 +237,28 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
             <section className="card-premium grid grid-cols-2 sm:grid-cols-4 gap-6 !p-8">
               <div className="space-y-1">
                 <span className="text-[10px] text-text-secondary uppercase tracking-wider font-bold flex items-center gap-1.5">
-                  <IndianRupee size={12} className="text-accent" /> Est. Budget
+                  <IndianRupee size={12} className="text-saffron-deep" /> Est. Budget
                 </span>
                 <span className="text-base font-bold text-text-primary block">{formatPrice(project.minBudgetLakhs, project.maxBudgetLakhs)}</span>
               </div>
               <div className="space-y-1 border-l border-gray-100 pl-4 sm:pl-6">
                 <span className="text-[10px] text-text-secondary uppercase tracking-wider font-bold flex items-center gap-1.5">
-                  <Clock size={12} className="text-accent" /> Target Horizon
+                  <Clock size={12} className="text-saffron-deep" /> Target Horizon
                 </span>
                 <span className="text-base font-bold text-text-primary block">{project.minHorizonYears} - {project.maxHorizonYears} Yrs</span>
               </div>
               <div className="space-y-1 border-l border-gray-100 pl-4 sm:pl-6">
                 <span className="text-[10px] text-text-secondary uppercase tracking-wider font-bold flex items-center gap-1.5">
-                  <Activity size={12} className="text-accent" /> Risk Index
+                  <Activity size={12} className="text-saffron-deep" /> Risk Index
                 </span>
                 <div className="mt-1">{getRiskBadge(project.riskLevel)}</div>
               </div>
               <div className="space-y-1 border-l border-gray-100 pl-4 sm:pl-6">
                 <span className="text-[10px] text-text-secondary uppercase tracking-wider font-bold flex items-center gap-1.5">
-                  <ShieldCheck size={12} className="text-success" /> Verification
+                  <ShieldCheck size={12} className="text-growth" /> Verification
                 </span>
                 {project.riskLevel === "LOW" ? (
-                  <span className="text-base font-bold text-success flex items-center gap-1"><CheckCircle2 size={16} /> Verified</span>
+                  <span className="text-base font-bold text-growth flex items-center gap-1"><CheckCircle2 size={16} /> Verified</span>
                 ) : (
                   <span className="text-base font-bold text-text-secondary">Standard</span>
                 )}
@@ -266,12 +274,12 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
             </section>
 
             {/* Infrastructure Highlights */}
-            <section className="card-premium space-y-6 !p-8 border-t-4 border-t-accent">
+            <section className="card-premium space-y-6 !p-8 border-t-4 border-t-saffron">
               <h2 className="section-header text-xl">Infrastructure Driving Growth</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {project.infraHighlights.map((tag, idx) => (
-                  <div key={idx} className="flex items-start gap-3 p-3 bg-surface-dim rounded-lg border border-gray-100 hover:border-accent/30 transition-colors">
-                    <div className="bg-accent/10 p-2 rounded-full text-accent shrink-0 mt-0.5">
+                  <div key={idx} className="flex items-start gap-3 p-3 bg-surface-dim rounded-lg border border-gray-100 hover:border-saffron/40 transition-colors">
+                    <div className="bg-saffron-wash p-2 rounded-full text-saffron-deep shrink-0 mt-0.5">
                       <Sparkles size={14} />
                     </div>
                     <span className="text-xs font-semibold text-text-primary pt-1 leading-relaxed">
@@ -287,8 +295,8 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
               <h2 className="section-header text-xl">Liquidation & Exit Opportunities</h2>
               <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {project.exitOpportunities.map((exit, idx) => (
-                  <li key={idx} className="bg-success/5 border border-success/20 px-4 py-4 rounded-[8px] text-xs text-text-primary font-medium flex items-start gap-3 shadow-sm">
-                    <CheckCircle2 size={16} className="text-success shrink-0 mt-0.5" />
+                  <li key={idx} className="bg-growth-wash border border-growth/20 px-4 py-4 rounded-[8px] text-xs text-text-primary font-medium flex items-start gap-3 shadow-sm">
+                    <CheckCircle2 size={16} className="text-growth shrink-0 mt-0.5" />
                     <span className="leading-relaxed">{exit}</span>
                   </li>
                 ))}
@@ -302,7 +310,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                 <div className="flex flex-wrap gap-2">
                   {project.comparables.map((comp, idx) => (
                     <span key={idx} className="bg-surface-dim border border-gray-200 px-4 py-2 rounded-full text-xs font-semibold text-text-secondary hover:text-text-primary transition-colors flex items-center gap-2">
-                      <TrendingUp size={12} className="text-warning" /> {comp}
+                      <TrendingUp size={12} className="text-caution" /> {comp}
                     </span>
                   ))}
                 </div>
@@ -311,10 +319,10 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
 
             {/* Brochure download if brochureUrl exists */}
             {project.brochureUrl && (
-              <section className="card-premium !p-8 bg-gradient-to-r from-surface to-accent-light/30 border-l-4 border-l-accent flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+              <section className="card-premium !p-8 bg-gradient-to-r from-surface to-saffron-wash border-l-4 border-l-saffron flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
                 <div className="space-y-1">
                   <h3 className="text-base font-bold text-text-primary font-display flex items-center gap-2">
-                    <FileText size={18} className="text-accent" /> Project Documentation
+                    <FileText size={18} className="text-saffron-deep" /> Project Documentation
                   </h3>
                   <p className="text-xs text-text-secondary">Download full RERA registration documents, layouts, and master plans.</p>
                 </div>
@@ -335,11 +343,11 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
             <div className="sticky top-32 card-premium !p-0 overflow-hidden shadow-luxury border-gray-200">
               
               {/* Prominent Price Section */}
-              <div className="bg-primary p-6 text-center text-surface relative overflow-hidden">
+              <div className="bg-ink p-6 text-center text-surface relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-4 opacity-10">
                   <IndianRupee size={80} />
                 </div>
-                <span className="text-[10px] font-bold uppercase tracking-widest text-accent-light block mb-2 relative z-10">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-saffron block mb-2 relative z-10">
                   Investment Bracket
                 </span>
                 <h3 className="font-display text-4xl font-bold relative z-10">
@@ -356,7 +364,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
 
                 {submitSuccess ? (
                   <div className="text-center py-6 space-y-3">
-                    <div className="text-4xl flex justify-center text-success"><CheckCircle2 size={48} /></div>
+                    <div className="text-4xl flex justify-center text-growth"><CheckCircle2 size={48} /></div>
                     <h4 className="font-display text-lg font-bold text-text-primary">Interest Registered</h4>
                     <p className="text-xs text-text-secondary leading-relaxed">
                       Thank you! Our Hyderabad advisor has received your request and will call you with project layouts and price sheets shortly.
@@ -420,7 +428,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                     </div>
 
                     {errorMsg && (
-                      <p className="text-danger text-xs text-center font-semibold bg-danger/10 p-2 rounded">{errorMsg}</p>
+                      <p className="text-alert text-xs text-center font-semibold bg-alert-wash p-2 rounded">{errorMsg}</p>
                     )}
 
                     <button
