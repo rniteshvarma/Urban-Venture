@@ -33,16 +33,33 @@ if (!process.env.DATABASE_URL) {
  * which is the right connection for serverless request handling.
  */
 function schemaUrl(): string | undefined {
-  const explicit = process.env["DIRECT_URL"];
-  if (explicit && explicit.trim()) return explicit;
+  const db = process.env["DATABASE_URL"];
+  const direct = process.env["DIRECT_URL"]?.trim();
 
-  const url = process.env["DATABASE_URL"];
-  if (!url) return undefined;
+  // Supabase exposes three endpoints, and only one of them suits schema work
+  // from a build container:
+  //
+  //   pooler:6543  transaction mode — what the app runtime uses. Multiplexes
+  //                statements, so DDL hangs. Not usable here.
+  //   db.<ref>...  direct connection. Runs DDL, but resolves to IPv6 only, and
+  //                Vercel builds have no IPv6 route — this fails with P1001.
+  //   pooler:5432  session mode. Runs DDL and is reachable over IPv4.
+  //
+  // So when DATABASE_URL is a pooler URL, derive the session-mode endpoint from
+  // it: same host the runtime already reaches, just the port that allows DDL.
+  // This deliberately takes precedence over DIRECT_URL, because a DIRECT_URL
+  // pointing at db.<ref>.supabase.co is unreachable from here no matter what.
+  if (db && db.includes(".pooler.supabase.com")) {
+    return db
+      .replace(":6543/", ":5432/")
+      .replace(/([?&])pgbouncer=true&?/, "$1")
+      .replace(/[?&]$/, "");
+  }
 
-  return url
-    .replace(":6543/", ":5432/")
-    .replace(/([?&])pgbouncer=true&?/, "$1")
-    .replace(/[?&]$/, "");
+  // Anywhere else (local Postgres, a non-Supabase host), an explicit DIRECT_URL
+  // is the right answer when it is set.
+  if (direct) return direct;
+  return db;
 }
 
 export default defineConfig({
