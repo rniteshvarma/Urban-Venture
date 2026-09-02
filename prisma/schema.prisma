@@ -2169,3 +2169,26 @@ model ListingScoreSnapshot {
 
   @@index([projectId, capturedAt])
 }
+
+// Legacy corridor metrics, superseded by CorridorProfile (which is what the
+// calculator and market pages actually read). No application code references
+// this model — it is declared solely so that schema sync does not drop the
+// table, which still holds 8 rows in production.
+//
+// To retire it: export the rows, `DROP TABLE "CorridorMetrics";`, then delete
+// this model. Do that deliberately, not as a side effect of a deploy.
+model CorridorMetrics {
+  id                    String    @id @default(cuid())
+  corridor              String    @unique
+  city                  String    @default("Hyderabad")
+  historicalCAGR        Float
+  projectedCAGRMin      Float
+  projectedCAGRMax      Float
+  rentalYieldMin        Float
+  rentalYieldMax        Float
+  infraScore            Int
+  demandScore           Int
+  riskLevel             RiskLevel
+  lastUpdated           DateTime  @updatedAt
+  updatedBy             String?
+}
