@@ -15,6 +15,36 @@ if (!process.env.DATABASE_URL) {
   loadEnv({ path: ".env.local", override: false });
 }
 
+/**
+ * Connection string for schema work (`db push`, `migrate`).
+ *
+ * Supabase's transaction pooler (port 6543, `pgbouncer=true`) multiplexes
+ * statements across connections and cannot run DDL — pointing `db push` at it
+ * makes the command hang until the build times out, which is exactly what
+ * happened on the first deploy that enabled schema sync.
+ *
+ * Schema work therefore needs a session-mode connection. Prefer an explicit
+ * DIRECT_URL when one is configured; otherwise derive it from DATABASE_URL by
+ * moving to the session pooler on 5432 and dropping the pgbouncer flag, so this
+ * works with no extra environment variables.
+ *
+ * This file configures the Prisma CLI only. The application runtime builds its
+ * own client in src/lib/prisma.ts and keeps using the pooled DATABASE_URL,
+ * which is the right connection for serverless request handling.
+ */
+function schemaUrl(): string | undefined {
+  const explicit = process.env["DIRECT_URL"];
+  if (explicit && explicit.trim()) return explicit;
+
+  const url = process.env["DATABASE_URL"];
+  if (!url) return undefined;
+
+  return url
+    .replace(":6543/", ":5432/")
+    .replace(/([?&])pgbouncer=true&?/, "$1")
+    .replace(/[?&]$/, "");
+}
+
 export default defineConfig({
   schema: "prisma/schema.prisma",
   migrations: {
@@ -22,6 +52,6 @@ export default defineConfig({
     seed: "npx tsx ./prisma/seed.ts",
   },
   datasource: {
-    url: process.env["DATABASE_URL"],
+    url: schemaUrl(),
   },
 });

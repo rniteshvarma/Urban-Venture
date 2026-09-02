@@ -53,6 +53,14 @@ Do it deliberately, not by editing the build command:
 
 Until step 3 is done, leave the build on `db push`.
 
+## Note on the connection used for schema work
+
+Supabase's transaction pooler (port 6543, `pgbouncer=true`) cannot run DDL —
+`db push` against it hangs until the build times out. `prisma.config.ts`
+therefore rewrites the connection to the session pooler on 5432 for CLI work,
+or uses `DIRECT_URL` if you set one. The application runtime keeps using the
+pooled `DATABASE_URL`, which is correct for serverless.
+
 ## Note on `--accept-data-loss`
 
 The build deliberately runs plain `prisma db push`. Without
