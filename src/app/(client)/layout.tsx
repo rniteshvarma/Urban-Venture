@@ -16,7 +16,6 @@ interface NavChild {
 
 const RESEARCH_MENU: NavChild[] = [
   { label: "AI Research Tool", href: "/research" },
-  { label: "ROI Calculator", href: "/calculator" },
 ];
 
 const MARKET_MENU: NavChild[] = [
@@ -98,7 +97,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
               <Link href="/explore" className={linkCls(pathname?.startsWith("/explore"))}>Explore Map</Link>
               <Link href="/projects" className={linkCls(pathname?.startsWith("/projects"))}>Projects</Link>
               <Link href="/news" className={linkCls(pathname?.startsWith("/news"))}>News</Link>
-              <Link href="/calculator" className={linkCls(pathname?.startsWith("/calculator"))}>Tools</Link>
+              <Link href="/calculator" className={linkCls(pathname?.startsWith("/calculator"))}>ROI Calculator</Link>
             </nav>
           </div>
 
@@ -153,7 +152,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
               <Link href="/explore" className="text-base font-medium">Explore Map</Link>
               <Link href="/projects" className="text-base font-medium">Projects</Link>
               <Link href="/news" className="text-base font-medium">News</Link>
-              <Link href="/calculator" className="text-base font-medium">Tools</Link>
+              <Link href="/calculator" className="text-base font-medium">ROI Calculator</Link>
               <div className="flex gap-3" style={{ marginTop: 8, paddingTop: 16, borderTop: "1px solid var(--color-ink-line)" }}>
                 {isAuthed ? (
                   <Link href="/dashboard" className="uv-btn uv-btn-primary flex-1">My Dashboard</Link>
