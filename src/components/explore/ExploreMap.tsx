@@ -130,6 +130,11 @@ export default function ExploreMap() {
       map.addLayer(clusterCountLayer as never);
       map.addLayer(dotLayer("price") as never);
       map.addLayer(selectedLayer as never);
+      // Data may already have arrived while the style was loading — seed the
+      // source immediately rather than waiting for the next change to `visible`,
+      // which may never come.
+      (map.getSource(SOURCE_ID) as GeoJSONSource | undefined)
+        ?.setData({ type: "FeatureCollection", features: visibleRef.current } as GeoJSON.FeatureCollection);
       // The container is laid out by flex/vh after the map constructs, so the
       // canvas can latch onto a stale size. Resize once the style is up, and
       // again on the next frame — the first paint can otherwise land before the
@@ -214,12 +219,37 @@ export default function ExploreMap() {
       (f.properties.source === "ADMIN" ? showAdmin : showSeller));
   }, [data.features, showAdmin, showSeller]);
 
+  // Hold the latest features so the map can pull them whenever its source
+  // appears, rather than relying on the effect below happening to fire at a
+  // moment when the source exists.
+  const visibleRef = useRef(visible);
+  useEffect(() => { visibleRef.current = visible; }, [visible]);
+
+  const applyData = useCallback(() => {
+    const map = mapRef.current;
+    if (!map) return false;
+    const src = map.getSource(SOURCE_ID) as GeoJSONSource | undefined;
+    if (!src) return false;
+    src.setData({ type: "FeatureCollection", features: visibleRef.current } as GeoJSON.FeatureCollection);
+    return true;
+  }, []);
+
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !ready) return;
-    const src = map.getSource(SOURCE_ID) as GeoJSONSource | undefined;
-    src?.setData({ type: "FeatureCollection", features: visible } as GeoJSON.FeatureCollection);
-  }, [visible, ready]);
+    if (!map) return;
+    // This used to be `src?.setData(...)` behind a `ready` gate. When the source
+    // was momentarily absent — a style swap, or React re-running the init effect
+    // and replacing the map underneath us — the optional chain swallowed the
+    // update and nothing ever retried, because `visible` and `ready` do not
+    // change again. The map then sat empty while the list and the legend both
+    // showed the listing. Retry on the next source/style event instead.
+    if (applyData()) return;
+    const retry = () => { if (applyData()) { map.off("sourcedata", retry); map.off("styledata", retry); map.off("idle", retry); } };
+    map.on("sourcedata", retry);
+    map.on("styledata", retry);
+    map.on("idle", retry);
+    return () => { map.off("sourcedata", retry); map.off("styledata", retry); map.off("idle", retry); };
+  }, [visible, ready, applyData]);
 
   // Colour mode → repaint dots
   useEffect(() => {
