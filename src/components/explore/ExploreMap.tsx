@@ -245,12 +245,18 @@ export default function ExploreMap() {
     setReady(false);
     map.setStyle(baseStyle(b));
     map.once("styledata", () => {
-      if (map.getSource(SOURCE_ID)) return;
-      map.addSource(SOURCE_ID, { type: "geojson", data: EMPTY_FC, cluster: true, clusterMaxZoom: 13, clusterRadius: 45 });
-      map.addLayer(clusterLayer as never);
-      map.addLayer(clusterCountLayer as never);
-      map.addLayer(dotLayer(color) as never);
-      map.addLayer(selectedLayer as never);
+      // setStyle() usually drops our source with the old style, but not always.
+      // The early return here used to skip setReady(true) when the source had
+      // survived, leaving `ready` false for good — after which the effect that
+      // pushes data into the source bailed out on every update and the map
+      // silently stopped showing properties until a full reload.
+      if (!map.getSource(SOURCE_ID)) {
+        map.addSource(SOURCE_ID, { type: "geojson", data: EMPTY_FC, cluster: true, clusterMaxZoom: 13, clusterRadius: 45 });
+        map.addLayer(clusterLayer as never);
+        map.addLayer(clusterCountLayer as never);
+        map.addLayer(dotLayer(color) as never);
+        map.addLayer(selectedLayer as never);
+      }
       setReady(true);
     });
   }, [color]);

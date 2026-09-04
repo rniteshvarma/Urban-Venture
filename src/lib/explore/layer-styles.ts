@@ -97,11 +97,15 @@ export function dotLayer(mode: ColorMode) {
     source: SOURCE_ID,
     filter: ["!", ["has", "point_count"]],
     paint: {
-      "circle-radius": ["interpolate", ["linear"], ["zoom"], 8, 3, 11, 5, 14, 7, 16, 9],
+      // A 3px dot on satellite imagery is invisible — the basemap is busy,
+      // mid-tone and roughly the same warm hue as the price-band colours. Keep
+      // a floor of 7px at the zooms people actually browse at, and ring every
+      // dot in white so it separates from terrain instead of blending into it.
+      "circle-radius": ["interpolate", ["linear"], ["zoom"], 6, 7, 10, 8, 14, 10, 16, 12],
       "circle-color": colorExpression(mode),
-      "circle-opacity": 0.9,
-      "circle-stroke-width": 1,
-      "circle-stroke-color": "rgba(0,0,0,0.35)",
+      "circle-opacity": 1,
+      "circle-stroke-width": 2,
+      "circle-stroke-color": "#FFFFFF",
     },
   };
 }
