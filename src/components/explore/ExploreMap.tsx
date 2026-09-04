@@ -337,9 +337,27 @@ export default function ExploreMap() {
   }, [ready, urlHadView]);
 
   const filtersActive = hasActiveFilters(filters);
-  // "Nothing anywhere" vs "nothing here" are different states and read differently.
-  const showEmptyAll = loadedOnce && data.count === 0 && !filtersActive;
-  const showNoneHere = loadedOnce && data.count === 0 && filtersActive;
+
+  // "Nothing anywhere" vs "nothing here" are different states and read
+  // differently — but data.count only ever answers "how many are in this
+  // viewport". Treating count===0 as "nothing anywhere" meant panning away from
+  // a listing announced that the map had none at all, contradicting the list
+  // panel on the same screen. Fetch the unbounded total once so the states can
+  // actually be told apart.
+  const [totalListings, setTotalListings] = useState<number | null>(null);
+  useEffect(() => {
+    let alive = true;
+    fetch("/api/explore/count")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (alive && d) setTotalListings(typeof d.count === "number" ? d.count : null); })
+      .catch(() => { /* unknown total: never claim emptiness */ });
+    return () => { alive = false; };
+  }, []);
+
+  const nothingInView = loadedOnce && data.count === 0;
+  const showEmptyAll = nothingInView && totalListings === 0;
+  const showNoneHere = nothingInView && totalListings !== 0 && filtersActive;
+  const showZoomOut = nothingInView && totalListings !== 0 && !filtersActive;
 
   return (
     <div style={{ position: "relative", width: "100%", height: "100%", overflow: "hidden", background: "#0D0D12" }}>
@@ -447,7 +465,7 @@ export default function ExploreMap() {
 
       {showEmptyAll && <NoPropertiesAnywhere />}
       {showNoneHere && <NoFilterMatches onClearFilters={() => commitFilters(DEFAULT_FILTERS)} />}
-      {loadedOnce && data.count > 0 && visible.length === 0 && (
+      {(showZoomOut || (loadedOnce && data.count > 0 && visible.length === 0)) && (
         <NoneInViewport
           hasFilters={filtersActive}
           onZoomOut={() => mapRef.current?.zoomOut()}
