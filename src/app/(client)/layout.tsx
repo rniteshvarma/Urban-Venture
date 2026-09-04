@@ -14,10 +14,6 @@ interface NavChild {
   href: string;
 }
 
-const RESEARCH_MENU: NavChild[] = [
-  { label: "AI Research Tool", href: "/research" },
-];
-
 const MARKET_MENU: NavChild[] = [
   { label: "Corridor Intelligence", href: "/market" },
   { label: "Approvals Database", href: "/market/approvals" },
@@ -64,20 +60,9 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
             </Link>
 
             <nav className="hidden lg:flex items-center gap-7">
-              {/* Research dropdown */}
-              <div className="relative group py-5">
-                <button className={`${linkCls(pathname?.startsWith("/research"))} flex items-center gap-1.5`}>
-                  Research <ChevronDown className="w-3.5 h-3.5 opacity-70 group-hover:rotate-180 transition-transform" />
-                </button>
-                <div className="absolute left-0 top-full w-56 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50"
-                  style={{ background: "var(--color-ink-soft)", border: "1px solid var(--color-ink-line)", borderRadius: 14, padding: 8 }}>
-                  {RESEARCH_MENU.map((c) => (
-                    <Link key={c.href} href={c.href} className="block px-3 py-2 text-xs font-semibold rounded-lg text-text-invert-mid hover:text-text-invert" style={{ transition: "color 150ms" }}>
-                      {c.label}
-                    </Link>
-                  ))}
-                </div>
-              </div>
+              {/* Research goes straight to the AI research tool — a menu holding
+                  a single destination is a hover to reach a click. */}
+              <Link href="/research" className={linkCls(pathname?.startsWith("/research"))}>Research</Link>
 
               {/* Market Data dropdown */}
               <div className="relative group py-5">
@@ -137,12 +122,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
               <button onClick={() => setMobileMenuOpen(false)} className="p-2 text-text-invert-mid" aria-label="Close menu"><X className="w-6 h-6" /></button>
             </div>
             <div className="p-5 flex-1 overflow-y-auto flex flex-col gap-6">
-              <div>
-                <p className="text-xs uppercase tracking-wider text-text-invert-mid mb-3">Research</p>
-                <div className="flex flex-col gap-3 pl-3" style={{ borderLeft: "2px solid var(--color-ink-line)" }}>
-                  {RESEARCH_MENU.map((c) => <Link key={c.href} href={c.href} className="text-sm text-text-invert-mid hover:text-text-invert">{c.label}</Link>)}
-                </div>
-              </div>
+              <Link href="/research" className="text-base font-medium">Research</Link>
               <div>
                 <p className="text-xs uppercase tracking-wider text-text-invert-mid mb-3">Market Data</p>
                 <div className="flex flex-col gap-3 pl-3" style={{ borderLeft: "2px solid var(--color-ink-line)" }}>
