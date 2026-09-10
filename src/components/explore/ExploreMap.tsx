@@ -14,10 +14,23 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 // maplibre-gl v6 ships named exports only — there is no default export.
 import {
-  Map as MapLibreMap, Popup, AttributionControl,
+  Map as MapLibreMap, Popup, AttributionControl, setWorkerUrl,
   type GeoJSONSource, type MapLayerMouseEvent, type MapGeoJSONFeature,
 } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+
+// MapLibre 6 loads its worker as a separate ES module, resolved with
+// `new URL('./maplibre-gl-worker.mjs', import.meta.url)`. Under Next's bundler
+// import.meta.url is the emitted chunk, so that resolves to
+// /_next/static/chunks/maplibre-gl-worker.mjs, which 404s and returns HTML —
+// the browser then refuses it for its MIME type and the worker never starts.
+// Without the worker, GeoJSON sources are never tiled, so no property marker
+// ever renders while the raster basemap (which needs no worker) looks fine.
+//
+// scripts/copy-maplibre-worker.mjs places the worker and its sibling shared
+// module under public/maplibre/ on predev/prebuild; point MapLibre at that copy
+// before any map is constructed.
+setWorkerUrl("/maplibre/maplibre-gl-worker.mjs");
 import { List, SlidersHorizontal } from "lucide-react";
 
 import { useUrlState, DEFAULT_VIEW, DEFAULT_FILTERS, type ExploreFilterState } from "@/lib/explore/use-url-state";
