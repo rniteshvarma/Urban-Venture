@@ -408,7 +408,7 @@ export default function CorridorDetailPage() {
             </div>
 
             {/* Tabular data log */}
-            <div className="bg-white border border-luxury rounded overflow-hidden shadow-sm">
+            <div className="bg-white border border-luxury rounded overflow-x-auto shadow-sm">
               <div className="px-4 py-3 border-b border-luxury bg-white flex items-center justify-between">
                 <span className="text-xs font-bold text-text-primary">Price History Data Table</span>
               </div>
@@ -697,7 +697,7 @@ export default function CorridorDetailPage() {
                 No layout approval records tracked for this corridor recently.
               </div>
             ) : (
-              <div className="bg-white border border-luxury rounded overflow-hidden shadow-sm">
+              <div className="bg-white border border-luxury rounded overflow-x-auto shadow-sm">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse text-xs">
                     <thead>

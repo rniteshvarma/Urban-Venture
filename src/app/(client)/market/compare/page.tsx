@@ -321,7 +321,7 @@ export function ComparePageContent() {
             </div>
 
             {/* Row 3: Key metrics comparison grid table */}
-            <div className="card-premium overflow-hidden">
+            <div className="card-premium overflow-x-auto">
               <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 text-xs font-bold text-text-primary">
                 Key Return Metrics Side-by-Side
               </div>

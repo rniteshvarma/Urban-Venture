@@ -28,7 +28,7 @@ export default function ColorModeToggle({
         <select
           value={mode}
           onChange={(e) => onChange(e.target.value as ColorMode)}
-          style={{ marginLeft: "auto", fontSize: "0.75rem", fontWeight: 600, border: "1px solid #E4E4EA", borderRadius: 8, padding: "3px 6px", background: "#fff", color: "#2A2A35", cursor: "pointer" }}
+          style={{ marginLeft: "auto", fontSize: "0.75rem", fontWeight: 600, border: "1px solid #E4E4EA", borderRadius: 8, padding: "3px 24px 3px 8px", backgroundColor: "#fff", color: "#2A2A35", cursor: "pointer" }}
         >
           {MODES.map((m) => <option key={m} value={m}>{COLOR_MODE_LABELS[m]}</option>)}
         </select>

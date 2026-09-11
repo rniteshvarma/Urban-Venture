@@ -158,7 +158,7 @@ export default function CorridorIntelligencePage() {
           <Loader2 className="animate-spin text-[#5B4FE0]" size={30} />
         </div>
       ) : (
-        <div className="crm-card p-0 overflow-hidden flex-grow">
+        <div className="crm-card p-0 overflow-x-auto flex-grow">
           <table className="crm-table text-xs w-full">
             <thead>
               <tr>

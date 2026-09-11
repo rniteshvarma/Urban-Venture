@@ -297,7 +297,7 @@ export default function ApprovalsPage() {
           <p className="text-[#8A8A9E] text-xs font-semibold">No approval records found.</p>
         </div>
       ) : (
-        <div className="crm-card p-0 overflow-hidden flex-grow">
+        <div className="crm-card p-0 overflow-x-auto flex-grow">
           <table className="crm-table text-xs w-full">
             <thead>
               <tr>

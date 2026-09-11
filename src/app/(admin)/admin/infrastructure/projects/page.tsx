@@ -361,7 +361,7 @@ export default function InfrastructureProjectsPage() {
           <p className="text-[#8A8A9E] text-xs font-semibold">No infrastructure projects found matching the filters.</p>
         </div>
       ) : (
-        <div className="crm-card p-0 overflow-hidden flex-grow">
+        <div className="crm-card p-0 overflow-x-auto flex-grow">
           <table className="crm-table text-xs w-full">
             <thead>
               <tr>

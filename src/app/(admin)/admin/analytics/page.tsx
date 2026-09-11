@@ -421,7 +421,7 @@ export default function AdminAnalyticsPage() {
                 </div>
 
                 {/* 3. Agent Performance Table */}
-                <div className="crm-card p-0 overflow-hidden space-y-4">
+                <div className="crm-card p-0 overflow-x-auto space-y-4">
                   <div className="p-6 pb-3 border-b border-[#F5F3FB] flex items-center justify-between">
                     <div>
                       <h3 className="font-display text-base font-bold text-[#1A1A2E]">Agent Closure Performance</h3>

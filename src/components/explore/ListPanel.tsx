@@ -75,7 +75,7 @@ export default function ListPanel({
           <span className="uv-mono">{total.toLocaleString("en-IN")}</span> {total === 1 ? "property" : "properties"}
         </span>
         <select value={sort} onChange={(e) => onSort(e.target.value as SortKey)}
-          style={{ marginLeft: "auto", fontSize: "0.75rem", fontWeight: 600, border: "1px solid #E4E4EA", borderRadius: 8, padding: "4px 7px", background: "#fff", color: "#2A2A35", cursor: "pointer" }}>
+          style={{ marginLeft: "auto", fontSize: "0.75rem", fontWeight: 600, border: "1px solid #E4E4EA", borderRadius: 8, padding: "4px 24px 4px 8px", backgroundColor: "#fff", color: "#2A2A35", cursor: "pointer" }}>
           {SORTS.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
         </select>
         <button onClick={onClose} aria-label="Close list" style={{ background: "none", border: "none", cursor: "pointer", color: "#8A8A99" }}><X size={17} /></button>

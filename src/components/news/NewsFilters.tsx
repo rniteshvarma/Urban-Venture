@@ -64,7 +64,7 @@ export default function NewsFilters({
         <select
           value={city}
           onChange={(e) => onCity(e.target.value)}
-          style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid var(--color-line)', background: 'var(--color-surface)', color: 'var(--color-text-hi)', fontWeight: 600, fontSize: '0.85rem' }}
+          style={{ padding: '8px 30px 8px 12px', borderRadius: 8, border: '1px solid var(--color-line)', backgroundColor: 'var(--color-surface)', color: 'var(--color-text-hi)', fontWeight: 600, fontSize: '0.85rem' }}
         >
           {cities.map((c) => (
             <option key={c.slug} value={c.slug}>
@@ -95,7 +95,7 @@ export default function NewsFilters({
         </label>
         <label style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: '0.8rem', color: 'var(--color-text-lo)' }}>
           Sort:
-          <select value={sort} onChange={(e) => update({ sort: e.target.value })} style={{ padding: '5px 8px', borderRadius: 6, border: '1px solid var(--color-line)', background: 'var(--color-surface)', color: 'var(--color-text-hi)', fontSize: '0.8rem' }}>
+          <select value={sort} onChange={(e) => update({ sort: e.target.value })} style={{ padding: '5px 26px 5px 8px', borderRadius: 6, border: '1px solid var(--color-line)', backgroundColor: 'var(--color-surface)', color: 'var(--color-text-hi)', fontSize: '0.8rem' }}>
             <option value="latest">Latest</option>
             <option value="impact">Impact</option>
           </select>

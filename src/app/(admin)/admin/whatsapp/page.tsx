@@ -298,7 +298,7 @@ export default function AdminWhatsAppPage() {
           </div>
         ) : (
           /* Logs Panel */
-          <div className="crm-card p-0 overflow-hidden">
+          <div className="crm-card p-0 overflow-x-auto">
             {logs.length === 0 ? (
               <p className="text-xs text-[#8A8A9E] py-12 text-center italic">No message logs registered yet.</p>
             ) : (

@@ -128,7 +128,7 @@ export default function SourceLogsPage({ params }: { params: Promise<{ sourceId:
       </div>
 
       {/* Logs Table */}
-      <div className="crm-card bg-white border border-[#E8E5F5] rounded-3xl shadow-sm overflow-hidden">
+      <div className="crm-card bg-white border border-[#E8E5F5] rounded-3xl shadow-sm overflow-x-auto">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="bg-[#F9F8FD] border-b border-[#F0EDFA] text-[#8A8A9E] uppercase tracking-wider font-bold">

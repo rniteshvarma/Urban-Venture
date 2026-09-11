@@ -216,7 +216,7 @@ export default function ApprovalsDirectoryPage() {
             No layout approval records found matching your filters.
           </div>
         ) : (
-          <div className="card-premium overflow-hidden">
+          <div className="card-premium overflow-x-auto">
             <div className="overflow-x-auto">
               <table className="table-premium w-full text-left border-collapse text-xs">
                 <thead>

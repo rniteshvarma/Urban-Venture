@@ -186,7 +186,7 @@ export default function DemandTrendsPage() {
           <Loader2 className="animate-spin text-[#5B4FE0]" size={30} />
         </div>
       ) : (
-        <div className="crm-card p-0 overflow-hidden flex-grow">
+        <div className="crm-card p-0 overflow-x-auto flex-grow">
           <div className="px-6 py-4 border-b border-[#F5F3FB] flex items-center justify-between">
             <span className="text-xs font-bold text-[#1A1A2E]">Monthly Demand Logs ({currentCorridorName} — {selectedYear})</span>
             <span className="text-[10px] text-[#8A8A9E] font-semibold">🔍 Search & Inquiry counts auto-calculated</span>

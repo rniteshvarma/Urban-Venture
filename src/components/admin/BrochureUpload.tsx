@@ -79,7 +79,7 @@ export default function BrochureUpload() {
               <span className="text-xs text-text-tertiary">{(it.file.size / 1024 / 1024).toFixed(1)}MB</span>
               {it.file.type !== "application/pdf" && (
                 <select value={it.role} onChange={(e) => setItems((p) => p.map((x, j) => (j === i ? { ...x, role: e.target.value } : x)))}
-                  className="text-xs rounded border px-2 py-1" style={{ borderColor: "var(--color-line)", background: "var(--color-surface)" }}>
+                  className="text-xs rounded border px-2 py-1" style={{ borderColor: "var(--color-line)", backgroundColor: "var(--color-surface)" }}>
                   {IMAGE_ROLES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
                 </select>
               )}
