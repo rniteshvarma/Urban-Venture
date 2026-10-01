@@ -210,7 +210,9 @@ export default function ExploreMap() {
       if (!f) return;
       const p = f.properties as PropertyFeature["properties"];
       setHoveredId(typeof p.id === "string" ? p.id : null);
-      const price = p.priceLakh >= 100 ? `₹${(p.priceLakh / 100).toFixed(2)} Cr` : `₹${p.priceLakh} L`;
+      // GeoJSON properties round-trip as strings/booleans depending on the source; accept both.
+      const from = p.priceFrom === true || (p.priceFrom as unknown) === "true" ? "from " : "";
+      const price = from + (p.priceLakh >= 100 ? `₹${(p.priceLakh / 100).toFixed(2)} Cr` : `₹${p.priceLakh} L`);
       const area = p.areaValue ? ` · ${p.areaValue} ${p.areaUnit === "acre" ? "acres" : "sq.yd"}` : "";
       popupRef.current?.remove();
       popupRef.current = new Popup({ closeButton: false, closeOnClick: false, offset: 12, className: "uv-map-tip" })

@@ -17,6 +17,8 @@ export interface PropertyFeature {
     ref: string;
     name: string;
     priceLakh: number;
+    /** true when priceLakh is the entry price of a multi-unit project */
+    priceFrom?: boolean;
     rateValue: number | null;
     rateUnit: string | null;
     areaValue: number | null;

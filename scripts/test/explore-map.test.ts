@@ -17,6 +17,7 @@
 import { test, before, after, describe } from "node:test";
 import assert from "node:assert/strict";
 import { chromium, type Browser, type Page } from "playwright-core";
+import { formatLakh } from "../../src/lib/format";
 
 const BASE = process.env.TEST_BASE_URL ?? "http://localhost:3000";
 const CHROME = process.env.CHROME_PATH ?? "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
@@ -99,7 +100,11 @@ before(async () => {
   assert.equal(res.status, 200, "explore properties API must respond");
   const fc: any = await res.json();
   assert.ok(fc.features?.length, "need at least one listing with coordinates to test the map");
-  const f = fc.features[0];
+  // Prefer a pin nobody else shares, so clicking it can only select this listing.
+  const key = (x: any) => x.geometry.coordinates.join(",");
+  const counts = new Map<string, number>();
+  for (const x of fc.features) counts.set(key(x), (counts.get(key(x)) ?? 0) + 1);
+  const f = fc.features.find((x: any) => counts.get(key(x)) === 1) ?? fc.features[0];
   fixture = { id: f.properties.id, name: f.properties.name, lng: f.geometry.coordinates[0], lat: f.geometry.coordinates[1] };
 
   browser = await chromium.launch({ executablePath: CHROME, headless: true });
@@ -162,7 +167,7 @@ describe("Explore map — pin renders and opens a card", () => {
     // add the canvas offset to get the viewport coordinates the mouse expects.
     const point = await page.evaluate(`(() => {
       const m = ${MAP_HANDLE};
-      const f = m.queryRenderedFeatures({ layers: ['property-dots'] })[0];
+      const f = m.queryRenderedFeatures({ layers: ['property-dots'] }).find((x) => x.properties.id === ${JSON.stringify(fixture.id)});
       if (!f) return null;
       const p = m.project(f.geometry.coordinates);
       const r = m.getCanvas().getBoundingClientRect();
@@ -182,7 +187,7 @@ describe("Explore map — pin renders and opens a card", () => {
 
     const text = (await page.evaluate("document.body.innerText")) as string;
     assert.ok(text.includes(detail.location), `card should show the location "${detail.location}"`);
-    assert.ok(text.includes(String(detail.priceLakh)), `card should show the price (${detail.priceLakh} Lakh)`);
+    assert.ok(text.includes(formatLakh(detail.priceLakh)), `card should show the price (${formatLakh(detail.priceLakh)})`);
     assert.ok(/Contact Agent|Shortlist/.test(text), "card should show its action buttons");
 
     const alts = (await page.evaluate("[...document.images].map(i => i.alt)")) as string[];

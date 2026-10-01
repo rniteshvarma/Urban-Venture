@@ -1,6 +1,8 @@
-import React from "react";
+"use client";
+
+import React, { useState } from "react";
 import Link from "next/link";
-import { MapPin, Phone } from "lucide-react";
+import { MapPin, Phone, Building2 } from "lucide-react";
 import SaveHeart from "./SaveHeart";
 import VerifiedBadge from "./VerifiedBadge";
 import InfoChip from "./InfoChip";
@@ -23,6 +25,12 @@ export interface ProjectCardData {
   infraHighlights: string[];
   imageUrls: string[];
   status: "ACTIVE" | "SOLD_OUT" | "UPCOMING" | "ARCHIVED";
+  /** researched inventory extras (optional — older rows lack them) */
+  locality?: string | null;
+  reraNumber?: string | null;
+  possessionText?: string | null;
+  inventoryGrade?: "A" | "B" | "C" | "D" | null;
+  inventoryScore?: number | null;
 }
 
 interface ProjectCardProps {
@@ -31,23 +39,50 @@ interface ProjectCardProps {
   className?: string;
 }
 
-function fallbackImage(p: ProjectCardData): string {
-  const type = (p.propertyType || "").toLowerCase();
-  const corridor = (p.corridor || "").toLowerCase();
-  if (type.includes("plot") || /(yadadri|shadnagar|kadthal)/.test(corridor))
-    return "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=800&q=80";
-  if (type.includes("villa") || corridor.includes("kompally"))
-    return "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=800&q=80";
-  if (/(kokapet|gachibowli)/.test(corridor))
-    return "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=800&q=80";
-  return "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800&q=80";
+/** Shown when a project has no clean image (or the hotlinked one fails) — never a stock photo. */
+function ImagePlaceholder({ p }: { p: ProjectCardData }) {
+  return (
+    <div
+      style={{
+        position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8,
+        background: "linear-gradient(135deg, var(--color-ink) 0%, var(--color-ink-soft) 100%)", color: "rgba(255,255,255,0.85)", textAlign: "center", padding: 16,
+      }}
+    >
+      <Building2 size={30} style={{ color: "var(--color-saffron)" }} />
+      <div style={{ fontFamily: "var(--font-jakarta)", fontWeight: 700, fontSize: "0.95rem", lineHeight: 1.25 }}>{p.name}</div>
+      <div style={{ fontSize: "0.6875rem", color: "rgba(255,255,255,0.55)" }}>{p.propertyType} · images on request</div>
+    </div>
+  );
 }
 
 /** v2 project card. Grid & carousel share the vertical layout; list is a horizontal row. */
+const GRADE_TONE: Record<string, { bg: string; fg: string }> = {
+  A: { bg: "var(--color-growth)", fg: "#fff" },
+  B: { bg: "var(--color-saffron)", fg: "var(--color-ink)" },
+  C: { bg: "var(--color-caution-wash)", fg: "#9A6A1E" },
+  D: { bg: "var(--color-alert-wash)", fg: "var(--color-alert)" },
+};
+
+/** Property Tiger rating pill for researched inventory. */
+function GradePill({ grade, score }: { grade: string; score?: number | null }) {
+  const t = GRADE_TONE[grade] ?? GRADE_TONE.C;
+  return (
+    <span
+      title="Property Tiger rating — legal, developer, location, delivery, planning and price"
+      style={{ background: t.bg, color: t.fg, padding: "3px 9px", borderRadius: 999, fontSize: "0.6875rem", fontWeight: 800, letterSpacing: "0.03em", boxShadow: "0 1px 4px rgba(0,0,0,0.25)" }}
+    >
+      {grade}{score != null ? ` · ${score}` : ""}
+    </span>
+  );
+}
+
 export default function ProjectCard({ project: p, variant = "grid", className = "" }: ProjectCardProps) {
-  const img = p.imageUrls?.[0] || fallbackImage(p);
+  const [broken, setBroken] = useState(false);
+  const img = broken ? null : p.imageUrls?.[0] || null;
   const risk = RISK[p.riskLevel];
   const emi = formatEMI(lakhToRupees(p.minBudgetLakhs));
+  const place = p.locality ? `${p.locality}, ${p.city}` : `${p.corridor} · ${p.city}`;
+  const hasRera = !!p.reraNumber;
 
   const chips = (
     <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
@@ -59,7 +94,7 @@ export default function ProjectCard({ project: p, variant = "grid", className = 
         {risk.label}
       </span>
       <InfoChip variant="ghost">
-        {p.minHorizonYears}–{p.maxHorizonYears} yr hold
+        {p.possessionText ?? `${p.minHorizonYears}–${p.maxHorizonYears} yr hold`}
       </InfoChip>
     </div>
   );
@@ -68,9 +103,13 @@ export default function ProjectCard({ project: p, variant = "grid", className = 
     return (
       <div className={`uv-card uv-card-hover ${className}`} style={{ display: "flex", overflow: "hidden" }}>
         <div style={{ position: "relative", width: 160, flexShrink: 0, background: "var(--color-ink-soft)" }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={img} alt={p.name} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-          {p.riskLevel === "LOW" && (
+          {img ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={img} alt={p.name} loading="lazy" onError={() => setBroken(true)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          ) : (
+            <ImagePlaceholder p={p} />
+          )}
+          {hasRera && (
             <div style={{ position: "absolute", bottom: 8, left: 8 }}>
               <VerifiedBadge type="RERA" />
             </div>
@@ -85,7 +124,7 @@ export default function ProjectCard({ project: p, variant = "grid", className = 
             <SaveHeart projectId={p.id} theme="dark" />
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: "0.75rem", color: "var(--color-text-mid)" }}>
-            <MapPin size={13} /> {p.corridor} · {p.city}
+            <MapPin size={13} /> {place}
           </div>
           <div style={{ fontFamily: "var(--font-mono)", fontWeight: 600, fontSize: "1.05rem", color: "var(--color-text-hi)" }}>
             {formatLakhRange(p.minBudgetLakhs, p.maxBudgetLakhs)}
@@ -101,14 +140,23 @@ export default function ProjectCard({ project: p, variant = "grid", className = 
   return (
     <div className={`uv-card uv-card-hover ${className}`} style={{ display: "flex", flexDirection: "column", overflow: "hidden", height: "100%", ...width }}>
       <div style={{ position: "relative", width: "100%", paddingTop: "68%", background: "var(--color-ink-soft)", flexShrink: 0 }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={img} alt={p.name} loading="lazy" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+        {img ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={img} alt={p.name} loading="lazy" onError={() => setBroken(true)} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+        ) : (
+          <ImagePlaceholder p={p} />
+        )}
         <div style={{ position: "absolute", top: 10, right: 10 }}>
           <SaveHeart projectId={p.id} theme="light" />
         </div>
-        {p.riskLevel === "LOW" && (
+        {hasRera && (
           <div style={{ position: "absolute", bottom: 10, left: 10 }}>
             <VerifiedBadge type="RERA" />
+          </div>
+        )}
+        {p.inventoryGrade && (
+          <div style={{ position: "absolute", bottom: 10, right: 10 }}>
+            <GradePill grade={p.inventoryGrade} score={p.inventoryScore} />
           </div>
         )}
         {p.status !== "ACTIVE" && (
@@ -164,11 +212,11 @@ export default function ProjectCard({ project: p, variant = "grid", className = 
             overflow: "hidden",
             textOverflow: "ellipsis"
           }}
-          title={`${p.corridor} · ${p.city}`}
+          title={`${place} — ${p.corridor}`}
         >
           <MapPin size={13} style={{ flexShrink: 0 }} /> 
           <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-            {p.corridor} · {p.city}
+            {place}
           </span>
         </div>
         <div>
@@ -188,7 +236,7 @@ export default function ProjectCard({ project: p, variant = "grid", className = 
             {risk.label}
           </span>
           <InfoChip variant="ghost">
-            {p.minHorizonYears}–{p.maxHorizonYears} yr hold
+            {p.possessionText ?? `${p.minHorizonYears}–${p.maxHorizonYears} yr hold`}
           </InfoChip>
         </div>
       </div>

@@ -258,10 +258,11 @@ export default function ReportCard({
           <div className="space-y-6">
             {report.corridors.map((corridor, idx) => {
               // Filter comparable projects for this corridor in budget range
+              // The feed is ranked best-first, so the first few matches are the strongest.
               const matchedProjects = allProjects.filter((p) => {
                 const corridorMatch = p.corridor.toLowerCase().includes(corridor.name.split(" ")[0].toLowerCase());
                 return corridorMatch;
-              });
+              }).slice(0, 6);
 
               return (
                 <div 

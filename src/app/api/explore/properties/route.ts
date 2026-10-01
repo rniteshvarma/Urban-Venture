@@ -5,11 +5,9 @@
 // Never returns seller contact details or document URLs.
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { gradeFor } from "@/lib/listings/score";
 import {
   MAX_FEATURES, parseBbox, parseFilters, buildWhere, quintileBreaks, bandFor,
-  round5, displayArea, tokenForStoredType,
-} from "@/lib/explore/query";
+  round5, displayArea, tokenForStoredType, headlinePrice, inventoryOrSellerGrade } from "@/lib/explore/query";
 
 export const dynamic = "force-dynamic";
 
@@ -62,19 +60,19 @@ export async function GET(req: Request) {
           id: true, name: true, latitude: true, longitude: true,
           minBudgetLakhs: true, maxBudgetLakhs: true, totalAreaSqYd: true,
           propertyType: true, listingSource: true, listingScore: true,
-          approvalStatus: true, approvalVerified: true, imageUrls: true,
+          approvalStatus: true, approvalVerified: true, imageUrls: true, sourceType: true,
         },
       }),
     ]);
 
     // Price bands are computed from THIS viewport's distribution.
-    const prices = rows.map((r) => r.maxBudgetLakhs || r.minBudgetLakhs).filter((n) => n > 0);
+    const prices = rows.map((r) => headlinePrice(r).priceLakh).filter((n) => n > 0);
     const breaks = quintileBreaks(prices);
 
     const features = rows
       .filter((r) => r.latitude != null && r.longitude != null)
       .map((r) => {
-        const priceLakh = r.maxBudgetLakhs || r.minBudgetLakhs || 0;
+        const { priceLakh, priceFrom } = headlinePrice(r);
         const area = displayArea(r.totalAreaSqYd);
         // Rate in the same unit the area is expressed in.
         const rateValue = area && area.value > 0 ? Math.round((priceLakh * 100000) / area.value) : null;
@@ -87,6 +85,7 @@ export async function GET(req: Request) {
             ref: r.id.slice(0, 12).toUpperCase(),
             name: r.name,
             priceLakh,
+            priceFrom,
             rateValue,
             rateUnit: area?.unit ?? null,
             areaValue: area?.value ?? null,
@@ -96,7 +95,7 @@ export async function GET(req: Request) {
             // Admin inventory is verified by definition; seller listings must
             // have had their approval verified by a reviewer.
             isVerified: isAdmin || r.approvalVerified,
-            scoreGrade: isAdmin ? null : r.listingScore != null ? gradeFor(r.listingScore) : null,
+            scoreGrade: inventoryOrSellerGrade(r),
             priceBand: bandFor(priceLakh, breaks),
             thumb: r.imageUrls?.[0] ?? null,
           },

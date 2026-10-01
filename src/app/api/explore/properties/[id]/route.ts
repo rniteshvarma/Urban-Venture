@@ -4,8 +4,7 @@
 // Contact happens through the existing enquiry flow (Constraint 7).
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { gradeFor } from "@/lib/listings/score";
-import { displayArea, tokenForStoredType } from "@/lib/explore/query";
+import { displayArea, tokenForStoredType, headlinePrice, inventoryOrSellerGrade } from "@/lib/explore/query";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +18,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
         id: true, name: true, corridor: true, city: true, addressLine: true, landmark: true,
         latitude: true, longitude: true,
         minBudgetLakhs: true, maxBudgetLakhs: true, totalAreaSqYd: true,
-        propertyType: true, listingSource: true, listingScore: true,
+        propertyType: true, listingSource: true, listingScore: true, sourceType: true,
         approvalStatus: true, approvalNumber: true, approvalVerified: true,
         roadWidthFeet: true, facingOptions: true, ownershipType: true,
         availablePlots: true, totalPlots: true, imageUrls: true,
@@ -42,7 +41,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
         })
       : null;
 
-    const priceLakh = p.maxBudgetLakhs || p.minBudgetLakhs || 0;
+    const { priceLakh, priceFrom } = headlinePrice(p);
     const area = displayArea(p.totalAreaSqYd);
     const isAdmin = p.listingSource === "ADMIN";
 
@@ -59,6 +58,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
       latitude: p.latitude,
       longitude: p.longitude,
       priceLakh,
+      priceFrom,
       areaValue: area?.value ?? null,
       areaUnit: area?.unit ?? null,
       rateValue: area && area.value > 0 ? Math.round((priceLakh * 100000) / area.value) : null,
@@ -76,7 +76,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
       },
       isVerified: isAdmin || p.approvalVerified,
       source: p.listingSource,
-      scoreGrade: isAdmin ? null : p.listingScore != null ? gradeFor(p.listingScore) : null,
+      scoreGrade: inventoryOrSellerGrade(p),
       corridor: corridor ? { slug: corridor.slug, name: corridor.shortName, score: corridor.overallScore } : null,
       url: `/projects/${p.id}`,
     });

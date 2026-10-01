@@ -54,7 +54,7 @@ export default function HomePage() {
   useEffect(() => {
     const j = (r: Response) => (r.ok ? r.json() : Promise.reject(r.status));
     fetch("/api/market/corridors").then(j).then(setCorridors).catch(() => setCorridors([]));
-    fetch("/api/projects").then(j).then(setProjects).catch(() => setProjects([]));
+    fetch("/api/projects?limit=8").then(j).then(setProjects).catch(() => setProjects([]));
     fetch("/api/market/pulse").then(j).then((d) => setPulse(d?.pulse ?? null)).catch(() => setPulse(null));
     fetch("/api/market/infrastructure")
       .then(j)

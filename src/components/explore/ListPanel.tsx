@@ -123,7 +123,7 @@ export default function ListPanel({
                     </div>
                     <div style={{ fontSize: "0.6875rem", color: "#8A8A99", marginTop: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.name}</div>
                     <div className="uv-mono" style={{ fontSize: "0.8125rem", fontWeight: 700, color: "#0D0D12", marginTop: 4 }}>
-                      {formatLakh(p.priceLakh)}
+                      {p.priceFrom ? "from " : ""}{formatLakh(p.priceLakh)}
                       {p.rateValue && <span style={{ fontWeight: 400, color: "#8A8A99" }}> · {formatINRFull(p.rateValue)}/{p.rateUnit}</span>}
                     </div>
                     {p.scoreGrade && (

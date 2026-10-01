@@ -9,7 +9,7 @@
     "build": "prisma db push && prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
-    "test:geo": "tsx --test src/lib/geo/*.test.ts scripts/etl/lib/*.test.ts src/lib/landiq/*.test.ts src/lib/news/*.test.ts src/lib/extraction/*.test.ts src/lib/listings/*.test.ts src/lib/reports/*.test.ts src/lib/infra-intel/*.test.ts src/lib/whatsapp/*.test.ts src/lib/concierge/*.test.ts",
+    "test:geo": "tsx --test src/lib/geo/*.test.ts scripts/etl/lib/*.test.ts src/lib/landiq/*.test.ts src/lib/news/*.test.ts src/lib/extraction/*.test.ts src/lib/listings/*.test.ts src/lib/reports/*.test.ts src/lib/infra-intel/*.test.ts src/lib/whatsapp/*.test.ts src/lib/concierge/*.test.ts src/lib/inventory/*.test.ts",
     "etl:lgd": "tsx scripts/etl/load-lgd.ts",
     "etl:boundaries": "tsx scripts/etl/load-boundaries.ts",
     "eval:resolver": "tsx scripts/eval/run-resolver-eval.ts",

@@ -59,6 +59,8 @@ export async function GET(req: Request) {
 
     const projects = await prisma.project.findMany({
       where,
+      // The list view never reads these, and researched inventory makes them heavy.
+      omit: { specifications: true, scoreBreakdown: true, paymentPlan: true },
       orderBy: { createdAt: "desc" }
     });
 

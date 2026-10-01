@@ -5,17 +5,9 @@ import { SlidersHorizontal, MapPin, Building, Activity, IndianRupee, Search, X }
 import { PageHero, ProjectCard, SkeletonCard, EmptyState, type ProjectCardData } from "@/components/ui";
 
 type SortKey = "relevance" | "price_asc" | "price_desc" | "newest";
+type Corridor = { name: string; count: number };
 
-const CORRIDORS = [
-  "Shadnagar Corridor",
-  "Pharma City Influence Zone",
-  "Sangareddy Industrial Belt",
-  "Kokapet / Financial District Extension",
-  "Shamshabad / Aerospace SEZ",
-  "Yadadri / Outer Ring Road East",
-  "Kompally / NH44 Corridor",
-  "Adibatla IT Corridor",
-];
+const PAGE = 24;
 
 const BUDGETS = [
   { id: "ALL", label: "Any Budget" },
@@ -44,7 +36,7 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
 }
 
 export default function PublicProjectsPage() {
-  const [projects, setProjects] = useState<ProjectCardData[]>([]);
+  const [projects, setProjects] = useState<(ProjectCardData & { createdAt?: string })[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const [selectedCorridor, setSelectedCorridor] = useState("ALL");
@@ -52,13 +44,31 @@ export default function PublicProjectsPage() {
   const [selectedType, setSelectedType] = useState("ALL");
   const [budgetRange, setBudgetRange] = useState("ALL");
   const [sort, setSort] = useState<SortKey>("relevance");
+  const [corridors, setCorridors] = useState<Corridor[]>([]);
+  const [showAllCorridors, setShowAllCorridors] = useState(false);
+  const [query, setQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [visible, setVisible] = useState(PAGE);
 
   const clearAll = () => {
     setSelectedCorridor("ALL");
     setSelectedRisk("ALL");
     setSelectedType("ALL");
     setBudgetRange("ALL");
+    setQuery("");
   };
+
+  useEffect(() => {
+    fetch("/api/projects/corridors")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((c) => setCorridors(Array.isArray(c) ? c : []))
+      .catch(() => setCorridors([]));
+  }, []);
+
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedQuery(query.trim()), 300);
+    return () => clearTimeout(t);
+  }, [query]);
 
   useEffect(() => {
     async function fetchProjects() {
@@ -68,6 +78,7 @@ export default function PublicProjectsPage() {
         if (selectedCorridor !== "ALL") url += `&corridor=${encodeURIComponent(selectedCorridor)}`;
         if (selectedRisk !== "ALL") url += `&risk=${selectedRisk}`;
         if (selectedType !== "ALL") url += `&type=${selectedType}`;
+        if (debouncedQuery) url += `&q=${encodeURIComponent(debouncedQuery)}`;
         if (budgetRange === "<30L") url += `&maxBudget=30`;
         else if (budgetRange === "30-60L") url += `&minBudget=30&maxBudget=60`;
         else if (budgetRange === "60-120L") url += `&minBudget=60&maxBudget=120`;
@@ -75,6 +86,7 @@ export default function PublicProjectsPage() {
 
         const res = await fetch(url);
         if (res.ok) setProjects(await res.json());
+        setVisible(PAGE);
       } catch (err) {
         console.error("Error loading projects:", err);
       } finally {
@@ -82,12 +94,13 @@ export default function PublicProjectsPage() {
       }
     }
     fetchProjects();
-  }, [selectedCorridor, selectedRisk, selectedType, budgetRange]);
+  }, [selectedCorridor, selectedRisk, selectedType, budgetRange, debouncedQuery]);
 
   const sorted = useMemo(() => {
     const arr = [...projects];
     if (sort === "price_asc") arr.sort((a, b) => a.minBudgetLakhs - b.minBudgetLakhs);
     else if (sort === "price_desc") arr.sort((a, b) => b.minBudgetLakhs - a.minBudgetLakhs);
+    else if (sort === "newest") arr.sort((a, b) => String(b.createdAt ?? "").localeCompare(String(a.createdAt ?? "")));
     return arr;
   }, [projects, sort]);
 
@@ -97,13 +110,16 @@ export default function PublicProjectsPage() {
   if (budgetRange !== "ALL") applied.push({ label: BUDGETS.find((b) => b.id === budgetRange)!.label, clear: () => setBudgetRange("ALL") });
   if (selectedRisk !== "ALL") applied.push({ label: `${selectedRisk} risk`, clear: () => setSelectedRisk("ALL") });
   if (selectedType !== "ALL") applied.push({ label: selectedType, clear: () => setSelectedType("ALL") });
+  if (debouncedQuery) applied.push({ label: `“${debouncedQuery}”`, clear: () => setQuery("") });
+
+  const shownCorridors = showAllCorridors ? corridors : corridors.slice(0, 10);
 
   return (
     <div style={{ background: "var(--color-paper)", minHeight: "100vh" }}>
       <PageHero
         eyebrow={<><Building size={12} /> Investment Grade Properties</>}
-        title="Curated Premium Projects"
-        subtitle="Browse premium, investment-mapped properties across Hyderabad's highest-performing growth corridors — verified for title clarity and growth potential."
+        title="Hyderabad Projects, Rated"
+        subtitle="Apartments, villas and plotted layouts from Hyderabad's developers — with TS-RERA numbers, unit-wise pricing, locations and a Property Tiger rating for every project."
         size="md"
       />
 
@@ -119,9 +135,29 @@ export default function PublicProjectsPage() {
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 14, paddingTop: 14 }}>
-            <FilterRow icon={<MapPin size={12} />} label="Corridor">
-              <Chip active={selectedCorridor === "ALL"} onClick={() => setSelectedCorridor("ALL")}>All Corridors</Chip>
-              {CORRIDORS.map((c) => <Chip key={c} active={selectedCorridor === c} onClick={() => setSelectedCorridor(c)}>{c}</Chip>)}
+            <div style={{ position: "relative" }}>
+              <Search size={15} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--color-text-lo)" }} />
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search a project, developer or locality…"
+                className="input-premium"
+                style={{ width: "100%", paddingLeft: 36 }}
+                aria-label="Search projects"
+              />
+            </div>
+            <FilterRow icon={<MapPin size={12} />} label="Location">
+              <Chip active={selectedCorridor === "ALL"} onClick={() => setSelectedCorridor("ALL")}>All Hyderabad</Chip>
+              {shownCorridors.map((c) => (
+                <Chip key={c.name} active={selectedCorridor === c.name} onClick={() => setSelectedCorridor(c.name)}>
+                  {c.name} <span style={{ opacity: 0.6, marginLeft: 4 }}>{c.count}</span>
+                </Chip>
+              ))}
+              {corridors.length > 10 && (
+                <button type="button" onClick={() => setShowAllCorridors((v) => !v)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "0.75rem", fontWeight: 700, color: "var(--color-saffron-deep)" }}>
+                  {showAllCorridors ? "Show fewer" : `+${corridors.length - 10} more`}
+                </button>
+              )}
             </FilterRow>
             <FilterRow icon={<IndianRupee size={12} />} label="Budget">
               {BUDGETS.map((b) => <Chip key={b.id} active={budgetRange === b.id} onClick={() => setBudgetRange(b.id)}>{b.label}</Chip>)}
@@ -131,7 +167,7 @@ export default function PublicProjectsPage() {
                 {["ALL", "LOW", "MEDIUM", "HIGH"].map((r) => <Chip key={r} active={selectedRisk === r} onClick={() => setSelectedRisk(r)}>{r === "ALL" ? "All" : r}</Chip>)}
               </FilterRow>
               <FilterRow icon={<Building size={12} />} label="Type" inline>
-                {["ALL", "Plots", "Residential", "Villa", "Commercial"].map((t) => <Chip key={t} active={selectedType === t} onClick={() => setSelectedType(t)}>{t === "ALL" ? "All" : t}</Chip>)}
+                {["ALL", "Apartment", "Villa", "Plots", "Commercial"].map((t) => <Chip key={t} active={selectedType === t} onClick={() => setSelectedType(t)}>{t === "ALL" ? "All" : t}</Chip>)}
               </FilterRow>
             </div>
           </div>
@@ -150,7 +186,7 @@ export default function PublicProjectsPage() {
           <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ fontSize: "0.75rem", color: "var(--color-text-lo)" }}>Sort</span>
             <select value={sort} onChange={(e) => setSort(e.target.value as SortKey)} className="input-premium" style={{ padding: "8px 12px", fontSize: "0.8125rem", width: "auto" }}>
-              <option value="relevance">Relevance</option>
+              <option value="relevance">Top rated</option>
               <option value="price_asc">Price ↑</option>
               <option value="price_desc">Price ↓</option>
               <option value="newest">Newest</option>
@@ -171,9 +207,18 @@ export default function PublicProjectsPage() {
             action={<button onClick={clearAll} className="uv-btn uv-btn-ghost">Clear filters</button>}
           />
         ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 20 }}>
-            {sorted.map((p) => <ProjectCard key={p.id} project={p} variant="grid" />)}
-          </div>
+          <>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 20 }}>
+              {sorted.slice(0, visible).map((p) => <ProjectCard key={p.id} project={p} variant="grid" />)}
+            </div>
+            {visible < sorted.length && (
+              <div style={{ display: "flex", justifyContent: "center", marginTop: 28 }}>
+                <button onClick={() => setVisible((v) => v + PAGE)} className="uv-btn uv-btn-ghost">
+                  Show more ({sorted.length - visible} remaining)
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

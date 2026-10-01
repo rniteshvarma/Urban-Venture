@@ -27,160 +27,8 @@ import {
 import { computeAllCorridorScores } from "../src/lib/corridor-intelligence";
 import { seedAdminPassword } from "./lib/seed-password";
 
-const projectsData = [
-  {
-    name: "Elite Green Meadows",
-    developer: "Aura Developers",
-    corridor: "Shadnagar Corridor",
-    city: "Hyderabad",
-    minBudgetLakhs: 18.0,
-    maxBudgetLakhs: 35.0,
-    minHorizonYears: 3,
-    maxHorizonYears: 7,
-    riskLevel: RiskLevel.MEDIUM,
-    propertyType: "Plots",
-    infraHighlights: ["Regional Ring Road (RRR)", "MMTS Phase 2 Extension", "NH-44 Proximity"],
-    exitOpportunities: ["Resale to developers", "Individual villa construction", "Long-term land banking"],
-    comparables: ["Suvarnabhoomi Infra", "Siri Sampada", "Building Blocks Group"],
-    description: "Elite Green Meadows is a premium open plot development located along the booming Shadnagar corridor. Highly suited for mid-to-long term appreciation due to the upcoming Regional Ring Road.",
-    brochureUrl: "",
-    imageUrls: ["/projects/shadnagar-1.jpg"],
-    status: "ACTIVE" as const,
-  },
-  {
-    name: "Pharma City Valley",
-    developer: "Vertex Group",
-    corridor: "Pharma City Influence Zone",
-    city: "Hyderabad",
-    minBudgetLakhs: 32.0,
-    maxBudgetLakhs: 75.0,
-    minHorizonYears: 5,
-    maxHorizonYears: 10,
-    riskLevel: RiskLevel.MEDIUM,
-    propertyType: "Plots",
-    infraHighlights: ["Hyderabad Pharma City SEZ", "ORR Exit 14 Connection", "Proposed Metro Link"],
-    exitOpportunities: ["Commercial rental yield", "Resale to pharma employees", "Plot subdivision"],
-    comparables: ["Elite Pharma Hills", "Apex Green County"],
-    description: "An expansive gated plot community located close to the Hyderabad Pharma City entry gates, targeting high appreciation driven by the industrial hub employment boom.",
-    brochureUrl: "",
-    imageUrls: ["/projects/pharmacity-1.jpg"],
-    status: "ACTIVE" as const,
-  },
-  {
-    name: "Sangareddy Heights",
-    developer: "True Space Projects",
-    corridor: "Sangareddy Industrial Belt",
-    city: "Hyderabad",
-    minBudgetLakhs: 22.0,
-    maxBudgetLakhs: 55.0,
-    minHorizonYears: 3,
-    maxHorizonYears: 7,
-    riskLevel: RiskLevel.MEDIUM,
-    propertyType: "Residential",
-    infraHighlights: ["IIT Hyderabad Hub", "Mumbai Highway NH-65", "Sangareddy Collectorate Link"],
-    exitOpportunities: ["Resale to IIT staff/students", "Long term rental", "Sublease"],
-    comparables: ["IIT Residency", "Sangareddy Greens"],
-    description: "Affordable premium residential apartment complex with modern amenities catering to professionals working in the nearby industrial parks and IIT Hyderabad campus.",
-    brochureUrl: "",
-    imageUrls: ["/projects/sangareddy-1.jpg"],
-    status: "ACTIVE" as const,
-  },
-  {
-    name: "Aura One Kokapet",
-    developer: "Prestige Group",
-    corridor: "Kokapet / Financial District Extension",
-    city: "Hyderabad",
-    minBudgetLakhs: 90.0,
-    maxBudgetLakhs: 200.0,
-    minHorizonYears: 2,
-    maxHorizonYears: 5,
-    riskLevel: RiskLevel.LOW,
-    propertyType: "Villa",
-    infraHighlights: ["Neopolis IT SEZ", "ORR Exit 1", "Trumpet Expressway"],
-    exitOpportunities: ["High rental yield from IT Executives", "Resale in secondary luxury market", "Premium corporate lease"],
-    comparables: ["My Home Avatar", "Rajapushpa Regalia"],
-    description: "Ultra-luxury high-rise residences with panoramic views of Kokapet Neopolis. Perfectly positioned for immediate appreciation and high-profile corporate tenants.",
-    brochureUrl: "",
-    imageUrls: ["/projects/kokapet-1.jpg"],
-    status: "ACTIVE" as const,
-  },
-  {
-    name: "Aerotropolis Enclave",
-    developer: "GMR Infra Projects",
-    corridor: "Shamshabad / Aerospace SEZ",
-    city: "Hyderabad",
-    minBudgetLakhs: 28.0,
-    maxBudgetLakhs: 68.0,
-    minHorizonYears: 3,
-    maxHorizonYears: 7,
-    riskLevel: RiskLevel.MEDIUM,
-    propertyType: "Plots",
-    infraHighlights: ["RGIA Airport Expansion", "Aerospace & Defence SEZ", "Srisailam Highway Connect"],
-    exitOpportunities: ["Resale to airport expansion staff", "Build & lease commercial space", "Capital appreciation exit"],
-    comparables: ["GMR Airport City", "Srisailam County"],
-    description: "Gated community plots adjacent to the Shamshabad Airport Zone, ideal for smart investors targeting high growth in aerospace and logistics sectors.",
-    brochureUrl: "",
-    imageUrls: ["/projects/shamshabad-1.jpg"],
-    status: "ACTIVE" as const,
-  },
-  {
-    name: "Temple Town Vista",
-    developer: "Sri Lakshmi Developers",
-    corridor: "Yadadri / Outer Ring Road East",
-    city: "Hyderabad",
-    minBudgetLakhs: 16.0,
-    maxBudgetLakhs: 32.0,
-    minHorizonYears: 5,
-    maxHorizonYears: 10,
-    riskLevel: RiskLevel.HIGH,
-    propertyType: "Plots",
-    infraHighlights: ["Yadadri Temple Development", "Warangal Highway NH-163", "Proposed Metro Corridor"],
-    exitOpportunities: ["Second home/retirement villa sale", "Pilgrimage lodging rentals", "Long term plot resale"],
-    comparables: ["Yadadri Hills", "Sri Rama Township"],
-    description: "Budget-friendly plotting project situated in the booming tourism and pilgrimage hub of Yadadri. Excellent long-term capital appreciation play.",
-    brochureUrl: "",
-    imageUrls: ["/projects/yadadri-1.jpg"],
-    status: "ACTIVE" as const,
-  },
-  {
-    name: "Kompally Elite Villas",
-    developer: "Modi Properties",
-    corridor: "Kompally / NH44 Corridor",
-    city: "Hyderabad",
-    minBudgetLakhs: 45.0,
-    maxBudgetLakhs: 110.0,
-    minHorizonYears: 1,
-    maxHorizonYears: 5,
-    riskLevel: RiskLevel.LOW,
-    propertyType: "Villa",
-    infraHighlights: ["Kompally Junction Expansion", "Gundlapochampally MMTS", "NH-44 Bypass Line"],
-    exitOpportunities: ["High resale to families", "Rental to local doctors/executives", "Ready to move villa lease"],
-    comparables: ["Kompally Meadows", "Aparna Serene"],
-    description: "Exclusive gated villa project in Kompally, boasting green landscapes, excellent school connectivity, and active metro-commute options.",
-    brochureUrl: "",
-    imageUrls: ["/projects/kompally-1.jpg"],
-    status: "ACTIVE" as const,
-  },
-  {
-    name: "Adibatla Tech Valley",
-    developer: "TCS Builders",
-    corridor: "Adibatla IT Corridor",
-    city: "Hyderabad",
-    minBudgetLakhs: 55.0,
-    maxBudgetLakhs: 140.0,
-    minHorizonYears: 2,
-    maxHorizonYears: 5,
-    riskLevel: RiskLevel.MEDIUM,
-    propertyType: "Residential",
-    infraHighlights: ["Tata Aerospace SEZ", "TCS Adibatla Campus", "Outer Ring Road Exit 12"],
-    exitOpportunities: ["Rentals to TCS/Tata engineers", "Ready resale in active IT pocket", "Premium apartment resale"],
-    comparables: ["Adibatla Heights", "Tata Enclave"],
-    description: "Modern residential community designed for IT professionals working at TCS and Tata Aerospace SEZ. Premium features with a compact, easy-maintenance luxury styling.",
-    brochureUrl: "",
-    imageUrls: ["/projects/adibatla-1.jpg"],
-    status: "ACTIVE" as const,
-  }
-];
+// Developer projects are not seeded here: real Hyderabad inventory is loaded by
+// scripts/inventory/seed-inventory.ts. Personas below link to whatever is live.
 
 const corridorsData = [
   {
@@ -1229,8 +1077,8 @@ async function main() {
     await prisma.legalRisk.deleteMany({});
     await prisma.marketPulse.deleteMany({});
     
-    // Clear parent tables
-    await prisma.project.deleteMany({});
+    // Clear parent tables (projects are kept — they hold the researched inventory
+    // and any project added by hand)
     await prisma.user.deleteMany({});
     await prisma.personaConfig.deleteMany({});
     await prisma.whatsAppTemplate.deleteMany({});
@@ -1255,14 +1103,12 @@ async function main() {
       });
     }
 
-    console.log("🏢 Seeding Projects...");
-    const dbProjects: any[] = [];
-    for (const p of projectsData) {
-      const dbProj = await prisma.project.create({
-        data: p
-      });
-      dbProjects.push(dbProj);
-    }
+    // Live projects, best-rated first, for persona default recommendations.
+    const dbProjects = await prisma.project.findMany({
+      where: { status: "ACTIVE", listingStatus: "APPROVED" },
+      select: { id: true, minBudgetLakhs: true, maxBudgetLakhs: true, riskLevel: true },
+      orderBy: [{ listingScore: { sort: "desc", nulls: "last" } }, { createdAt: "desc" }],
+    });
 
     console.log("📈 Seeding Corridor Profiles (12 corridors)...");
     const seededCorridors = [];
@@ -1446,7 +1292,7 @@ async function main() {
                            (p.maxBudgetLakhs === null || dp.maxBudgetLakhs <= p.maxBudgetLakhs);
         const riskMatch = (p.riskLevels as any[]).includes(dp.riskLevel);
         return budgetMatch && riskMatch;
-      }).map(dp => dp.id);
+      }).slice(0, 12).map(dp => dp.id);
 
       await prisma.personaConfig.create({
         data: {

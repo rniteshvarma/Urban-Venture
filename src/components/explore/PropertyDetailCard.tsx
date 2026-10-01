@@ -19,6 +19,7 @@ interface Detail {
   latitude: number | null;
   longitude: number | null;
   priceLakh: number;
+  priceFrom?: boolean;
   areaValue: number | null;
   areaUnit: string | null;
   rateValue: number | null;
@@ -136,7 +137,7 @@ export default function PropertyDetailCard({ id, onClose, isMobile }: { id: stri
                     )}
                     {d.priceLakh > 0 && (
                       <span className="uv-mono" style={{ marginLeft: d.rateValue ? 8 : 0, fontWeight: 800, fontSize: "0.9375rem", color: "#B87A00" }}>
-                        {d.rateValue ? "(Total " : ""}{formatLakh(d.priceLakh)}{d.rateValue ? ")" : ""}
+                        {d.rateValue ? "(Total " : d.priceFrom ? "from " : ""}{formatLakh(d.priceLakh)}{d.rateValue ? ")" : ""}
                       </span>
                     )}
                   </div>

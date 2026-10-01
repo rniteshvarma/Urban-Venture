@@ -8,6 +8,8 @@
 //     not an enum, so the API's stable tokens are mapped to stored strings.
 
 import type { Prisma } from "@prisma/client";
+import { gradeFor } from "@/lib/listings/score";
+import { gradeOf } from "@/lib/inventory/rating";
 
 export const MAX_FEATURES = 3000;
 
@@ -180,4 +182,21 @@ export function displayArea(sqYd: number | null | undefined): { value: number; u
     return { value: Math.round((sqYd / SQYD_PER_ACRE) * 100) / 100, unit: "acre" };
   }
   return { value: Math.round(sqYd), unit: "sqyd" };
+}
+
+// ── Headline price & grade for a pin ─────────────────────────────────
+// A developer project spans many units, so its pin leads with the entry price
+// ("from ₹X"); a single seller listing has one price.
+export function headlinePrice(r: { minBudgetLakhs: number; maxBudgetLakhs: number }): { priceLakh: number; priceFrom: boolean } {
+  const min = r.minBudgetLakhs || 0;
+  const max = r.maxBudgetLakhs || 0;
+  if (min > 0 && max > min) return { priceLakh: min, priceFrom: true };
+  return { priceLakh: max || min, priceFrom: false };
+}
+
+/** Seller listings show their listing grade; researched inventory its Property Tiger rating. */
+export function inventoryOrSellerGrade(r: { listingSource: string; sourceType?: string | null; listingScore: number | null }): string | null {
+  if (r.listingScore == null) return null;
+  if (r.listingSource === "SELLER") return gradeFor(r.listingScore);
+  return r.sourceType === "CSV_IMPORT" ? gradeOf(r.listingScore) : null;
 }
