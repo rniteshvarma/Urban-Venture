@@ -84,6 +84,11 @@ export default function DashboardPage() {
         <Link href="/" style={{ fontFamily: "var(--font-jakarta)", fontWeight: 800, color: "#fff", textDecoration: "none", fontSize: "1.05rem" }}>
           <Wordmark />
         </Link>
+        <nav aria-label="Site" className="hidden md:flex" style={{ gap: 22, fontSize: "0.8125rem" }}>
+          {[["/projects", "Projects"], ["/market", "Market Data"], ["/explore", "Explore Map"], ["/news", "News"], ["/dashboard/settings/reports", "Report settings"]].map(([href, text]) => (
+            <Link key={href} href={href} style={{ color: "rgba(255,255,255,0.72)", textDecoration: "none" }}>{text}</Link>
+          ))}
+        </nav>
         <SignOutButton />
       </header>
 

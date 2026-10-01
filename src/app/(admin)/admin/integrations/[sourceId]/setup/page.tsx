@@ -118,7 +118,8 @@ Thank you!`;
       <div className="flex items-center gap-3">
         <Link 
           href="/admin/integrations" 
-          className="p-2 rounded-full bg-white text-[#5B4FE0] border border-[#E8E5F5] hover:bg-[#F4F0FF] transition-colors"
+          aria-label="Back to integrations"
+            className="p-2 rounded-full bg-white text-[#5B4FE0] border border-[#E8E5F5] hover:bg-[#F4F0FF] transition-colors"
         >
           <ArrowLeft size={18} />
         </Link>
@@ -224,12 +225,12 @@ Thank you!`;
         {source.type === 'WHATSAPP' && (
           <div className="space-y-4 text-sm text-[#1A1A2E]">
             <p>
-              Inbound WhatsApp messages are processed automatically via WATI webhook integration.
+              Inbound WhatsApp messages arrive through whichever provider is active (set in <a href="/admin/settings/whatsapp" className="text-[#5B4FE0] font-semibold hover:underline">WhatsApp Provider</a>).
             </p>
             <ol className="space-y-2 text-xs text-[#6E6D8A] list-decimal pl-5">
-              <li>Log in to your <strong>WATI Dashboard</strong>.</li>
-              <li>Go to <strong>Settings &rarr; Webhooks</strong>.</li>
-              <li>Set Incoming Message Webhook URL to: <code className="bg-[#F4F0FF] px-2 py-0.5 rounded text-[#5B4FE0] font-mono">{origin}/api/webhooks/whatsapp-inbound</code></li>
+              <li>Open your WhatsApp provider&apos;s dashboard (Meta Business Manager, or your BSP).</li>
+              <li>Find its <strong>webhook</strong> settings.</li>
+              <li>Set the webhook URL to: <code className="bg-[#F4F0FF] px-2 py-0.5 rounded text-[#5B4FE0] font-mono break-all">{origin}/api/webhooks/whatsapp</code></li>
               <li>Incoming messages from unknown contacts automatically generate leads, while existing leads have messages appended to their timeline.</li>
             </ol>
           </div>

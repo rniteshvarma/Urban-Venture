@@ -16,6 +16,7 @@ import {
   ChevronRight,
   X
 } from "lucide-react";
+import { toast } from "@/lib/toast";
 
 interface Project {
   id: string;
@@ -194,11 +195,11 @@ export default function AdminProjectsPage() {
         setCorridors((prev) => prev.filter((c) => c.id !== id));
       } else {
         const errData = await res.json().catch(() => ({}));
-        alert(`Failed to delete record: ${errData.error || "Server error"}${errData.details ? " - " + errData.details : ""}`);
+        toast.show(`Failed to delete record: ${errData.error || "Server error"}${errData.details ? " - " + errData.details : ""}`);
       }
     } catch (err: any) {
       console.error(err);
-      alert(`Error deleting record: ${err.message || "Connection failed"}`);
+      toast.show(`Error deleting record: ${err.message || "Connection failed"}`);
     }
   };
 
@@ -237,11 +238,11 @@ export default function AdminProjectsPage() {
         loadCorridors();
       } else {
         const err = await res.json().catch(() => ({}));
-        alert(`Failed to save corridor metric: ${err.error || "Failed to save corridor metric."}${err.details ? " - " + err.details : ""}`);
+        toast.show(`Failed to save corridor metric: ${err.error || "Failed to save corridor metric."}${err.details ? " - " + err.details : ""}`);
       }
     } catch (err: any) {
       console.error(err);
-      alert(`Error saving corridor metric: ${err.message || "Connection failed"}`);
+      toast.show(`Error saving corridor metric: ${err.message || "Connection failed"}`);
     } finally {
       setIsSavingCorridor(false);
     }

@@ -11,6 +11,7 @@ import {
   Calendar,
   Save
 } from "lucide-react";
+import { toast } from "@/lib/toast";
 
 const MONTH_NAMES = [
   "January", "February", "March", "April", "May", "June",
@@ -125,11 +126,11 @@ export default function DemandTrendsPage() {
         fetchTrends();
       } else {
         const err = await res.json();
-        alert(`Error: ${err.error || "Failed to update demand statistics"}`);
+        toast.show(`Error: ${err.error || "Failed to update demand statistics"}`);
       }
     } catch (err) {
       console.error(err);
-      alert("Error saving data");
+      toast.show("Error saving data");
     }
   };
 

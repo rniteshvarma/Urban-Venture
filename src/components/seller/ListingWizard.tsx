@@ -179,7 +179,7 @@ function Step1({ f, set, blur, corridors, id }: { f: Listing; set: (p: Partial<L
         <Label>Survey number(s)</Label>
         <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
           <input value={surveyInput} onChange={(e) => setSurveyInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addSurvey())} placeholder="e.g. 142/A" style={inp} />
-          <button onClick={addSurvey} className="uv-btn uv-btn-ghost" style={{ fontSize: "0.8125rem" }}><Plus size={14} /></button>
+          <button onClick={addSurvey} aria-label="Add survey number" title="Add survey number" className="uv-btn uv-btn-ghost" style={{ fontSize: "0.8125rem" }}><Plus size={14} /></button>
         </div>
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 8 }}>
           {f.surveyNumbers.map((s) => (

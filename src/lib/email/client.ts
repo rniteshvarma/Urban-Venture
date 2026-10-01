@@ -14,6 +14,7 @@
  */
 
 import { Resend } from 'resend';
+import { isPlaceholderEmail } from '../placeholder-email';
 
 const API_KEY = process.env.RESEND_API_KEY;
 const FROM = process.env.RESEND_FROM_EMAIL || 'Property Tiger <onboarding@resend.dev>';
@@ -56,7 +57,9 @@ export interface SendEmailResult {
 }
 
 export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult> {
-  const recipients = Array.isArray(input.to) ? input.to : [input.to];
+  // WhatsApp-only customers carry an internal placeholder address — never mail it.
+  const recipients = (Array.isArray(input.to) ? input.to : [input.to]).filter((r) => !isPlaceholderEmail(r));
+  if (!recipients.length) return { ok: false, error: 'No deliverable recipient (placeholder email)' };
 
   if (!isLive()) {
     const reason = !API_KEY || API_KEY === 'mock_key' ? 'no API key' : 'dev mode (set EMAIL_SEND_IN_DEV=true to send)';

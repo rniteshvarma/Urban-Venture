@@ -4,9 +4,9 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
-import { usePathname } from "next/navigation";
-import { useSession } from "next-auth/react";
-import { Menu, X, ChevronDown, ArrowRight, LogIn, LayoutDashboard } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { signOut, useSession } from "next-auth/react";
+import { Menu, X, ChevronDown, ArrowRight, LogIn, LogOut, LayoutDashboard } from "lucide-react";
 import { Wordmark } from "@/components/ui";
 
 interface NavChild {
@@ -24,6 +24,7 @@ const MARKET_MENU: NavChild[] = [
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const { data: session } = useSession();
   const isAuthed = !!session?.user;
   const [isScrolled, setIsScrolled] = useState(false);
@@ -88,9 +89,18 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
           <div className="hidden lg:flex items-center gap-4">
             {isAuthed ? (
-              <Link href="/dashboard" className="uv-btn uv-btn-primary" style={{ padding: "9px 18px", fontSize: "0.8125rem" }}>
-                <LayoutDashboard className="w-4 h-4" /> My Dashboard
-              </Link>
+              <>
+                <Link href="/dashboard" className="uv-btn uv-btn-primary" style={{ padding: "9px 18px", fontSize: "0.8125rem" }}>
+                  <LayoutDashboard className="w-4 h-4" /> My Dashboard
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => signOut({ callbackUrl: "/" })}
+                  className="text-sm font-medium text-text-invert-mid hover:text-text-invert transition-colors flex items-center gap-1.5"
+                >
+                  <LogOut className="w-4 h-4" /> Sign out
+                </button>
+              </>
             ) : (
               <>
                 <Link href="/login" className="text-sm font-medium text-text-invert-mid hover:text-text-invert transition-colors flex items-center gap-1.5">
@@ -135,7 +145,17 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
               <Link href="/calculator" className="text-base font-medium">ROI Calculator</Link>
               <div className="flex gap-3" style={{ marginTop: 8, paddingTop: 16, borderTop: "1px solid var(--color-ink-line)" }}>
                 {isAuthed ? (
-                  <Link href="/dashboard" className="uv-btn uv-btn-primary flex-1">My Dashboard</Link>
+                  <>
+                    <Link href="/dashboard" className="uv-btn uv-btn-primary flex-1">My Dashboard</Link>
+                    <button
+                      type="button"
+                      onClick={() => signOut({ callbackUrl: "/" })}
+                      className="uv-btn uv-btn-dark flex-1"
+                      style={{ background: "var(--color-ink-soft)", border: "1px solid var(--color-ink-line)" }}
+                    >
+                      <LogOut className="w-4 h-4" /> Sign out
+                    </button>
+                  </>
                 ) : (
                   <>
                     <Link href="/login" className="uv-btn uv-btn-dark flex-1" style={{ background: "var(--color-ink-soft)", border: "1px solid var(--color-ink-line)" }}>Log in</Link>
@@ -164,40 +184,51 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
               <p className="mt-4 text-sm leading-relaxed text-text-invert-mid" style={{ maxWidth: 360 }}>
                 Not a listing site. A research platform. AI-powered investment research for Hyderabad land and property, built on verified government infrastructure data.
               </p>
-              {/* Newsletter capture */}
-              <form className="mt-6 flex gap-2" style={{ maxWidth: 360 }} onSubmit={(e) => e.preventDefault()}>
-                <input type="email" placeholder="Your email for the weekly brief" className="flex-1 text-sm"
+              {/* Weekly brief — the brief is tied to an account, so capture routes into sign-up (pre-filled). */}
+              <form
+                className="mt-6 flex gap-2"
+                style={{ maxWidth: 360 }}
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const email = new FormData(e.currentTarget).get("email")?.toString().trim() ?? "";
+                  if (isAuthed) router.push("/dashboard");
+                  else router.push(`/signup?email=${encodeURIComponent(email)}&next=/dashboard`);
+                }}
+              >
+                <input type="email" name="email" required={!isAuthed} placeholder={isAuthed ? "Weekly brief: manage in your dashboard" : "Your email for the weekly brief"} aria-label="Email for the weekly brief" className="flex-1 min-w-0 text-sm"
                   style={{ background: "var(--color-ink-soft)", border: "1px solid var(--color-ink-line)", borderRadius: 999, padding: "10px 16px", color: "#fff" }} />
-                <button type="submit" className="uv-btn uv-btn-primary" style={{ padding: "10px 16px" }} aria-label="Subscribe"><ArrowRight className="w-4 h-4" /></button>
+                <button type="submit" className="uv-btn uv-btn-primary" style={{ padding: "10px 16px" }} aria-label="Get the weekly brief"><ArrowRight className="w-4 h-4" /></button>
               </form>
             </div>
 
             <div>
               <h4 className="text-xs font-semibold uppercase tracking-wider text-text-invert mb-5">Research</h4>
-              <ul className="space-y-3 text-sm text-text-invert-mid">
+              <ul className="space-y-1 text-sm text-text-invert-mid [&_a]:inline-block [&_a]:py-1.5">
                 <li><Link href="/research" className="hover:text-text-invert transition-colors">AI Research Tool</Link></li>
                 <li><Link href="/market" className="hover:text-text-invert transition-colors">Corridor Intelligence</Link></li>
                 <li><Link href="/projects" className="hover:text-text-invert transition-colors">Projects</Link></li>
                 <li><Link href="/calculator" className="hover:text-text-invert transition-colors">Calculators</Link></li>
+                <li><Link href="/explore" className="hover:text-text-invert transition-colors">Explore Map</Link></li>
               </ul>
             </div>
 
             <div>
               <h4 className="text-xs font-semibold uppercase tracking-wider text-text-invert mb-5">Market Data</h4>
-              <ul className="space-y-3 text-sm text-text-invert-mid">
+              <ul className="space-y-1 text-sm text-text-invert-mid [&_a]:inline-block [&_a]:py-1.5">
                 <li><Link href="/market/approvals" className="hover:text-text-invert transition-colors">Approvals</Link></li>
                 <li><Link href="/market/compare" className="hover:text-text-invert transition-colors">Compare Corridors</Link></li>
                 <li><Link href="/market/forecast" className="hover:text-text-invert transition-colors">2026–35 Forecast</Link></li>
                 <li><Link href="/market/legal" className="hover:text-text-invert transition-colors">Legal Guide</Link></li>
+                <li><Link href="/news" className="hover:text-text-invert transition-colors">Market News</Link></li>
               </ul>
             </div>
 
             <div>
               <h4 className="text-xs font-semibold uppercase tracking-wider text-text-invert mb-5">Official Portals</h4>
-              <ul className="space-y-3 text-sm text-text-invert-mid">
+              <ul className="space-y-1 text-sm text-text-invert-mid [&_a]:inline-block [&_a]:py-1.5">
                 <li><a href="https://hmda.gov.in" target="_blank" rel="noopener noreferrer" className="hover:text-text-invert transition-colors">HMDA</a></li>
                 <li><a href="https://rera.telangana.gov.in" target="_blank" rel="noopener noreferrer" className="hover:text-text-invert transition-colors">TG-RERA</a></li>
-                <li><a href="https://dharani.telangana.gov.in" target="_blank" rel="noopener noreferrer" className="hover:text-text-invert transition-colors">Bhu Bharati / Dharani</a></li>
+                <li><a href="https://bhubharati.telangana.gov.in" target="_blank" rel="noopener noreferrer" className="hover:text-text-invert transition-colors">Bhu Bharati (land records)</a></li>
               </ul>
             </div>
           </div>
@@ -206,7 +237,10 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
             <p className="text-xs leading-relaxed text-text-invert-mid" style={{ maxWidth: 640 }}>
               <strong className="text-text-invert">Disclaimer:</strong> Recommendations are generated using AI-assisted calculations based on historical trends and published infrastructure plans. Past performance does not guarantee future results. Perform independent legal due diligence before investing.
             </p>
-            <p className="text-xs text-text-invert-mid whitespace-nowrap">© {new Date().getFullYear()} Property Tiger</p>
+            <div className="flex flex-col items-start md:items-end gap-2">
+              <Link href="/legal/content-policy" className="text-xs text-text-invert-mid hover:text-text-invert transition-colors">Content policy</Link>
+              <p className="text-xs text-text-invert-mid whitespace-nowrap">© {new Date().getFullYear()} Property Tiger</p>
+            </div>
           </div>
         </div>
       </footer>

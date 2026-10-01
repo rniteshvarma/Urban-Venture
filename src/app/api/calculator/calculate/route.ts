@@ -3,6 +3,11 @@ import { runRoiCalculations } from "@/lib/calculator";
 import prisma from "@/lib/prisma";
 import Anthropic from "@anthropic-ai/sdk";
 
+/** Lakh amount → "₹45.5 Lakh" or "₹1.74 Cr" (matches how prices are shown across the site). */
+function inr(lakhs: number): string {
+  return lakhs >= 100 ? `₹${(lakhs / 100).toFixed(2)} Cr` : `₹${Number(lakhs.toFixed(1))} Lakh`;
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -80,7 +85,7 @@ export async function POST(req: Request) {
 
     // Call Anthropic Claude for takeaways if API key is valid, else use local heuristics fallback
     let takeaways = [
-      `Investing ₹${initialAmount}L in ${corridorName} is projected to grow to between ₹${summary.finalRealEstateMin.toFixed(1)}L and ₹${summary.finalRealEstateMax.toFixed(1)}L over ${years} years, significantly outperforming Fixed Deposits.`,
+      `Investing ${inr(initialAmount)} in ${corridorName} is projected to grow to between ${inr(summary.finalRealEstateMin)} and ${inr(summary.finalRealEstateMax)} over ${years} years, significantly outperforming Fixed Deposits.`,
       `The projected annual rental yield of ${rentMin}%-${rentMax}% provides a stable cash flow stream that cushions against market volatility.`,
       `Key infrastructure projects in the ${corridorName} corridor serve as major growth multipliers, though buyers should ensure RERA compliance to mitigate construction delay risks.`
     ];

@@ -82,7 +82,7 @@ export default function ProjectCard({ project: p, variant = "grid", className = 
               <h3 style={{ fontFamily: "var(--font-jakarta)", fontWeight: 700, fontSize: "1rem", color: "var(--color-text-hi)" }}>{p.name}</h3>
               <div style={{ fontSize: "0.75rem", color: "var(--color-text-lo)" }}>by {p.developer}</div>
             </div>
-            <SaveHeart id={p.id} theme="dark" />
+            <SaveHeart projectId={p.id} theme="dark" />
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: "0.75rem", color: "var(--color-text-mid)" }}>
             <MapPin size={13} /> {p.corridor} · {p.city}
@@ -104,7 +104,7 @@ export default function ProjectCard({ project: p, variant = "grid", className = 
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={img} alt={p.name} loading="lazy" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
         <div style={{ position: "absolute", top: 10, right: 10 }}>
-          <SaveHeart id={p.id} theme="light" />
+          <SaveHeart projectId={p.id} theme="light" />
         </div>
         {p.riskLevel === "LOW" && (
           <div style={{ position: "absolute", bottom: 10, left: 10 }}>

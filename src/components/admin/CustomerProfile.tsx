@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { toast } from "@/lib/toast";
 
 interface Customer {
   id: string;
@@ -49,7 +50,7 @@ export default function CustomerProfile({
       await onUpdateCustomer(customer.id, { name, email, phone });
       setIsEditing(false);
     } catch (err: any) {
-      alert(`Failed to update customer info: ${err.message || "Unknown error"}${err.details ? " - " + err.details : ""}`);
+      toast.show(`Failed to update customer info: ${err.message || "Unknown error"}${err.details ? " - " + err.details : ""}`);
     } finally {
       setIsSaving(false);
     }

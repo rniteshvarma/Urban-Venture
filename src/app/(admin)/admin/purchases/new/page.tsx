@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, User, Building, MapPin, IndianRupee, Calendar, CheckCircle2, Loader2, Link as LinkIcon, FileText } from "lucide-react";
 import Link from "next/link";
+import { toast } from "@/lib/toast";
 
 export default function NewPurchasePage() {
   const router = useRouter();
@@ -79,11 +80,11 @@ export default function NewPurchasePage() {
         router.refresh();
       } else {
         const data = await res.json();
-        alert(data.error || "Failed to save purchase");
+        toast.show(data.error || "Failed to save purchase");
       }
     } catch (err) {
       console.error(err);
-      alert("Error saving purchase");
+      toast.show("Error saving purchase");
     } finally {
       setIsLoading(false);
     }
@@ -97,7 +98,7 @@ export default function NewPurchasePage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link href="/admin/purchases" className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+          <Link href="/admin/purchases" aria-label="Back to purchases" className="p-2 hover:bg-gray-100 rounded-full transition-colors">
             <ArrowLeft size={20} />
           </Link>
           <h1 className="text-2xl font-bold text-gray-900">Record New Purchase</h1>

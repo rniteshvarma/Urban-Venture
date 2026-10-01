@@ -48,7 +48,8 @@ export default function SetupGuideOverviewPage() {
       <div className="flex items-center gap-3">
         <Link 
           href="/admin/integrations" 
-          className="p-2 rounded-full bg-white text-[#5B4FE0] border border-[#E8E5F5] hover:bg-[#F4F0FF] transition-colors"
+          aria-label="Back to integrations"
+            className="p-2 rounded-full bg-white text-[#5B4FE0] border border-[#E8E5F5] hover:bg-[#F4F0FF] transition-colors"
         >
           <ArrowLeft size={18} />
         </Link>
@@ -107,7 +108,7 @@ export default function SetupGuideOverviewPage() {
                     {source.name === 'MagicBricks' && 'Email your account manager to enable lead delivery via POST webhook'}
                     {source.name === 'Housing.com' && 'Send account manager integration request email'}
                     {source.name === 'NoBroker' && 'Contact support to register your CRM webhook URL'}
-                    {source.name === 'WhatsApp Business' && 'Incoming message webhook configured via WATI integration'}
+                    {source.name === 'WhatsApp Business' && 'Incoming message webhook from your WhatsApp provider (Meta Cloud API or a BSP)'}
                     {source.name === 'Gmail Inbox' && 'Google Cloud Pub/Sub push notification setup for enquiry emails'}
                     {source.name === 'Website Form' && 'Direct POST API from contact forms on main website'}
                   </p>

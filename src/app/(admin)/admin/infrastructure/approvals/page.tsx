@@ -12,6 +12,8 @@ import {
   Calendar,
   Loader2
 } from "lucide-react";
+import { formatDate } from "@/lib/format";
+import { toast } from "@/lib/toast";
 
 const APPROVAL_TYPES = [
   { value: "LAYOUT_APPROVAL", label: "Layout Approval (LP)" },
@@ -199,11 +201,11 @@ export default function ApprovalsPage() {
         fetchApprovals();
       } else {
         const err = await res.json();
-        alert(`Error: ${err.error || "Failed to save approval record"}`);
+        toast.show(`Error: ${err.error || "Failed to save approval record"}`);
       }
     } catch (err) {
       console.error(err);
-      alert("Error saving approval record");
+      toast.show("Error saving approval record");
     }
   };
 
@@ -333,7 +335,7 @@ export default function ApprovalsPage() {
                       {app.approvalDate ? (
                         <span className="flex items-center gap-1">
                           <Calendar size={11} className="text-[#8A8A9E]" />
-                          {new Date(app.approvalDate).toLocaleDateString()}
+                          {formatDate(app.approvalDate)}
                         </span>
                       ) : "—"}
                     </td>

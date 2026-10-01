@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { 
   Building2, 
@@ -18,8 +18,12 @@ import {
   Building,
   DollarSign,
   Clock,
-  Trash2
+  Trash2,
+  Users
 } from "lucide-react";
+import { toast } from "@/lib/toast";
+import { LISTING_TYPES, LISTING_TYPE_LABELS, PERSONA_KEYS, PERSONA_META, listingTypesFromText, suggestPersonasForListing } from "@/lib/personas";
+import type { BuyerPersona, ListingPropertyType } from "@prisma/client";
 
 interface ProjectFormProps {
   initialData?: {
@@ -41,6 +45,10 @@ interface ProjectFormProps {
     brochureUrl: string | null;
     imageUrls: string[];
     status: "ACTIVE" | "SOLD_OUT" | "UPCOMING" | "ARCHIVED";
+    listingTypes?: ListingPropertyType[];
+    purposes?: Array<"INVESTMENT" | "OWN_USE" | "BOTH">;
+    targetPersonas?: BuyerPersona[];
+    expectedRentalYieldPct?: number | null;
   };
   isEdit?: boolean;
 }
@@ -65,6 +73,28 @@ export default function ProjectForm({ initialData, isEdit = false }: ProjectForm
   const [exitText, setExitText] = useState(initialData?.exitOpportunities.join(", ") || "");
   const [comparablesText, setComparablesText] = useState(initialData?.comparables.join(", ") || "");
   
+  // Buyer fit — what the listing is and who it suits (drives WhatsApp concierge matching)
+  const [listingTypes, setListingTypes] = useState<ListingPropertyType[]>(
+    initialData?.listingTypes?.length ? initialData.listingTypes : listingTypesFromText(initialData?.propertyType || "Plots")
+  );
+  const [purposes, setPurposes] = useState<Array<"INVESTMENT" | "OWN_USE">>(
+    (initialData?.purposes ?? []).filter((p): p is "INVESTMENT" | "OWN_USE" => p !== "BOTH")
+  );
+  const [targetPersonas, setTargetPersonas] = useState<BuyerPersona[]>(initialData?.targetPersonas ?? []);
+  const [rentalYield, setRentalYield] = useState<string>(initialData?.expectedRentalYieldPct != null ? String(initialData.expectedRentalYieldPct) : "");
+  const toggle = <T,>(list: T[], v: T) => (list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);
+  // Until the admin picks types by hand, "What is it?" follows the Property Type dropdown.
+  const typesTouched = useRef(!!initialData?.listingTypes?.length);
+  const changePropertyType = (v: string) => {
+    setPropertyType(v);
+    if (!typesTouched.current) setListingTypes(listingTypesFromText(v));
+  };
+  const suggestPersonas = () => {
+    const s = suggestPersonasForListing({ listingTypes, purposes, minBudgetLakhs: Number(minBudget), maxBudgetLakhs: Number(maxBudget), riskLevel });
+    setTargetPersonas(s);
+    toast.info(s.length ? `Suggested ${s.length} persona${s.length === 1 ? "" : "s"} — adjust as needed` : "Pick what the listing is first");
+  };
+
   const [description, setDescription] = useState(initialData?.description || "");
   const [status, setStatus] = useState<any>(initialData?.status || "ACTIVE");
 
@@ -102,11 +132,11 @@ export default function ProjectForm({ initialData, isEdit = false }: ProjectForm
         }
       } else {
         const errData = await res.json().catch(() => ({}));
-        alert(`Upload failed: ${errData.error || "Server error"}${errData.details ? " - " + errData.details : ""}`);
+        toast.show(`Upload failed: ${errData.error || "Server error"}${errData.details ? " - " + errData.details : ""}`);
       }
     } catch (err: any) {
       console.error(err);
-      alert(`Error uploading file: ${err.message || "Connection failed"}`);
+      toast.show(`Error uploading file: ${err.message || "Connection failed"}`);
     } finally {
       setIsUploadingImage(false);
       setIsUploadingPdf(false);
@@ -139,6 +169,10 @@ export default function ProjectForm({ initialData, isEdit = false }: ProjectForm
       brochureUrl,
       imageUrls,
       status,
+      listingTypes,
+      purposes,
+      targetPersonas,
+      expectedRentalYieldPct: rentalYield.trim() ? Number(rentalYield) : null,
     };
 
     try {
@@ -156,11 +190,11 @@ export default function ProjectForm({ initialData, isEdit = false }: ProjectForm
         router.refresh();
       } else {
         const errData = await res.json().catch(() => ({}));
-        alert(`Failed to save project: ${errData.error || "Failed to save project."}${errData.details ? " - " + errData.details : ""}`);
+        toast.show(`Failed to save project: ${errData.error || "Failed to save project."}${errData.details ? " - " + errData.details : ""}`);
       }
     } catch (err: any) {
       console.error(err);
-      alert(`An error occurred: ${err.message || "Connection failed"}`);
+      toast.show(`An error occurred: ${err.message || "Connection failed"}`);
     } finally {
       setIsLoading(false);
     }
@@ -293,7 +327,7 @@ export default function ProjectForm({ initialData, isEdit = false }: ProjectForm
               <div className="relative">
                 <select
                   value={propertyType}
-                  onChange={(e) => setPropertyType(e.target.value)}
+                  onChange={(e) => changePropertyType(e.target.value)}
                   className="crm-input appearance-none pr-8 cursor-pointer"
                 >
                   <option value="Plots">Plots</option>
@@ -418,6 +452,89 @@ export default function ProjectForm({ initialData, isEdit = false }: ProjectForm
               </div>
             </div>
           </div>
+        </div>
+
+        {/* SECTION 2b: BUYER FIT */}
+        <div className="bg-white p-6 sm:p-8 rounded-[20px] shadow-sm border border-[#EBE7F5] space-y-5">
+          <div className="flex items-center gap-2 pb-3 border-b border-[#F5F3FB]">
+            <Users className="text-[#5B4FE0]" size={18} />
+            <h2 className="text-sm font-bold uppercase tracking-wider text-[#1A1A2E]">Buyer Fit</h2>
+            <span className="text-[11px] text-[#8A8A9E] ml-1 hidden sm:inline">— used to match WhatsApp buyers to this listing</span>
+          </div>
+
+          <fieldset>
+            <legend className="block text-[11px] font-bold uppercase tracking-wider text-[#8A8A9E] mb-2">What is it? (pick all that apply)</legend>
+            <div className="flex flex-wrap gap-2">
+              {LISTING_TYPES.map((t) => (
+                <button
+                  type="button"
+                  key={t}
+                  aria-pressed={listingTypes.includes(t)}
+                  onClick={() => {
+                    typesTouched.current = true;
+                    setListingTypes((l) => toggle(l, t));
+                  }}
+                  className={`px-3.5 py-2 rounded-full text-xs font-semibold border transition-colors ${listingTypes.includes(t) ? "bg-[#5B4FE0] text-white border-[#5B4FE0]" : "bg-white text-[#6E6D8A] border-[#E8E5F5] hover:border-[#5B4FE0]"}`}
+                >
+                  {LISTING_TYPE_LABELS[t]}
+                </button>
+              ))}
+            </div>
+          </fieldset>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <fieldset>
+              <legend className="block text-[11px] font-bold uppercase tracking-wider text-[#8A8A9E] mb-2">Suits buyers who want it for</legend>
+              <div className="flex flex-wrap gap-2">
+                {(["INVESTMENT", "OWN_USE"] as const).map((p) => (
+                  <button
+                    type="button"
+                    key={p}
+                    aria-pressed={purposes.includes(p)}
+                    onClick={() => setPurposes((l) => toggle(l, p))}
+                    className={`px-3.5 py-2 rounded-full text-xs font-semibold border transition-colors ${purposes.includes(p) ? "bg-[#5B4FE0] text-white border-[#5B4FE0]" : "bg-white text-[#6E6D8A] border-[#E8E5F5] hover:border-[#5B4FE0]"}`}
+                  >
+                    {p === "INVESTMENT" ? "Investment" : "Own use"}
+                  </button>
+                ))}
+              </div>
+              <p className="text-[10px] text-[#8A8A9E] mt-1.5">Leave both off if it suits either.</p>
+            </fieldset>
+            <div>
+              <label htmlFor="rental-yield" className="block text-[11px] font-bold uppercase tracking-wider text-[#8A8A9E] mb-1.5">
+                Expected rental yield (%)
+              </label>
+              <input id="rental-yield" type="number" step="0.1" min="0" max="30" value={rentalYield} onChange={(e) => setRentalYield(e.target.value)} className="crm-input" placeholder="e.g. 3.5 — leave blank if not rented" />
+            </div>
+          </div>
+
+          <fieldset>
+            <div className="flex items-center justify-between mb-2">
+              <legend className="block text-[11px] font-bold uppercase tracking-wider text-[#8A8A9E]">Target buyer personas</legend>
+              <button type="button" onClick={suggestPersonas} className="text-xs font-semibold text-[#5B4FE0] hover:underline inline-flex items-center gap-1">
+                <Sparkles size={12} /> Suggest from details
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {PERSONA_KEYS.map((k) => {
+                const m = PERSONA_META[k];
+                const on = targetPersonas.includes(k);
+                return (
+                  <button
+                    type="button"
+                    key={k}
+                    aria-pressed={on}
+                    title={m.description}
+                    onClick={() => setTargetPersonas((l) => toggle(l, k))}
+                    className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${on ? `${m.tw.bg} ${m.tw.text} ${m.tw.border} ring-2 ring-offset-1 ring-[#5B4FE0]/30` : "bg-white text-[#8A8A9E] border-[#E8E5F5] hover:text-[#1A1A2E]"}`}
+                  >
+                    {m.icon} {m.short}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="text-[10px] text-[#8A8A9E] mt-1.5">Left empty, personas are suggested automatically when you save.</p>
+          </fieldset>
         </div>
 
         {/* SECTION 3: CATALYSTS & HIGHLIGHTS */}
@@ -561,6 +678,7 @@ export default function ProjectForm({ initialData, isEdit = false }: ProjectForm
                       <button
                         type="button"
                         onClick={() => removeImage(i)}
+                        aria-label={`Remove image ${i + 1}`}
                         className="text-slate-400 hover:text-red-500 transition-colors"
                       >
                         <Trash2 size={12} />

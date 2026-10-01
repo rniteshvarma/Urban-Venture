@@ -52,6 +52,20 @@ export async function pushAnonActivity(field: AnonArrayField, id: string): Promi
   });
 }
 
+/** Remove an id from the current anonymous session's array (no-op without a session). */
+export async function pullAnonActivity(field: AnonArrayField, id: string): Promise<void> {
+  const token = await getAnonToken();
+  if (!token) return;
+  const anon = await prisma.anonymousSession.findUnique({ where: { token } });
+  if (!anon || anon.mergedIntoUserId) return;
+  const current = anon[field] as string[];
+  if (!current.includes(id)) return;
+  await prisma.anonymousSession.update({
+    where: { token },
+    data: { [field]: { set: current.filter((x) => x !== id) }, lastActiveAt: new Date() },
+  });
+}
+
 async function clearAnonCookie() {
   const store = await cookies();
   store.set(ANON_COOKIE, "", { httpOnly: true, path: "/", maxAge: 0 });

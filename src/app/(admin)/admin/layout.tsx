@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 import Sidebar from "@/components/admin/Sidebar";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Sparkles, Bell } from "lucide-react";
 
 export default function AdminLayout({
@@ -65,10 +65,7 @@ export default function AdminLayout({
               <Sparkles size={14} /> New Campaign
             </Link>
 
-            <button className="w-9 h-9 rounded-full bg-[#F4F0FF] text-[#5B4FE0] flex items-center justify-center hover:bg-[#EBE5FB] transition-colors relative">
-              <Bell size={16} />
-              <span className="w-2 h-2 rounded-full bg-rose-500 absolute top-2 right-2 border-2 border-white" />
-            </button>
+            <NewLeadsBell />
           </div>
         </header>
 
@@ -79,5 +76,40 @@ export default function AdminLayout({
 
       </main>
     </div>
+  );
+}
+
+/** Header bell: new (uncontacted) leads. The dot only shows when there are some. */
+function NewLeadsBell() {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    let cancelled = false;
+    const load = () =>
+      fetch("/api/admin/leads?status=NEW&limit=1")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => !cancelled && setCount(d?.pagination?.total || 0))
+        .catch(() => {});
+    load();
+    const t = setInterval(load, 60000);
+    return () => {
+      cancelled = true;
+      clearInterval(t);
+    };
+  }, []);
+  const label = count > 0 ? `${count} new lead${count === 1 ? "" : "s"}` : "No new leads";
+  return (
+    <Link
+      href="/admin/leads?status=NEW"
+      aria-label={label}
+      title={label}
+      className="w-9 h-9 rounded-full bg-[#F4F0FF] text-[#5B4FE0] flex items-center justify-center hover:bg-[#EBE5FB] transition-colors relative"
+    >
+      <Bell size={16} />
+      {count > 0 && (
+        <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center border-2 border-white">
+          {count > 99 ? "99+" : count}
+        </span>
+      )}
+    </Link>
   );
 }

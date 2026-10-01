@@ -10,12 +10,14 @@ import prisma from '../prisma';
 import { getProvider, isMockMode, type RawArticle } from './providers';
 import { MOCK_ARTICLES } from './mock-data/articles';
 import { dedupeHash, visualSeed } from './dedupe';
-import { CATEGORY_PALETTE, isRelevant } from './categories';
+import { CATEGORY_PALETTE, DEFAULT_BLOCKED_PUBLISHERS, isRelevant } from './categories';
+import { enrichBatch, type LiveEnrichment } from './enrich';
 
 const PRUNE_DAYS = 90;
 const MAX_RETRIES = 3;
 
 interface Enrichment {
+  analysisBy?: string | null;
   relevant: boolean;
   category: NewsCategory;
   sentiment: NewsSentiment;
@@ -102,9 +104,10 @@ export async function ingestCity(citySlug: string): Promise<NewsIngestRun> {
     }
 
     // 3. Relevance filter + blocked sources.
-    const blocked = new Set(
-      (await prisma.newsSource.findMany({ where: { isBlocked: true }, select: { name: true } })).map((s) => s.name),
-    );
+    const blocked = new Set([
+      ...DEFAULT_BLOCKED_PUBLISHERS,
+      ...(await prisma.newsSource.findMany({ where: { isBlocked: true }, select: { name: true } })).map((s) => s.name),
+    ]);
     const relevant = unique.filter((a) => {
       if (blocked.has(a.sourceName)) return false;
       const ok = isMockMode() || isRelevant(`${a.headline} ${a.blurb ?? ''}`, city.excludeTerms);
@@ -112,10 +115,53 @@ export async function ingestCity(citySlug: string): Promise<NewsIngestRun> {
       return ok;
     });
 
-    // 4. Enrich (mock passthrough; live would call Claude here).
-    // 5. Store.
+    // 4a. Drop what we already have: same URL, or the same story (dedupeHash) in the last 7 days.
+    //     A city-specific ingest claims stories first stored as India-wide.
+    const existing = await prisma.newsArticle.findMany({
+      where: {
+        OR: [
+          { canonicalUrl: { in: relevant.map((a) => a.canonicalUrl) } },
+          { dedupeHash: { in: relevant.map((a) => dedupeHash(a.headline)) }, publishedAt: { gte: new Date(Date.now() - 7 * 86400_000) } },
+        ],
+      },
+      select: { id: true, canonicalUrl: true, dedupeHash: true, cityScope: true },
+    });
+    const byUrl = new Map(existing.map((e) => [e.canonicalUrl, e]));
+    const byHash = new Map(existing.map((e) => [e.dedupeHash, e]));
+    const fresh: RawArticle[] = [];
     for (const a of relevant) {
-      const enr = isMockMode() ? mockEnrichment(a.canonicalUrl) : null;
+      const hit = byUrl.get(a.canonicalUrl) ?? byHash.get(dedupeHash(a.headline));
+      if (!hit) {
+        fresh.push(a);
+        continue;
+      }
+      duplicates++;
+      if (hit.cityScope === 'india' && city.slug !== 'india') {
+        await prisma.newsArticle.update({ where: { id: hit.id }, data: { cityScope: city.slug, stateScope: city.stateCode ?? null } });
+      }
+    }
+
+    // 4b. Enrich — mock passthrough, or live rules/Claude enrichment in one batch.
+    let live = new Map<string, LiveEnrichment>();
+    if (!isMockMode() && fresh.length) {
+      const [corridors, projects] = await Promise.all([
+        prisma.corridorProfile.findMany({ select: { slug: true, shortName: true, name: true, centroidLat: true, centroidLng: true } }),
+        prisma.infraProject.findMany({ where: { isPublished: true }, select: { id: true, name: true, shortName: true, tags: true } }),
+      ]);
+      live = await enrichBatch(
+        fresh.map((a) => ({ key: a.canonicalUrl, headline: a.headline, blurb: a.blurb, sourceName: a.sourceName })),
+        { citySlug: city.slug, cityName: city.name, corridors, projects },
+      );
+    }
+
+    // 5. Store (new articles only).
+    for (const a of fresh) {
+      const liveEnr = live.get(a.canonicalUrl);
+      const enr: Enrichment | null = isMockMode()
+        ? mockEnrichment(a.canonicalUrl)
+        : liveEnr
+          ? { ...liveEnr, cityScope: city.slug, stateScope: city.stateCode ?? null }
+          : null;
       if (!enr || !enr.relevant) {
         filteredOut++;
         continue;
@@ -134,6 +180,7 @@ export async function ingestCity(citySlug: string): Promise<NewsIngestRun> {
         cityScope: enr.cityScope ?? city.slug,
         stateScope: enr.stateScope ?? city.stateCode ?? null,
         ourAnalysis: enr.analysis,
+        analysisBy: enr.analysisBy ?? (isMockMode() ? 'editor' : null),
         category,
         sentiment: enr.sentiment,
         impactScore: enr.impactScore,
@@ -150,23 +197,23 @@ export async function ingestCity(citySlug: string): Promise<NewsIngestRun> {
         enrichedAt: new Date(),
       };
 
-      await prisma.newsArticle.upsert({
-        where: { canonicalUrl: a.canonicalUrl },
-        update: {
-          // Never overwrite an admin takedown or edited analysis on re-ingest.
-          headline: data.headline,
-          publishedAt: data.publishedAt,
-          impactScore: data.impactScore,
-        },
-        create: { id, ...data },
-      });
+      try {
+        await prisma.newsArticle.create({ data: { id, ...data } });
+      } catch {
+        duplicates++; // lost a race with a concurrent refresh — already stored
+        continue;
+      }
 
       // Track the source for trust-tier / block management.
-      await prisma.newsSource.upsert({
-        where: { name: a.sourceName },
-        update: { articleCount: { increment: 1 } },
-        create: { name: a.sourceName, domain: a.sourceDomain ?? null, articleCount: 1 },
-      });
+      try {
+        await prisma.newsSource.upsert({
+          where: { name: a.sourceName },
+          update: { articleCount: { increment: 1 } },
+          create: { name: a.sourceName, domain: a.sourceDomain ?? null, articleCount: 1 },
+        });
+      } catch {
+        // domain already registered under another display name — counting is best-effort
+      }
       stored++;
     }
 
@@ -177,7 +224,7 @@ export async function ingestCity(citySlug: string): Promise<NewsIngestRun> {
 
     // Denormalised city counter.
     const count = await prisma.newsArticle.count({
-      where: { cityScope: city.slug, suppressedAt: null, isPublished: true },
+      where: { cityScope: city.slug, suppressedAt: null, isPublished: true, ...(isMockMode() ? {} : { provider: { not: 'mock' } }) },
     });
     await prisma.newsCity.update({
       where: { id: city.id },

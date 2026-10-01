@@ -327,6 +327,15 @@ export function ComparePageContent() {
               </div>
               <div className="overflow-x-auto">
                 <table className="table-premium w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="border-b border-slate-200">
+                      <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-text-secondary w-44">Metric</th>
+                      {comparisons.map((c, idx) => (
+                        <th key={idx} className="px-4 py-3 text-xs font-bold text-text-primary">{c.shortName || c.name || c.corridor}</th>
+                      ))}
+                      {comparisons.length === 2 && <th className="px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-text-secondary">Corridor C</th>}
+                    </tr>
+                  </thead>
                   <tbody>
                     <tr className="border-b border-slate-100">
                       <td className="px-4 py-3 font-semibold text-text-secondary bg-slate-50/50 w-44">Historical CAGR</td>

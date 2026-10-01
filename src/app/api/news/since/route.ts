@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
     const tsRaw = q.get('ts');
     const since = tsRaw ? new Date(Number.isNaN(Number(tsRaw)) ? tsRaw : Number(tsRaw)) : new Date(Date.now() - 3600_000);
 
-    const where = await buildFeedWhere({ cityScope: city, ingestedAt: { gt: since } });
+    const where = await buildFeedWhere({ ...(city === 'india' ? {} : { cityScope: city }), ingestedAt: { gt: since } });
     const articles = await prisma.newsArticle.findMany({ where, orderBy: { publishedAt: 'desc' }, take: 30 });
     return NextResponse.json({ articles, count: articles.length, serverTime: Date.now() });
   } catch (error) {

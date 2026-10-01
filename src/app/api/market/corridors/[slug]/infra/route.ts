@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { scoreMovement } from "@/lib/infra-intel/rescore";
 
 // GET /api/market/corridors/[slug]/infra - Fetch infrastructure projects affecting a corridor
 export async function GET(req: Request, { params }: { params: Promise<{ slug: string }> }) {
@@ -41,9 +42,21 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
       }
     });
 
+    // Why the infra score is what it is (+ change since the previous rescore),
+    // and how fresh the underlying project data is.
+    const movement = await scoreMovement(metric.slug);
+    const lastUpdated = projects.reduce<Date | null>((latest, p) => {
+      const d = p.lastVerifiedDate;
+      return d && (!latest || d > latest) ? d : latest;
+    }, null);
+
     return NextResponse.json({
       corridor: metric.slug,
-      projects
+      projects,
+      movement,
+      lastUpdated,
+      // Computed here so the page doesn't read the clock during render.
+      lastUpdatedDaysAgo: lastUpdated ? Math.max(0, Math.floor((Date.now() - lastUpdated.getTime()) / 86400000)) : null
     });
   } catch (error: any) {
     console.error("Error in GET /api/market/corridors/[slug]/infra:", error);

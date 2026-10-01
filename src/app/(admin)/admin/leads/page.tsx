@@ -6,6 +6,8 @@ import LeadsTable from "@/components/admin/LeadsTable";
 import LeadDetailPanel from "@/components/admin/LeadDetailPanel";
 import Link from "next/link";
 import { Megaphone, ArrowRight, Search, Plus, Download } from "lucide-react";
+import { toast } from "@/lib/toast";
+import { PERSONA_META } from "@/lib/personas";
 
 interface Lead {
   id: string;
@@ -28,14 +30,9 @@ interface Lead {
   leadScoreFactors: any;
 }
 
-const PERSONA_LABELS: Record<string, { label: string; icon: string; color: string }> = {
-  FIRST_TIME_BUYER: { label: "First-Time Buyer", icon: "🏠", color: "#3B82F6" },
-  NRI_INVESTOR: { label: "NRI Investor", icon: "✈️", color: "#8B5CF6" },
-  LAND_SPECULATOR: { label: "Land Speculator", icon: "📈", color: "#E11D48" },
-  RETIREMENT_PLANNER: { label: "Retirement Planner", icon: "👴", color: "#10B981" },
-  HNI_PORTFOLIO_BUILDER: { label: "HNI Portfolio", icon: "💼", color: "#F59E0B" },
-  PROFESSIONAL_FIRST_HOME: { label: "Professional Home", icon: "💻", color: "#06B6D4" }
-};
+const PERSONA_LABELS: Record<string, { label: string; icon: string; color: string }> = Object.fromEntries(
+  Object.entries(PERSONA_META).map(([k, m]) => [k, { label: m.short, icon: m.icon, color: m.color }])
+);
 
 function LeadsPageContent() {
   const searchParams = useSearchParams();
@@ -49,7 +46,7 @@ function LeadsPageContent() {
 
   // Filters
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [statusFilter, setStatusFilter] = useState(() => searchParams.get("status") || "ALL");
   const [cityFilter, setCityFilter] = useState("");
   const [personaFilter, setPersonaFilter] = useState(initialPersona);
 
@@ -220,7 +217,7 @@ function LeadsPageContent() {
   const handleCreateLead = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newName || !newEmail || !newPhone) {
-      alert("Please fill in Name, Email, and Phone.");
+      toast.show("Please fill in Name, Email, and Phone.");
       return;
     }
     
@@ -254,11 +251,11 @@ function LeadsPageContent() {
         loadLeads();
       } else {
         const errData = await res.json();
-        alert(`Failed to create lead: ${errData.error || "Server Error"}${errData.details ? " - " + errData.details : ""}`);
+        toast.show(`Failed to create lead: ${errData.error || "Server Error"}${errData.details ? " - " + errData.details : ""}`);
       }
     } catch (err: any) {
       console.error(err);
-      alert(`An error occurred: ${err.message || "Connection failed"}`);
+      toast.show(`An error occurred: ${err.message || "Connection failed"}`);
     } finally {
       setIsCreating(false);
     }

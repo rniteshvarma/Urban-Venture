@@ -54,12 +54,18 @@ export default function MarketMap({ projects, corridors = [] }: MarketMapProps) 
     });
     mapRef.current = map;
 
-    // Tile Layer (Sleek Dark Map tile style)
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-      subdomains: 'abcd',
-      maxZoom: 20
+    // Basemap: Esri Light Gray Canvas + its label layer — keyless (CARTO's free
+    // basemaps now return "API KEY REQUIRED" watermarks). Esri attribution must stay visible.
+    const esri = (service: string) => `https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/${service}/MapServer/tile/{z}/{y}/{x}`;
+    L.tileLayer(esri("World_Light_Gray_Base"), {
+      attribution: "Tiles &copy; Esri &mdash; Esri, HERE, Garmin, &copy; OpenStreetMap contributors",
+      maxZoom: 16,
     }).addTo(map);
+    // Place names above the circles/pins, but never intercepting their clicks.
+    const labels = map.createPane("labels");
+    labels.style.zIndex = "450";
+    labels.style.pointerEvents = "none";
+    L.tileLayer(esri("World_Light_Gray_Reference"), { maxZoom: 16, pane: "labels" }).addTo(map);
 
     // Render ORR (Outer Ring Road) - radius ~24km
     L.circle(centerLatLng, {

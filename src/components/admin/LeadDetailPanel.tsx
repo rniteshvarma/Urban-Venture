@@ -13,6 +13,8 @@ import {
   Trash2,
   Plus
 } from "lucide-react";
+import { toast } from "@/lib/toast";
+import { PERSONA_META } from "@/lib/personas";
 
 interface Lead {
   id: string;
@@ -50,14 +52,9 @@ interface LeadDetailPanelProps {
   onRefresh?: () => void;
 }
 
-const PERSONA_CONFIGS: Record<string, { label: string; icon: string; color: string }> = {
-  FIRST_TIME_BUYER: { label: "First-Time Buyer", icon: "🏠", color: "#3B82F6" },
-  NRI_INVESTOR: { label: "NRI Investor", icon: "✈️", color: "#8B5CF6" },
-  LAND_SPECULATOR: { label: "Land Speculator", icon: "📈", color: "#EF4444" },
-  RETIREMENT_PLANNER: { label: "Retirement Planner", icon: "👴", color: "#10B981" },
-  HNI_PORTFOLIO_BUILDER: { label: "HNI Portfolio", icon: "💼", color: "#F59E0B" },
-  PROFESSIONAL_FIRST_HOME: { label: "Professional Home", icon: "💻", color: "#06B6D4" }
-};
+const PERSONA_CONFIGS: Record<string, { label: string; icon: string; color: string }> = Object.fromEntries(
+  Object.entries(PERSONA_META).map(([k, m]) => [k, { label: m.short, icon: m.icon, color: m.color }])
+);
 
 const GRADE_CONFIGS: Record<string, { icon: React.ReactNode; color: string; bg: string; label: string }> = {
   A: { icon: <Flame size={16} />, color: "text-red-600 border-red-200", bg: "bg-red-50", label: "Hot" },
@@ -169,14 +166,14 @@ export default function LeadDetailPanel({
       const res = await fetch(`/api/admin/leads/${lead.id}/classify`, { method: "POST" });
       if (res.ok) {
         if (onRefresh) onRefresh();
-        alert("Persona successfully reclassified by AI Engine!");
+        toast.show("Persona successfully reclassified by AI Engine!");
       } else {
         const data = await res.json();
-        alert(`Failed to reclassify: ${data.error || "Server Error"}${data.details ? " - " + data.details : ""}`);
+        toast.show(`Failed to reclassify: ${data.error || "Server Error"}${data.details ? " - " + data.details : ""}`);
       }
     } catch (err: any) {
       console.error(err);
-      alert(`Error reclassifying: ${err.message || "Connection failed"}`);
+      toast.show(`Error reclassifying: ${err.message || "Connection failed"}`);
     } finally {
       setIsReclassifying(false);
     }
@@ -188,14 +185,14 @@ export default function LeadDetailPanel({
       const res = await fetch(`/api/admin/leads/${lead.id}/score`, { method: "POST" });
       if (res.ok) {
         if (onRefresh) onRefresh();
-        alert("Conversion score successfully recalculated!");
+        toast.show("Conversion score successfully recalculated!");
       } else {
         const data = await res.json();
-        alert(`Failed to recalculate: ${data.error || "Server Error"}${data.details ? " - " + data.details : ""}`);
+        toast.show(`Failed to recalculate: ${data.error || "Server Error"}${data.details ? " - " + data.details : ""}`);
       }
     } catch (err: any) {
       console.error(err);
-      alert(`Error recalculating: ${err.message || "Connection failed"}`);
+      toast.show(`Error recalculating: ${err.message || "Connection failed"}`);
     } finally {
       setIsRescoring(false);
     }
@@ -209,11 +206,11 @@ export default function LeadDetailPanel({
         setMatchedProjects((prev) => prev.filter((m) => m.id !== matchId));
       } else {
         const data = await res.json();
-        alert(`Failed to dismiss match: ${data.error || "Server Error"}${data.details ? " - " + data.details : ""}`);
+        toast.show(`Failed to dismiss match: ${data.error || "Server Error"}${data.details ? " - " + data.details : ""}`);
       }
     } catch (err: any) {
       console.error(err);
-      alert(`Error dismissing match: ${err.message || "Connection failed"}`);
+      toast.show(`Error dismissing match: ${err.message || "Connection failed"}`);
     }
   };
 
@@ -225,11 +222,11 @@ export default function LeadDetailPanel({
         window.open(data.whatsappUrl, "_blank");
       } else {
         const data = await res.json();
-        alert(`Failed to generate pitch: ${data.error || "Server Error"}${data.details ? " - " + data.details : ""}`);
+        toast.show(`Failed to generate pitch: ${data.error || "Server Error"}${data.details ? " - " + data.details : ""}`);
       }
     } catch (err: any) {
       console.error(err);
-      alert(`Error generating pitch: ${err.message || "Connection failed"}`);
+      toast.show(`Error generating pitch: ${err.message || "Connection failed"}`);
     }
   };
 
@@ -249,7 +246,7 @@ export default function LeadDetailPanel({
       });
 
       if (res.ok) {
-        alert("WhatsApp message dispatched successfully!");
+        toast.show("WhatsApp message dispatched successfully!");
         // Refresh log list
         const logsRes = await fetch(`/api/admin/whatsapp/logs?leadId=${lead.id}`);
         if (logsRes.ok) {
@@ -258,11 +255,11 @@ export default function LeadDetailPanel({
         }
       } else {
         const err = await res.json();
-        alert(`Failed to send message: ${err.error || "Server Error"}${err.details ? " - " + err.details : ""}`);
+        toast.show(`Failed to send message: ${err.error || "Server Error"}${err.details ? " - " + err.details : ""}`);
       }
     } catch (err: any) {
       console.error(err);
-      alert(`Error sending WhatsApp message: ${err.message || "Connection failed"}`);
+      toast.show(`Error sending WhatsApp message: ${err.message || "Connection failed"}`);
     } finally {
       setIsSendingWa(false);
     }
@@ -283,7 +280,7 @@ export default function LeadDetailPanel({
       lead.notes = formattedNote;
       setNewNote("");
     } catch (err: any) {
-      alert(`Failed to save note: ${err.message || "Connection failed"}`);
+      toast.show(`Failed to save note: ${err.message || "Connection failed"}`);
     } finally {
       setIsSavingNote(false);
     }
@@ -719,7 +716,7 @@ export default function LeadDetailPanel({
                       return (
                         <div key={log.id} className="border border-slate-200 p-3 rounded bg-white space-y-2 text-xs">
                           <div className="flex items-center justify-between text-[9px] text-slate-400 font-bold uppercase tracking-wider">
-                            <span>{log.template.name}</span>
+                            <span>{log.template?.name ?? log.templateName ?? "Custom message"}</span>
                             <span className={`px-2 py-0.2 rounded border ${getStatusColor(log.status)}`}>{log.status}</span>
                           </div>
                           <p className="text-[10px] text-slate-600 leading-relaxed font-mono whitespace-pre-line bg-slate-50/50 p-2 rounded">

@@ -7,6 +7,11 @@ import prisma from '../prisma';
 
 const EXCLUDE = ['cricket', 'film', 'movie', 'election rally', 'weather'];
 
+/** City-specific exclusions — e.g. Hyderabad, Sindh (Pakistan) shares the name. */
+const CITY_EXCLUDE: Record<string, string[]> = {
+  hyderabad: ['sindh', 'karachi', 'pakistan'],
+};
+
 interface SeedCity {
   slug: string;
   name: string;
@@ -36,8 +41,8 @@ export async function seedCities(): Promise<number> {
   for (const c of SEED_CITIES) {
     await prisma.newsCity.upsert({
       where: { slug: c.slug },
-      update: { name: c.name, stateCode: c.stateCode ?? null, displayOrder: c.displayOrder, queryTerms: c.queryTerms, excludeTerms: EXCLUDE, geoLat: c.geoLat ?? null, geoLng: c.geoLng ?? null, isActive: true },
-      create: { slug: c.slug, name: c.name, stateCode: c.stateCode ?? null, displayOrder: c.displayOrder, queryTerms: c.queryTerms, excludeTerms: EXCLUDE, geoLat: c.geoLat ?? null, geoLng: c.geoLng ?? null, isActive: true },
+      update: { name: c.name, stateCode: c.stateCode ?? null, displayOrder: c.displayOrder, queryTerms: c.queryTerms, excludeTerms: [...EXCLUDE, ...(CITY_EXCLUDE[c.slug] ?? [])], geoLat: c.geoLat ?? null, geoLng: c.geoLng ?? null, isActive: true },
+      create: { slug: c.slug, name: c.name, stateCode: c.stateCode ?? null, displayOrder: c.displayOrder, queryTerms: c.queryTerms, excludeTerms: [...EXCLUDE, ...(CITY_EXCLUDE[c.slug] ?? [])], geoLat: c.geoLat ?? null, geoLng: c.geoLng ?? null, isActive: true },
     });
   }
   return prisma.newsCity.count();

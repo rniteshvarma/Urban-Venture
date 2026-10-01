@@ -6,14 +6,14 @@
  *  - "OUR TAKE" is visually separated (saffron wash + left border) so it is
  *    unmistakable which words are ours vs the publisher's
  *  - the only outbound link is target=_blank rel="noopener nofollow"
- *  - the visual is generated (GeneratedNewsVisual), never a publisher image
+ *  - the visual is generated from the story's own facts (StoryVisual) — never a publisher or stock photo
  */
 
 import React from 'react';
 import Link from 'next/link';
 import { ExternalLink } from 'lucide-react';
 import type { NewsArticle, NewsSentiment } from '@prisma/client';
-import GeneratedNewsVisual from './GeneratedNewsVisual';
+import StoryVisual from './StoryVisual';
 import { relativeTime } from '@/lib/news/format';
 import { CATEGORY_LABEL } from '@/lib/news/categories';
 
@@ -51,12 +51,13 @@ export default function NewsCard({
       }}
     >
       <div style={{ aspectRatio: '16 / 9', width: '100%', overflow: 'hidden', flexShrink: 0 }}>
-        <GeneratedNewsVisual
-          seed={article.visualSeed}
-          category={article.category}
-          impactScore={article.impactScore}
+        <StoryVisual
           headline={article.headline}
+          blurb={article.providerBlurb}
+          category={article.category}
           sentiment={article.sentiment}
+          impactScore={article.impactScore}
+          authorities={article.authorities}
         />
       </div>
 
@@ -92,7 +93,7 @@ export default function NewsCard({
         {article.ourAnalysis && (
           <div style={{ background: 'var(--color-saffron-wash)', borderLeft: '3px solid var(--color-saffron)', borderRadius: 6, padding: '10px 12px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
             <div style={{ fontFamily: 'ui-monospace, monospace', fontSize: '0.6rem', letterSpacing: 1.4, color: 'var(--color-saffron-deep, var(--color-saffron))', textTransform: 'uppercase', marginBottom: 5 }}>
-              Our take
+              {article.analysisBy === 'rules' ? 'Why it matters' : 'Our take'}
             </div>
             <p style={{ margin: 0, fontSize: '0.83rem', lineHeight: 1.5, color: 'var(--color-text-mid)' }}>{article.ourAnalysis}</p>
           </div>

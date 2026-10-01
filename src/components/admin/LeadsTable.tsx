@@ -2,6 +2,7 @@
 
 import React from "react";
 import { User, ChevronRight, Check } from "lucide-react";
+import { PERSONA_META } from "@/lib/personas";
 
 interface Lead {
   id: string;
@@ -33,14 +34,9 @@ interface LeadsTableProps {
   onToggleRow: (id: string, checked: boolean) => void;
 }
 
-const PERSONA_CONFIGS: Record<string, { label: string; icon: string; bg: string; text: string; border: string }> = {
-  FIRST_TIME_BUYER: { label: "First-Time Buyer", icon: "🏠", bg: "bg-blue-50", text: "text-blue-700", border: "border-blue-100" },
-  NRI_INVESTOR: { label: "NRI Investor", icon: "✈️", bg: "bg-purple-50", text: "text-purple-700", border: "border-purple-100" },
-  LAND_SPECULATOR: { label: "Land Speculator", icon: "📈", bg: "bg-rose-50", text: "text-rose-700", border: "border-rose-100" },
-  RETIREMENT_PLANNER: { label: "Retirement Planner", icon: "👴", bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-100" },
-  HNI_PORTFOLIO_BUILDER: { label: "HNI Portfolio", icon: "💼", bg: "bg-amber-50", text: "text-amber-800", border: "border-amber-100" },
-  PROFESSIONAL_FIRST_HOME: { label: "Professional Home", icon: "💻", bg: "bg-cyan-50", text: "text-cyan-700", border: "border-cyan-100" }
-};
+const PERSONA_CONFIGS: Record<string, { label: string; icon: string; bg: string; text: string; border: string }> = Object.fromEntries(
+  Object.entries(PERSONA_META).map(([k, m]) => [k, { label: m.short, icon: m.icon, ...m.tw }])
+);
 
 const GRADE_CONFIGS: Record<string, { icon: string; color: string; label: string }> = {
   A: { icon: "🔥", color: "bg-rose-50 text-rose-700 border-rose-200", label: "Hot" },

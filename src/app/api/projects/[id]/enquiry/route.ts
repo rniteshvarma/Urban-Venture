@@ -18,7 +18,10 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
   const phone = String(body.phone ?? "").trim();
   const email = body.email ? String(body.email).trim() : null;
   const message = body.message ? String(body.message).trim() : null;
-  const budgetLakh = body.budgetLakh != null && body.budgetLakh !== "" ? Number(body.budgetLakh) : null;
+  // Budget is in lakh. A value above 1,00,000 "lakh" (₹10,000 Cr) can only be a
+  // rupee amount typed into the lakh field — convert it rather than store nonsense.
+  const rawBudget = body.budgetLakh != null && body.budgetLakh !== "" ? Number(body.budgetLakh) : null;
+  const budgetLakh = rawBudget == null || !Number.isFinite(rawBudget) || rawBudget <= 0 ? null : rawBudget > 100000 ? Math.round(rawBudget / 100000) : rawBudget;
 
   if (!name || !phone) return NextResponse.json({ error: "Name and phone are required." }, { status: 400 });
 

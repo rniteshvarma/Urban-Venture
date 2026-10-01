@@ -18,6 +18,7 @@ interface AnalyticsData {
   conversionFunnel: any[];
   personaDistribution?: any[];
   scoreGradeDistribution?: any[];
+  sourceAttribution?: Record<string, string | number>[];
 }
 
 interface PipelineAnalyticsData {
@@ -33,6 +34,21 @@ interface PipelineAnalyticsData {
     totalValueLakhs: number;
   }[];
   weeklyData: { week: string; count: number; valueLakhs: number }[];
+}
+
+/** True when a chart dataset has at least one non-zero number. */
+function hasData(rows: unknown): boolean {
+  if (!Array.isArray(rows) || rows.length === 0) return false;
+  return rows.some((r) => r && typeof r === "object" && Object.values(r as Record<string, unknown>).some((v) => typeof v === "number" && v > 0));
+}
+
+function NoData({ text }: { text: string }) {
+  return (
+    <div className="h-64 w-full flex flex-col items-center justify-center text-center px-6 rounded-2xl bg-[#FAF9FE] border border-dashed border-[#E8E5F5]">
+      <span className="text-sm font-semibold text-[#1A1A2E]">No data yet</span>
+      <span className="text-xs text-[#8A8A9E] mt-1 max-w-xs">{text}</span>
+    </div>
+  );
 }
 
 export default function AdminAnalyticsPage() {
@@ -151,7 +167,7 @@ export default function AdminAnalyticsPage() {
                     </div>
                     <ChevronRight size={16} className="text-[#8A8A9E]" />
                   </div>
-                  <CorridorHeatmap data={marketData.corridorPopularity} />
+                  {hasData(marketData.corridorPopularity) ? <CorridorHeatmap data={marketData.corridorPopularity} /> : <NoData text="Corridors appear here once buyers run AI research reports and get recommendations." />}
                 </div>
 
                 {/* Budget distribution Histogram */}
@@ -163,7 +179,7 @@ export default function AdminAnalyticsPage() {
                     </div>
                     <ChevronRight size={16} className="text-[#8A8A9E]" />
                   </div>
-                  <BudgetDistribution data={marketData.budgetDistribution} />
+                  {hasData(marketData.budgetDistribution) ? <BudgetDistribution data={marketData.budgetDistribution} /> : <NoData text="Budgets appear here as leads are captured." />}
                 </div>
 
                 {/* Horizon Distribution Chart */}
@@ -203,7 +219,7 @@ export default function AdminAnalyticsPage() {
                     </div>
                     <ChevronRight size={16} className="text-[#8A8A9E]" />
                   </div>
-                  <ConversionFunnel data={marketData.conversionFunnel} />
+                  {hasData(marketData.conversionFunnel) ? <ConversionFunnel data={marketData.conversionFunnel} /> : <NoData text="The funnel fills in as searches turn into leads, site visits and conversions." />}
                 </div>
 
                 {/* AI Buyer Persona Segment Split */}
@@ -216,7 +232,8 @@ export default function AdminAnalyticsPage() {
                     <ChevronRight size={16} className="text-[#8A8A9E]" />
                   </div>
                   <div className="h-64 w-full pt-2">
-                    {isHydrated && marketData.personaDistribution && (
+                    {isHydrated && !hasData(marketData.personaDistribution) && <NoData text="Personas appear once leads are classified." />}
+                    {isHydrated && hasData(marketData.personaDistribution) && (
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={marketData.personaDistribution} margin={{ top: 10, right: 10, left: -25, bottom: 5 }}>
                           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F0EDFA" />
@@ -224,7 +241,7 @@ export default function AdminAnalyticsPage() {
                           <YAxis tick={{ fontSize: 10, fill: "#8A8A9E" }} axisLine={false} tickLine={false} />
                           <Tooltip contentStyle={{ backgroundColor: "#FFFFFF", border: "none", borderRadius: "14px", fontFamily: "Inter", boxShadow: "0 8px 30px rgba(0,0,0,0.08)" }} />
                           <Bar dataKey="value" fill="#5B4FE0" radius={[6, 6, 0, 0]} barSize={28} name="Leads">
-                            {marketData.personaDistribution.map((entry, index) => {
+                            {(marketData.personaDistribution ?? []).map((entry, index) => {
                               const colors = ["#7C6EF5", "#5B4FE0", "#3B82F6", "#10B981", "#F59E0B", "#8B5CF6"];
                               return <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />;
                             })}
@@ -245,7 +262,8 @@ export default function AdminAnalyticsPage() {
                     <ChevronRight size={16} className="text-[#8A8A9E]" />
                   </div>
                   <div className="h-64 w-full pt-2">
-                    {isHydrated && marketData.scoreGradeDistribution && (
+                    {isHydrated && !hasData(marketData.scoreGradeDistribution) && <NoData text="Grades appear once captured leads have been scored." />}
+                    {isHydrated && hasData(marketData.scoreGradeDistribution) && (
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={marketData.scoreGradeDistribution} margin={{ top: 10, right: 10, left: -25, bottom: 5 }}>
                           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F0EDFA" />
@@ -253,7 +271,7 @@ export default function AdminAnalyticsPage() {
                           <YAxis tick={{ fontSize: 10, fill: "#8A8A9E" }} axisLine={false} tickLine={false} />
                           <Tooltip contentStyle={{ backgroundColor: "#FFFFFF", border: "none", borderRadius: "14px", fontFamily: "Inter", boxShadow: "0 8px 30px rgba(0,0,0,0.08)" }} />
                           <Bar dataKey="value" fill="#10B981" radius={[6, 6, 0, 0]} barSize={36} name="Leads">
-                            {marketData.scoreGradeDistribution.map((entry, index) => {
+                            {(marketData.scoreGradeDistribution ?? []).map((entry, index) => {
                               const colors = { "Grade A": "#E11D48", "Grade B": "#F59E0B", "Grade C": "#3B82F6", "Grade D": "#64748B" };
                               const key = entry.name as keyof typeof colors;
                               return <Cell key={`cell-${index}`} fill={colors[key] || "#94A3B8"} />;
@@ -275,9 +293,10 @@ export default function AdminAnalyticsPage() {
                     <ChevronRight size={16} className="text-[#8A8A9E]" />
                   </div>
                   <div className="h-72 w-full pt-2">
-                    {isHydrated && (marketData as any).sourceAttribution && (
+                    {isHydrated && !hasData(marketData.sourceAttribution) && <NoData text="Channel attribution appears once leads arrive from connected sources (portals, WhatsApp, website)." />}
+                    {isHydrated && hasData(marketData.sourceAttribution) && (
                       <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={(marketData as any).sourceAttribution} margin={{ top: 10, right: 10, left: -20, bottom: 5 }}>
+                        <BarChart data={marketData.sourceAttribution} margin={{ top: 10, right: 10, left: -20, bottom: 5 }}>
                           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F0EDFA" />
                           <XAxis dataKey="month" tick={{ fontSize: 10, fill: "#8A8A9E" }} tickLine={false} axisLine={{ stroke: "#F0EDFA" }} />
                           <YAxis tick={{ fontSize: 10, fill: "#8A8A9E" }} axisLine={false} tickLine={false} />

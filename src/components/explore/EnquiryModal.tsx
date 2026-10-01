@@ -7,6 +7,7 @@
 
 import { useEffect, useState } from "react";
 import { X, CheckCircle2 } from "lucide-react";
+import { formatLakh } from "@/lib/format";
 
 export default function EnquiryModal({ projectId, projectName, onClose }: { projectId: string; projectName: string; onClose: () => void }) {
   const [name, setName] = useState("");
@@ -74,7 +75,15 @@ export default function EnquiryModal({ projectId, projectName, onClose }: { proj
               <div><label style={lbl}>Your name *</label><input value={name} onChange={(e) => setName(e.target.value)} style={inp} /></div>
               <div><label style={lbl}>Phone *</label><input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+91…" style={inp} /></div>
               <div><label style={lbl}>Email</label><input value={email} onChange={(e) => setEmail(e.target.value)} type="email" style={inp} /></div>
-              <div><label style={lbl}>Budget (₹ Lakh)</label><input value={budgetLakh} onChange={(e) => setBudgetLakh(e.target.value)} type="number" style={inp} /></div>
+              <div>
+                <label style={lbl}>Budget (₹ Lakh)</label>
+                <input value={budgetLakh} onChange={(e) => setBudgetLakh(e.target.value)} type="number" inputMode="numeric" min={1} placeholder="e.g. 50 for ₹50 lakh" style={inp} />
+                {budgetLakh && Number(budgetLakh) > 0 && (
+                  <span style={{ fontSize: "0.72rem", color: "var(--color-text-lo)" }}>
+                    = {Number(budgetLakh) > 100000 ? formatLakh(Math.round(Number(budgetLakh) / 100000)) : formatLakh(Number(budgetLakh))}
+                  </span>
+                )}
+              </div>
               <div><label style={lbl}>Message</label><textarea value={message} onChange={(e) => setMessage(e.target.value)} rows={3} placeholder="Anything you'd like to ask?" style={{ ...inp, resize: "vertical" }} /></div>
             </div>
 

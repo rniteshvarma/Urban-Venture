@@ -17,6 +17,28 @@
     {
       "path": "/api/cron/listings-weekly",
       "schedule": "0 4 * * 1"
+    },
+    {
+      "path": "/api/cron/infra-crawl",
+      "schedule": "30 20 * * *"
+    },
+    {
+      "path": "/api/cron/whatsapp-maintenance",
+      "schedule": "0 1 * * *"
     }
-  ]
+  ],
+  "functions": {
+    "src/app/api/cron/infra-crawl/route.ts": {
+      "regions": [
+        "bom1"
+      ],
+      "maxDuration": 300
+    },
+    "src/app/api/admin/infra-intel/runs/[id]/process/route.ts": {
+      "regions": [
+        "bom1"
+      ],
+      "maxDuration": 300
+    }
+  }
 }

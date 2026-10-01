@@ -1,7 +1,53 @@
 import prisma from "./prisma";
 import { resolveMergeTags } from "./whatsapp/merge-tags";
 import { sendBroadcastEmail } from "./email/broadcast-sender";
-import { WAStatus, EmailStatus, BroadcastStatus } from "@prisma/client";
+import { WAStatus, EmailStatus, BroadcastStatus, type Broadcast } from "@prisma/client";
+import { resolveTemplateParams } from "./whatsapp/merge-tags";
+import { sendTemplateMessage, sendTextMessage } from "./whatsapp/send";
+import { isPlaceholderEmail } from "./placeholder-email";
+
+/**
+ * One broadcast message to one lead via the active WhatsApp provider. Uses
+ * the linked WABA template when the broadcast's template has one (the only
+ * way to reach people outside the 24h window); otherwise sends the text.
+ * The idempotency context is broadcast+lead, so retry-failed never re-sends
+ * to someone who already got it.
+ */
+async function sendBroadcastWhatsApp(
+  broadcast: Pick<Broadcast, "id" | "templateId" | "whatsappMessage">,
+  leadId: string,
+  phone: string
+): Promise<{ ok: boolean; providerMessageId?: string; error?: string }> {
+  const template = broadcast.templateId
+    ? await prisma.whatsAppTemplate.findUnique({ where: { id: broadcast.templateId } })
+    : null;
+  const ctx = {
+    feature: "broadcast" as const,
+    contextId: `broadcast:${broadcast.id}:${leadId}`,
+    dateBucket: "once",
+    leadId,
+    templateId: template?.id ?? null,
+    metadata: { leadId, broadcastId: broadcast.id },
+  };
+  const text = await resolveMergeTags(broadcast.whatsappMessage || template?.message || "", leadId);
+  const outcome = template?.wabaTemplateName
+    ? await sendTemplateMessage({
+        ...ctx,
+        to: phone,
+        templateName: template.wabaTemplateName,
+        languageCode: template.wabaLanguage,
+        bodyParams: await resolveTemplateParams(template.wabaParamTags, leadId),
+        category: template.category === "UTILITY" ? "UTILITY" : "MARKETING",
+        previewText: text,
+      })
+    : await sendTextMessage({ ...ctx, to: phone, text });
+  // A DUPLICATE of a message that went out earlier counts as sent.
+  return {
+    ok: outcome.ok,
+    providerMessageId: outcome.providerMessageId,
+    error: outcome.ok ? undefined : `${outcome.errorCode ?? "FAILED"}: ${outcome.errorMessage ?? "send failed"}`,
+  };
+}
 
 export async function processBroadcastSend(broadcastId: string) {
   try {
@@ -53,72 +99,17 @@ export async function processBroadcastSend(broadcastId: string) {
         try {
           // --- WHATSAPP DISPATCH ---
           if (needsWhatsapp && lead.phone && !lead.whatsappOptOut) {
-            const templateText = broadcast.whatsappMessage || "";
-            const resolvedWAMessage = await resolveMergeTags(templateText, lead.id);
-
-            let cleanPhone = lead.phone.replace(/\D/g, "");
-            if (cleanPhone.length === 10 && (cleanPhone.startsWith("7") || cleanPhone.startsWith("8") || cleanPhone.startsWith("9"))) {
-              cleanPhone = "91" + cleanPhone;
-            }
-
-            // Create WhatsAppLog for CRM lead audit timeline
-            const log = await prisma.whatsAppLog.create({
-              data: {
-                leadId: lead.id,
-                templateId: broadcast.templateId || "",
-                message: resolvedWAMessage,
-                status: WAStatus.PENDING,
-              }
-            });
-
-            const endpoint = process.env.WATI_API_ENDPOINT;
-            const token = process.env.WATI_API_TOKEN;
-            const isMockMode = !endpoint || endpoint.includes("XXXXX") || endpoint.includes("mock") || !token || token.includes("mock");
-
-            if (isMockMode) {
-              waMsgId = `mock-broadcast-${Math.random().toString(36).substr(2, 9)}`;
-              waStatus = WAStatus.SENT;
-              
-              await prisma.whatsAppLog.update({
-                where: { id: log.id },
-                data: { status: WAStatus.SENT, waMessageId: waMsgId, sentAt: new Date() }
-              });
-            } else {
-              const response = await fetch(`${endpoint}/api/v1/sendSessionMessage/${cleanPhone}?messageText=${encodeURIComponent(resolvedWAMessage)}`, {
-                method: "POST",
-                headers: {
-                  "Authorization": `Bearer ${token}`,
-                  "Content-Type": "application/json"
-                }
-              });
-
-              if (response.ok) {
-                const responseJson = await response.json();
-                waMsgId = responseJson?.message?.id || responseJson?.id || "wati-broadcast-id";
-                waStatus = WAStatus.SENT;
-
-                await prisma.whatsAppLog.update({
-                  where: { id: log.id },
-                  data: { status: WAStatus.SENT, waMessageId: waMsgId, sentAt: new Date() }
-                });
-              } else {
-                const errorText = await response.text();
-                waStatus = WAStatus.FAILED;
-                errorMsg = `WhatsApp fail: ${errorText}`;
-
-                await prisma.whatsAppLog.update({
-                  where: { id: log.id },
-                  data: { status: WAStatus.FAILED }
-                });
-              }
-            }
+            const wa = await sendBroadcastWhatsApp(broadcast, lead.id, lead.phone);
+            waStatus = wa.ok ? WAStatus.SENT : WAStatus.FAILED;
+            waMsgId = wa.providerMessageId ?? null;
+            if (!wa.ok) errorMsg = `WhatsApp fail: ${wa.error}`;
           } else if (needsWhatsapp) {
             waStatus = WAStatus.FAILED;
             errorMsg = lead.whatsappOptOut ? "WhatsApp Opted Out" : "Missing Phone Number";
           }
 
           // --- EMAIL DISPATCH ---
-          if (needsEmail && lead.email && !lead.emailOptOut) {
+          if (needsEmail && lead.email && !lead.emailOptOut && !isPlaceholderEmail(lead.email)) {
             const subjectText = broadcast.emailSubject || "Property Tiger Investment Update";
             const bodyText = broadcast.emailBody || "";
 
@@ -185,12 +176,7 @@ export async function processBroadcastSend(broadcastId: string) {
 
       // Increment templates sentCount if templateId is present
       if (broadcast.templateId) {
-        if (channel === "WHATSAPP" || channel === "BOTH") {
-          await prisma.whatsAppTemplate.updateMany({
-            where: { id: broadcast.templateId },
-            data: { sentCount: { increment: batch.length } }
-          }).catch(() => null);
-        }
+        // (WhatsApp template counts are incremented per successful send by the send service.)
         if (channel === "EMAIL" || channel === "BOTH") {
           await prisma.emailTemplate.updateMany({
             where: { id: broadcast.templateId },
@@ -293,73 +279,21 @@ export async function processBroadcastRetry(broadcastId: string) {
         try {
           // --- RETRY WHATSAPP ---
           if (waFailed && lead.phone && !lead.whatsappOptOut) {
-            const templateText = broadcast.whatsappMessage || "";
-            const resolvedWAMessage = await resolveMergeTags(templateText, lead.id);
-
-            let cleanPhone = lead.phone.replace(/\D/g, "");
-            if (cleanPhone.length === 10 && (cleanPhone.startsWith("7") || cleanPhone.startsWith("8") || cleanPhone.startsWith("9"))) {
-              cleanPhone = "91" + cleanPhone;
-            }
-
-            const log = await prisma.whatsAppLog.create({
-              data: {
-                leadId: lead.id,
-                templateId: broadcast.templateId || "",
-                message: resolvedWAMessage,
-                status: WAStatus.PENDING,
-              }
-            });
-
-            const endpoint = process.env.WATI_API_ENDPOINT;
-            const token = process.env.WATI_API_TOKEN;
-            const isMockMode = !endpoint || endpoint.includes("XXXXX") || endpoint.includes("mock") || !token || token.includes("mock");
-
-            if (isMockMode) {
-              waMsgId = `mock-broadcast-${Math.random().toString(36).substr(2, 9)}`;
-              waStatus = WAStatus.SENT;
+            const wa = await sendBroadcastWhatsApp(broadcast, lead.id, lead.phone);
+            waStatus = wa.ok ? WAStatus.SENT : WAStatus.FAILED;
+            waMsgId = wa.providerMessageId ?? waMsgId;
+            if (wa.ok) {
               errorMsg = errorMsg.replace(/WhatsApp fail:[^|]*/g, "").trim();
-
-              await prisma.whatsAppLog.update({
-                where: { id: log.id },
-                data: { status: WAStatus.SENT, waMessageId: waMsgId, sentAt: new Date() }
-              });
             } else {
-              const response = await fetch(`${endpoint}/api/v1/sendSessionMessage/${cleanPhone}?messageText=${encodeURIComponent(resolvedWAMessage)}`, {
-                method: "POST",
-                headers: {
-                  "Authorization": `Bearer ${token}`,
-                  "Content-Type": "application/json"
-                }
-              });
-
-              if (response.ok) {
-                const responseJson = await response.json();
-                waMsgId = responseJson?.message?.id || responseJson?.id || "wati-broadcast-id";
-                waStatus = WAStatus.SENT;
-                errorMsg = errorMsg.replace(/WhatsApp fail:[^|]*/g, "").trim();
-
-                await prisma.whatsAppLog.update({
-                  where: { id: log.id },
-                  data: { status: WAStatus.SENT, waMessageId: waMsgId, sentAt: new Date() }
-                });
-              } else {
-                const errorText = await response.text();
-                waStatus = WAStatus.FAILED;
-                const newFailMsg = `WhatsApp fail: ${errorText}`;
-                errorMsg = errorMsg.includes("WhatsApp fail:") 
-                  ? errorMsg.replace(/WhatsApp fail:[^|]*/g, newFailMsg)
-                  : errorMsg ? `${errorMsg} | ${newFailMsg}` : newFailMsg;
-
-                await prisma.whatsAppLog.update({
-                  where: { id: log.id },
-                  data: { status: WAStatus.FAILED }
-                });
-              }
+              const newFailMsg = `WhatsApp fail: ${wa.error}`;
+              errorMsg = errorMsg.includes("WhatsApp fail:")
+                ? errorMsg.replace(/WhatsApp fail:[^|]*/g, newFailMsg)
+                : errorMsg ? `${errorMsg} | ${newFailMsg}` : newFailMsg;
             }
           }
 
           // --- RETRY EMAIL ---
-          if (emailFailed && lead.email && !lead.emailOptOut) {
+          if (emailFailed && lead.email && !lead.emailOptOut && !isPlaceholderEmail(lead.email)) {
             const subjectText = broadcast.emailSubject || "Property Tiger Investment Update";
             const bodyText = broadcast.emailBody || "";
 

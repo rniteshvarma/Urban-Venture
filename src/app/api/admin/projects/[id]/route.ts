@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { z } from "zod";
+import { listingFitFields, withFitDefaults } from "@/lib/listing-fit";
 
 const projectUpdateSchema = z.object({
   name: z.string().min(1).optional(),
@@ -22,6 +23,7 @@ const projectUpdateSchema = z.object({
   brochureUrl: z.string().optional().nullable(),
   imageUrls: z.array(z.string()).optional(),
   status: z.enum(["ACTIVE", "SOLD_OUT", "UPCOMING", "ARCHIVED"]).optional(),
+  ...listingFitFields,
 });
 
 export async function PUT(
@@ -48,7 +50,7 @@ export async function PUT(
 
     const updatedProject = await prisma.project.update({
       where: { id },
-      data: parse.data
+      data: withFitDefaults(parse.data, currentProject)
     });
 
     return NextResponse.json({ success: true, project: updatedProject });

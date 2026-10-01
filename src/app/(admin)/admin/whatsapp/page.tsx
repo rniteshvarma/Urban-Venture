@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { 
   MessageSquare, 
   Send, 
@@ -15,8 +16,12 @@ import {
   ToggleLeft,
   ToggleRight,
   ChevronRight,
-  X
+  X,
+  Link2,
+  Settings2,
+  List
 } from "lucide-react";
+import { toast } from "@/lib/toast";
 
 interface Template {
   id: string;
@@ -26,7 +31,22 @@ interface Template {
   isActive: boolean;
   sentCount: number;
   createdAt: string;
+  wabaTemplateName: string | null;
+  wabaLanguage: string;
+  category: string;
+  wabaParamTags: string[];
 }
+
+type WabaDraft = { wabaTemplateName: string; wabaLanguage: string; category: string; wabaParamTags: string };
+
+const emptyWaba: WabaDraft = { wabaTemplateName: "", wabaLanguage: "en", category: "UTILITY", wabaParamTags: "" };
+
+const wabaPayload = (d: WabaDraft) => ({
+  wabaTemplateName: d.wabaTemplateName.trim(),
+  wabaLanguage: d.wabaLanguage.trim() || "en",
+  category: d.category,
+  wabaParamTags: d.wabaParamTags.split(",").map((t) => t.trim()).filter(Boolean),
+});
 
 interface Log {
   id: string;
@@ -40,7 +60,10 @@ interface Log {
   lead: {
     name: string;
     phone: string;
-  };
+  } | null;
+  toPhone: string | null;
+  normalisedError: string | null;
+  dryRun: boolean;
   template: {
     name: string;
   } | null;
@@ -72,6 +95,10 @@ export default function AdminWhatsAppPage() {
   const [newTemplateName, setNewTemplateName] = useState("");
   const [newTemplateTrigger, setNewTemplateTrigger] = useState("CUSTOM");
   const [newTemplateMessage, setNewTemplateMessage] = useState("");
+
+  const [newWaba, setNewWaba] = useState<WabaDraft>(emptyWaba);
+  const [linking, setLinking] = useState<Template | null>(null);
+  const [linkDraft, setLinkDraft] = useState<WabaDraft>(emptyWaba);
 
   const [isSaving, setIsSaving] = useState(false);
 
@@ -153,7 +180,8 @@ export default function AdminWhatsAppPage() {
           name: newTemplateName,
           trigger: newTemplateTrigger,
           message: newTemplateMessage,
-          isActive: true
+          isActive: true,
+          ...wabaPayload(newWaba)
         }),
       });
 
@@ -162,14 +190,49 @@ export default function AdminWhatsAppPage() {
         setNewTemplateName("");
         setNewTemplateMessage("");
         setNewTemplateTrigger("CUSTOM");
+        setNewWaba(emptyWaba);
         loadTemplates();
       } else {
         const errData = await res.json().catch(() => ({}));
-        alert(`Failed to create template: ${errData.error || "Failed to create template."}${errData.details ? " - " + errData.details : ""}`);
+        toast.show(`Failed to create template: ${errData.error || "Failed to create template."}${errData.details ? " - " + errData.details : ""}`);
       }
     } catch (err: any) {
       console.error(err);
-      alert(`Error creating template: ${err.message || "Connection failed"}`);
+      toast.show(`Error creating template: ${err.message || "Connection failed"}`);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const openLink = (t: Template) => {
+    setLinking(t);
+    setLinkDraft({
+      wabaTemplateName: t.wabaTemplateName ?? "",
+      wabaLanguage: t.wabaLanguage || "en",
+      category: t.category || "UTILITY",
+      wabaParamTags: (t.wabaParamTags ?? []).join(", "),
+    });
+  };
+
+  const handleSaveLink = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!linking) return;
+    setIsSaving(true);
+    try {
+      const res = await fetch(`/api/admin/whatsapp/templates/${linking.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(wabaPayload(linkDraft)),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const issue = data?.details?.wabaTemplateName?._errors?.[0];
+        toast.error(issue || data.error || "Could not save the WABA link");
+        return;
+      }
+      setTemplates((prev) => prev.map((t) => (t.id === linking.id ? { ...t, ...data.template } : t)));
+      toast.success(linkDraft.wabaTemplateName.trim() ? "Linked to WABA template" : "WABA link removed");
+      setLinking(null);
     } finally {
       setIsSaving(false);
     }
@@ -203,7 +266,13 @@ export default function AdminWhatsAppPage() {
           </h1>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <Link href="/admin/settings/whatsapp" className="crm-btn-secondary text-xs">
+            <Settings2 size={14} className="text-[#5B4FE0]" /> Provider &amp; spend
+          </Link>
+          <Link href="/admin/whatsapp/logs" className="crm-btn-secondary text-xs">
+            <List size={14} className="text-[#5B4FE0]" /> All logs
+          </Link>
           <button
             onClick={loadAllData}
             className="crm-btn-secondary text-xs p-2.5"
@@ -266,6 +335,9 @@ export default function AdminWhatsAppPage() {
                     <div className="flex items-center gap-2">
                       <button 
                         onClick={() => handleToggleActive(t)}
+                        role="switch"
+                        aria-checked={t.isActive}
+                        aria-label={`${t.isActive ? "Deactivate" : "Activate"} ${t.name ?? "template"}`}
                         className="text-[#8A8A9E] hover:text-[#1A1A2E] transition-colors focus:outline-none"
                       >
                         {t.isActive ? (
@@ -281,17 +353,41 @@ export default function AdminWhatsAppPage() {
                   <p className="mt-4 text-xs text-[#1A1A2E] font-mono leading-relaxed bg-[#F9F8FD] p-4 rounded-xl border border-[#F0EDFA] whitespace-pre-line text-[11px]">
                     {t.message}
                   </p>
+
+                  {t.wabaTemplateName ? (
+                    <div className="mt-3 rounded-xl border border-emerald-100 bg-emerald-50/60 px-4 py-3 text-[11px] text-emerald-900">
+                      <span className="font-bold">Sends as WABA template</span>{" "}
+                      <code className="font-mono">{t.wabaTemplateName}</code> ({t.wabaLanguage}) · {t.category}
+                      {t.wabaParamTags?.length > 0 && (
+                        <span className="block mt-1 text-emerald-800/80">
+                          Params: {t.wabaParamTags.map((tag, i) => `{{${i + 1}}} = ${tag}`).join(" · ")}
+                        </span>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="mt-3 rounded-xl border border-amber-100 bg-amber-50/70 px-4 py-3 text-[11px] text-amber-900">
+                      <span className="font-bold">Free-form text.</span> WhatsApp only delivers this inside the 24-hour reply window. Link an approved WABA template to reach leads any time.
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex justify-between items-center text-xs border-t border-[#F5F3FB] pt-3 text-[#8A8A9E]">
                   <span>Dispatched: <strong className="text-[#1A1A2E] font-bold">{t.sentCount}</strong> times</span>
                   
-                  <button
-                    onClick={() => handleDeleteTemplate(t.id)}
-                    className="crm-btn-ghost text-rose-600 text-xs px-3 py-1.5"
-                  >
-                    <Trash2 size={13} /> Delete
-                  </button>
+                  <span className="flex items-center gap-1">
+                    <button
+                      onClick={() => openLink(t)}
+                      className="crm-btn-ghost text-[#5B4FE0] text-xs px-3 py-1.5"
+                    >
+                      <Link2 size={13} /> {t.wabaTemplateName ? "Edit link" : "Link WABA template"}
+                    </button>
+                    <button
+                      onClick={() => handleDeleteTemplate(t.id)}
+                      className="crm-btn-ghost text-rose-600 text-xs px-3 py-1.5"
+                    >
+                      <Trash2 size={13} /> Delete
+                    </button>
+                  </span>
                 </div>
               </div>
             ))}
@@ -317,8 +413,8 @@ export default function AdminWhatsAppPage() {
                   {logs.map((log) => (
                     <tr key={log.id}>
                       <td className="font-bold text-[#1A1A2E]">
-                        {log.lead.name}
-                        <span className="block text-[10px] text-[#8A8A9E] font-normal mt-0.5">{log.lead.phone}</span>
+                        {log.lead?.name ?? "—"}
+                        <span className="block text-[10px] text-[#8A8A9E] font-normal mt-0.5">{log.lead?.phone ?? log.toPhone}</span>
                       </td>
                       <td className="text-[#1A1A2E] font-semibold">
                         {log.template?.name || "Custom manual Message"}
@@ -326,7 +422,11 @@ export default function AdminWhatsAppPage() {
                       <td className="max-w-[240px] truncate text-[11px] text-[#6E6D8A] font-mono" title={log.message}>
                         {log.message}
                       </td>
-                      <td>{getStatusBadge(log.status)}</td>
+                      <td>
+                        {getStatusBadge(log.status)}
+                        {log.normalisedError && <span className="block mt-1 text-[9px] font-bold text-rose-700">{log.normalisedError}</span>}
+                        {log.dryRun && <span className="block mt-1 text-[9px] font-bold text-amber-700">DRY RUN</span>}
+                      </td>
                       <td className="text-[#8A8A9E]">{new Date(log.createdAt).toLocaleString("en-IN")}</td>
                       <td className="text-right text-[10px] text-[#8A8A9E] space-y-0.5">
                         {log.deliveredAt && (
@@ -415,6 +515,8 @@ export default function AdminWhatsAppPage() {
                 </div>
               </div>
 
+              <WabaFields draft={newWaba} onChange={setNewWaba} />
+
               <div className="flex justify-end gap-3 pt-3">
                 <button
                   type="button"
@@ -435,6 +537,66 @@ export default function AdminWhatsAppPage() {
           </div>
         </div>
       )}
+
+      {/* Link WABA Template Modal */}
+      {linking && (
+        <div className="fixed inset-0 bg-[#1A1A2E]/40 z-50 flex items-center justify-center p-4 backdrop-blur-xs">
+          <div className="crm-card bg-white w-full max-w-lg shadow-2xl p-6 space-y-5 animate-scale-in">
+            <div className="flex items-center justify-between pb-3 border-b border-[#F0EDFA]">
+              <h2 className="font-display font-bold text-[#1A1A2E] text-base">Link “{linking.name}” to a WABA template</h2>
+              <button onClick={() => setLinking(null)} aria-label="Close" className="text-[#8A8A9E] hover:text-[#1A1A2E] p-1 rounded-full hover:bg-[#F4F0FF]">
+                <X size={18} />
+              </button>
+            </div>
+            <form onSubmit={handleSaveLink} className="space-y-4 text-xs">
+              <WabaFields draft={linkDraft} onChange={setLinkDraft} open />
+              <div className="flex justify-end gap-3 pt-1">
+                <button type="button" onClick={() => setLinking(null)} className="crm-btn-secondary px-5 py-2 text-xs">Cancel</button>
+                <button type="submit" disabled={isSaving} className="crm-btn-primary px-5 py-2 text-xs">{isSaving ? "Saving..." : "Save link"}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
+  );
+}
+
+const fieldCls = "w-full bg-[#F9F8FD] border border-[#E8E5F5] rounded-full px-4 py-2.5 text-xs text-[#1A1A2E] focus:outline-none focus:border-[#5B4FE0]";
+const labelCls = "block font-bold text-[#8A8A9E] uppercase tracking-wider text-[10px]";
+
+/** The WABA link fields, shared by the add and link modals. */
+function WabaFields({ draft, onChange, open = false }: { draft: WabaDraft; onChange: (d: WabaDraft) => void; open?: boolean }) {
+  const set = (k: keyof WabaDraft) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => onChange({ ...draft, [k]: e.target.value });
+  return (
+    <details open={open} className="rounded-2xl border border-[#F0EDFA] bg-[#FCFBFF] p-4 space-y-3 [&_summary]:cursor-pointer">
+      <summary className="font-bold text-[#1A1A2E] text-xs">WABA template (optional)</summary>
+      <p className="text-[11px] text-[#6E6D8A] leading-relaxed mt-2">
+        Use the exact name of a template approved on your WhatsApp Business Account. Leave blank to send the message above as free-form text (24-hour window only).
+      </p>
+      <div className="grid grid-cols-1 sm:grid-cols-[1fr_90px] gap-3">
+        <label className="space-y-1.5">
+          <span className={labelCls}>Template name</span>
+          <input value={draft.wabaTemplateName} onChange={set("wabaTemplateName")} placeholder="e.g. enquiry_received_v1" className={`${fieldCls} font-mono`} />
+        </label>
+        <label className="space-y-1.5">
+          <span className={labelCls}>Language</span>
+          <input value={draft.wabaLanguage} onChange={set("wabaLanguage")} placeholder="en" className={`${fieldCls} font-mono`} />
+        </label>
+      </div>
+      <label className="space-y-1.5 block">
+        <span className={labelCls}>Category</span>
+        <select value={draft.category} onChange={set("category")} className={fieldCls}>
+          <option value="UTILITY">Utility — transactional (≈ ₹0.13)</option>
+          <option value="MARKETING">Marketing (≈ ₹0.86)</option>
+          <option value="AUTHENTICATION">Authentication (≈ ₹0.13)</option>
+        </select>
+      </label>
+      <label className="space-y-1.5 block">
+        <span className={labelCls}>Parameters, in order</span>
+        <input value={draft.wabaParamTags} onChange={set("wabaParamTags")} placeholder="lead_name, project_name" className={`${fieldCls} font-mono`} />
+        <span className="block text-[10px] text-[#8A8A9E]">Merge tags that fill {"{{1}}"}, {"{{2}}"}… — comma separated.</span>
+      </label>
+    </details>
   );
 }

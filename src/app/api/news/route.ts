@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
         : [{ isPinned: 'desc' }, { publishedAt: 'desc' }];
 
     const where = await buildFeedWhere({
-      cityScope: city,
+      ...(city === 'india' ? {} : { cityScope: city }),
       ...(category ? { category } : {}),
       ...(minImpact ? { impactScore: { gte: minImpact } } : {}),
     });

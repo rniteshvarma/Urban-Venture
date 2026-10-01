@@ -10,26 +10,26 @@ datasource db {
 }
 
 model User {
-  id            String   @id @default(cuid())
-  name          String?
-  email         String   @unique
-  password      String?  // Admin/Client credentials password (bcrypt). Reused as passwordHash.
-  phone         String?  // uniqueness enforced in app auth logic (see resolveLeadIdentity/signup)
-  role          Role     @default(CLIENT)
-  createdAt     DateTime @default(now())
+  id        String   @id @default(cuid())
+  name      String?
+  email     String   @unique
+  password  String? // Admin/Client credentials password (bcrypt). Reused as passwordHash.
+  phone     String? // uniqueness enforced in app auth logic (see resolveLeadIdentity/signup)
+  role      Role     @default(CLIENT)
+  createdAt DateTime @default(now())
 
   // ── Client portal auth (v4-extend, JWT sessions) ──
-  googleId      String?      // uniqueness enforced in the NextAuth signIn callback (Google linking)
+  googleId      String? // uniqueness enforced in the NextAuth signIn callback (Google linking)
   emailVerified DateTime?
   phoneVerified Boolean      @default(false)
   authProvider  AuthProvider @default(EMAIL)
 
   // ── Progressive profile ──
-  budget        Float?       // Lakhs
-  horizon       Int?         // years
-  preferredCity String?      @default("Hyderabad")
+  budget        Float? // Lakhs
+  horizon       Int? // years
+  preferredCity String?    @default("Hyderabad")
   riskAppetite  RiskLevel?
-  profileScore  Int          @default(0)   // 0-100 completeness
+  profileScore  Int        @default(0) // 0-100 completeness
 
   // ── Activity ──
   lastLoginAt          DateTime?
@@ -37,19 +37,23 @@ model User {
   updatedAt            DateTime  @default(now()) @updatedAt
 
   // ── Relations ──
-  leads         Lead[]
-  searches      Search[]
-  purchases     PropertyPurchase[]
-  savedProjects SavedProject[]
-  watchlist     CorridorWatch[]
-  savedReports  SavedReport[]
-  compareItems  CompareItem[]
-  passwordResetTokens PasswordResetToken[]
+  leads                   Lead[]
+  searches                Search[]
+  purchases               PropertyPurchase[]
+  savedProjects           SavedProject[]
+  watchlist               CorridorWatch[]
+  savedReports            SavedReport[]
+  compareItems            CompareItem[]
+  passwordResetTokens     PasswordResetToken[]
   emailVerificationTokens EmailVerificationToken[]
 
   // ── Seller Mode ──
   sellerProfile SellerProfile?
   ownedProjects Project[]      @relation("OwnedProjects")
+
+  // ── Weekly Intelligence Report ──
+  reportPreference ReportPreference?
+  weeklyReports    WeeklyReport[]
 
   @@index([googleId])
   @@index([phone])
@@ -67,26 +71,26 @@ enum AuthProvider {
 }
 
 model Project {
-  id                String   @id @default(cuid())
+  id                String             @id @default(cuid())
   name              String
   developer         String
-  corridor          String   // e.g., "Shadnagar", "Pharma City", "Sangareddy"
-  city              String   @default("Hyderabad")
+  corridor          String // e.g., "Shadnagar", "Pharma City", "Sangareddy"
+  city              String             @default("Hyderabad")
   minBudgetLakhs    Float
   maxBudgetLakhs    Float
   minHorizonYears   Int
   maxHorizonYears   Int
   riskLevel         RiskLevel
-  propertyType      String   // Residential, Commercial, Plots, Villa
+  propertyType      String // Residential, Commercial, Plots, Villa
   infraHighlights   String[] // Array of infra tags
   exitOpportunities String[]
   comparables       String[]
   description       String
   brochureUrl       String?
   imageUrls         String[]
-  status            ProjectStatus @default(ACTIVE)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  status            ProjectStatus      @default(ACTIVE)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
   leads             Lead[]
   matches           ProjectLeadMatch[]
   purchases         PropertyPurchase[]
@@ -94,8 +98,8 @@ model Project {
 
   // ── Brochure Ingestion: publication state + provenance ──
   // Existing projects default PUBLISHED so nothing changes; extracted ones start DRAFT.
-  reviewState     ReviewState   @default(PUBLISHED)
-  sourceType      ProjectSource @default(MANUAL)
+  reviewState     ReviewState    @default(PUBLISHED)
+  sourceType      ProjectSource  @default(MANUAL)
   extractionJobId String?
   extractionJob   ExtractionJob? @relation(fields: [extractionJobId], references: [id])
 
@@ -128,23 +132,30 @@ model Project {
   // exactly as before. See AGENTS "Seller Mode" spec.
 
   // Ownership — null for admin-created projects
-  ownerId        String?
-  owner          User?         @relation("OwnedProjects", fields: [ownerId], references: [id])
-  listingSource  ListingSource @default(ADMIN)
+  ownerId       String?
+  owner         User?         @relation("OwnedProjects", fields: [ownerId], references: [id])
+  listingSource ListingSource @default(ADMIN)
 
   // Review gate — admin projects default APPROVED, seller ones start DRAFT
   listingStatus  ListingStatus @default(APPROVED)
   submittedAt    DateTime?
   approvedAt     DateTime?
   reviewedBy     String?
-  reviewNote     String?          // internal, never shown to seller
-  sellerFeedback String?          // shown to the seller on CHANGES_REQUESTED
+  reviewNote     String? // internal, never shown to seller
+  sellerFeedback String? // shown to the seller on CHANGES_REQUESTED
   rejectReason   String?
 
   // Validity
-  expiresAt       DateTime?       // approvedAt + 90 days
-  lastRefreshedAt DateTime?       // seller confirmed still available
+  expiresAt       DateTime? // approvedAt + 90 days
+  lastRefreshedAt DateTime? // seller confirmed still available
   soldAt          DateTime?
+
+  // Persona matching — what this listing is and who it suits. Empty arrays mean
+  // "not tagged yet"; matching then falls back to the free-text propertyType.
+  listingTypes           ListingPropertyType[]
+  purposes               BuyPurpose[] // INVESTMENT and/or OWN_USE
+  targetPersonas         BuyerPersona[]
+  expectedRentalYieldPct Float?
 
   // Location precision (reuses existing latitude/longitude above)
   villageId        String?
@@ -161,20 +172,20 @@ model Project {
   roadWidthFeet      Int?
   ownershipType      String?
   landClassification String?
-  approvalStatus     String?         // HMDA_APPROVED | DTCP_APPROVED | UNAPPROVED ...
+  approvalStatus     String? // HMDA_APPROVED | DTCP_APPROVED | UNAPPROVED ...
   approvalNumber     String?
-  approvalVerified   Boolean @default(false)
-  reraVerified       Boolean @default(false)   // reuses existing reraNumber above
+  approvalVerified   Boolean  @default(false)
+  reraVerified       Boolean  @default(false) // reuses existing reraNumber above
 
   // Scoring
-  listingScore   Int?             // 0-100 composite
+  listingScore   Int? // 0-100 composite
   scoreBreakdown Json?
   scoredAt       DateTime?
 
   // Counters
-  viewCount    Int  @default(0)
-  saveCount    Int  @default(0)
-  enquiryCount Int  @default(0)
+  viewCount    Int @default(0)
+  saveCount    Int @default(0)
+  enquiryCount Int @default(0)
 
   scoreHistory ListingScoreSnapshot[]
   enquiries    ListingEnquiry[]
@@ -202,38 +213,38 @@ enum ProjectStatus {
 }
 
 model Lead {
-  id              String   @id @default(cuid())
-  userId          String?
-  user            User?    @relation(fields: [userId], references: [id])
-  projectId       String?
-  project         Project? @relation(fields: [projectId], references: [id])
-  name            String
-  email           String
-  phone           String
-  budget          Float    // in Lakhs
-  horizon         Int      // years
-  city            String
-  notes           String?
-  status          LeadStatus @default(NEW)
-  source          String   @default("portal") // portal, manual, import
-  assignedTo      String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  roadmap         LeadRoadmap?
-  
+  id         String       @id @default(cuid())
+  userId     String?
+  user       User?        @relation(fields: [userId], references: [id])
+  projectId  String?
+  project    Project?     @relation(fields: [projectId], references: [id])
+  name       String
+  email      String
+  phone      String
+  budget     Float // in Lakhs
+  horizon    Int // years
+  city       String
+  notes      String?
+  status     LeadStatus   @default(NEW)
+  source     String       @default("portal") // portal, manual, import
+  assignedTo String?
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  roadmap    LeadRoadmap?
+
   // Advanced Features Additions
-  persona            BuyerPersona?
-  personaScore       Int?
-  personaUpdatedAt   DateTime?
-  personaReason      String?
-  leadScore          Int?                @default(0)
-  leadScoreGrade     ScoreGrade?
-  leadScoreUpdatedAt DateTime?
-  leadScoreFactors   Json?
-  matches            ProjectLeadMatch[]
-  whatsAppLogs       WhatsAppLog[]
-  emailOptOut        Boolean             @default(false)
-  whatsappOptOut     Boolean             @default(false)
+  persona             BuyerPersona?
+  personaScore        Int?
+  personaUpdatedAt    DateTime?
+  personaReason       String?
+  leadScore           Int?                 @default(0)
+  leadScoreGrade      ScoreGrade?
+  leadScoreUpdatedAt  DateTime?
+  leadScoreFactors    Json?
+  matches             ProjectLeadMatch[]
+  whatsAppLogs        WhatsAppLog[]
+  emailOptOut         Boolean              @default(false)
+  whatsappOptOut      Boolean              @default(false)
   broadcastRecipients BroadcastRecipient[]
 
   // Omnichannel Lead Capture Additions
@@ -245,6 +256,16 @@ model Lead {
   aiExtractedProperty String?
   aiConfidenceScore   Int?
   purchases           PropertyPurchase[]
+
+  // Buyer profile (captured by the WhatsApp concierge, editable in the CRM)
+  purpose        BuyPurpose?
+  wantedTypes    ListingPropertyType[]
+  preferredAreas String[] // CorridorProfile slugs
+  budgetMinLakh  Float?
+  timeline       String? // READY | WITHIN_1Y | LATER (own use)
+  isNri          Boolean                 @default(false)
+  requirements   String? // "loan needed, gated community"
+  conversations  ConciergeConversation[]
 }
 
 enum LeadStatus {
@@ -258,57 +279,57 @@ enum LeadStatus {
 
 // ── INBOUND SOURCE CONFIG ─────────────────────────────────────────────────
 model InboundSource {
-  id              String        @id @default(cuid())
-  name            String        // "99acres", "MagicBricks", "WhatsApp Business"
-  type            SourceType
-  webhookToken    String        @unique @default(cuid())
-  isActive        Boolean       @default(true)
-  fieldMapping    Json?         // Maps portal's field names to Lead fields
-  autoAssignTo    String?       // Agent user ID for auto-assignment
-  defaultStatus   LeadStatus    @default(NEW)
-  dedupeWindow    Int           @default(24) // hours — block duplicate from same phone
-  totalReceived   Int           @default(0)
-  totalCreated    Int           @default(0)
-  totalDupes      Int           @default(0)
-  lastReceivedAt  DateTime?
-  createdAt       DateTime      @default(now())
-  logs            InboundLog[]
+  id             String       @id @default(cuid())
+  name           String // "99acres", "MagicBricks", "WhatsApp Business"
+  type           SourceType
+  webhookToken   String       @unique @default(cuid())
+  isActive       Boolean      @default(true)
+  fieldMapping   Json? // Maps portal's field names to Lead fields
+  autoAssignTo   String? // Agent user ID for auto-assignment
+  defaultStatus  LeadStatus   @default(NEW)
+  dedupeWindow   Int          @default(24) // hours — block duplicate from same phone
+  totalReceived  Int          @default(0)
+  totalCreated   Int          @default(0)
+  totalDupes     Int          @default(0)
+  lastReceivedAt DateTime?
+  createdAt      DateTime     @default(now())
+  logs           InboundLog[]
 }
 
 model InboundLog {
-  id              String        @id @default(cuid())
-  sourceId        String
-  source          InboundSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
-  rawPayload      Json          // Full raw POST body stored for debugging
-  parsedData      Json?         // After field mapping applied
-  status          InboundStatus // CREATED, DUPLICATE, FAILED, IGNORED
-  leadId          String?       // If CREATED — links to the new lead
-  duplicateOfId   String?       // If DUPLICATE — links to existing lead
-  failureReason   String?
-  receivedAt      DateTime      @default(now())
+  id            String        @id @default(cuid())
+  sourceId      String
+  source        InboundSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  rawPayload    Json // Full raw POST body stored for debugging
+  parsedData    Json? // After field mapping applied
+  status        InboundStatus // CREATED, DUPLICATE, FAILED, IGNORED
+  leadId        String? // If CREATED — links to the new lead
+  duplicateOfId String? // If DUPLICATE — links to existing lead
+  failureReason String?
+  receivedAt    DateTime      @default(now())
 }
 
 model GmailWatchConfig {
-  id              String        @id @default(cuid())
-  gmailAddress    String        @unique
-  historyId       String?       // Last processed historyId (for delta sync)
-  watchExpiry     DateTime?     // Gmail watch expires every 7 days
-  pubSubTopic     String?
-  isActive        Boolean       @default(false)
-  accessToken     String?       // Encrypted OAuth token
-  refreshToken    String?       // Encrypted
-  lastRenewedAt   DateTime?
-  lastEmailAt     DateTime?
-  createdAt       DateTime      @default(now())
+  id            String    @id @default(cuid())
+  gmailAddress  String    @unique
+  historyId     String? // Last processed historyId (for delta sync)
+  watchExpiry   DateTime? // Gmail watch expires every 7 days
+  pubSubTopic   String?
+  isActive      Boolean   @default(false)
+  accessToken   String? // Encrypted OAuth token
+  refreshToken  String? // Encrypted
+  lastRenewedAt DateTime?
+  lastEmailAt   DateTime?
+  createdAt     DateTime  @default(now())
 }
 
 enum SourceType {
   PORTAL_WEBHOOK // 99acres, MagicBricks, Housing.com, NoBroker
-  WHATSAPP       // Incoming WhatsApp via WATI
-  GMAIL          // Gmail API + Pub/Sub
-  WEBSITE_FORM   // Contact form on portal
-  MANUAL         // Admin-entered
-  CSV_IMPORT     // Bulk import
+  WHATSAPP // Incoming WhatsApp via the configured provider
+  GMAIL // Gmail API + Pub/Sub
+  WEBSITE_FORM // Contact form on portal
+  MANUAL // Admin-entered
+  CSV_IMPORT // Bulk import
 }
 
 enum SourceChannel {
@@ -325,58 +346,58 @@ enum SourceChannel {
 }
 
 enum InboundStatus {
-  CREATED   // New lead created
+  CREATED // New lead created
   DUPLICATE // Phone/email already exists — merged into existing lead
-  FAILED    // Could not parse or create
-  IGNORED   // Matched ignore rules (spam, test, etc.)
+  FAILED // Could not parse or create
+  IGNORED // Matched ignore rules (spam, test, etc.)
 }
 
 model Search {
-  id         String   @id @default(cuid())
-  userId     String?
-  user       User?    @relation(fields: [userId], references: [id])
-  budget     Float
-  horizon    Int
-  city       String
-  aiResponse Json     // Store full AI recommendation response
-  createdAt  DateTime @default(now())
+  id          String       @id @default(cuid())
+  userId      String?
+  user        User?        @relation(fields: [userId], references: [id])
+  budget      Float
+  horizon     Int
+  city        String
+  aiResponse  Json // Store full AI recommendation response
+  createdAt   DateTime     @default(now())
   savedReport SavedReport?
 }
 
 model LeadRoadmap {
-  id              String          @id @default(cuid())
-  leadId          String          @unique
-  lead            Lead            @relation(fields: [leadId], references: [id])
+  id              String         @id @default(cuid())
+  leadId          String         @unique
+  lead            Lead           @relation(fields: [leadId], references: [id])
   targetCloseDate DateTime?
-  estimatedValue  Float?      // Deal value in Lakhs
-  probability     Int         // 0-100 percentage
+  estimatedValue  Float? // Deal value in Lakhs
+  probability     Int // 0-100 percentage
   assignedTo      String?
   stages          RoadmapStage[]
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
 }
 
 model RoadmapStage {
-  id           String       @id @default(cuid())
-  roadmapId    String
-  roadmap      LeadRoadmap  @relation(fields: [roadmapId], references: [id])
-  stageKey     StageKey
-  status       StageStatus  @default(PENDING)
-  scheduledAt  DateTime?
-  completedAt  DateTime?
-  notes        String?
-  actionItems  ActionItem[]
-  order        Int
+  id          String       @id @default(cuid())
+  roadmapId   String
+  roadmap     LeadRoadmap  @relation(fields: [roadmapId], references: [id])
+  stageKey    StageKey
+  status      StageStatus  @default(PENDING)
+  scheduledAt DateTime?
+  completedAt DateTime?
+  notes       String?
+  actionItems ActionItem[]
+  order       Int
 }
 
 model ActionItem {
-  id           String       @id @default(cuid())
-  stageId      String
-  stage        RoadmapStage @relation(fields: [stageId], references: [id])
-  title        String
-  dueDate      DateTime?
-  completed    Boolean      @default(false)
-  completedAt  DateTime?
+  id          String       @id @default(cuid())
+  stageId     String
+  stage       RoadmapStage @relation(fields: [stageId], references: [id])
+  title       String
+  dueDate     DateTime?
+  completed   Boolean      @default(false)
+  completedAt DateTime?
 }
 
 enum StageKey {
@@ -405,6 +426,32 @@ enum BuyerPersona {
   RETIREMENT_PLANNER
   HNI_PORTFOLIO_BUILDER
   PROFESSIONAL_FIRST_HOME
+  COMMERCIAL_INVESTOR // commercial plots / shops / offices, for yield or own business
+  RENTAL_INCOME_SEEKER // buys to let: apartments, commercial space
+  FARMLAND_LIFESTYLE // farm land, weekend homes, agri plots
+  FAMILY_UPGRADER // own use, bigger home: villa / independent house
+  SELF_BUILD_HOMEOWNER // buys a plot to build their own home
+  LAND_BANKER // patient capital: open plots held 5+ years
+}
+
+/// What a property is, in the words buyers use. Shared by listings (what it is)
+/// and leads (what they want).
+enum ListingPropertyType {
+  OPEN_PLOT
+  VILLA_PLOT
+  VILLA
+  APARTMENT
+  INDEPENDENT_HOUSE
+  FARM_LAND
+  COMMERCIAL_PLOT
+  COMMERCIAL_SPACE
+  INDUSTRIAL_LAND
+}
+
+enum BuyPurpose {
+  INVESTMENT
+  OWN_USE
+  BOTH
 }
 
 enum ScoreGrade {
@@ -446,138 +493,254 @@ model PersonaConfig {
   minHorizon      Int?
   maxHorizon      Int?
   riskLevels      RiskLevel[]
-  color           String       // hex color for UI badge
-  icon            String       // emoji or icon name
-  defaultProjects String[]     // project IDs most suitable for this persona
+  color           String // hex color for UI badge
+  icon            String // emoji or icon name
+  defaultProjects String[] // project IDs most suitable for this persona
   createdAt       DateTime     @default(now())
 }
 
 model ProjectLeadMatch {
-  id            String   @id @default(cuid())
-  projectId     String
-  project       Project  @relation(fields: [projectId], references: [id])
-  leadId        String
-  lead          Lead     @relation(fields: [leadId], references: [id])
-  matchScore    Int      // 0-100
-  matchReasons  String[] // e.g. ["Budget fits", "Corridor in AI search history"]
-  isManualTag   Boolean  @default(false)
-  isDismissed   Boolean  @default(false)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id           String   @id @default(cuid())
+  projectId    String
+  project      Project  @relation(fields: [projectId], references: [id])
+  leadId       String
+  lead         Lead     @relation(fields: [leadId], references: [id])
+  matchScore   Int // 0-100
+  matchReasons String[] // e.g. ["Budget fits", "Corridor in AI search history"]
+  isManualTag  Boolean  @default(false)
+  isDismissed  Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   @@unique([projectId, leadId])
 }
 
 model WhatsAppTemplate {
-  id          String          @id @default(cuid())
-  name        String          @unique
-  trigger     WATrigger
-  message     String          // Template with {{merge_tags}}
-  isActive    Boolean         @default(true)
-  sentCount   Int             @default(0)
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
-  logs        WhatsAppLog[]
+  id        String        @id @default(cuid())
+  name      String        @unique
+  trigger   WATrigger
+  message   String // Template with {{merge_tags}}
+  isActive  Boolean       @default(true)
+  sentCount Int           @default(0)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  logs      WhatsAppLog[]
+
+  // Link to a template approved on our WABA. When set, sends go out as that
+  // template (works outside the 24h window); otherwise `message` is sent as a
+  // free-form session message, which only works inside the window.
+  wabaTemplateName String?
+  wabaLanguage     String   @default("en")
+  category         String   @default("UTILITY") // MARKETING | UTILITY | AUTHENTICATION
+  wabaParamTags    String[] // merge tags for {{1}}, {{2}}… in order, e.g. ["lead_name", "project_name"]
 }
 
 model WhatsAppLog {
-  id          String          @id @default(cuid())
-  leadId      String
-  lead        Lead            @relation(fields: [leadId], references: [id])
-  templateId  String
-  template    WhatsAppTemplate @relation(fields: [templateId], references: [id])
-  message     String          // Final message after merge tags filled
-  status      WAStatus        @default(PENDING)
-  waMessageId String?         // Message ID from WATI
+  id          String            @id @default(cuid())
+  leadId      String? // null for sends to users (OTP, weekly report) or bare numbers
+  lead        Lead?             @relation(fields: [leadId], references: [id])
+  templateId  String? // CRM template, when the send came from one
+  template    WhatsAppTemplate? @relation(fields: [templateId], references: [id])
+  message     String // Final message after merge tags filled (or a template summary)
+  status      WAStatus          @default(PENDING)
+  waMessageId String? // Legacy provider message id — mirrored into providerMessageId
   sentAt      DateTime?
   deliveredAt DateTime?
   readAt      DateTime?
-  createdAt   DateTime        @default(now())
+  createdAt   DateTime          @default(now())
+
+  provider          String  @default("wati") // meta-cloud | aisensy | interakt | wati
+  providerMessageId String?
+  idempotencyKey    String? // OURS — survives provider switches; uniqueness enforced by WhatsAppIdempotencyKey
+  category          String  @default("SERVICE") // MARKETING | UTILITY | AUTHENTICATION | SERVICE
+  feature           String? // weekly_report | pipeline_trigger | broadcast | otp | keyword_reply | test
+  templateName      String? // WABA template name, when sent as a template
+  languageCode      String?
+  toPhone           String? // E.164 with +
+  userId            String?
+  dryRun            Boolean @default(false) // provider not configured: nothing left the building
+
+  normalisedError String? // WhatsAppErrorCode
+  errorMessage    String?
+  failedAt        DateTime?
+  rawRequest      Json?
+  rawResponse     Json?
+
+  attemptCount       Int  @default(1)
+  estimatedCostPaise Int?
+
+  @@index([provider, sentAt])
+  @@index([category, sentAt])
+  @@index([providerMessageId])
+  @@index([toPhone, createdAt])
+  @@index([idempotencyKey])
+}
+
+/// The unique claim on an idempotency key. Kept in its own table (rather than
+/// @unique on WhatsAppLog) so `prisma db push` in the Vercel build adds it
+/// without a data-loss prompt. Insert-or-conflict here is what stops a retry
+/// double-sending.
+model WhatsAppIdempotencyKey {
+  key       String   @id
+  logId     String   @unique
+  createdAt DateTime @default(now())
+}
+
+/// Mirror of templates registered on the WABA. Synced, not authored here.
+model WhatsAppTemplateRegistry {
+  id              String   @id @default(cuid())
+  name            String
+  language        String
+  category        String
+  status          String // APPROVED | PENDING | REJECTED | PAUSED | DISABLED
+  bodyParamCount  Int // used for pre-send validation
+  hasHeaderParam  Boolean  @default(false)
+  headerType      String?
+  buttonCount     Int      @default(0) // buttons that take a dynamic parameter
+  bodyText        String? // for display
+  lastSyncedAt    DateTime
+  syncedFrom      String // provider name
+  rejectionReason String?
+
+  @@unique([name, language])
+}
+
+model WhatsAppProviderHealth {
+  id        String   @id @default(cuid())
+  provider  String
+  checkedAt DateTime @default(now())
+  ok        Boolean
+  latencyMs Int?
+  detail    String?
+
+  @@index([provider, checkedAt])
+}
+
+/// Durable queue for inbound webhook events: the webhook stores and ACKs,
+/// processing happens after the response (and is swept by the cron).
+model WhatsAppWebhookEvent {
+  id                String    @id @default(cuid())
+  provider          String
+  dedupeKey         String    @unique // providers redeliver; process each event once
+  eventType         String // MESSAGE_RECEIVED | STATUS_UPDATE | TEMPLATE_STATUS | ACCOUNT_UPDATE | UNKNOWN
+  providerMessageId String?
+  fromPhone         String?
+  event             Json // NormalisedInboundEvent (minus rawPayload)
+  rawPayload        Json?
+  status            String    @default("PENDING") // PENDING | DONE | FAILED
+  attempts          Int       @default(0)
+  error             String?
+  receivedAt        DateTime  @default(now())
+  processedAt       DateTime?
+
+  @@index([status, receivedAt])
+  @@index([eventType, receivedAt])
+}
+
+/// Numbers we must not message: invalid, never opted in, or sent STOP.
+model WhatsAppSuppression {
+  phone     String   @id // E.164 with +
+  reason    String // INVALID_NUMBER | NOT_OPTED_IN | STOP_KEYWORD
+  source    String? // provider or "keyword"
+  createdAt DateTime @default(now())
+}
+
+/// Operational alerts for admins: template paused/rejected, quality drop, tier usage.
+model WhatsAppAlert {
+  id             String    @id @default(cuid())
+  kind           String // TEMPLATE_STATUS | QUALITY | TIER_USAGE | HEALTH
+  severity       String // INFO | WARN | CRITICAL
+  message        String
+  dedupeKey      String    @unique // one alert per condition per day
+  createdAt      DateTime  @default(now())
+  acknowledgedAt DateTime?
+
+  @@index([acknowledgedAt, createdAt])
 }
 
 model CorridorProfile {
-  id                    String   @id @default(cuid())
-  slug                  String   @unique  // "adibatla", "kadthal-fcda" etc.
-  name                  String            // "Adibatla IT & Aerospace Corridor"
-  shortName             String            // "Adibatla"
-  direction             Direction         // WEST, SOUTH, NORTH, EAST, NORTHWEST, SOUTHEAST
-  zone                  String            // "SE Beyond ORR"
-  district              String            // "Ranga Reddy", "Sangareddy" etc.
-  description           String            // 2-3 sentence description
-  heatRating            HeatRating        // FIRE, VERY_HOT, HOT, WARM, EMERGING, EARLY
-  investmentCycle       InvCycle          // NOW, MID_CYCLE, WATCH, PATIENT_CAPITAL
-  ghmc2025              Boolean           @default(false)  // Included in Dec 2025 GHMC expansion
-  hmdaJurisdiction      Boolean           @default(true)
-  fcdaZone              Boolean           @default(false)  // Inside FCDA Future City boundary
+  id               String        @id @default(cuid())
+  slug             String        @unique // "adibatla", "kadthal-fcda" etc.
+  name             String // "Adibatla IT & Aerospace Corridor"
+  shortName        String // "Adibatla"
+  direction        Direction // WEST, SOUTH, NORTH, EAST, NORTHWEST, SOUTHEAST
+  zone             String // "SE Beyond ORR"
+  district         String // "Ranga Reddy", "Sangareddy" etc.
+  description      String // 2-3 sentence description
+  heatRating       HeatRating // FIRE, VERY_HOT, HOT, WARM, EMERGING, EARLY
+  investmentCycle  InvCycle // NOW, MID_CYCLE, WATCH, PATIENT_CAPITAL
+  ghmc2025         Boolean       @default(false) // Included in Dec 2025 GHMC expansion
+  hmdaJurisdiction Boolean       @default(true)
+  fcdaZone         Boolean       @default(false) // Inside FCDA Future City boundary
   // Explore Map: where to fly the camera when a corridor is picked in search.
   // Null until populated — search still returns the corridor and filters by it,
   // it just cannot recentre the map. Never used to position a property pin.
-  centroidLat           Float?
-  centroidLng           Float?
-  defaultZoom           Int?              // optional per-corridor zoom, else 12
-  rrrAlignment          RRRAlignment?     // NORTH_CORRIDOR, SOUTH_CORRIDOR, BOTH, NONE
-  
+  centroidLat      Float?
+  centroidLng      Float?
+  defaultZoom      Int? // optional per-corridor zoom, else 12
+  rrrAlignment     RRRAlignment? // NORTH_CORRIDOR, SOUTH_CORRIDOR, BOTH, NONE
+
   // Price data 2026
-  plotPriceMinSqYd      Float?
-  plotPriceMidSqYd      Float?
-  plotPriceMaxSqYd      Float?
-  aptPriceMinSqFt       Float?
-  aptPriceMaxSqFt       Float?
-  
+  plotPriceMinSqYd Float?
+  plotPriceMidSqYd Float?
+  plotPriceMaxSqYd Float?
+  aptPriceMinSqFt  Float?
+  aptPriceMaxSqFt  Float?
+
   // Historical prices for chart seeding
   price2020SqYd         Float?
   price2022SqYd         Float?
   price2024SqYd         Float?
   price2026SqYd         Float?
-  appreciationSince2020 Float?   // percentage e.g. 125.0
-  
+  appreciationSince2020 Float? // percentage e.g. 125.0
+
   // Investment metrics
-  historicalCAGR        Float?
-  projectedCAGRMin      Float?
-  projectedCAGRMax      Float?
-  rentalYieldMin        Float?
-  rentalYieldMax        Float?
-  bestHorizonYearsMin   Int?
-  bestHorizonYearsMax   Int?
-  riskLevel             RiskLevel
-  
+  historicalCAGR      Float?
+  projectedCAGRMin    Float?
+  projectedCAGRMax    Float?
+  rentalYieldMin      Float?
+  rentalYieldMax      Float?
+  bestHorizonYearsMin Int?
+  bestHorizonYearsMax Int?
+  riskLevel           RiskLevel
+
   // Forecast
-  forecast3yrMin        Float?   // % appreciation
-  forecast3yrMax        Float?
-  forecast5yrMin        Float?
-  forecast5yrMax        Float?
-  forecast10yrMin       Float?
-  forecast10yrMax       Float?
-  priceIndex2031        Int?     // e.g. 210 (2026=100)
-  
+  forecast3yrMin  Float? // % appreciation
+  forecast3yrMax  Float?
+  forecast5yrMin  Float?
+  forecast5yrMax  Float?
+  forecast10yrMin Float?
+  forecast10yrMax Float?
+  priceIndex2031  Int? // e.g. 210 (2026=100)
+
   // Intelligence score components (auto-computed)
-  overallScore          Int?
-  infraScore            Int?
-  approvalScore         Int?
-  demandScore           Int?
-  appreciationScore     Int?
-  sentiment             Sentiment?  // BULLISH, NEUTRAL, CAUTIOUS
-  
+  overallScore      Int?
+  infraScore        Int?
+  approvalScore     Int?
+  demandScore       Int?
+  appreciationScore Int?
+  sentiment         Sentiment? // BULLISH, NEUTRAL, CAUTIOUS
+
   // Content
-  keyDrivers            String[]   // Top 3 appreciation drivers
-  keyRisks              String[]   // Top 2 risks
-  bestFor               String[]   // Persona types
-  historicalAnalog      String?    // "Similar to Kompally in 2009"
-  adminNote             String?    // Admin editorial commentary
-  
+  keyDrivers       String[] // Top 3 appreciation drivers
+  keyRisks         String[] // Top 2 risks
+  bestFor          String[] // Persona types
+  historicalAnalog String? // "Similar to Kompally in 2009"
+  adminNote        String? // Admin editorial commentary
+
   // Sub-areas / micro-localities within this corridor
-  subAreas              String[]   // ["Tukkuguda", "Maheshwaram", "Mucherla"]
-  
+  subAreas String[] // ["Tukkuguda", "Maheshwaram", "Mucherla"]
+
   // Relationships
-  infraProjects         InfraProject[]
-  appreciationHistory   AppreciationHistory[]
-  demandTrends          DemandTrend[]
-  approvalRecords       ApprovalRecord[]
-  intelligence          CorridorIntelligence?
-  
-  isPublished           Boolean  @default(false)
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
+  infraProjects       InfraProject[]
+  appreciationHistory AppreciationHistory[]
+  demandTrends        DemandTrend[]
+  approvalRecords     ApprovalRecord[]
+  intelligence        CorridorIntelligence?
+
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 enum Direction {
@@ -592,24 +755,24 @@ enum Direction {
 }
 
 enum HeatRating {
-  FIRE              // 🔥🔥 Actively moving, entry window closing
-  VERY_HOT          // 🔥 Strong momentum, still good entry
-  HOT               // Strong fundamentals, pre-trigger
-  WARM              // Identified but catalysts still pending
-  EMERGING          // Early signals, confirmed infrastructure
-  EARLY             // Patient capital, 7-10 year horizon
+  FIRE // 🔥🔥 Actively moving, entry window closing
+  VERY_HOT // 🔥 Strong momentum, still good entry
+  HOT // Strong fundamentals, pre-trigger
+  WARM // Identified but catalysts still pending
+  EMERGING // Early signals, confirmed infrastructure
+  EARLY // Patient capital, 7-10 year horizon
 }
 
 enum InvCycle {
-  ACT_NOW           // 2026-2028 pre-construction window
-  MID_CYCLE         // Construction-active, still upside
-  WATCH_AND_BUY     // 2028-2031
-  PATIENT_CAPITAL   // 2031-2035
+  ACT_NOW // 2026-2028 pre-construction window
+  MID_CYCLE // Construction-active, still upside
+  WATCH_AND_BUY // 2028-2031
+  PATIENT_CAPITAL // 2031-2035
 }
 
 enum RRRAlignment {
-  NORTH_CORRIDOR    // On/near RRR North (Sangareddy→Bhongir)
-  SOUTH_CORRIDOR    // On/near RRR South (Sangareddy→Kandukur)
+  NORTH_CORRIDOR // On/near RRR North (Sangareddy→Bhongir)
+  SOUTH_CORRIDOR // On/near RRR South (Sangareddy→Kandukur)
   BOTH
   NONE
 }
@@ -621,49 +784,49 @@ enum Sentiment {
 }
 
 model Broadcast {
-  id              String          @id @default(cuid())
-  name            String          // Admin-given name e.g. "Diwali Offer - NRI Investors"
+  id              String               @id @default(cuid())
+  name            String // Admin-given name e.g. "Diwali Offer - NRI Investors"
   channel         BroadcastChannel // WHATSAPP or EMAIL or BOTH
   templateId      String?
   emailSubject    String?
   emailBody       String?
   whatsappMessage String?
-  groupType       GroupType       // How the recipients were selected
-  groupFilters    Json            // Snapshot of filters used
-  recipientCount  Int             @default(0)
-  status          BroadcastStatus @default(DRAFT)
-  scheduledAt     DateTime?       // null = send immediately
+  groupType       GroupType // How the recipients were selected
+  groupFilters    Json // Snapshot of filters used
+  recipientCount  Int                  @default(0)
+  status          BroadcastStatus      @default(DRAFT)
+  scheduledAt     DateTime? // null = send immediately
   sentAt          DateTime?
   createdBy       String
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
   recipients      BroadcastRecipient[]
 }
 
 model BroadcastRecipient {
-  id              String          @id @default(cuid())
-  broadcastId     String
-  broadcast       Broadcast       @relation(fields: [broadcastId], references: [id], onDelete: Cascade)
-  leadId          String
-  lead            Lead            @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  whatsappStatus  WAStatus?
-  emailStatus     EmailStatus?
-  whatsappSentAt  DateTime?
-  emailSentAt     DateTime?
-  emailMessageId  String?
+  id                String       @id @default(cuid())
+  broadcastId       String
+  broadcast         Broadcast    @relation(fields: [broadcastId], references: [id], onDelete: Cascade)
+  leadId            String
+  lead              Lead         @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  whatsappStatus    WAStatus?
+  emailStatus       EmailStatus?
+  whatsappSentAt    DateTime?
+  emailSentAt       DateTime?
+  emailMessageId    String?
   whatsappMessageId String?
-  errorMessage    String?
+  errorMessage      String?
 }
 
 model EmailTemplate {
-  id          String   @id @default(cuid())
-  name        String   @unique
-  subject     String
-  body        String   // HTML email body with {{merge_tags}}
-  isActive    Boolean  @default(true)
-  sentCount   Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(cuid())
+  name      String   @unique
+  subject   String
+  body      String // HTML email body with {{merge_tags}}
+  isActive  Boolean  @default(true)
+  sentCount Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum BroadcastChannel {
@@ -681,14 +844,14 @@ enum BroadcastStatus {
 }
 
 enum GroupType {
-  PERSONA           // All leads of a specific buyer persona
-  LEAD_STATUS       // All leads at a specific CRM status
-  PIPELINE_STAGE    // All leads at a specific pipeline stage
-  SCORE_GRADE       // All leads with a specific score grade (A/B/C/D)
+  PERSONA // All leads of a specific buyer persona
+  LEAD_STATUS // All leads at a specific CRM status
+  PIPELINE_STAGE // All leads at a specific pipeline stage
+  SCORE_GRADE // All leads with a specific score grade (A/B/C/D)
   CORRIDOR_INTEREST // All leads who searched a specific corridor
-  BUDGET_RANGE      // All leads within a budget range
-  MANUAL_PICK       // Admin hand-picked individual leads
-  ALL_LEADS         // Everyone in the database
+  BUDGET_RANGE // All leads within a budget range
+  MANUAL_PICK // Admin hand-picked individual leads
+  ALL_LEADS // Everyone in the database
 }
 
 enum EmailStatus {
@@ -704,89 +867,97 @@ enum EmailStatus {
 // ── GOVERNMENT INFRASTRUCTURE PROJECTS ──────────────────────────────────────
 
 model InfraProject {
-  id                    String         @id @default(cuid())
-  name                  String
-  shortName             String
-  category              InfraCategory
-  subCategory           String?
-  description           String
-  status                InfraStatus
-  completionPct         Int            @default(0)
-  estimatedCompletion   String?        // "FY 2026-27", "Q3 2029"
-  totalLengthKm         Float?
-  totalInvestmentCr     Float?
-  fundingModel          String?        // "HAM", "EPC", "PPP", "JICA"
-  expectedJobs          Int?
-  
+  id                  String        @id @default(cuid())
+  name                String
+  shortName           String
+  category            InfraCategory
+  subCategory         String?
+  description         String
+  status              InfraStatus
+  completionPct       Int           @default(0)
+  estimatedCompletion String? // "FY 2026-27", "Q3 2029"
+  totalLengthKm       Float?
+  totalInvestmentCr   Float?
+  fundingModel        String? // "HAM", "EPC", "PPP", "JICA"
+  expectedJobs        Int?
+
   // Official reference data
-  sourceGO              String?        // "G.O.Ms.No.68 MA&UD dt.12-03-2025"
-  sourceTender          String?        // "NHAI Tender Jan 16, 2026"
-  sourceAuthority       String?        // "NHAI", "HMRL", "TSIIC"
-  sourceUrl             String?
-  lastVerifiedDate      DateTime?
-  lastVerifiedSource    String?
-  
+  sourceGO           String? // "G.O.Ms.No.68 MA&UD dt.12-03-2025"
+  sourceTender       String? // "NHAI Tender Jan 16, 2026"
+  sourceAuthority    String? // "NHAI", "HMRL", "TSIIC"
+  sourceUrl          String?
+  lastVerifiedDate   DateTime?
+  lastVerifiedSource String?
+
   // Geography
-  routeDescription      String?        // "Sangareddy → Toopran → Bhongir"
-  affectedCorridorSlugs String[]       // references CorridorProfile.slug
-  impactRadiusKm        Float          @default(10)
+  routeDescription      String? // "Sangareddy → Toopran → Bhongir"
+  affectedCorridorSlugs String[] // references CorridorProfile.slug
+  impactRadiusKm        Float    @default(10)
   latitude              Float?
   longitude             Float?
-  coordinates           Json?          // Array of [lat,lng] for route polylines
-  
+  coordinates           Json? // Array of [lat,lng] for route polylines
+
   // Impact
-  reImpactScore         Int            @default(0)  // 1-10
-  reImpactNarrative     String?        // "Expected 25-40% appreciation in 5km radius"
-  historicalAnalog      String?        // "Similar to ORR effect on Kompally (2009)"
-  
-  isPublished           Boolean        @default(true)
-  milestones            InfraMilestone[]
-  corridors             CorridorProfile[]
-  
-  createdAt             DateTime       @default(now())
-  updatedAt             DateTime       @updatedAt
-  affectedCorridors     String[]       // keeping for backward compatibility
-  impactRadius          Float          @default(10) // keeping for backward compatibility
+  reImpactScore     Int     @default(0) // 1-10
+  reImpactNarrative String? // "Expected 25-40% appreciation in 5km radius"
+  historicalAnalog  String? // "Similar to ORR effect on Kompally (2009)"
+
+  isPublished Boolean           @default(true)
+  milestones  InfraMilestone[]
+  corridors   CorridorProfile[]
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  affectedCorridors String[] // keeping for backward compatibility
+  impactRadius      Float    @default(10) // keeping for backward compatibility
   // Still written by the CRM: /api/admin/infra-projects validates `tags` and
   // spreads it into the create/update, and the admin form reads proj.tags.
   // It had been dropped from the schema while that code kept using it, so
   // Prisma Client rejected the unknown argument and the endpoint failed.
-  tags                  String[]
+  tags              String[]
+
+  // ── Live infra intelligence (crawler) ──
+  focusZone        String? // INSIDE_RRR | RRR_BUFFER | TELANGANA — see src/lib/infra-intel/geo.ts
+  computedImpact   Int? // model-derived 1-10; used unless impactOverridden
+  impactOverridden Boolean       @default(false) // true = admin hand-set reImpactScore wins
+  autoCreated      Boolean       @default(false) // created by the crawler, not an admin
+  lastSignalAt     DateTime?
+  signals          InfraSignal[]
 }
 
 model InfraMilestone {
-  id            String       @id @default(cuid())
-  projectId     String
-  project       InfraProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  title         String       // "Land Acquisition 94% Complete"
-  date          DateTime?
-  status        MilestoneStatus @default(UPCOMING)
-  description   String?
-  sourceUrl     String?
+  id          String          @id @default(cuid())
+  projectId   String
+  project     InfraProject    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title       String // "Land Acquisition 94% Complete"
+  date        DateTime?
+  status      MilestoneStatus @default(UPCOMING)
+  description String?
+  sourceUrl   String?
 }
 
 enum InfraCategory {
-  ROAD_HIGHWAY        // RRR, ORR, NH expansions, flyovers
-  METRO_RAIL          // Metro extensions, new corridors
-  INDUSTRIAL_ZONE     // TSIIC industrial parks, SEZs
-  PHARMA_BIOTECH      // Pharma City, Genome Valley
-  LOGISTICS_PARK      // Warehousing hubs, dry ports, freight terminals
-  AIRPORT_AVIATION    // RGIA expansion, cargo terminals, aerospace SEZ
-  GOVT_APPROVAL       // HMDA layout approvals, DTCP approvals
-  TOWNSHIP            // Satellite townships, master plan zones
-  IT_TECH_PARK        // IT corridors, hardware parks
-  UTILITY             // Water supply, power grid, sewage
+  ROAD_HIGHWAY // RRR, ORR, NH expansions, flyovers
+  METRO_RAIL // Metro extensions, new corridors
+  INDUSTRIAL_ZONE // TSIIC industrial parks, SEZs
+  PHARMA_BIOTECH // Pharma City, Genome Valley
+  LOGISTICS_PARK // Warehousing hubs, dry ports, freight terminals
+  AIRPORT_AVIATION // RGIA expansion, cargo terminals, aerospace SEZ
+  GOVT_APPROVAL // HMDA layout approvals, DTCP approvals
+  TOWNSHIP // Satellite townships, master plan zones
+  IT_TECH_PARK // IT corridors, hardware parks
+  UTILITY // Water supply, power grid, sewage
 }
 
 enum InfraStatus {
-  ANNOUNCED           // Government announcement only
-  APPROVED            // Government order issued
-  LAND_ACQUISITION    // Land acquisition in progress
-  UNDER_CONSTRUCTION  // Active construction
-  PARTIALLY_COMPLETE  // Some phases done
-  COMPLETE            // Fully operational
-  DELAYED             // Official delay announced
-  CANCELLED           // Cancelled or stalled
+  ANNOUNCED // Government announcement only
+  APPROVED // Government order issued
+  LAND_ACQUISITION // Land acquisition in progress
+  UNDER_CONSTRUCTION // Active construction
+  PARTIALLY_COMPLETE // Some phases done
+  COMPLETE // Fully operational
+  DELAYED // Official delay announced
+  CANCELLED // Cancelled or stalled
 }
 
 enum MilestoneStatus {
@@ -798,19 +969,19 @@ enum MilestoneStatus {
 // ── AREA APPRECIATION HISTORY ─────────────────────────────────────────────────
 
 model AppreciationHistory {
-  id                  String   @id @default(cuid())
-  corridor            String   // Must match CorridorProfile.slug or shortName
-  year                Int
-  quarter             Int?     // 1-4, null = annual
-  pricePerSqFt        Float    // Average price per sq ft in ₹
-  pricePerSqYd        Float?   // For plot markets
-  yoyChange           Float    // Year-over-year % change
-  qoqChange           Float?   // Quarter-over-quarter % change
-  sampleSize          Int?     // Number of transactions this is based on
-  source              String?  // "RERA Data", "Market Research", "Admin Estimate"
-  notes               String?
-  createdAt           DateTime @default(now())
-  
+  id           String   @id @default(cuid())
+  corridor     String // Must match CorridorProfile.slug or shortName
+  year         Int
+  quarter      Int? // 1-4, null = annual
+  pricePerSqFt Float // Average price per sq ft in ₹
+  pricePerSqYd Float? // For plot markets
+  yoyChange    Float // Year-over-year % change
+  qoqChange    Float? // Quarter-over-quarter % change
+  sampleSize   Int? // Number of transactions this is based on
+  source       String? // "RERA Data", "Market Research", "Admin Estimate"
+  notes        String?
+  createdAt    DateTime @default(now())
+
   corridorProfileSlug String?
   corridorProfile     CorridorProfile? @relation(fields: [corridorProfileSlug], references: [slug])
 }
@@ -818,20 +989,20 @@ model AppreciationHistory {
 // ── DEMAND TREND DATA ─────────────────────────────────────────────────────────
 
 model DemandTrend {
-  id                  String   @id @default(cuid())
-  corridor            String
-  month               Int      // 1-12
-  year                Int
-  searchVolume        Int?     // Portal search count for this corridor
-  inquiryCount        Int?     // Leads who expressed interest
-  siteVisits          Int?     // Site visits arranged
-  newListings         Int?     // New projects listed
-  inventoryUnits      Int?     // Total units available
-  soldUnits           Int?     // Units sold/booked this month
-  absorptionRate      Float?   // % of inventory absorbed
-  medianDaysOnMkt     Int?     // Median days project stays on market
-  createdAt           DateTime @default(now())
-  
+  id              String   @id @default(cuid())
+  corridor        String
+  month           Int // 1-12
+  year            Int
+  searchVolume    Int? // Portal search count for this corridor
+  inquiryCount    Int? // Leads who expressed interest
+  siteVisits      Int? // Site visits arranged
+  newListings     Int? // New projects listed
+  inventoryUnits  Int? // Total units available
+  soldUnits       Int? // Units sold/booked this month
+  absorptionRate  Float? // % of inventory absorbed
+  medianDaysOnMkt Int? // Median days project stays on market
+  createdAt       DateTime @default(now())
+
   corridorProfileSlug String?
   corridorProfile     CorridorProfile? @relation(fields: [corridorProfileSlug], references: [slug])
 
@@ -841,24 +1012,24 @@ model DemandTrend {
 // ── HMDA / DTCP APPROVAL TRACKER ─────────────────────────────────────────────
 
 model ApprovalRecord {
-  id                  String         @id @default(cuid())
-  projectName         String
-  developerName       String?
-  approvalType        ApprovalType
-  authority           ApprovalAuth   // HMDA, DTCP, GHMC, RERA
-  approvalNumber      String?        // LP number, RERA number, GO number
-  approvalDate        DateTime?
-  corridor            String?
-  areaAcres           Float?
-  surveyNumbers       String[]
-  status              ApprovalStatus @default(APPROVED)
-  reraNumber          String?
-  reraUrl             String?
-  notes               String?
-  isPublished         Boolean        @default(true)
-  createdAt           DateTime       @default(now())
-  updatedAt           DateTime       @updatedAt
-  
+  id             String         @id @default(cuid())
+  projectName    String
+  developerName  String?
+  approvalType   ApprovalType
+  authority      ApprovalAuth // HMDA, DTCP, GHMC, RERA
+  approvalNumber String? // LP number, RERA number, GO number
+  approvalDate   DateTime?
+  corridor       String?
+  areaAcres      Float?
+  surveyNumbers  String[]
+  status         ApprovalStatus @default(APPROVED)
+  reraNumber     String?
+  reraUrl        String?
+  notes          String?
+  isPublished    Boolean        @default(true)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
   corridorProfileSlug String?
   corridorProfile     CorridorProfile? @relation(fields: [corridorProfileSlug], references: [slug])
 }
@@ -880,8 +1051,8 @@ enum ApprovalAuth {
   RERA_TELANGANA
   TSIIC
   NHAI
-  MOEF     // Ministry of Environment
-  GOT      // Government of Telangana
+  MOEF // Ministry of Environment
+  GOT // Government of Telangana
 }
 
 enum ApprovalStatus {
@@ -894,20 +1065,20 @@ enum ApprovalStatus {
 // ── CORRIDOR INTELLIGENCE SCORE ───────────────────────────────────────────────
 
 model CorridorIntelligence {
-  id                   String   @id @default(cuid())
-  corridor             String   @unique
-  overallScore         Int      // 1-100 computed
-  infraScore           Int      // 1-25: proximity to govt infra projects
-  approvalScore        Int      // 1-25: HMDA/DTCP/RERA approvals in zone
-  demandScore          Int      // 1-25: search + inquiry trends
-  appreciationScore    Int      // 1-25: historical price growth
-  investorSentiment    String   // "BULLISH" | "NEUTRAL" | "CAUTIOUS"
-  adminNote            String?  // Admin commentary shown to clients
-  keyDrivers           String[] // Top 3 reasons for the score
-  keyRisks             String[] // Top 2 risks
-  bestFor              String[] // Persona types this corridor suits
-  lastComputedAt       DateTime @default(now())
-  
+  id                String   @id @default(cuid())
+  corridor          String   @unique
+  overallScore      Int // 1-100 computed
+  infraScore        Int // 1-25: proximity to govt infra projects
+  approvalScore     Int // 1-25: HMDA/DTCP/RERA approvals in zone
+  demandScore       Int // 1-25: search + inquiry trends
+  appreciationScore Int // 1-25: historical price growth
+  investorSentiment String // "BULLISH" | "NEUTRAL" | "CAUTIOUS"
+  adminNote         String? // Admin commentary shown to clients
+  keyDrivers        String[] // Top 3 reasons for the score
+  keyRisks          String[] // Top 2 risks
+  bestFor           String[] // Persona types this corridor suits
+  lastComputedAt    DateTime @default(now())
+
   corridorProfileSlug String?          @unique
   corridorProfile     CorridorProfile? @relation(fields: [corridorProfileSlug], references: [slug])
 }
@@ -916,14 +1087,14 @@ model CorridorIntelligence {
 
 model LegalRisk {
   id            String        @id @default(cuid())
-  title         String        // "Section 22-A RRR Acquisition Trap"
-  severity      RiskSeverity  // RED, YELLOW, ORANGE, GREEN
+  title         String // "Section 22-A RRR Acquisition Trap"
+  severity      RiskSeverity // RED, YELLOW, ORANGE, GREEN
   category      LegalCategory
-  description   String        // Full explanation
-  affectedZones String[]      // Which corridors/areas this applies to
-  checkUrl      String?       // "bhubharati.telangana.gov.in"
-  checkMethod   String?       // How to verify
-  govReference  String?       // "Telangana Bhu Bharati Act, 2025"
+  description   String // Full explanation
+  affectedZones String[] // Which corridors/areas this applies to
+  checkUrl      String? // "bhubharati.telangana.gov.in"
+  checkMethod   String? // How to verify
+  govReference  String? // "Telangana Bhu Bharati Act, 2025"
   isActive      Boolean       @default(true)
   createdAt     DateTime      @default(now())
 }
@@ -936,30 +1107,30 @@ enum RiskSeverity {
 }
 
 enum LegalCategory {
-  LAND_RECORDS      // Bhu Bharati, Section 22-A
-  APPROVALS         // HMDA, DTCP, layout LP number
-  RERA              // RERA registration, QPR compliance
-  ENCUMBRANCE       // EC, mortgage, lien
-  RESTRICTIONS      // GO 111, Lake FTL, Air Funnel
-  STAMP_DUTY        // Registration costs, circle rates
-  AGRICULTURAL      // NALA conversion
-  FRAUD_PATTERN     // Common scam types
+  LAND_RECORDS // Bhu Bharati, Section 22-A
+  APPROVALS // HMDA, DTCP, layout LP number
+  RERA // RERA registration, QPR compliance
+  ENCUMBRANCE // EC, mortgage, lien
+  RESTRICTIONS // GO 111, Lake FTL, Air Funnel
+  STAMP_DUTY // Registration costs, circle rates
+  AGRICULTURAL // NALA conversion
+  FRAUD_PATTERN // Common scam types
 }
 
 // ── MARKET PULSE DATA ─────────────────────────────────────────────────────
 
 model MarketPulse {
   id                    String   @id @default(cuid())
-  period                String   // "FY2025-26", "Q1 2026"
-  totalRegistrations    Int?     // 51,089
-  totalValueCr          Float?   // 34,420
-  yoyGrowthPct          Float?   // 40.0
-  avgAskingPriceSqFt    Float?   // 9,430
-  avgGovtCircleRateSqFt Float?   // 3,654
-  gccNewCount           Int?     // 40 (new GCCs added)
-  gccTotalPct           Float?   // 20.0 (% of India's GCCs)
+  period                String // "FY2025-26", "Q1 2026"
+  totalRegistrations    Int? // 51,089
+  totalValueCr          Float? // 34,420
+  yoyGrowthPct          Float? // 40.0
+  avgAskingPriceSqFt    Float? // 9,430
+  avgGovtCircleRateSqFt Float? // 3,654
+  gccNewCount           Int? // 40 (new GCCs added)
+  gccTotalPct           Float? // 20.0 (% of India's GCCs)
   officeAbsorptionMSqFt Float?
-  gccShareOfOffice      Float?   // 50.0 %
+  gccShareOfOffice      Float? // 50.0 %
   source                String?
   reportDate            DateTime
   createdAt             DateTime @default(now())
@@ -993,41 +1164,41 @@ enum DocumentType {
 }
 
 model PropertyPurchase {
-  id                String           @id @default(cuid())
-  userId            String
-  user              User             @relation(fields: [userId], references: [id])
-  leadId            String?
-  lead              Lead?            @relation(fields: [leadId], references: [id])
-  projectId         String
-  project           Project          @relation(fields: [projectId], references: [id])
+  id        String  @id @default(cuid())
+  userId    String
+  user      User    @relation(fields: [userId], references: [id])
+  leadId    String?
+  lead      Lead?   @relation(fields: [leadId], references: [id])
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id])
 
   // Purchase details
-  unitNumber        String?          // e.g. "Plot 42", "Flat 3B"
-  areaSqYd          Float?           // Plot area in sq yards
-  areaSqFt          Float?           // Built-up area in sq ft
-  purchasePrice     Float            // Total price in INR
-  pricePerSqYd      Float?           // Derived from purchasePrice / areaSqYd
-  pricePerSqFt      Float?           // Derived from purchasePrice / areaSqFt
-  purchaseDate      DateTime         // Date of booking/agreement
-  registrationDate  DateTime?        // Date of final registration
-  possessionDate    DateTime?        // Expected/actual possession date
+  unitNumber       String? // e.g. "Plot 42", "Flat 3B"
+  areaSqYd         Float? // Plot area in sq yards
+  areaSqFt         Float? // Built-up area in sq ft
+  purchasePrice    Float // Total price in INR
+  pricePerSqYd     Float? // Derived from purchasePrice / areaSqYd
+  pricePerSqFt     Float? // Derived from purchasePrice / areaSqFt
+  purchaseDate     DateTime // Date of booking/agreement
+  registrationDate DateTime? // Date of final registration
+  possessionDate   DateTime? // Expected/actual possession date
 
   // Financial
-  loanAmount        Float?           // Home loan amount
-  loanBank          String?          // Bank name
-  stampDutyPaid     Float?
-  registrationFee   Float?
+  loanAmount      Float? // Home loan amount
+  loanBank        String? // Bank name
+  stampDutyPaid   Float?
+  registrationFee Float?
 
   // Status
-  status            PurchaseStatus   @default(BOOKING_RECEIVED)
-  notes             String?          // Admin notes
+  status PurchaseStatus @default(BOOKING_RECEIVED)
+  notes  String? // Admin notes
 
   // Relations
-  documents         PropertyDocument[]
-  installments      PaymentInstallment[]
+  documents    PropertyDocument[]
+  installments PaymentInstallment[]
 
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@index([projectId])
@@ -1035,30 +1206,30 @@ model PropertyPurchase {
 }
 
 model PropertyDocument {
-  id               String             @id @default(cuid())
-  purchaseId       String
-  purchase         PropertyPurchase   @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
-  type             DocumentType
-  name             String             // User-friendly name
-  url              String             // File URL
-  uploadedAt       DateTime           @default(now())
+  id                String           @id @default(cuid())
+  purchaseId        String
+  purchase          PropertyPurchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  type              DocumentType
+  name              String // User-friendly name
+  url               String // File URL
+  uploadedAt        DateTime         @default(now())
   // ── Client portal additions ──
-  isVisibleToClient Boolean           @default(true)   // gate for the client Document Vault
-  sizeBytes        Int?                                // for "PDF · 2.4 MB" display
-  uploadedBy       String?                             // User.id when a client uploads a "pending" doc
+  isVisibleToClient Boolean          @default(true) // gate for the client Document Vault
+  sizeBytes         Int? // for "PDF · 2.4 MB" display
+  uploadedBy        String? // User.id when a client uploads a "pending" doc
 }
 
 model PaymentInstallment {
-  id          String             @id @default(cuid())
-  purchaseId  String
-  purchase    PropertyPurchase   @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
-  label       String             // e.g. "Booking Amount", "1st EMI", "Registration"
-  amount      Float
-  dueDate     DateTime
-  paidDate    DateTime?
-  status      PaymentStatus      @default(PENDING)
-  receiptUrl  String?
-  createdAt   DateTime           @default(now())
+  id         String           @id @default(cuid())
+  purchaseId String
+  purchase   PropertyPurchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  label      String // e.g. "Booking Amount", "1st EMI", "Registration"
+  amount     Float
+  dueDate    DateTime
+  paidDate   DateTime?
+  status     PaymentStatus    @default(PENDING)
+  receiptUrl String?
+  createdAt  DateTime         @default(now())
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1070,7 +1241,7 @@ model PaymentInstallment {
 /// Anonymous activity captured before signup, merged into a User on account creation.
 model AnonymousSession {
   id               String    @id @default(cuid())
-  token            String    @unique   // httpOnly cookie 'anon_sid'
+  token            String    @unique // httpOnly cookie 'anon_sid'
   searchIds        String[]  @default([])
   savedProjectIds  String[]  @default([])
   watchedCorridors String[]  @default([])
@@ -1114,7 +1285,7 @@ model SavedReport {
   user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   searchId String   @unique
   search   Search   @relation(fields: [searchId], references: [id])
-  title    String   // auto: "₹25L · 5yr · Hyderabad — 12 Aug 2026"
+  title    String // auto: "₹25L · 5yr · Hyderabad — 12 Aug 2026"
   isPinned Boolean  @default(false)
   savedAt  DateTime @default(now())
 
@@ -1126,7 +1297,7 @@ model CompareItem {
   userId   String
   user     User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   itemType CompareType
-  itemId   String      // projectId or corridorSlug
+  itemId   String // projectId or corridorSlug
   addedAt  DateTime    @default(now())
 
   @@unique([userId, itemType, itemId])
@@ -1140,13 +1311,13 @@ enum CompareType {
 
 /// Password recovery — 1h expiry, single use (replaces NextAuth VerificationToken since we stay on JWT).
 model PasswordResetToken {
-  id        String   @id @default(cuid())
-  token     String   @unique
+  id        String    @id @default(cuid())
+  token     String    @unique
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   expiresAt DateTime
   usedAt    DateTime?
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
 
   @@index([userId])
 }
@@ -1231,12 +1402,12 @@ model RevenueVillage {
   // Geometry. `boundaryGeoJSON` is a dependency-free GeoJSON polygon (works
   // without PostGIS); a PostGIS `boundary` column can be added later via
   // postgis-setup.sql for indexed spatial queries.
-  centroidLat    Float?
-  centroidLng    Float?
-  areaHectare    Float?
+  centroidLat     Float?
+  centroidLng     Float?
+  areaHectare     Float?
   boundaryGeoJSON Json?
-  geomSource     String? // "datameet" | "bhuvan" | "manual"
-  geomQuality    GeomQuality @default(NONE)
+  geomSource      String? // "datameet" | "bhuvan" | "manual"
+  geomQuality     GeomQuality @default(NONE)
 
   // ── LANDIQ classification & jurisdiction (drive RZT / RSK pillars) ──
   landUseClass    String? // Agricultural | Residential | Industrial | Mixed
@@ -1597,10 +1768,10 @@ model VillageScore {
 /// Tunable, versioned horizon weight profiles (LANDIQ 3.2). Editable in admin
 /// without a deploy; versioned so historical VillageScore rows stay reproducible.
 model ScoringWeightProfile {
-  id              String  @id @default(cuid())
-  name            String  @unique // "TRADER_1_3Y" | "BALANCED_3_5Y" | ...
+  id              String   @id @default(cuid())
+  name            String   @unique // "TRADER_1_3Y" | "BALANCED_3_5Y" | ...
   label           String
-  version         Int     @default(1)
+  version         Int      @default(1)
   horizonYearsMin Int
   horizonYearsMax Int?
   wIPP            Float
@@ -1610,8 +1781,8 @@ model ScoringWeightProfile {
   wDEV            Float
   wRZT            Float
   wDEM            Float
-  rskExponent     Float   @default(0.5) // (RSK/100)^rskExponent multiplier
-  isActive        Boolean @default(true)
+  rskExponent     Float    @default(0.5) // (RSK/100)^rskExponent multiplier
+  isActive        Boolean  @default(true)
   createdAt       DateTime @default(now())
 }
 
@@ -1645,10 +1816,11 @@ model NewsArticle {
   stateScope String? // "TG" | "AP" | null
 
   // OUR content — this is what users read
-  ourAnalysis String?      @db.Text // max 2 sentences, our original commentary
+  ourAnalysis String?       @db.Text // max 2 sentences, our original commentary
+  analysisBy  String? // claude | rules | editor — drives the card label ("Our take" vs "Why it matters")
   category    NewsCategory
   sentiment   NewsSentiment
-  impactScore Int          @default(5) // 1-10
+  impactScore Int           @default(5) // 1-10
 
   // Extracted entities (structured, not prose)
   corridorSlugs   String[] // links to CorridorProfile.slug
@@ -1695,12 +1867,12 @@ enum NewsSentiment {
 }
 
 model NewsCity {
-  id           String   @id @default(cuid())
-  slug         String   @unique
+  id           String  @id @default(cuid())
+  slug         String  @unique
   name         String
   stateCode    String?
-  isActive     Boolean  @default(true)
-  displayOrder Int      @default(0)
+  isActive     Boolean @default(true)
+  displayOrder Int     @default(0)
 
   queryTerms   String[]
   excludeTerms String[]
@@ -1766,8 +1938,8 @@ enum SourceFormat {
 model ExtractionJob {
   id String @id @default(cuid())
 
-  sourceFormat   SourceFormat @default(PDF)
-  inputFileCount Int          @default(1)
+  sourceFormat   SourceFormat      @default(PDF)
+  inputFileCount Int               @default(1)
   inputs         ExtractionInput[]
 
   pageCount         Int?
@@ -1899,9 +2071,9 @@ model ExtractionPage {
 }
 
 model ProjectUnitType {
-  id        String   @id @default(cuid())
+  id        String  @id @default(cuid())
   projectId String
-  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   label        String
   unitCategory UnitCategory
@@ -1917,11 +2089,11 @@ model ProjectUnitType {
   builtUpSqFt      Float?
   superBuiltUpSqFt Float?
 
-  priceValue Float?
-  priceLakh  Float?
+  priceValue  Float?
+  priceLakh   Float?
   ratePerSqFt Float?
   ratePerSqYd Float?
-  priceNote  String?
+  priceNote   String?
 
   facing         String?
   availableUnits Int?
@@ -2031,12 +2203,12 @@ model ProjectFieldAudit {
   jobId     String?
 
   fieldPath      String
-  extractedValue String?  @db.Text
-  finalValue     String?  @db.Text
+  extractedValue String?   @db.Text
+  finalValue     String?   @db.Text
   confidence     Float?
   sourcePage     Int?
-  sourceSnippet  String?  @db.Text
-  wasCorrected   Boolean  @default(false)
+  sourceSnippet  String?   @db.Text
+  wasCorrected   Boolean   @default(false)
   correctedBy    String?
   correctedAt    DateTime?
 
@@ -2056,12 +2228,12 @@ enum ListingSource {
 }
 
 enum ListingStatus {
-  DRAFT               // seller editing, not submitted
-  PENDING_REVIEW      // submitted, in admin queue
-  CHANGES_REQUESTED   // admin asked for something specific
-  APPROVED            // live on the public Properties tab
-  PAUSED              // seller paused
-  EXPIRED             // 90 days without refresh
+  DRAFT // seller editing, not submitted
+  PENDING_REVIEW // submitted, in admin queue
+  CHANGES_REQUESTED // admin asked for something specific
+  APPROVED // live on the public Properties tab
+  PAUSED // seller paused
+  EXPIRED // 90 days without refresh
   SOLD
   REJECTED
 }
@@ -2137,7 +2309,7 @@ model ListingActivity {
   projectId String
   project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
-  eventType String  // SUBMITTED | APPROVED | CHANGES_REQUESTED | EDITED | REFRESHED | PAUSED | SOLD
+  eventType String // SUBMITTED | APPROVED | CHANGES_REQUESTED | EDITED | REFRESHED | PAUSED | SOLD
   actorId   String?
   actorRole String? // SELLER | ADMIN | SYSTEM
   detail    String?
@@ -2178,17 +2350,477 @@ model ListingScoreSnapshot {
 // To retire it: export the rows, `DROP TABLE "CorridorMetrics";`, then delete
 // this model. Do that deliberately, not as a side effect of a deploy.
 model CorridorMetrics {
-  id                    String    @id @default(cuid())
-  corridor              String    @unique
-  city                  String    @default("Hyderabad")
-  historicalCAGR        Float
-  projectedCAGRMin      Float
-  projectedCAGRMax      Float
-  rentalYieldMin        Float
-  rentalYieldMax        Float
-  infraScore            Int
-  demandScore           Int
-  riskLevel             RiskLevel
-  lastUpdated           DateTime  @updatedAt
-  updatedBy             String?
+  id               String    @id @default(cuid())
+  corridor         String    @unique
+  city             String    @default("Hyderabad")
+  historicalCAGR   Float
+  projectedCAGRMin Float
+  projectedCAGRMax Float
+  rentalYieldMin   Float
+  rentalYieldMax   Float
+  infraScore       Int
+  demandScore      Int
+  riskLevel        RiskLevel
+  lastUpdated      DateTime  @updatedAt
+  updatedBy        String?
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// WEEKLY INTELLIGENCE REPORT — personalised digest system.
+// The web report at /report/[token] is the product; email/WhatsApp are
+// only notifications carrying the top three items + a link.
+// ═══════════════════════════════════════════════════════════════════
+
+/// One row per user. Drives everything the report contains.
+model ReportPreference {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Identity — name/phone live on User; mirrored flag for send-time gating
+  phoneVerified Boolean @default(false)
+
+  // Investment profile
+  budgetMinLakh Float?
+  budgetMaxLakh Float?
+  city          String               @default("Hyderabad")
+  areaSlugs     String[] // CorridorProfile.slug, max 5
+  propertyTypes ReportPropertyType[]
+  horizonYears  Int?
+
+  // Delivery
+  channelWhatsApp Boolean         @default(true)
+  channelEmail    Boolean         @default(true)
+  frequency       ReportFrequency @default(WEEKLY)
+  timezone        String          @default("Asia/Kolkata") // IANA — NRIs differ
+  preferredDay    Int             @default(6) // 0=Sun … 6=Sat
+  preferredHour   Int             @default(9) // local hour
+
+  // Lifecycle
+  isActive       Boolean   @default(true)
+  pausedUntil    DateTime?
+  unsubscribedAt DateTime?
+  unsubToken     String    @unique @default(cuid())
+
+  // Engagement — drives suppression
+  consecutiveUnopened Int       @default(0)
+  lastOpenedAt        DateTime?
+  totalSent           Int       @default(0)
+  totalOpened         Int       @default(0)
+
+  completedAt DateTime? // when preferences were first completed
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+enum ReportPropertyType {
+  PLOT
+  FARM_PLOT
+  AGRICULTURAL_LAND
+  APARTMENT
+  VILLA
+  INDEPENDENT_HOUSE
+  COMMERCIAL
+  INDUSTRIAL_LAND
+}
+
+enum ReportFrequency {
+  WEEKLY
+  FORTNIGHTLY
+  MONTHLY
+  PAUSED
+}
+
+/// One row per user per issue.
+model WeeklyReport {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  issueNumber Int // per-user sequence: their 1st, 2nd, 3rd report
+  periodStart DateTime
+  periodEnd   DateTime
+
+  accessToken String   @unique @default(cuid()) // URL token, no login needed
+  expiresAt   DateTime // token dies after 60 days
+
+  // Assembled content — the single source of truth for the web page, the
+  // email and the WhatsApp message. Generate once, render many.
+  content       Json
+  topThree      Json // [{type, title, subtitle, value}] x3
+  headline      String  @db.Text
+  itemCount     Int     @default(0)
+  usedFallback  Boolean @default(false)
+  fallbackLevel Int? // 1-4
+
+  status       ReportStatus @default(DRAFT)
+  generatedAt  DateTime?
+  generationMs Int?
+
+  // Engagement
+  firstViewedAt DateTime?
+  viewCount     Int       @default(0)
+  lastViewedAt  DateTime?
+
+  items      ReportItem[]
+  deliveries ReportDelivery[]
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, issueNumber])
+  @@index([status, generatedAt])
+}
+
+enum ReportStatus {
+  DRAFT
+  GENERATED
+  QUEUED
+  SENT
+  FAILED
+  SKIPPED
+}
+
+/// The send ledger — what prevents repeating the same property.
+model ReportItem {
+  id       String       @id @default(cuid())
+  reportId String
+  report   WeeklyReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  userId   String // denormalised for fast dedup lookup
+
+  itemType   ReportItemType
+  entityId   String // projectId | corridorSlug | infraProjectId | approvalId
+  entityHash String // itemType + entityId + materialStateHash
+  section    String // which report section it appeared in
+  position   Int
+
+  includedAt DateTime @default(now())
+
+  @@index([userId, entityId, includedAt])
+  @@index([userId, itemType, includedAt])
+}
+
+enum ReportItemType {
+  MATCHED_PROPERTY
+  NEAR_MISS_PROPERTY
+  PRICE_DROP
+  NEW_LISTING
+  AREA_SCORE_MOVE
+  AREA_PRICE_MOVE
+  INFRA_MILESTONE
+  NEW_APPROVAL
+  MARKET_STAT
+  LEGAL_ALERT
+}
+
+model ReportDelivery {
+  id       String       @id @default(cuid())
+  reportId String
+  report   WeeklyReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  channel      DeliveryChannel
+  destination  String // phone or email
+  status       DeliveryStatus  @default(PENDING)
+  providerId   String? // WhatsApp provider / Resend message id
+  errorMessage String?
+
+  queuedAt    DateTime  @default(now())
+  sentAt      DateTime?
+  deliveredAt DateTime?
+  openedAt    DateTime?
+  clickedAt   DateTime?
+  bouncedAt   DateTime?
+
+  @@index([reportId, channel])
+  @@index([status])
+}
+
+enum DeliveryChannel {
+  WHATSAPP
+  EMAIL
+}
+
+enum DeliveryStatus {
+  PENDING
+  SENT
+  DELIVERED
+  OPENED
+  CLICKED
+  FAILED
+  BOUNCED
+  SUPPRESSED
+}
+
+/// Global run tracking — one row per weekly batch.
+model ReportRun {
+  id           String    @id @default(cuid())
+  runLabel     String // "2026-W38"
+  scheduledFor DateTime
+  startedAt    DateTime?
+  finishedAt   DateTime?
+  status       String    @default("PENDING")
+
+  eligibleUsers Int @default(0)
+  generated     Int @default(0)
+  sent          Int @default(0)
+  skipped       Int @default(0)
+  failed        Int @default(0)
+  usedFallback  Int @default(0)
+
+  errorSummary String?
+}
+
+/// Phone-OTP store — DB-backed so it survives across serverless instances
+/// (an in-memory Map does not: send and confirm can hit different lambdas).
+/// The code is stored hashed; attempts are capped.
+model PhoneOtp {
+  userId     String   @id
+  codeHash   String
+  expiresAt  DateTime
+  lastSentAt DateTime @default(now())
+  attempts   Int      @default(0)
+}
+
+// ── LIVE INFRA INTELLIGENCE (crawler → signals → auto-apply → learning) ─────
+// See src/lib/infra-intel/. Sources are crawled on a schedule or by the admin
+// "Refresh" button; every fact extracted becomes an InfraSignal that is either
+// auto-applied (decision score above a LEARNED threshold) or queued for review.
+// Admin approve/reject/revert outcomes feed back into source trust and the
+// per-event thresholds, so the auto-apply policy improves over time.
+
+enum InfraSourceKind {
+  RSS // publisher / agency RSS feed
+  GOOGLE_NEWS // Google News RSS search (also reaches publishers that 403 bots)
+  HTML_LIST // listing page; generic link extractor + keyword filter
+  AGENT // Claude web-search status check of known projects
+}
+
+enum InfraSourceTier {
+  OFFICIAL // government / agency publisher
+  NEWS // established newspaper
+  AGGREGATOR // search results — mixed quality
+}
+
+enum InfraSignalEvent {
+  NEW_PROJECT
+  STATUS_CHANGE
+  PROGRESS_UPDATE
+  TENDER
+  BUDGET
+  LAND_ACQUISITION
+  DELAY
+  COMPLETION
+  MILESTONE
+  OTHER
+}
+
+enum InfraSignalDecision {
+  AUTO_APPLIED
+  QUEUED
+  APPROVED // admin approved a queued signal (then applied)
+  REJECTED
+  REVERTED // admin undid an auto-applied/approved signal
+  IGNORED // no actionable change (duplicate / no delta / irrelevant)
+}
+
+model InfraSource {
+  id           String          @id @default(cuid())
+  key          String          @unique
+  name         String
+  kind         InfraSourceKind
+  tier         InfraSourceTier
+  url          String
+  config       Json? // { query?, include?, exclude?, maxItems? }
+  cadenceHours Int             @default(168) // 24 = daily, 168 = weekly
+  isActive     Boolean         @default(true)
+  focus        String          @default("HYDERABAD") // HYDERABAD | TELANGANA
+
+  // Learned trust (Beta posterior over admin outcomes, seeded by tier prior)
+  trust           Float @default(0.6)
+  approvedCount   Int   @default(0)
+  implicitOkCount Int   @default(0) // auto-applied & not reverted within the grace window
+  rejectedCount   Int   @default(0)
+  revertedCount   Int   @default(0)
+
+  // Health
+  lastRunAt           DateTime?
+  lastOkAt            DateTime?
+  lastError           String?
+  consecutiveFailures Int       @default(0)
+
+  documents  InfraDocument[]
+  signals    InfraSignal[]
+  sourceRuns InfraSourceRun[]
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+}
+
+model InfraCrawlRun {
+  id                String           @id @default(cuid())
+  trigger           String // MANUAL | CRON
+  triggeredBy       String? // admin userId
+  status            String           @default("RUNNING") // RUNNING | DONE | FAILED
+  startedAt         DateTime         @default(now())
+  finishedAt        DateTime?
+  corridorsRescored String[]
+  summary           Json?
+  sourceRuns        InfraSourceRun[]
+
+  @@index([startedAt])
+}
+
+model InfraSourceRun {
+  id          String        @id @default(cuid())
+  runId       String
+  run         InfraCrawlRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  sourceId    String
+  source      InfraSource   @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  status      String        @default("PENDING") // PENDING | RUNNING | DONE | FAILED | SKIPPED
+  fetched     Int           @default(0)
+  newDocs     Int           @default(0)
+  signals     Int           @default(0)
+  autoApplied Int           @default(0)
+  queued      Int           @default(0)
+  error       String?
+  startedAt   DateTime?
+  finishedAt  DateTime?
+
+  @@index([runId])
+}
+
+/// One fetched item (headline / GO title / agency notice). For news tiers only
+/// the headline, link and a short feed summary are kept — never the article body.
+model InfraDocument {
+  id          String        @id @default(cuid())
+  sourceId    String
+  source      InfraSource   @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  url         String        @unique
+  title       String
+  summary     String? // feed description, trimmed to 500 chars
+  publisher   String?
+  publishedAt DateTime?
+  fetchedAt   DateTime      @default(now())
+  contentHash String
+  relevant    Boolean       @default(false)
+  processedAt DateTime?
+  signals     InfraSignal[]
+
+  @@index([contentHash])
+  @@index([fetchedAt])
+}
+
+model InfraSignal {
+  id             String         @id @default(cuid())
+  documentId     String?
+  document       InfraDocument? @relation(fields: [documentId], references: [id], onDelete: SetNull)
+  sourceId       String
+  source         InfraSource    @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  infraProjectId String?
+  infraProject   InfraProject?  @relation(fields: [infraProjectId], references: [id], onDelete: SetNull)
+
+  eventType      InfraSignalEvent
+  projectName    String // as extracted
+  category       String? // InfraCategory value
+  proposedStatus String? // InfraStatus value
+  completionPct  Int?
+  investmentCr   Float?
+  lengthKm       Float?
+  goRef          String?
+  places         String[]
+  latitude       Float?
+  longitude      Float?
+  focusZone      String?
+  eventDate      DateTime?
+  extracted      Json // full extractor output (for audit / learning)
+  extractor      String // rules | claude | agent
+
+  matchScore     Float               @default(0) // 0-1 vs infraProjectId
+  confidence     Int // extractor 0-100
+  corroboration  Int                 @default(1) // distinct sources agreeing
+  decisionScore  Float               @default(0)
+  threshold      Float               @default(0) // threshold in force when decided
+  decision       InfraSignalDecision
+  decisionReason String
+  appliedChanges Json? // { before, after, createdMilestoneId, createdStatusHistoryId, createdProjectId }
+  reviewedBy     String?
+  reviewedAt     DateTime?
+  reviewNote     String?
+  learnedAt      DateTime? // implicit-accept credited
+  createdAt      DateTime            @default(now())
+
+  @@index([decision, createdAt])
+  @@index([infraProjectId, createdAt])
+}
+
+/// Learned auto-apply policy, one row per (eventType × tier). The threshold
+/// drifts up when admins revert/reject and down when they approve.
+model InfraDecisionPolicy {
+  key        String   @id // "STATUS_CHANGE:NEWS"
+  threshold  Float
+  approvals  Int      @default(0)
+  implicitOk Int      @default(0)
+  rejections Int      @default(0)
+  reverts    Int      @default(0)
+  updatedAt  DateTime @updatedAt
+}
+
+/// Corridor score history — lets the UI say *why* a score moved this week.
+model CorridorScoreSnapshot {
+  id           String   @id @default(cuid())
+  corridorSlug String
+  infraScore   Int
+  overallScore Int?
+  drivers      Json // top infra contributors [{ projectId, name, contribution, status, momentum }]
+  computedAt   DateTime @default(now())
+
+  @@index([corridorSlug, computedAt])
+}
+
+/// A WhatsApp (or CRM-simulator) conversation with the buyer concierge.
+model ConciergeConversation {
+  id             String             @id @default(cuid())
+  phone          String // E.164
+  channel        String             @default("WHATSAPP") // WHATSAPP | SIMULATOR
+  state          String             @default("ACTIVE") // ACTIVE | PROCESSING | COMPLETED | HANDOFF | ABANDONED
+  /// "channel:phone" while the conversation is open, null once abandoned — the
+  /// unique constraint stops two simultaneous first messages opening two chats.
+  openKey        String?            @unique
+  started        Boolean            @default(false) // intro sent
+  step           String? // the question currently awaiting an answer
+  slots          Json               @default("{}") // answers so far (ConciergeSlots)
+  pendingOptions Json? // last options offered, so "2" or a button id can be resolved
+  retries        Int                @default(0) // failed attempts on the current step
+  version        Int                @default(0) // optimistic lock: messages can arrive concurrently
+  senderName     String?
+  leadId         String?
+  lead           Lead?              @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  userId         String?
+  reportId       String?
+  reportUrl      String?
+  weeklyOptIn    Boolean?
+  handoffReason  String?
+  lastInboundAt  DateTime?
+  lastOutboundAt DateTime?
+  nudgedAt       DateTime?
+  completedAt    DateTime?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  messages       ConciergeMessage[]
+
+  @@index([phone, state])
+  @@index([state, lastInboundAt])
+}
+
+model ConciergeMessage {
+  id                String                @id @default(cuid())
+  conversationId    String
+  conversation      ConciergeConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  direction         String // IN | OUT
+  author            String                @default("bot") // customer | bot | agent
+  text              String
+  payload           Json? // buttons / list offered, or the option id tapped
+  step              String?
+  providerMessageId String?
+  createdAt         DateTime              @default(now())
+
+  @@index([conversationId, createdAt])
 }

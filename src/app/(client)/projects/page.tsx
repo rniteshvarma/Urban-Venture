@@ -36,7 +36,6 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
         border: "1px solid var(--color-line)",
         background: active ? "var(--color-saffron)" : "var(--color-surface)",
         color: active ? "var(--color-ink)" : "var(--color-text-mid)",
-        whiteSpace: "nowrap",
       }}
     >
       {children}

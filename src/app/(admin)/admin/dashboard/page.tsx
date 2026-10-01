@@ -28,6 +28,7 @@ import {
   Target,
   FileText
 } from "lucide-react";
+import { toast } from "@/lib/toast";
 
 interface DashboardData {
   leadsByStatus: any[];
@@ -42,8 +43,14 @@ interface DashboardData {
     totalLeads: number;
     newLeads7Days: number;
     activeProjects: number;
-    conversionRate: string;
+    conversionRate: string; contactedLeads?: number; convertedLeads?: number; totalProjects?: number; corridorsCovered?: number;
   };
+}
+
+/** Share as a whole-number percent (0 when the base is 0). */
+function pct(part: number | undefined, whole: number | undefined): number {
+  if (!whole || !part) return 0;
+  return Math.max(0, Math.min(100, Math.round((part / whole) * 100)));
 }
 
 export default function AdminDashboardPage() {
@@ -128,15 +135,15 @@ export default function AdminDashboardPage() {
       });
       if (res.ok) {
         const resultData = await res.json();
-        alert(resultData.message || "Successfully recomputed scores!");
+        toast.show(resultData.message || "Successfully recomputed scores!");
         await loadIntelSummary();
       } else {
         const errorData = await res.json().catch(() => ({}));
-        alert(`Failed to recompute: ${errorData.error || "Unknown error"}`);
+        toast.show(`Failed to recompute: ${errorData.error || "Unknown error"}`);
       }
     } catch (err: any) {
       console.error(err);
-      alert(`Error recomputing: ${err.message || "Request failed"}`);
+      toast.show(`Error recomputing: ${err.message || "Request failed"}`);
     } finally {
       setIsRecomputing(false);
     }
@@ -215,17 +222,16 @@ export default function AdminDashboardPage() {
         <div className="crm-card p-6 flex flex-col justify-between space-y-4 group">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-[#8A8A9E]">Captured Clients</span>
-            <span className="badge bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2.5 py-0.5 rounded-full">+4.2%</span>
+            <span className="badge bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2.5 py-0.5 rounded-full">+{data.kpis.newLeads7Days} this week</span>
           </div>
 
           <div className="space-y-1">
             <div className="text-4xl font-display font-bold text-[#1A1A2E] tracking-tight">{data.kpis.totalLeads}</div>
-            <div className="text-xs text-[#8A8A9E]">Active inquiries logged</div>
+            <div className="text-xs text-[#8A8A9E]">{pct(data.kpis.contactedLeads, data.kpis.totalLeads)}% contacted so far</div>
           </div>
 
-          {/* Two-Tone Soft Gradient Fill Bar */}
-          <div className="w-full h-2 rounded-full bg-[#F0EEFA] overflow-hidden">
-            <div className="h-full rounded-full crm-gradient-peach-mint w-[75%]" />
+          <div className="w-full h-2 rounded-full bg-[#F0EEFA] overflow-hidden" role="presentation">
+            <div className="h-full rounded-full crm-gradient-peach-mint" style={{ width: `${pct(data.kpis.contactedLeads, data.kpis.totalLeads)}%` }} />
           </div>
         </div>
 
@@ -233,7 +239,11 @@ export default function AdminDashboardPage() {
         <div className="crm-card p-6 flex flex-col justify-between space-y-4 group">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-[#8A8A9E]">New Leads (7 Days)</span>
-            <span className="badge bg-amber-100 text-amber-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full">High Priority</span>
+            {data.kpis.newLeads7Days > 0 ? (
+              <span className="badge bg-amber-100 text-amber-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full">Needs outreach</span>
+            ) : (
+              <span className="badge bg-slate-100 text-slate-600 text-[10px] font-bold px-2.5 py-0.5 rounded-full">All caught up</span>
+            )}
           </div>
 
           <div className="space-y-1">
@@ -243,7 +253,7 @@ export default function AdminDashboardPage() {
 
           {/* Two-Tone Soft Gradient Fill Bar */}
           <div className="w-full h-2 rounded-full bg-[#F0EEFA] overflow-hidden">
-            <div className="h-full rounded-full crm-gradient-purple-lavender w-[60%]" />
+            <div className="h-full rounded-full crm-gradient-purple-lavender" style={{ width: `${pct(data.kpis.newLeads7Days, data.kpis.totalLeads)}%` }} />
           </div>
         </div>
 
@@ -251,17 +261,17 @@ export default function AdminDashboardPage() {
         <div className="crm-card p-6 flex flex-col justify-between space-y-4 group">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-[#8A8A9E]">Active Projects</span>
-            <span className="badge bg-blue-100 text-blue-700 text-[10px] font-bold px-2.5 py-0.5 rounded-full">8 Corridors</span>
+            <span className="badge bg-blue-100 text-blue-700 text-[10px] font-bold px-2.5 py-0.5 rounded-full">{data.kpis.corridorsCovered ?? 0} corridors</span>
           </div>
 
           <div className="space-y-1">
             <div className="text-4xl font-display font-bold text-[#1A1A2E] tracking-tight">{data.kpis.activeProjects}</div>
-            <div className="text-xs text-[#8A8A9E]">Mapped inventory units</div>
+            <div className="text-xs text-[#8A8A9E]">Live of {data.kpis.totalProjects ?? data.kpis.activeProjects} listed projects</div>
           </div>
 
           {/* Two-Tone Soft Gradient Fill Bar */}
           <div className="w-full h-2 rounded-full bg-[#F0EEFA] overflow-hidden">
-            <div className="h-full rounded-full crm-gradient-blue-cyan w-[85%]" />
+            <div className="h-full rounded-full crm-gradient-blue-cyan" style={{ width: `${pct(data.kpis.activeProjects, data.kpis.totalProjects ?? data.kpis.activeProjects)}%` }} />
           </div>
         </div>
 
@@ -269,17 +279,21 @@ export default function AdminDashboardPage() {
         <div className="crm-card p-6 flex flex-col justify-between space-y-4 group">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-[#8A8A9E]">Conversion Rate</span>
-            <span className="badge bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2.5 py-0.5 rounded-full">Optimized</span>
+            {Number(data.kpis.conversionRate) > 0 ? (
+              <span className="badge bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2.5 py-0.5 rounded-full">{data.kpis.convertedLeads ?? 0} converted</span>
+            ) : (
+              <span className="badge bg-slate-100 text-slate-600 text-[10px] font-bold px-2.5 py-0.5 rounded-full">No conversions yet</span>
+            )}
           </div>
 
           <div className="space-y-1">
-            <div className="text-4xl font-display font-bold text-emerald-600 tracking-tight">{data.kpis.conversionRate}%</div>
+            <div className={`text-4xl font-display font-bold tracking-tight ${Number(data.kpis.conversionRate) > 0 ? "text-emerald-600" : "text-[#1A1A2E]"}`}>{data.kpis.conversionRate}%</div>
             <div className="text-xs text-[#8A8A9E]">Qualified pipeline funnel</div>
           </div>
 
           {/* Two-Tone Soft Gradient Fill Bar */}
           <div className="w-full h-2 rounded-full bg-[#F0EEFA] overflow-hidden">
-            <div className="h-full rounded-full crm-gradient-peach-mint w-[90%]" />
+            <div className="h-full rounded-full crm-gradient-peach-mint" style={{ width: `${Math.min(100, Number(data.kpis.conversionRate) || 0)}%` }} />
           </div>
         </div>
       </div>

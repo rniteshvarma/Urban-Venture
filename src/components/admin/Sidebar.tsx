@@ -17,7 +17,10 @@ import {
   Sparkles,
   Compass,
   MessageSquare,
+  Settings2,
+  Bot,
   Megaphone,
+  Radar,
   Hammer,
   FileCheck,
   TrendingUp,
@@ -26,7 +29,6 @@ import {
   ChevronDown,
   ChevronRight,
   User,
-  Zap,
   Plug,
   Home,
   Inbox,
@@ -37,7 +39,11 @@ export default function Sidebar() {
   const pathname = usePathname();
   const [newLeadsCount, setNewLeadsCount] = useState(0);
   const [staleLeadsCount, setStaleLeadsCount] = useState(0);
-  const [isOpen, setIsOpen] = useState(true);
+  // Mobile drawer: closed by default, and open only for the page it was opened on,
+  // so navigating to another page closes it automatically. (Desktop ignores this.)
+  const [openOn, setOpenOn] = useState<string | null>(null);
+  const isOpen = openOn !== null && openOn === pathname;
+  const setIsOpen = (open: boolean) => setOpenOn(open ? pathname : null);
   const [isMarketOpen, setIsMarketOpen] = useState(true);
 
   // Poll for new leads count and stale count every 30 seconds
@@ -95,6 +101,16 @@ export default function Sidebar() {
       icon: <MessageSquare size={17} />,
     },
     {
+      name: "Buyer Concierge",
+      path: "/admin/concierge",
+      icon: <Bot size={17} />,
+    },
+    {
+      name: "WhatsApp Provider",
+      path: "/admin/settings/whatsapp",
+      icon: <Settings2 size={17} />,
+    },
+    {
       name: "Integrations",
       path: "/admin/integrations",
       icon: <Plug size={17} />,
@@ -145,6 +161,11 @@ export default function Sidebar() {
 
   const marketItems = [
     {
+      name: "Infra Updates",
+      path: "/admin/infrastructure/updates",
+      icon: <Radar size={16} />,
+    },
+    {
       name: "Infra Projects",
       path: "/admin/infrastructure/projects",
       icon: <Hammer size={16} />,
@@ -180,16 +201,19 @@ export default function Sidebar() {
       {/* Mobile Top Nav */}
       <div className="md:hidden flex items-center justify-between bg-white border-b border-[#E8E5F5] text-[#1A1A2E] px-4 py-3 sticky top-0 z-50 shadow-sm">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#7C6EF5] to-[#5B4FE0] flex items-center justify-center text-white font-bold shadow-md shadow-[#5B4FE0]/30">
-            <Zap size={16} />
+          <div className="w-8 h-8 rounded-full bg-[#1A1A2E] flex items-center justify-center shadow-md">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/tiger-logo.png" alt="" className="w-5 h-auto" />
           </div>
           <span className="font-display text-base font-bold text-[#1A1A2E]">
-            Urban<span className="text-[#5B4FE0]">AI</span>
+            Property<span className="text-[#5B4FE0]"> Tiger</span>
           </span>
         </div>
         <button 
           onClick={() => setIsOpen(!isOpen)}
-          className="text-[#6E6D8A] hover:text-[#1A1A2E] p-1.5 focus:outline-none transition-colors rounded-lg bg-[#F4F0FF]"
+          aria-label={isOpen ? "Close menu" : "Open menu"}
+          aria-expanded={isOpen}
+          className="text-[#6E6D8A] hover:text-[#1A1A2E] p-2 focus:outline-none transition-colors rounded-lg bg-[#F4F0FF]"
         >
           {isOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
@@ -205,12 +229,13 @@ export default function Sidebar() {
           {/* Brand Logo Section */}
           <div className="hidden md:flex items-center justify-between px-6 py-6 border-b border-[#F0EDFA] shrink-0">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#7C6EF5] to-[#5B4FE0] flex items-center justify-center text-white shadow-md shadow-[#5B4FE0]/30">
-                <Zap size={18} />
+              <div className="w-9 h-9 rounded-full bg-[#1A1A2E] flex items-center justify-center shadow-md">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/tiger-logo.png" alt="" className="w-6 h-auto" />
               </div>
               <div>
                 <span className="font-display text-lg font-bold text-[#1A1A2E] leading-none block">
-                  Urban<span className="text-[#5B4FE0]">AI</span>
+                  Property<span className="text-[#5B4FE0]"> Tiger</span>
                 </span>
                 <span className="text-[10px] font-semibold text-[#8A8A9E] block mt-0.5">Real Estate CRM</span>
               </div>

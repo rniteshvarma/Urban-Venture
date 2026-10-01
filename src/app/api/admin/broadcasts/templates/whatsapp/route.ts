@@ -4,12 +4,14 @@ import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { z } from "zod";
 import { WATrigger } from "@prisma/client";
+import { wabaTemplateFields } from "@/lib/whatsapp/template-fields";
 
 const schema = z.object({
   name: z.string().min(1),
   trigger: z.nativeEnum(WATrigger).default(WATrigger.CUSTOM),
   message: z.string().min(1),
   isActive: z.boolean().default(true),
+  ...wabaTemplateFields,
 });
 
 export async function GET(req: Request) {

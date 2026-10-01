@@ -36,6 +36,19 @@ import {
   Bar,
   Legend
 } from "recharts";
+import { formatDate } from "@/lib/format";
+import { toast } from "@/lib/toast";
+
+/** One contributor to a corridor's infra score (see /api/market/corridors/[slug]/infra). */
+interface InfraDriver {
+  projectId: string;
+  name: string;
+  status: string;
+  distanceKm: number | null;
+  contribution: number;
+  momentum: number;
+  stale: boolean;
+}
 
 const ZONE_DESCRIPTIONS: Record<string, string> = {
   "Shadnagar": "South Hyderabad · Ranga Reddy District",
@@ -156,7 +169,7 @@ export default function CorridorDetailPage() {
         }
       } else {
         const err = await res.json();
-        alert(err.error || "Regeneration rate limit hit.");
+        toast.show(err.error || "Regeneration rate limit hit.");
       }
     } catch (err) {
       console.error(err);
@@ -226,8 +239,8 @@ export default function CorridorDetailPage() {
           <div className="space-y-4 lg:col-span-2">
             <div>
               <span className="text-[10px] font-bold uppercase tracking-widest block mb-1" style={{ color: "var(--color-saffron)", fontFamily: "var(--font-mono)" }}>Corridor Profile Deep Dive</span>
-              <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight font-display capitalize">
-                {profile.corridor}
+              <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight font-display">
+                {profile.name || profile.shortName || profile.corridor}
               </h1>
               <p className="text-xs text-slate-200 mt-1.5 font-medium flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
@@ -352,7 +365,7 @@ export default function CorridorDetailPage() {
                         <YAxis stroke="#94A3B8" />
                         <Tooltip contentStyle={{ backgroundColor: "#FFFFFF", borderColor: "#E2E8F0", fontSize: "11px", color: "#0F172A" }} />
                         <Legend wrapperStyle={{ fontSize: "10px" }} />
-                        <Line type="monotone" dataKey="price" stroke="#FFB400" strokeWidth={2.5} name={profile.corridor} dot={{ r: 4 }} />
+                        <Line type="monotone" dataKey="price" stroke="#FFB400" strokeWidth={2.5} name={profile.shortName || profile.name || profile.corridor} dot={{ r: 4 }} />
                         <Line type="monotone" dataKey="benchmark" stroke="#94A3B8" strokeDasharray="4 4" strokeWidth={1.5} name="Hyd Metro Average" dot={false} />
                       </LineChart>
                     </ResponsiveContainer>
@@ -551,8 +564,55 @@ export default function CorridorDetailPage() {
           <div className="space-y-10 animate-fade-in">
             <div className="section-header border-l-4 border-saffron pl-4">
               <h3 className="text-sm font-bold text-text-primary uppercase tracking-wider mb-2">Government Infrastructure pipeline</h3>
-              <p className="text-text-secondary text-xs">Timeline of public expressway, metro link, and industrial developments affecting {profile.corridor} corridor growth.</p>
+              <p className="text-text-secondary text-xs">Timeline of public expressway, metro link, and industrial developments affecting growth in {profile.shortName || profile.name || profile.corridor}.</p>
             </div>
+
+            {/* What drives the infra score — from the live infra pipeline */}
+            {infra?.movement?.drivers?.length > 0 && (() => {
+              const drivers = infra.movement.drivers.slice(0, 5);
+              const top = Math.max(...drivers.map((d: InfraDriver) => d.contribution), 0.001);
+              const days: number | null = infra.lastUpdatedDaysAgo ?? null;
+              return (
+                <div className="border border-luxury rounded bg-white shadow-sm p-6 space-y-4">
+                  <div className="flex flex-wrap items-baseline justify-between gap-2">
+                    <div className="text-xs font-bold text-text-primary uppercase tracking-wider">
+                      What drives the {infra.movement.infraScore}/25 infra score
+                      {infra.movement.delta !== null && infra.movement.delta !== 0 && (
+                        <span className={`ml-2 px-1.5 py-0.5 rounded text-[10px] ${infra.movement.delta > 0 ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>
+                          {infra.movement.delta > 0 ? "+" : ""}{infra.movement.delta} since last update
+                        </span>
+                      )}
+                    </div>
+                    {days !== null && (
+                      <div className="text-[11px] text-text-secondary">
+                        Project data verified {days === 0 ? "today" : days === 1 ? "yesterday" : `${days} days ago`}
+                      </div>
+                    )}
+                  </div>
+                  <div className="space-y-2.5">
+                    {drivers.map((d: InfraDriver) => (
+                      <div key={d.projectId} className="grid grid-cols-[minmax(0,1fr)_96px] sm:grid-cols-[minmax(0,1fr)_160px] items-center gap-3 text-xs">
+                        <div className="min-w-0">
+                          <div className="font-semibold text-text-primary truncate">{d.name}</div>
+                          <div className="text-[11px] text-text-secondary">
+                            {String(d.status).replace(/_/g, " ").toLowerCase()}
+                            {d.distanceKm !== null ? ` · ${d.distanceKm} km away` : ""}
+                            {d.momentum > 0 ? " · progressed recently" : ""}
+                            {d.stale ? " · awaiting fresh confirmation" : ""}
+                          </div>
+                        </div>
+                        <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
+                          <div className="h-full rounded-full bg-saffron" style={{ width: `${Math.max(4, (d.contribution / top) * 100)}%` }} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[11px] text-text-secondary">
+                    Weighted by distance, construction stage, time to completion and recent progress. Updated automatically as projects move.
+                  </p>
+                </div>
+              );
+            })()}
 
             {/* Timeline View */}
             {!infra?.projects || infra.projects.length === 0 ? (
@@ -638,7 +698,7 @@ export default function CorridorDetailPage() {
                                 <div className="flex items-center gap-2">
                                   <span className="font-semibold text-text-primary text-[11px]">{m.title}</span>
                                   {m.date && (
-                                    <span className="text-[9px] text-text-secondary">({new Date(m.date).toLocaleDateString()})</span>
+                                    <span className="text-[9px] text-text-secondary">({formatDate(m.date)})</span>
                                   )}
                                 </div>
                                 {m.description && <p className="text-[10px] text-text-secondary">{m.description}</p>}
@@ -729,7 +789,7 @@ export default function CorridorDetailPage() {
                           <td className="px-4 py-3.5 text-text-secondary">{app.approvalType.replace(/_/g, " ")}</td>
                           <td className="px-4 py-3.5 font-mono text-[11px] text-text-secondary">{app.approvalNumber || "—"}</td>
                           <td className="px-4 py-3.5 text-text-secondary">
-                            {app.approvalDate ? new Date(app.approvalDate).toLocaleDateString() : "—"}
+                            {formatDate(app.approvalDate)}
                           </td>
                           <td className="px-4 py-3.5 text-right font-semibold text-text-primary">{app.areaAcres ? `${app.areaAcres} ac` : "—"}</td>
                           <td className="px-4 py-3.5">
@@ -784,7 +844,7 @@ export default function CorridorDetailPage() {
                   <Brain className="text-primary" size={16} /> AI Investment Research Report
                 </h3>
                 <p className="text-text-secondary text-[10px] mt-0.5">
-                  Generated: {aiAnalysis?.generatedAt ? new Date(aiAnalysis.generatedAt).toLocaleDateString() : "June 15, 2026"}
+                  Generated: {formatDate(aiAnalysis?.generatedAt)}
                 </p>
               </div>
               <button

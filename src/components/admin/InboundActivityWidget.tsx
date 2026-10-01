@@ -167,7 +167,7 @@ export default function InboundActivityWidget() {
                 <p className="text-xs text-[#6E6D8A] truncate max-w-lg">
                   "{item.rawEnquiryText || 'Enquiry received'}"
                 </p>
-                {item.aiExtractedBudget && (
+                {Number(item.aiExtractedBudget) > 0 && (
                   <div className="flex items-center gap-2 text-[10px] text-[#5B4FE0] font-semibold">
                     <Sparkles size={11} />
                     <span>AI Extracted: ₹{item.aiExtractedBudget}L Budget</span>

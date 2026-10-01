@@ -13,7 +13,7 @@ export async function POST(req: Request) {
   const { code } = await req.json();
   if (!code) return NextResponse.json({ error: "Enter the code." }, { status: 400 });
 
-  const result = verifyOtp(session.user.id, String(code));
+  const result = await verifyOtp(session.user.id, String(code));
   if (!result.ok) return NextResponse.json({ error: result.reason }, { status: 400 });
 
   await prisma.user.update({ where: { id: session.user.id }, data: { phoneVerified: true } });

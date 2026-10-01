@@ -1,6 +1,7 @@
 import prisma from "../prisma";
 
-export async function resolveMergeTags(templateText: string, leadId: string): Promise<string> {
+/** Every merge tag's value for a lead, keyed "{{tag}}". Null when the lead is gone. */
+export async function mergeTagValues(leadId: string): Promise<Record<string, string> | null> {
   const lead = await prisma.lead.findUnique({
     where: { id: leadId },
     include: {
@@ -19,7 +20,7 @@ export async function resolveMergeTags(templateText: string, leadId: string): Pr
     }
   });
 
-  if (!lead) return templateText;
+  if (!lead) return null;
 
   const matchedProj = lead.matches[0]?.project || null;
   
@@ -47,6 +48,21 @@ export async function resolveMergeTags(templateText: string, leadId: string): Pr
     "{{project_name}}": matchedProj?.name || "Premium Villa Plots",
     "{{project_price}}": matchedProj ? `₹${matchedProj.minBudgetLakhs}L` : "₹45L",
   };
+  return replacements;
+}
+
+/** Values for a WABA template's positional params, from merge-tag names ("lead_name" or "{{lead_name}}"). */
+export async function resolveTemplateParams(tags: string[], leadId: string): Promise<string[]> {
+  const values = (await mergeTagValues(leadId)) ?? {};
+  return tags.map((t) => {
+    const key = t.startsWith("{{") ? t : `{{${t}}}`;
+    return values[key] ?? "";
+  });
+}
+
+export async function resolveMergeTags(templateText: string, leadId: string): Promise<string> {
+  const replacements = await mergeTagValues(leadId);
+  if (!replacements) return templateText;
 
   let resolvedText = templateText;
   for (const [tag, value] of Object.entries(replacements)) {

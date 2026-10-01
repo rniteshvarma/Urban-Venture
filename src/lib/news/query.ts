@@ -8,6 +8,7 @@
 
 import type { Prisma } from '@prisma/client';
 import prisma from '../prisma';
+import { isMockMode } from './providers';
 
 export async function buildFeedWhere(
   extra: Prisma.NewsArticleWhereInput = {},
@@ -24,6 +25,8 @@ export async function buildFeedWhere(
   if (blocked.length > 0) {
     base.sourceName = { notIn: blocked.map((b) => b.name) };
   }
+  // Live mode must never surface the fictional sample articles.
+  if (!isMockMode()) base.provider = { not: 'mock' };
 
   return { AND: [base, extra] };
 }

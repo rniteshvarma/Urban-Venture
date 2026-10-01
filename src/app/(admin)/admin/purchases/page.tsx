@@ -23,15 +23,20 @@ export default function PurchasesPage() {
       const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
-        setPurchases(data);
-        
-        // Calculate stats
-        const totalInvested = data.reduce((sum: number, p: any) => sum + p.purchasePrice, 0);
-        const totalValue = data.reduce((sum: number, p: any) => sum + p.currentValue, 0);
-        const avgAppreciation = totalInvested > 0 ? ((totalValue - totalInvested) / totalInvested) * 100 : 0;
-        
+        // API shape: { purchases: [...with appreciation], stats: {...} }
+        type Row = { purchasePrice: number; currentValue?: number; appreciation?: { currentEstimatedValue?: number } | null };
+        const list = ((Array.isArray(data) ? data : data.purchases ?? []) as Row[]).map((p) => ({
+          ...p,
+          currentValue: p.currentValue ?? p.appreciation?.currentEstimatedValue ?? p.purchasePrice,
+        }));
+        setPurchases(list);
+
+        const totalInvested = data.stats?.totalInvested ?? list.reduce((sum, p) => sum + p.purchasePrice, 0);
+        const totalValue = data.stats?.totalPortfolioValue ?? list.reduce((sum, p) => sum + p.currentValue, 0);
+        const avgAppreciation = data.stats?.avgAppreciation ?? (totalInvested > 0 ? ((totalValue - totalInvested) / totalInvested) * 100 : 0);
+
         setStats({
-          totalPurchases: data.length,
+          totalPurchases: data.stats?.totalPurchases ?? list.length,
           totalValue,
           totalInvested,
           avgAppreciation

@@ -11,6 +11,8 @@ import {
   Calendar,
   AlertCircle
 } from "lucide-react";
+import { toast } from "@/lib/toast";
+import { PERSONA_KEYS, PERSONA_META } from "@/lib/personas";
 
 const SENTIMENTS = [
   { value: "BULLISH", label: "Bullish", color: "bg-emerald-100 text-emerald-800" },
@@ -18,14 +20,7 @@ const SENTIMENTS = [
   { value: "CAUTIOUS", label: "Cautious", color: "bg-rose-100 text-rose-800" },
 ];
 
-const PERSONAS = [
-  { value: "FIRST_TIME_BUYER", label: "First-Time Buyer" },
-  { value: "NRI_INVESTOR", label: "NRI Investor" },
-  { value: "LAND_SPECULATOR", label: "Land Speculator" },
-  { value: "RETIREMENT_PLANNER", label: "Retirement Planner" },
-  { value: "HNI_PORTFOLIO_BUILDER", label: "HNI Portfolio Builder" },
-  { value: "PROFESSIONAL_FIRST_HOME", label: "Professional First Home" },
-];
+const PERSONAS = PERSONA_KEYS.map((value) => ({ value, label: PERSONA_META[value].label }));
 
 export default function CorridorIntelligencePage() {
   const [corridors, setCorridors] = useState<any[]>([]);
@@ -67,7 +62,7 @@ export default function CorridorIntelligencePage() {
       const res = await fetch("/api/admin/intelligence/recompute", { method: "POST" });
       if (res.ok) {
         const data = await res.json();
-        alert(data.message || "Recomputed all scores successfully!");
+        toast.show(data.message || "Recomputed all scores successfully!");
         fetchCorridors();
       }
     } catch (err) {
@@ -123,7 +118,7 @@ export default function CorridorIntelligencePage() {
         fetchCorridors();
       } else {
         const err = await res.json();
-        alert(`Error: ${err.error || "Failed to update overrides"}`);
+        toast.show(`Error: ${err.error || "Failed to update overrides"}`);
       }
     } catch (err) {
       console.error(err);

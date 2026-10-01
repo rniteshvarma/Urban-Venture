@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { StageKey, StageStatus } from "@prisma/client";
+import { toast } from "@/lib/toast";
 
 interface ActionItem {
   id: string;
@@ -127,11 +128,11 @@ export default function LeadRoadmapTimeline({ roadmap, onRefresh }: LeadRoadmapT
         onRefresh();
       } else {
         const errorData = await res.json().catch(() => ({}));
-        alert(`Failed to update stage status: ${errorData.error || "Server Error"}${errorData.details ? " - " + errorData.details : ""}`);
+        toast.show(`Failed to update stage status: ${errorData.error || "Server Error"}${errorData.details ? " - " + errorData.details : ""}`);
       }
     } catch (err: any) {
       console.error(err);
-      alert(`Error occurred updating status: ${err.message || "Connection failed"}`);
+      toast.show(`Error occurred updating status: ${err.message || "Connection failed"}`);
     } finally {
       setSavingStageId(null);
     }
@@ -149,11 +150,11 @@ export default function LeadRoadmapTimeline({ roadmap, onRefresh }: LeadRoadmapT
         onRefresh();
       } else {
         const errorData = await res.json().catch(() => ({}));
-        alert(`Failed to save stage notes: ${errorData.error || "Server Error"}${errorData.details ? " - " + errorData.details : ""}`);
+        toast.show(`Failed to save stage notes: ${errorData.error || "Server Error"}${errorData.details ? " - " + errorData.details : ""}`);
       }
     } catch (err: any) {
       console.error(err);
-      alert(`Error occurred saving notes: ${err.message || "Connection failed"}`);
+      toast.show(`Error occurred saving notes: ${err.message || "Connection failed"}`);
     } finally {
       setSavingStageId(null);
     }

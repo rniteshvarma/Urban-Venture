@@ -5,6 +5,7 @@ import ResearchForm from "@/components/client/ResearchForm";
 import ReportCard from "@/components/client/ReportCard";
 import { PageHero } from "@/components/ui";
 import { Bot } from "lucide-react";
+import { toast } from "@/lib/toast";
 
 const RESEARCH_STEPS = [
   "Analysing 15 Hyderabad corridors…",
@@ -61,11 +62,11 @@ export default function ResearchPage() {
         setReportData(responseData.recommendations);
         setSearchId(responseData.searchId);
       } else {
-        alert(responseData.details ? `${responseData.error}: ${responseData.details}` : responseData.error || "An error occurred during recommendations generation.");
+        toast.show(responseData.details ? `${responseData.error}: ${responseData.details}` : responseData.error || "An error occurred during recommendations generation.");
       }
     } catch (err: any) {
       console.error(err);
-      alert(`Failed to connect to the recommendations server: ${err.message || "Connection failed"}`);
+      toast.show(`Failed to connect to the recommendations server: ${err.message || "Connection failed"}`);
     } finally {
       setIsLoading(false);
     }

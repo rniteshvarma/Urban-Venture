@@ -14,6 +14,7 @@ import {
   ChevronRight
 } from "lucide-react";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
+import { toast } from "@/lib/toast";
 
 export default function AppreciationPage() {
   const [selectedCorridor, setSelectedCorridor] = useState("shadnagar");
@@ -104,11 +105,11 @@ export default function AppreciationPage() {
         fetchCorridorPoints();
       } else {
         const err = await res.json();
-        alert(`Error: ${err.error || "Failed to save data point"}`);
+        toast.show(`Error: ${err.error || "Failed to save data point"}`);
       }
     } catch (err) {
       console.error(err);
-      alert("Error saving data point");
+      toast.show("Error saving data point");
     }
   };
 
@@ -160,11 +161,11 @@ export default function AppreciationPage() {
         fetchCorridorPoints();
       } else {
         const err = await res.json();
-        alert(`Error: ${err.error || "Failed to import CSV"}`);
+        toast.show(`Error: ${err.error || "Failed to import CSV"}`);
       }
     } catch (err) {
       console.error(err);
-      alert("Error uploading CSV");
+      toast.show("Error uploading CSV");
     } finally {
       setImporting(false);
     }

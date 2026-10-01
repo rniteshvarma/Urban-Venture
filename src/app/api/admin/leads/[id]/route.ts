@@ -26,6 +26,7 @@ export async function GET(
       where: { id },
       include: {
         project: true,
+        conversations: { select: { id: true, state: true, channel: true, updatedAt: true, reportUrl: true }, orderBy: { createdAt: "desc" }, take: 5 },
         user: {
           include: {
             searches: {

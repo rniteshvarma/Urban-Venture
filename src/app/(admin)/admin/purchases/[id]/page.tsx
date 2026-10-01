@@ -4,6 +4,7 @@ import React, { useState, useEffect, use } from "react";
 import Link from "next/link";
 import { ArrowLeft, MapPin, Building, Calendar, IndianRupee, FileText, CheckCircle2, TrendingUp, TrendingDown, Clock, Download, UploadCloud } from "lucide-react";
 import AppreciationChart from "@/components/admin/AppreciationChart";
+import { toast } from "@/lib/toast";
 
 export default function PurchaseDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
@@ -39,7 +40,7 @@ export default function PurchaseDetailPage({ params }: { params: Promise<{ id: s
       }
     } catch (err) {
       console.error(err);
-      alert("Failed to update status");
+      toast.show("Failed to update status");
     } finally {
       setIsUpdatingStatus(false);
     }

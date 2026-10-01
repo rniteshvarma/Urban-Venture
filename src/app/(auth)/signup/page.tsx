@@ -31,7 +31,8 @@ function SignupInner() {
 
   const [step, setStep] = useState<"identity" | "phone" | "otp">("identity");
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  // Pre-filled when arriving from the footer "weekly brief" box.
+  const [email, setEmail] = useState(() => params.get("email") ?? "");
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
   const [whatsappOptIn, setWhatsappOptIn] = useState(true);
@@ -180,7 +181,7 @@ function SignupInner() {
         Enter the 6-digit code sent to +91 {phone.replace(/\D/g, "").slice(-10)}.
       </p>
       <OtpBoxes onComplete={confirmOtp} disabled={loading} />
-      {devCode && <p style={{ marginTop: 12, fontSize: "0.75rem", color: "var(--color-caution)", fontFamily: "var(--font-mono)" }}>Dev stub — WATI not configured. Code: {devCode}</p>}
+      {devCode && <p style={{ marginTop: 12, fontSize: "0.75rem", color: "var(--color-caution)", fontFamily: "var(--font-mono)" }}>Dry run — no WhatsApp provider configured. Code: {devCode}</p>}
       {error && <div style={{ marginTop: 12 }}><ErrorBox>{error}</ErrorBox></div>}
       <div style={{ display: "flex", justifyContent: "space-between", marginTop: 18 }}>
         <button type="button" onClick={resend} disabled={resendIn > 0} style={{ background: "none", border: "none", color: resendIn > 0 ? "var(--color-text-lo)" : "var(--color-saffron-deep)", fontSize: "0.8125rem", fontWeight: 600, cursor: resendIn > 0 ? "default" : "pointer" }}>

@@ -25,7 +25,7 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Template not found" }, { status: 404 });
       }
       
-      const result = await fireWhatsAppTrigger(leadId, template.trigger);
+      const result = await fireWhatsAppTrigger(leadId, template.trigger, undefined, { templateId: template.id });
       if (result.success) {
         return NextResponse.json({ success: true, logId: result.logId });
       } else {

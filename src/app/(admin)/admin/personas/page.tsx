@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Users, DollarSign, Calendar, TrendingUp, RefreshCw, Compass, Sparkles, ChevronRight, Megaphone } from "lucide-react";
+import { toast } from "@/lib/toast";
 
 interface PersonaStat {
   persona: string;
@@ -48,15 +49,15 @@ export default function AdminPersonasPage() {
         method: "POST"
       });
       if (res.ok) {
-        alert("Bulk persona reclassification complete!");
+        toast.show("Bulk persona reclassification complete!");
         loadStats();
       } else {
         const data = await res.json();
-        alert(`Failed to reclassify leads: ${data.error || "Server Error"}${data.details ? " - " + data.details : ""}`);
+        toast.show(`Failed to reclassify leads: ${data.error || "Server Error"}${data.details ? " - " + data.details : ""}`);
       }
     } catch (err: any) {
       console.error(err);
-      alert(`Error executing bulk classification: ${err.message || "Connection failed"}`);
+      toast.show(`Error executing bulk classification: ${err.message || "Connection failed"}`);
     } finally {
       setIsReclassifying(false);
     }

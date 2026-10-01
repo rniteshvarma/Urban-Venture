@@ -100,6 +100,8 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       where: { id },
       data: {
         ...rest,
+        // An admin-entered impact score wins over the model-derived one.
+        impactOverridden: true,
         affectedCorridors: finalSlugs,
         affectedCorridorSlugs: finalSlugs,
         corridors: {

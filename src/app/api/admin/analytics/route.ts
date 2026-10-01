@@ -281,6 +281,11 @@ export async function GET(req: Request) {
         ).length,
         activeProjects: await prisma.project.count({ where: { status: "ACTIVE" } }),
         conversionRate: totalLeads > 0 ? ((convertedLeads / totalLeads) * 100).toFixed(1) : "0",
+        // Supporting numbers so the dashboard's badges and bars reflect real data.
+        contactedLeads: leads.filter((l) => l.status !== "NEW").length,
+        convertedLeads,
+        totalProjects: await prisma.project.count(),
+        corridorsCovered: (await prisma.project.findMany({ where: { status: "ACTIVE" }, select: { corridor: true }, distinct: ["corridor"] })).filter((p) => p.corridor).length,
       },
     });
   } catch (error: any) {

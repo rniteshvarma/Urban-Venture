@@ -404,7 +404,7 @@ export default function MarketHubPage() {
                   <span className="text-[10px] font-mono text-text-secondary">CAGR: <strong className="text-navy-ink badge-hot">{c.projectedCAGRMin || 12}% - {c.projectedCAGRMax || 16}%</strong></span>
                   <Link
                     href={`/market/${c.corridor}`}
-                    className="inline-flex items-center gap-1 text-xs font-bold text-navy-ink hover:text-blue-500 transition-colors"
+                    className="inline-flex items-center gap-1 text-xs font-bold text-navy-ink hover:text-accent transition-colors py-2 -my-2"
                   >
                     Deep Dive Audit <ArrowUpRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
                   </Link>

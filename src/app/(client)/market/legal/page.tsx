@@ -16,6 +16,15 @@ import {
   XCircle
 } from "lucide-react";
 
+/** "kadthal-fcda" → "Kadthal FCDA", "shankarpally-mokila" → "Shankarpally Mokila". */
+const ACRONYMS = new Set(["fcda", "orr", "rrr", "it", "sez", "nh", "hmda", "gcc"]);
+function zoneLabel(slug: string): string {
+  return slug
+    .split("-")
+    .map((w) => (ACRONYMS.has(w.toLowerCase()) ? w.toUpperCase() : w.charAt(0).toUpperCase() + w.slice(1)))
+    .join(" ");
+}
+
 export default function LegalHubPage() {
   const [risks, setRisks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -259,8 +268,8 @@ export default function LegalHubPage() {
                       <div className="flex flex-wrap items-center gap-1.5 pt-2">
                         <span className="text-[9px] text-text-secondary font-mono uppercase font-bold">Risk Boundaries:</span>
                         {risk.affectedZones.map((z: string) => (
-                          <span key={z} className="bg-surface-dim px-2 py-0.5 rounded text-[10px] font-mono text-text-primary border border-gray-100">
-                            {z}
+                          <span key={z} className="bg-surface-dim px-2 py-0.5 rounded text-[10px] font-semibold text-text-primary border border-gray-100">
+                            {zoneLabel(z)}
                           </span>
                         ))}
                       </div>

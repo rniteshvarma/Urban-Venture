@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import InfraRefreshButton from "@/components/admin/InfraRefreshButton";
 import { 
   Plus, 
   Search, 
@@ -16,6 +17,7 @@ import {
   MapPin,
   ChevronRight
 } from "lucide-react";
+import { toast } from "@/lib/toast";
 
 const CATEGORIES = [
   { value: "ROAD_HIGHWAY", label: "Roads & Highways", icon: "🛣️" },
@@ -240,11 +242,11 @@ export default function InfrastructureProjectsPage() {
         fetchProjects();
       } else {
         const err = await res.json();
-        alert(`Error: ${err.error || "Failed to save project"}`);
+        toast.show(`Error: ${err.error || "Failed to save project"}`);
       }
     } catch (err) {
       console.error(err);
-      alert("Error saving project");
+      toast.show("Error saving project");
     }
   };
 
@@ -298,12 +300,15 @@ export default function InfrastructureProjectsPage() {
             Infrastructure Projects
           </h1>
         </div>
-        <button
-          onClick={handleOpenAddModal}
-          className="crm-btn-primary text-xs"
-        >
-          <Plus size={14} /> Add Infra Project
-        </button>
+        <div className="flex items-center gap-2">
+          <InfraRefreshButton onDone={() => fetchProjects()} label="Refresh from sources" />
+          <button
+            onClick={handleOpenAddModal}
+            className="crm-btn-primary text-xs"
+          >
+            <Plus size={14} /> Add Infra Project
+          </button>
+        </div>
       </div>
 
       {/* Filters */}

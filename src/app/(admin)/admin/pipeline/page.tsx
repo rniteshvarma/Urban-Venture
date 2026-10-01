@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { DndContext, DragEndEvent, useDroppable, useDraggable } from "@dnd-kit/core";
 import { RefreshCw, AlertTriangle, ChevronRight, User } from "lucide-react";
+import { toast } from "@/lib/toast";
 
 interface KanbanCard {
   id: string;
@@ -266,7 +267,7 @@ export default function AdminPipelinePage() {
       loadPipelineData();
     } catch (err: any) {
       console.error("Failed to move card in pipeline", err);
-      alert(`Failed to update lead stage: ${err.message || "Reverting layout."}`);
+      toast.show(`Failed to update lead stage: ${err.message || "Reverting layout."}`);
       loadPipelineData();
     }
   };

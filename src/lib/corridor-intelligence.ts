@@ -1,23 +1,10 @@
 import prisma from "./prisma";
 import Anthropic from "@anthropic-ai/sdk";
 import { ApprovalType, Sentiment } from "@prisma/client";
-
-// Helper to determine status weight for Infra projects
-function getInfraStatusWeight(status: string): number {
-  switch (status) {
-    case "COMPLETE": return 10;
-    case "PARTIALLY_COMPLETE": return 9;
-    case "UNDER_CONSTRUCTION": return 8;
-    case "APPROVED": return 6;
-    case "LAND_ACQUISITION": return 4;
-    case "ANNOUNCED": return 2;
-    case "DELAYED": return 1;
-    default: return 0;
-  }
-}
+import { corridorInfraFromDb, snapshotCorridor } from "./infra-intel/rescore";
 
 // Generate static fallback AI commentary and drivers for local/mock testing
-function getFallbackAIAnalysis(corridor: string, score: number) {
+function getFallbackAIAnalysis(corridor: string, score: number, label: string = corridor) {
   let sentiment = "NEUTRAL";
   if (score >= 75) sentiment = "BULLISH";
   else if (score < 50) sentiment = "CAUTIOUS";
@@ -158,31 +145,22 @@ function getFallbackAIAnalysis(corridor: string, score: number) {
     keyDrivers,
     keyRisks,
     bestFor,
-    adminNote: `${corridor} shows a ${sentiment.toLowerCase()} sentiment score of ${score}/100. Growth is anchored by major government announcements, developer activity, and steady historical price growth.`
+    adminNote: `${label} shows a ${sentiment.toLowerCase()} sentiment score of ${score}/100. Growth is anchored by major government announcements, developer activity, and steady historical price growth.`
   };
 }
 
 export async function computeCorridorScore(corridor: string) {
   console.log(`Calculating Corridor Intelligence Score for: ${corridor}`);
 
-  // 1. INFRA SCORE (0-25)
-  // Count InfraProjects affecting this corridor, weight by status and reImpactScore
-  const infraProjects = await prisma.infraProject.findMany({
-    where: {
-      affectedCorridorSlugs: {
-        has: corridor
-      },
-      isPublished: true
-    }
-  });
-
-  let totalInfraWeight = 0;
-  for (const proj of infraProjects) {
-    const statusWeight = getInfraStatusWeight(proj.status);
-    totalInfraWeight += statusWeight * proj.reImpactScore;
-  }
-  // Max out at 25. (Using a factor of 0.2 to map a score of 125 to 25)
-  const infraScore = Math.min(25, Math.round(totalInfraWeight * 0.2));
+  // 1. INFRA SCORE (0-25) — dynamic: distance, stage, time-to-completion,
+  // 90-day momentum and staleness per project (src/lib/infra-intel/scoring.ts).
+  // Replaces the old Σ statusWeight × reImpactScore × 0.2, which saturated at
+  // three projects and ignored distance, time and change.
+  const labelRow = await prisma.corridorProfile.findUnique({ where: { slug: corridor }, select: { shortName: true, name: true } });
+  const corridorLabel = labelRow?.shortName || labelRow?.name || corridor;
+  const infraResult = await corridorInfraFromDb(corridor);
+  const infraScore = infraResult.infraScore;
+  const infraProjects = infraResult.drivers.map((d) => ({ name: d.name, status: d.status, reImpactScore: Math.round(d.contribution * 10) }));
 
   // 2. APPROVAL SCORE (0-25)
   // Count approvals in the last 3 years (36 months). Recency bonus: last 12 months = 1.5x
@@ -324,7 +302,7 @@ export async function computeCorridorScore(corridor: string) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey || apiKey === "mock-anthropic-key-for-local-testing" || apiKey.trim() === "") {
     console.log("Using local mock AI commentary (API key not configured/mocked)");
-    const fallback = getFallbackAIAnalysis(corridor, overallScore);
+    const fallback = getFallbackAIAnalysis(corridor, overallScore, corridorLabel);
     keyDrivers = fallback.keyDrivers;
     keyRisks = fallback.keyRisks;
     bestFor = fallback.bestFor;
@@ -376,7 +354,7 @@ export async function computeCorridorScore(corridor: string) {
       }
     } catch (e) {
       console.error("Failed to generate AI commentary from Claude, falling back", e);
-      const fallback = getFallbackAIAnalysis(corridor, overallScore);
+      const fallback = getFallbackAIAnalysis(corridor, overallScore, corridorLabel);
       keyDrivers = fallback.keyDrivers;
       keyRisks = fallback.keyRisks;
       bestFor = fallback.bestFor;
@@ -419,6 +397,8 @@ export async function computeCorridorScore(corridor: string) {
       lastComputedAt: new Date()
     }
   });
+
+  await snapshotCorridor(corridor, infraResult, overallScore);
 
   // Also update CorridorProfile directly
   await prisma.corridorProfile.update({

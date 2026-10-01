@@ -25,6 +25,7 @@ import {
   Sparkles,
   Info
 } from "lucide-react";
+import { toast } from "@/lib/toast";
 
 interface Corridor {
   id: string;
@@ -168,11 +169,11 @@ function CalculatorContent() {
         setLeadSubmitted(true);
       } else {
         const errData = await res.json().catch(() => ({}));
-        alert(`Failed to submit inquiry: ${errData.error || "Failed to submit inquiry. Please try again."}${errData.details ? " - " + errData.details : ""}`);
+        toast.show(`Failed to submit inquiry: ${errData.error || "Failed to submit inquiry. Please try again."}${errData.details ? " - " + errData.details : ""}`);
       }
     } catch (err: any) {
       console.error(err);
-      alert(`Error submitting inquiry: ${err.message || "Connection failed"}`);
+      toast.show(`Error submitting inquiry: ${err.message || "Connection failed"}`);
     } finally {
       setIsSubmittingLead(false);
     }

@@ -18,6 +18,7 @@ import {
   Search,
   ArrowLeft
 } from "lucide-react";
+import { toast } from "@/lib/toast";
 
 interface WATemplate {
   id: string;
@@ -229,11 +230,11 @@ export default function BroadcastTemplatesPage() {
         loadTemplates();
       } else {
         const data = await res.json();
-        alert(`Failed to save template: ${data.error || "Unknown error"}`);
+        toast.show(`Failed to save template: ${data.error || "Unknown error"}`);
       }
     } catch (err) {
       console.error(err);
-      alert("Error occurred while saving.");
+      toast.show("Error occurred while saving.");
     } finally {
       setIsSaving(false);
     }
@@ -342,6 +343,9 @@ export default function BroadcastTemplatesPage() {
 
                       <button 
                         onClick={() => handleToggleActive(t.id, "WHATSAPP", t.isActive)}
+                        role="switch"
+                        aria-checked={t.isActive}
+                        aria-label={`${t.isActive ? "Deactivate" : "Activate"} ${t.name ?? "template"}`}
                         className="text-slate-500 hover:text-primary transition-colors focus:outline-none"
                       >
                         {t.isActive ? (
@@ -405,6 +409,9 @@ export default function BroadcastTemplatesPage() {
 
                       <button 
                         onClick={() => handleToggleActive(t.id, "EMAIL", t.isActive)}
+                        role="switch"
+                        aria-checked={t.isActive}
+                        aria-label={`${t.isActive ? "Deactivate" : "Activate"} ${t.name ?? "template"}`}
                         className="text-slate-500 hover:text-primary transition-colors focus:outline-none"
                       >
                         {t.isActive ? (

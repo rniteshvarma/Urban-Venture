@@ -4,6 +4,9 @@ import React, { useState, useEffect, use } from "react";
 import Link from "next/link";
 import { StageStatus } from "@prisma/client";
 import LeadRoadmapTimeline from "@/components/admin/LeadRoadmapTimeline";
+import { toast } from "@/lib/toast";
+import BuyerProfileCard from "@/components/admin/BuyerProfileCard";
+import { isPlaceholderEmail } from "@/lib/placeholder-email";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -91,11 +94,11 @@ export default function LeadDetailPage({ params }: PageProps) {
         loadData();
       } else {
         const data = await res.json();
-        alert(`Failed to initialize roadmap: ${data.error || "Server Error"}${data.details ? " - " + data.details : ""}`);
+        toast.show(`Failed to initialize roadmap: ${data.error || "Server Error"}${data.details ? " - " + data.details : ""}`);
       }
     } catch (err: any) {
       console.error(err);
-      alert(`Error initializing roadmap: ${err.message || "Connection failed"}`);
+      toast.show(`Error initializing roadmap: ${err.message || "Connection failed"}`);
     } finally {
       setIsInitializingRoadmap(false);
     }
@@ -130,11 +133,11 @@ export default function LeadDetailPage({ params }: PageProps) {
         }
       } else {
         const data = await res.json();
-        alert(`Failed to save note: ${data.error || "Server Error"}${data.details ? " - " + data.details : ""}`);
+        toast.show(`Failed to save note: ${data.error || "Server Error"}${data.details ? " - " + data.details : ""}`);
       }
     } catch (err: any) {
       console.error(err);
-      alert(`Error saving note: ${err.message || "Connection failed"}`);
+      toast.show(`Error saving note: ${err.message || "Connection failed"}`);
     } finally {
       setIsSavingNote(false);
     }
@@ -277,7 +280,11 @@ export default function LeadDetailPage({ params }: PageProps) {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-luxury/40 text-xs">
           <div>
             <span className="text-[10px] text-text-secondary uppercase block mb-0.5">Email</span>
-            <a href={`mailto:${lead.email}`} className="font-semibold text-primary underline">{lead.email}</a>
+            {isPlaceholderEmail(lead.email) ? (
+              <span className="font-semibold text-text-secondary">— WhatsApp only</span>
+            ) : (
+              <a href={`mailto:${lead.email}`} className="font-semibold text-primary underline break-all">{lead.email}</a>
+            )}
           </div>
           <div>
             <span className="text-[10px] text-text-secondary uppercase block mb-0.5">Phone</span>
@@ -294,19 +301,25 @@ export default function LeadDetailPage({ params }: PageProps) {
             <span className="font-semibold text-primary capitalize">{lead.city}</span>
           </div>
         </div>
+
+        <BuyerProfileCard lead={lead} />
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-luxury gap-2 pb-2">
+      <div role="tablist" className="flex border-b border-luxury gap-2 pb-2 overflow-x-auto -mx-1 px-1">
         <button
+          role="tab"
+          aria-selected={activeTab === "roadmap"}
           onClick={() => setActiveTab("roadmap")}
-          className={activeTab === "roadmap" ? "filter-pill-active" : "filter-pill"}
+          className={`${activeTab === "roadmap" ? "filter-pill-active" : "filter-pill"} shrink-0`}
         >
           🛣️ Closure Roadmap
         </button>
         <button
+          role="tab"
+          aria-selected={activeTab === "profile"}
           onClick={() => setActiveTab("profile")}
-          className={activeTab === "profile" ? "filter-pill-active" : "filter-pill"}
+          className={`${activeTab === "profile" ? "filter-pill-active" : "filter-pill"} shrink-0`}
         >
           📋 Client Profile & AI History
         </button>

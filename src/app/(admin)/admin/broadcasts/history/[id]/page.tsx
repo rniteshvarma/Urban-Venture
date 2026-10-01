@@ -19,6 +19,7 @@ import {
   Eye,
   Activity
 } from "lucide-react";
+import { toast } from "@/lib/toast";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -144,7 +145,7 @@ export default function BroadcastReportPage({ params }: PageProps) {
         // Polling will auto-trigger via useEffect
       } else {
         const data = await res.json();
-        alert(`Failed to retry: ${data.error || "Unknown error"}`);
+        toast.show(`Failed to retry: ${data.error || "Unknown error"}`);
       }
     } catch (err) {
       console.error(err);

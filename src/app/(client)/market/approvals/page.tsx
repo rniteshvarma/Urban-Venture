@@ -13,6 +13,7 @@ import {
   ExternalLink,
   ArrowRight
 } from "lucide-react";
+import { formatDate } from "@/lib/format";
 
 const APPROVAL_TYPES = [
   { value: "LAYOUT_APPROVAL", label: "Layout Approval (LP)" },
@@ -251,7 +252,7 @@ export default function ApprovalsDirectoryPage() {
                         {app.approvalDate ? (
                           <span className="flex items-center gap-1.5">
                             <Calendar size={11} className="text-text-secondary" />
-                            {new Date(app.approvalDate).toLocaleDateString()}
+                            {formatDate(app.approvalDate)}
                           </span>
                         ) : "—"}
                       </td>

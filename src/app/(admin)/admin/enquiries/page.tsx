@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { Inbox, Search, ShieldCheck, Lock, Building2, User as UserIcon, ArrowRight } from "lucide-react";
+import { formatDate } from "@/lib/format";
 
 interface Enquiry {
   id: string;
@@ -161,7 +162,7 @@ export default function AdminEnquiriesPage() {
                   </span>
                   {e.listing?.corridor && <span>{e.listing.corridor}</span>}
                   {e.budgetLakh != null && <span>Budget ₹{e.budgetLakh}L</span>}
-                  <span>{new Date(e.createdAt).toLocaleDateString()}</span>
+                  <span>{formatDate(e.createdAt)}</span>
                 </div>
 
                 <div className="text-xs text-[#6E6D8A]">

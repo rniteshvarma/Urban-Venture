@@ -16,6 +16,7 @@ import {
   Mail,
   MessageSquare
 } from "lucide-react";
+import { toast } from "@/lib/toast";
 
 interface BroadcastCampaign {
   id: string;
@@ -70,7 +71,7 @@ export default function BroadcastHistoryPage() {
         setBroadcasts(prev => prev.filter(b => b.id !== id));
       } else {
         const data = await res.json();
-        alert(`Failed to delete: ${data.error || "Unknown error"}`);
+        toast.show(`Failed to delete: ${data.error || "Unknown error"}`);
       }
     } catch (err) {
       console.error(err);

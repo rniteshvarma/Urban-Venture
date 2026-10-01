@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { lookupPlace } from "@/lib/infra-intel/geo";
 
 const CORRIDOR_BASELINES: Record<string, {
   overallScore: number;
@@ -149,9 +150,7 @@ const CORRIDOR_BASELINES: Record<string, {
 // GET /api/market/corridors - Public list of all corridors with their intelligence scores and metrics
 export async function GET(req: Request) {
   try {
-    const corridors = await prisma.corridorProfile.findMany({
-      where: { isPublished: true },
-    });
+    const corridors = await prisma.corridorProfile.findMany({ where: { isPublished: true } });
 
     // Format response with calibrated baseline intelligence fallbacks
     const response = corridors.map((c: any) => {
@@ -186,8 +185,15 @@ export async function GET(req: Request) {
       const projectedCAGRMin = c.projectedCAGRMin && c.projectedCAGRMin > 0 ? c.projectedCAGRMin : baseline.projectedCAGRMin;
       const projectedCAGRMax = c.projectedCAGRMax && c.projectedCAGRMax > 0 ? c.projectedCAGRMax : baseline.projectedCAGRMax;
 
+      // Where the corridor is: stored centroid, else the gazetteer location of its short name.
+      const place = c.centroidLat == null ? lookupPlace(c.shortName ?? c.name) : null;
+      const centroidLat: number | null = c.centroidLat ?? place?.lat ?? null;
+      const centroidLng: number | null = c.centroidLng ?? place?.lng ?? null;
+
       return {
         corridor: c.slug, // Maintain "corridor" as the slug for routing / queries
+        centroidLat,
+        centroidLng,
         name: c.name,
         shortName: c.shortName,
         direction: c.direction,

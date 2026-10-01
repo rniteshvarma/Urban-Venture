@@ -89,6 +89,7 @@ export default function SourceLogsPage({ params }: { params: Promise<{ sourceId:
         <div className="flex items-center gap-3">
           <Link 
             href="/admin/integrations" 
+            aria-label="Back to integrations"
             className="p-2 rounded-full bg-white text-[#5B4FE0] border border-[#E8E5F5] hover:bg-[#F4F0FF] transition-colors"
           >
             <ArrowLeft size={18} />

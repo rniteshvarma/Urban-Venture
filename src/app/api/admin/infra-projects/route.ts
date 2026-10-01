@@ -130,6 +130,8 @@ export async function POST(req: Request) {
     const project = await prisma.infraProject.create({
       data: {
         ...rest,
+        // An admin-entered impact score wins over the model-derived one.
+        impactOverridden: true,
         affectedCorridors: finalSlugs,
         affectedCorridorSlugs: finalSlugs,
         corridors: {

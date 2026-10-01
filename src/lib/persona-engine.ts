@@ -1,9 +1,23 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { BuyerPersona, Lead } from "@prisma/client";
 import prisma from "./prisma";
+import { classifyProfile } from "./concierge/persona";
 
 // Local heuristics classifier to use when Claude API is mocked
 function heuristicsClassification(lead: any): { persona: BuyerPersona; score: number; reason: string } {
+  // Leads with a captured buyer profile (WhatsApp concierge / CRM edits) use the profile rules.
+  if (lead.purpose || lead.wantedTypes?.length) {
+    return classifyProfile({
+      purpose: lead.purpose,
+      types: lead.wantedTypes,
+      budgetMinLakh: lead.budgetMinLakh,
+      budgetMaxLakh: lead.budget,
+      horizonYears: lead.horizon,
+      timeline: lead.timeline,
+      isNri: lead.isNri,
+      requirements: lead.requirements,
+    });
+  }
   const budget = lead.budget;
   const horizon = lead.horizon;
   const city = lead.city?.toLowerCase() || "";
@@ -97,6 +111,12 @@ Classify this lead into exactly ONE persona from this list:
 - RETIREMENT_PLANNER: Budget ₹20-60L, long horizon 7-10 years, wants stable low-risk assets
 - HNI_PORTFOLIO_BUILDER: Budget above ₹1Cr, possibly multiple inquiries, wants diversified corridors
 - PROFESSIONAL_FIRST_HOME: Budget ₹30-80L, horizon 3-7 years, salaried professional (IT/medical/government)
+- COMMERCIAL_INVESTOR: Wants commercial plots, shops or offices, for yield or their own business
+- RENTAL_INCOME_SEEKER: Buys to let (apartments, commercial space); rental income over resale
+- FARMLAND_LIFESTYLE: Wants farm land, a weekend home or agri plot
+- FAMILY_UPGRADER: Own use, moving to a bigger home (villa / independent house), budget ₹80L+
+- SELF_BUILD_HOMEOWNER: Buys a plot to build their own house
+- LAND_BANKER: Patient capital, open plots held 5+ years
 
 Lead data:
 - Budget: ₹${lead.budget} Lakhs
@@ -104,6 +124,7 @@ Lead data:
 - City: ${lead.city}
 - Number of AI searches done: ${searchCount}
 - Notes/context: ${lead.notes || 'none'}
+- Purpose: ${lead.purpose ?? 'unknown'}; wants: ${(lead.wantedTypes ?? []).join(', ') || 'unknown'}; NRI: ${lead.isNri ? 'yes' : 'no'}; other needs: ${lead.requirements || 'none'}
 
 Respond ONLY in this JSON format:
 {

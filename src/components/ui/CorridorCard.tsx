@@ -6,6 +6,7 @@ import TrendDelta from "./TrendDelta";
 import InfoChip from "./InfoChip";
 import { type HeatRating } from "./enums";
 import { formatINRFull } from "@/lib/format";
+import CorridorScene from "./corridor-scene/CorridorScene";
 
 /** Shape consumed from GET /api/market/corridors (a subset of its fields). */
 export interface CorridorCardData {
@@ -40,20 +41,8 @@ function humanize(s: string): string {
     .join(" ");
 }
 
-/** Deterministic fallback photo when a corridor has no image (API doesn't supply one). */
-function fallbackImage(c: CorridorCardData): string {
-  const key = `${c.name} ${c.zone ?? ""} ${c.direction ?? ""}`.toLowerCase();
-  if (/(kokapet|gachibowli|financial)/.test(key))
-    return "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=900&q=80";
-  if (/(airport|shamshabad|adibatla)/.test(key))
-    return "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=900&q=80";
-  // default: open plotted land (matches the land-first positioning)
-  return "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=900&q=80";
-}
-
 /** The signature corridor heat card. Presentational + server-safe. */
 export default function CorridorCard({ corridor: c, className = "" }: CorridorCardProps) {
-  const img = c.imageUrl || fallbackImage(c);
   const min = c.plotPriceMinSqYd ?? null;
   const max = c.plotPriceMaxSqYd ?? null;
   const priceLabel =
@@ -73,13 +62,18 @@ export default function CorridorCard({ corridor: c, className = "" }: CorridorCa
     >
       {/* Image with scrim + heat/score overlays */}
       <div style={{ position: "relative", width: "100%", paddingTop: "56.25%", background: "var(--color-ink-soft)" }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={img}
-          alt={c.name}
-          loading="lazy"
-          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
-        />
+        {c.imageUrl ? (
+          // An admin-supplied photo of the corridor always wins.
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={c.imageUrl}
+            alt={c.name}
+            loading="lazy"
+            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
+          />
+        ) : (
+          <CorridorScene slug={c.corridor} name={c.shortName || c.name} hints={`${c.name} ${c.zone ?? ""} ${(c.keyDrivers ?? []).join(" ")}`} />
+        )}
         <div
           style={{
             position: "absolute",
@@ -90,6 +84,13 @@ export default function CorridorCard({ corridor: c, className = "" }: CorridorCa
         <div style={{ position: "absolute", top: 10, left: 10 }}>
           <HeatPill rating={c.heatRating} />
         </div>
+        {!c.imageUrl && (
+          <span
+            style={{ position: "absolute", right: 10, bottom: 8, fontSize: "0.625rem", letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(255,255,255,0.7)", fontFamily: "var(--font-mono)" }}
+          >
+            Illustration
+          </span>
+        )}
         {c.overallScore != null && (
           <div
             style={{

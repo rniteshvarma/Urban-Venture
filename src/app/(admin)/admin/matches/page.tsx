@@ -14,6 +14,7 @@ import {
   ChevronRight,
   Megaphone
 } from "lucide-react";
+import { toast } from "@/lib/toast";
 
 interface Match {
   id: string;
@@ -115,15 +116,15 @@ export default function AdminMatchesPage() {
     try {
       const res = await fetch("/api/admin/matching/run-all", { method: "POST" });
       if (res.ok) {
-        alert("Matching matrices updated successfully!");
+        toast.show("Matching matrices updated successfully!");
         loadMatches();
       } else {
         const data = await res.json();
-        alert(`Failed to run matching engine: ${data.error || "Server Error"}${data.details ? " - " + data.details : ""}`);
+        toast.show(`Failed to run matching engine: ${data.error || "Server Error"}${data.details ? " - " + data.details : ""}`);
       }
     } catch (err: any) {
       console.error(err);
-      alert(`Error executing matches engine: ${err.message || "Connection failed"}`);
+      toast.show(`Error executing matches engine: ${err.message || "Connection failed"}`);
     } finally {
       setIsRecalculating(false);
     }
@@ -137,11 +138,11 @@ export default function AdminMatchesPage() {
         setMatches((prev) => prev.filter((m) => m.id !== matchId));
       } else {
         const data = await res.json();
-        alert(`Failed to dismiss match: ${data.error || "Server Error"}${data.details ? " - " + data.details : ""}`);
+        toast.show(`Failed to dismiss match: ${data.error || "Server Error"}${data.details ? " - " + data.details : ""}`);
       }
     } catch (err: any) {
       console.error(err);
-      alert(`Error dismissing match: ${err.message || "Connection failed"}`);
+      toast.show(`Error dismissing match: ${err.message || "Connection failed"}`);
     }
   };
 
@@ -153,11 +154,11 @@ export default function AdminMatchesPage() {
         window.open(data.whatsappUrl, "_blank");
       } else {
         const data = await res.json();
-        alert(`Failed to generate pitch details: ${data.error || "Server Error"}${data.details ? " - " + data.details : ""}`);
+        toast.show(`Failed to generate pitch details: ${data.error || "Server Error"}${data.details ? " - " + data.details : ""}`);
       }
     } catch (err: any) {
       console.error(err);
-      alert(`Error generating pitch: ${err.message || "Connection failed"}`);
+      toast.show(`Error generating pitch: ${err.message || "Connection failed"}`);
     }
   };
 

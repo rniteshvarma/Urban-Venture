@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { z } from "zod";
+import { listingFitFields, withFitDefaults } from "@/lib/listing-fit";
 
 const projectSchema = z.object({
   name: z.string().min(1),
@@ -22,6 +23,7 @@ const projectSchema = z.object({
   brochureUrl: z.string().optional().nullable(),
   imageUrls: z.array(z.string()).default([]),
   status: z.enum(["ACTIVE", "SOLD_OUT", "UPCOMING", "ARCHIVED"]).default("ACTIVE"),
+  ...listingFitFields,
 });
 
 // GET /api/admin/projects - List all projects with optional filter
@@ -82,7 +84,7 @@ export async function POST(req: Request) {
     }
 
     const project = await prisma.project.create({
-      data: parse.data
+      data: withFitDefaults(parse.data)
     });
 
     return NextResponse.json({ success: true, project });

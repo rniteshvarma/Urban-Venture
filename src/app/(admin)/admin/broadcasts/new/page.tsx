@@ -21,6 +21,7 @@ import {
   ChevronLeft,
   Megaphone
 } from "lucide-react";
+import { toast } from "@/lib/toast";
 
 interface LeadPreview {
   id: string;
@@ -211,7 +212,7 @@ export default function NewBroadcastWizardPage() {
 
   const handleCreateBroadcast = async () => {
     if (!campaignName.trim()) {
-      alert("Please name this campaign.");
+      toast.show("Please name this campaign.");
       return;
     }
 
@@ -250,11 +251,11 @@ export default function NewBroadcastWizardPage() {
         }
       } else {
         const data = await res.json();
-        alert(`Failed to create campaign: ${data.error || "Unknown error"}`);
+        toast.show(`Failed to create campaign: ${data.error || "Unknown error"}`);
       }
     } catch (err) {
       console.error(err);
-      alert("An error occurred during submission.");
+      toast.show("An error occurred during submission.");
     } finally {
       setIsSubmitting(false);
     }

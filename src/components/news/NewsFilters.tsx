@@ -59,7 +59,7 @@ export default function NewsFilters({
   });
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14, minWidth: 0 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
         <select
           value={city}
@@ -79,7 +79,7 @@ export default function NewsFilters({
       </div>
 
       {/* Category chips — horizontally scrollable on mobile */}
-      <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 2 }}>
+      <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 2, minWidth: 0, WebkitOverflowScrolling: 'touch' }}>
         <button type="button" style={chip(!category)} onClick={() => update({ category: null })}>All</button>
         {ALL_CATEGORIES.map((c) => (
           <button key={c} type="button" style={chip(category === c)} onClick={() => update({ category: c })}>

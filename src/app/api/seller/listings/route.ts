@@ -43,6 +43,23 @@ export async function POST() {
   const auth = await requireSeller();
   if (!auth.ok) return auth.res;
 
+  // Reuse an untouched blank draft instead of piling up a new one on every
+  // visit to /dashboard/selling/new (that page creates the draft on arrival).
+  const blank = await prisma.project.findFirst({
+    where: {
+      ownerId: auth.userId,
+      listingSource: "SELLER",
+      listingStatus: "DRAFT",
+      name: "Untitled listing",
+      corridor: "",
+      description: "",
+      minBudgetLakhs: 0,
+      maxBudgetLakhs: 0,
+    },
+    orderBy: { createdAt: "desc" },
+  });
+  if (blank) return NextResponse.json({ id: blank.id, listing: blank, reused: true });
+
   const listing = await prisma.project.create({
     data: {
       // seller ownership + lifecycle
