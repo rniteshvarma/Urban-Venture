@@ -11,6 +11,7 @@
 //  • Area intelligence dedups differently — suppress only if the value is
 //    unchanged (reporting "unchanged" three weeks running is noise).
 
+import { areaLabel } from "../explore/query";
 import { createHash } from "node:crypto";
 import type {
   GatheredData, PrefSnapshot, PropertyCand, CorridorSnapshot, RecentItem,
@@ -129,7 +130,7 @@ function propertyView(c: PropertyCand, areaName: string | null, why: string[], r
     : null;
   return {
     id: c.id,
-    title: c.areaValue ? `${c.areaValue} ${c.areaUnit === "acre" ? "acre" : "sq.yd"} · ${areaName ?? c.corridorSlug ?? ""}`.trim() : c.name,
+    title: c.areaValue ? `${areaLabel(c.areaValue, c.areaUnit)} · ${areaName ?? c.corridorSlug ?? ""}`.trim() : c.name,
     corridorName: areaName,
     priceLakh: c.priceLakh,
     rateValue: c.rateValue,

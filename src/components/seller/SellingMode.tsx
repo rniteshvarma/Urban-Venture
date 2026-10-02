@@ -6,6 +6,7 @@ import {
   Plus, Eye, Heart, Mail, Target, ArrowUpRight, Pencil, Pause, Play, RefreshCw, CheckCircle2, ExternalLink, AlertTriangle, ChevronRight,
 } from "lucide-react";
 import { formatLakh, formatINRFull, formatDate } from "@/lib/format";
+import { UNIT_LABEL, listingArea, ratePerUnit } from "@/lib/listings/units";
 
 // ── Status pill metadata (client copy; server has its own in lib/listings/seller) ──
 const STATUS: Record<string, { label: string; bg: string; fg: string }> = {
@@ -26,7 +27,7 @@ interface Comp { points: number; max: number; confidence: "HIGH" | "LOW"; note?:
 
 interface Listing {
   id: string; name: string; corridor: string; city: string; propertyType: string;
-  minBudgetLakhs: number; maxBudgetLakhs: number; totalAreaSqYd: number | null;
+  minBudgetLakhs: number; maxBudgetLakhs: number; totalAreaSqYd: number | null; totalAreaSqFt: number | null;
   totalPlots: number | null; availablePlots: number | null; imageUrls: string[];
   listingStatus: string; listingScore: number | null; scoreBreakdown: Breakdown | null;
   sellerFeedback: string | null; expiresAt: string | null;
@@ -140,7 +141,8 @@ function ListingCard({ l, onAct }: { l: Listing; onAct: (id: string, action: str
   const st = STATUS[l.listingStatus] ?? STATUS.DRAFT;
   const img = l.imageUrls?.[0];
   const price = l.maxBudgetLakhs || l.minBudgetLakhs;
-  const rate = l.totalAreaSqYd && l.totalAreaSqYd > 0 && price > 0 ? Math.round((price * 100000) / l.totalAreaSqYd) : null;
+  const area = listingArea(l);
+  const rate = ratePerUnit(price, area.value);
   const isDraft = l.listingStatus === "DRAFT";
   const b = l.scoreBreakdown;
   const worst = worstComponent(b);
@@ -161,7 +163,7 @@ function ListingCard({ l, onAct }: { l: Listing; onAct: (id: string, action: str
           </div>
           <div style={{ display: "flex", gap: 12, alignItems: "baseline", marginTop: 8, flexWrap: "wrap" }}>
             <span className="uv-mono" style={{ fontWeight: 700, fontSize: "1rem", color: "var(--color-text-hi)" }}>{price > 0 ? formatLakh(price) : "Price not set"}</span>
-            {rate && <span className="uv-mono" style={{ fontSize: "0.8125rem", color: "var(--color-text-mid)" }}>({formatINRFull(rate)}/sq.yd)</span>}
+            {rate && <span className="uv-mono" style={{ fontSize: "0.8125rem", color: "var(--color-text-mid)" }}>({formatINRFull(rate)}/{UNIT_LABEL[area.unit]})</span>}
             {l.availablePlots != null && l.totalPlots != null && <span style={{ fontSize: "0.8125rem", color: "var(--color-text-mid)" }}>{l.availablePlots} of {l.totalPlots} plots available</span>}
           </div>
         </div>

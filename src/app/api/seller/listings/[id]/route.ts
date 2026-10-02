@@ -9,7 +9,7 @@ import { fairValueForListing } from "@/lib/listings/fair-value";
 // Fields a seller may set via autosave. Everything else (status, score,
 // ownership, verification flags) is server-controlled.
 const STR = ["name", "corridor", "city", "propertyType", "description", "riskLevel", "villageId", "ownershipType", "landClassification", "approvalStatus", "approvalNumber", "reraNumber"] as const;
-const NUM = ["minBudgetLakhs", "maxBudgetLakhs", "minHorizonYears", "maxHorizonYears", "totalAreaSqYd", "totalPlots", "availablePlots", "roadWidthFeet", "latitude", "longitude"] as const;
+const NUM = ["minBudgetLakhs", "maxBudgetLakhs", "minHorizonYears", "maxHorizonYears", "totalAreaSqYd", "totalAreaSqFt", "totalPlots", "availablePlots", "roadWidthFeet", "latitude", "longitude"] as const;
 const STR_ARR = ["surveyNumbers", "facingOptions", "imageUrls"] as const;
 const NUM_ARR = ["plotSizesSqYd"] as const;
 
@@ -43,6 +43,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
     latitude: listing.latitude,
     longitude: listing.longitude,
     totalAreaSqYd: listing.totalAreaSqYd,
+    totalAreaSqFt: listing.totalAreaSqFt,
     totalPlots: listing.totalPlots,
     availablePlots: listing.availablePlots,
     plotSizesSqYd: listing.plotSizesSqYd,
@@ -56,7 +57,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
     hasLayoutOrFloorPlan: mc.hasLayoutOrFloorPlan,
   };
 
-  const fairValue = await fairValueForListing({ villageId: listing.villageId, corridor: listing.corridor });
+  const fairValue = await fairValueForListing({ villageId: listing.villageId, corridor: listing.corridor, propertyType: listing.propertyType });
   return NextResponse.json({ listing, completion: completionPercent(fields), fairValue });
 }
 

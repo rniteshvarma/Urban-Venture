@@ -10,6 +10,7 @@ import { useCallback, useEffect, useState } from "react";
 import { X, Bookmark, Share2, Navigation, ExternalLink, ChevronLeft, ChevronRight, BadgeCheck } from "lucide-react";
 import { formatLakh, formatINRFull } from "@/lib/format";
 import EnquiryModal from "./EnquiryModal";
+import { areaLabel } from "@/lib/explore/query";
 
 interface Detail {
   id: string;
@@ -123,7 +124,7 @@ export default function PropertyDetailCard({ id, onClose, isMobile }: { id: stri
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                     <span style={{ fontFamily: "var(--font-jakarta)", fontWeight: 800, fontSize: "1.05rem", color: "#0D0D12" }}>
-                      {d.areaValue ? `${d.areaValue} ${d.areaUnit === "acre" ? (d.areaValue === 1 ? "acre" : "acres") : "sq.yd"}` : d.name}
+                      {d.areaValue ? areaLabel(d.areaValue, d.areaUnit) : d.name}
                     </span>
                     {d.isVerified && <BadgeCheck size={16} style={{ color: "#0F9D58", flexShrink: 0 }} />}
                     {d.scoreGrade && <span style={{ fontSize: "0.625rem", fontWeight: 800, color: "#7A5200", background: "#FFF4D6", borderRadius: 999, padding: "2px 7px" }}>{d.scoreGrade}</span>}

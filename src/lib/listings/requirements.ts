@@ -2,6 +2,8 @@
 // blockers. Saving never validates; publishing (submit) always does — these
 // functions power the submit gate (Part 5) and the draft completion bar.
 
+import { listingArea } from "./units";
+
 export type PropertyKind = "plot" | "land" | "built";
 
 export function propertyKind(propertyType: string | null | undefined): PropertyKind {
@@ -20,6 +22,8 @@ export interface ListingFields {
   latitude: number | null;
   longitude: number | null;
   totalAreaSqYd: number | null;
+  /** built-up area — apartments, villas, commercial are measured in sq.ft */
+  totalAreaSqFt?: number | null;
   totalPlots: number | null;
   availablePlots: number | null;
   plotSizesSqYd: number[];
@@ -46,7 +50,7 @@ const REQUIREMENTS: Req[] = [
   { key: "village", label: "Village / location", ok: (f) => !!f.villageId },
   { key: "survey", label: "Survey number(s)", ok: (f) => f.surveyNumbers.length > 0 },
   { key: "pin", label: "Map pin", ok: (f) => f.latitude != null && f.longitude != null },
-  { key: "area", label: "Total area", ok: (f) => !!f.totalAreaSqYd && f.totalAreaSqYd > 0 },
+  { key: "area", label: "Total area", ok: (f) => listingArea(f).value != null },
   { key: "plots", label: "Plot count & sizes", ok: (f) => (f.totalPlots ?? 0) > 0 || f.plotSizesSqYd.length > 0, kinds: ["plot"] },
   { key: "ownership", label: "Ownership type", ok: (f) => !!f.ownershipType },
   { key: "approval", label: "Approval status", ok: (f) => !!f.approvalStatus },

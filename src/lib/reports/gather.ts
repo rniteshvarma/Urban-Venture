@@ -9,6 +9,7 @@
 //    WeeklyReport.content (the send ledger is the baseline), not a snapshot
 //    table — there isn't one. First issue → no baseline, deltas are null.
 
+import { displayArea, unitWord } from "../explore/query";
 import prisma from "@/lib/prisma";
 import type {
   GatheredData, PrefSnapshot, PropertyCand, CorridorSnapshot, ApprovalCand,
@@ -19,10 +20,6 @@ import { parseAreas } from "../concierge/parse";
 const DEDUP_WINDOW_DAYS = 28;
 const SQYD_PER_ACRE = 4840;
 
-function displayArea(sqYd: number | null): { value: number; unit: "acre" | "sqyd" } | null {
-  if (!sqYd || sqYd <= 0) return null;
-  return sqYd >= SQYD_PER_ACRE ? { value: Math.round((sqYd / SQYD_PER_ACRE) * 100) / 100, unit: "acre" } : { value: Math.round(sqYd), unit: "sqyd" };
-}
 
 export async function gatherReportData(userId: string, periodStart: Date, periodEnd: Date): Promise<GatheredData> {
   const pref = await prisma.reportPreference.findUnique({ where: { userId } });
@@ -68,7 +65,7 @@ export async function gatherReportData(userId: string, periodStart: Date, period
     where: { listingStatus: "APPROVED", city: snapshot.city },
     select: {
       id: true, name: true, corridor: true, propertyType: true, minBudgetLakhs: true, maxBudgetLakhs: true,
-      totalAreaSqYd: true, listingScore: true, listingSource: true, approvalStatus: true, approvalVerified: true,
+      totalAreaSqYd: true, totalAreaSqFt: true, listingScore: true, listingSource: true, approvalStatus: true, approvalVerified: true,
       imageUrls: true, createdAt: true, _count: { select: { media: true } },
     },
     take: 500,
@@ -77,17 +74,17 @@ export async function gatherReportData(userId: string, periodStart: Date, period
   const toCand = (p: (typeof projects)[number]): PropertyCand => {
     const slug = slugForCorridorName(p.corridor);
     const priceLakh = p.maxBudgetLakhs || p.minBudgetLakhs || 0;
-    const area = displayArea(p.totalAreaSqYd);
+    const area = displayArea(p);
     const rateValue = area && area.value > 0 && priceLakh > 0 ? Math.round((priceLakh * 100000) / area.value) : null;
     // fair value = the corridor's mid plot rate (only meaningful for plots/land)
     const fair = slug ? bySlug.get(slug)?.plotPriceMidSqYd ?? null : null;
     return {
       id: p.id, name: p.name, corridorSlug: slug, propertyType: p.propertyType, priceLakh,
-      rateValue, rateUnit: area?.unit ?? null, areaValue: area?.value ?? null, areaUnit: area?.unit ?? null,
+      rateValue, rateUnit: area ? unitWord(area.unit) : null, areaValue: area?.value ?? null, areaUnit: area?.unit ?? null,
       listingScore: p.listingScore, listingSource: p.listingSource as "ADMIN" | "SELLER",
       approvalStatus: p.approvalStatus, approvalVerified: p.approvalVerified, mediaCount: p._count.media,
       thumb: p.imageUrls?.[0] ?? null, createdAt: p.createdAt,
-      fairValueMidRate: area?.unit === "acre" ? null : fair, // only compare like-for-like (per sq.yd)
+      fairValueMidRate: area?.unit === "sqyd" ? fair : null, // the fair value is a land rate per sq.yd; only compare like-for-like
     };
   };
 

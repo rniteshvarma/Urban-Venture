@@ -4,7 +4,7 @@
 // Contact happens through the existing enquiry flow (Constraint 7).
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { displayArea, tokenForStoredType, headlinePrice, inventoryOrSellerGrade } from "@/lib/explore/query";
+import { displayArea, unitWord, tokenForStoredType, headlinePrice, inventoryOrSellerGrade } from "@/lib/explore/query";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +17,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
       select: {
         id: true, name: true, corridor: true, city: true, addressLine: true, landmark: true,
         latitude: true, longitude: true,
-        minBudgetLakhs: true, maxBudgetLakhs: true, totalAreaSqYd: true,
+        minBudgetLakhs: true, maxBudgetLakhs: true, totalAreaSqYd: true, totalAreaSqFt: true,
         propertyType: true, listingSource: true, listingScore: true, sourceType: true,
         approvalStatus: true, approvalNumber: true, approvalVerified: true,
         roadWidthFeet: true, facingOptions: true, ownershipType: true,
@@ -42,7 +42,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
       : null;
 
     const { priceLakh, priceFrom } = headlinePrice(p);
-    const area = displayArea(p.totalAreaSqYd);
+    const area = displayArea(p);
     const isAdmin = p.listingSource === "ADMIN";
 
     // Up to 5 images: explicit imageUrls first, topped up from public media.
@@ -62,7 +62,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
       areaValue: area?.value ?? null,
       areaUnit: area?.unit ?? null,
       rateValue: area && area.value > 0 ? Math.round((priceLakh * 100000) / area.value) : null,
-      rateUnit: area?.unit ?? null,
+      rateUnit: area ? unitWord(area.unit) : null,
       propertyType: tokenForStoredType(p.propertyType),
       propertyTypeLabel: p.propertyType,
       images,

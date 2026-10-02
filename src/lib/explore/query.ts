@@ -10,6 +10,7 @@
 import type { Prisma } from "@prisma/client";
 import { gradeFor } from "@/lib/listings/score";
 import { gradeOf } from "@/lib/inventory/rating";
+import { listingArea } from "@/lib/listings/units";
 
 export const MAX_FEATURES = 3000;
 
@@ -171,17 +172,35 @@ export function bandFor(price: number, breaks: number[]): number {
 /** Round to ~1m so the payload stays lean. */
 export const round5 = (n: number): number => Math.round(n * 1e5) / 1e5;
 
+export type DisplayAreaUnit = "acre" | "sqyd" | "sqft";
+
 /**
- * Present an area in the unit a buyer would actually use: acres for anything
- * an acre or larger, square yards below that.
+ * Present an area in the unit a buyer would actually use: built property
+ * (apartments, villas, commercial) in sq.ft; land in acres from an acre up,
+ * square yards below that.
  */
-export function displayArea(sqYd: number | null | undefined): { value: number; unit: "acre" | "sqyd" } | null {
-  if (!sqYd || sqYd <= 0) return null;
+export function displayArea(p: {
+  propertyType?: string | null;
+  totalAreaSqYd?: number | null;
+  totalAreaSqFt?: number | null;
+}): { value: number; unit: DisplayAreaUnit } | null {
+  const { value, unit } = listingArea(p);
+  if (value == null) return null;
+  if (unit === "SQFT") return { value: Math.round(value), unit: "sqft" };
   const SQYD_PER_ACRE = 4840;
-  if (sqYd >= SQYD_PER_ACRE) {
-    return { value: Math.round((sqYd / SQYD_PER_ACRE) * 100) / 100, unit: "acre" };
-  }
-  return { value: Math.round(sqYd), unit: "sqyd" };
+  if (value >= SQYD_PER_ACRE) return { value: Math.round((value / SQYD_PER_ACRE) * 100) / 100, unit: "acre" };
+  return { value: Math.round(value), unit: "sqyd" };
+}
+
+/** "sq.ft" / "sq.yd" / "acre" — the word for a displayArea() unit (e.g. in "₹8,000/sq.ft"). */
+export function unitWord(unit: string | null | undefined): string {
+  return unit === "acre" ? "acre" : unit === "sqft" ? "sq.ft" : "sq.yd";
+}
+
+/** "1650 sq.ft", "2.5 acres", "200 sq.yd" — for a displayArea() result. */
+export function areaLabel(value: number, unit: string | null | undefined): string {
+  if (unit === "acre") return `${value} ${value === 1 ? "acre" : "acres"}`;
+  return `${value} ${unit === "sqft" ? "sq.ft" : "sq.yd"}`;
 }
 
 // ── Headline price & grade for a pin ─────────────────────────────────

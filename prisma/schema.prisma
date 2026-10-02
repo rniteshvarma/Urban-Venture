@@ -165,6 +165,7 @@ model Project {
 
   // Land specifics
   totalAreaSqYd      Float?
+  totalAreaSqFt      Float? // built-up area for apartments, villas, commercial (land uses totalAreaSqYd)
   totalPlots         Int?
   availablePlots     Int?
   plotSizesSqYd      Float[]

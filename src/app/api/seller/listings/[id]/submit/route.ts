@@ -33,6 +33,7 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
     latitude: listing.latitude,
     longitude: listing.longitude,
     totalAreaSqYd: listing.totalAreaSqYd,
+    totalAreaSqFt: listing.totalAreaSqFt,
     totalPlots: listing.totalPlots,
     availablePlots: listing.availablePlots,
     plotSizesSqYd: listing.plotSizesSqYd,

@@ -6,6 +6,7 @@ import prisma from "@/lib/prisma";
 import { lakhToRupees } from "@/lib/format";
 import { computeListingScore, deriveImprovements, type ListingScoreInput, type ListingScoreBreakdown, type Improvement } from "./score";
 import { fairValueForListing } from "./fair-value";
+import { listingArea } from "./units";
 
 // Media types that count as "photos" for the quality component
 const PHOTO_TYPES = new Set(["SITE_PHOTO", "INTERIOR_RENDER", "ELEVATION", "AMENITY", "LOCATION_MAP"]);
@@ -50,10 +51,11 @@ export async function buildScoreInput(p: ProjectForScore): Promise<ListingScoreI
     corridorOverallScore = cp?.overallScore ?? null;
   }
 
-  // Price: asking rate per sq.yd from total price / total area
+  // Price: asking rate per area unit (sq.yd for land, sq.ft for built property)
   const priceLakh = p.maxBudgetLakhs || p.minBudgetLakhs || 0;
-  const askingRatePerSqYd = p.totalAreaSqYd && p.totalAreaSqYd > 0 && priceLakh > 0 ? lakhToRupees(priceLakh) / p.totalAreaSqYd : null;
-  const fv = await fairValueForListing({ villageId: p.villageId, corridor: p.corridor });
+  const area = listingArea(p);
+  const askingRate = area.value && priceLakh > 0 ? lakhToRupees(priceLakh) / area.value : null;
+  const fv = await fairValueForListing({ villageId: p.villageId, corridor: p.corridor, propertyType: p.propertyType });
 
   const media = p.media.filter((m) => !m.isRejected);
   const photoCount = media.filter((m) => PHOTO_TYPES.has(m.mediaType)).length;
@@ -67,8 +69,9 @@ export async function buildScoreInput(p: ProjectForScore): Promise<ListingScoreI
   return {
     villageLandIQScore: p.village?.landIQScore ?? null,
     corridorOverallScore,
-    askingRatePerSqYd,
-    fairValueP50PerSqYd: fv.p50PerSqYd,
+    askingRate,
+    fairValueP50: fv.p50,
+    areaUnit: area.unit,
     photoCount,
     hasLayoutOrFloorPlan,
     descriptionLength: (p.description ?? "").length,
@@ -90,8 +93,9 @@ export async function buildScoreInput(p: ProjectForScore): Promise<ListingScoreI
 function requiredComplete(p: ProjectForScore): boolean {
   const common = !!p.approvalStatus && (p.surveyNumbers?.length ?? 0) > 0 && (p.maxBudgetLakhs || p.minBudgetLakhs) > 0 && !!p.description;
   const t = (p.propertyType ?? "").toLowerCase();
-  if (t.includes("plot")) return common && !!p.totalAreaSqYd && ((p.totalPlots ?? 0) > 0 || (p.plotSizesSqYd?.length ?? 0) > 0);
-  return common && !!p.totalAreaSqYd;
+  const hasArea = listingArea(p).value != null;
+  if (t.includes("plot")) return common && hasArea && ((p.totalPlots ?? 0) > 0 || (p.plotSizesSqYd?.length ?? 0) > 0);
+  return common && hasArea;
 }
 
 export interface ScoredResult {

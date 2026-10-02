@@ -7,7 +7,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import {
   MAX_FEATURES, parseBbox, parseFilters, buildWhere, quintileBreaks, bandFor,
-  round5, displayArea, tokenForStoredType, headlinePrice, inventoryOrSellerGrade } from "@/lib/explore/query";
+  round5, displayArea, unitWord, tokenForStoredType, headlinePrice, inventoryOrSellerGrade } from "@/lib/explore/query";
 
 export const dynamic = "force-dynamic";
 
@@ -58,7 +58,7 @@ export async function GET(req: Request) {
         take: MAX_FEATURES,
         select: {
           id: true, name: true, latitude: true, longitude: true,
-          minBudgetLakhs: true, maxBudgetLakhs: true, totalAreaSqYd: true,
+          minBudgetLakhs: true, maxBudgetLakhs: true, totalAreaSqYd: true, totalAreaSqFt: true,
           propertyType: true, listingSource: true, listingScore: true,
           approvalStatus: true, approvalVerified: true, imageUrls: true, sourceType: true,
         },
@@ -73,7 +73,7 @@ export async function GET(req: Request) {
       .filter((r) => r.latitude != null && r.longitude != null)
       .map((r) => {
         const { priceLakh, priceFrom } = headlinePrice(r);
-        const area = displayArea(r.totalAreaSqYd);
+        const area = displayArea(r);
         // Rate in the same unit the area is expressed in.
         const rateValue = area && area.value > 0 ? Math.round((priceLakh * 100000) / area.value) : null;
         const isAdmin = r.listingSource === "ADMIN";
@@ -87,7 +87,7 @@ export async function GET(req: Request) {
             priceLakh,
             priceFrom,
             rateValue,
-            rateUnit: area?.unit ?? null,
+            rateUnit: area ? unitWord(area.unit) : null,
             areaValue: area?.value ?? null,
             areaUnit: area?.unit ?? null,
             propertyType: tokenForStoredType(r.propertyType),

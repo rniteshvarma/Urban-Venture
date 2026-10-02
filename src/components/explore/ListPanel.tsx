@@ -11,6 +11,7 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { X, BadgeCheck } from "lucide-react";
 import { formatLakh, formatINRFull } from "@/lib/format";
 import type { PropertyFeature } from "@/lib/explore/use-map-data";
+import { areaLabel } from "@/lib/explore/query";
 
 export type SortKey = "score" | "priceAsc" | "priceDesc" | "area" | "newest";
 
@@ -117,7 +118,7 @@ export default function ListPanel({
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
                       <span style={{ fontWeight: 700, fontSize: "0.8125rem", color: "#0D0D12" }}>
-                        {p.areaValue ? `${p.areaValue} ${p.areaUnit === "acre" ? "acres" : "sq.yd"}` : p.name}
+                        {p.areaValue ? areaLabel(p.areaValue, p.areaUnit) : p.name}
                       </span>
                       {p.isVerified && <BadgeCheck size={13} style={{ color: "#0F9D58", flexShrink: 0 }} />}
                     </div>

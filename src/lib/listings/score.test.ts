@@ -19,8 +19,8 @@ function baseInput(over: Partial<ListingScoreInput> = {}): ListingScoreInput {
   return {
     villageLandIQScore: null,
     corridorOverallScore: null,
-    askingRatePerSqYd: null,
-    fairValueP50PerSqYd: null,
+    askingRate: null,
+    fairValueP50: null,
     photoCount: 0,
     hasLayoutOrFloorPlan: false,
     descriptionLength: 0,
@@ -63,18 +63,18 @@ test("location: missing data → neutral 15 with LOW confidence (no fabrication)
 
 // ── PRICE ──
 test("price: at/below model range scores full 25", () => {
-  assert.equal(priceComponent(baseInput({ askingRatePerSqYd: 20000, fairValueP50PerSqYd: 24000 })).points, 25);
-  assert.equal(priceComponent(baseInput({ askingRatePerSqYd: 24000, fairValueP50PerSqYd: 24000 })).points, 25);
+  assert.equal(priceComponent(baseInput({ askingRate: 20000, fairValueP50: 24000 })).points, 25);
+  assert.equal(priceComponent(baseInput({ askingRate: 24000, fairValueP50: 24000 })).points, 25);
 });
 
 test("price: banded penalties as gap grows", () => {
-  assert.equal(priceComponent(baseInput({ askingRatePerSqYd: 27600, fairValueP50PerSqYd: 24000 })).points, 18); // +15%
-  assert.equal(priceComponent(baseInput({ askingRatePerSqYd: 30000, fairValueP50PerSqYd: 24000 })).points, 10); // +25%, in 20–40% band
-  assert.equal(priceComponent(baseInput({ askingRatePerSqYd: 36000, fairValueP50PerSqYd: 24000 })).points, 3); // >40%
+  assert.equal(priceComponent(baseInput({ askingRate: 27600, fairValueP50: 24000 })).points, 18); // +15%
+  assert.equal(priceComponent(baseInput({ askingRate: 30000, fairValueP50: 24000 })).points, 10); // +25%, in 20–40% band
+  assert.equal(priceComponent(baseInput({ askingRate: 36000, fairValueP50: 24000 })).points, 3); // >40%
 });
 
 test("price: no fair value → neutral 15 LOW", () => {
-  const c = priceComponent(baseInput({ askingRatePerSqYd: 30000, fairValueP50PerSqYd: null }));
+  const c = priceComponent(baseInput({ askingRate: 30000, fairValueP50: null }));
   assert.equal(c.points, 15);
   assert.equal(c.confidence, "LOW");
 });
@@ -133,17 +133,17 @@ test("freshness: refresh decays to 0 by 60 days", () => {
 // ── COMPOSITE + acceptance criteria ──
 test("composite total = sum of five integer components, clamped", () => {
   const b = computeListingScore(
-    baseInput({ villageLandIQScore: 84, askingRatePerSqYd: 31000, fairValueP50PerSqYd: 23000, photoCount: 6 }),
+    baseInput({ villageLandIQScore: 84, askingRate: 31000, fairValueP50: 23000, photoCount: 6 }),
   );
   assert.equal(b.total, b.location.points + b.price.points + b.quality.points + b.trust.points + b.freshness.points);
   assert.ok(b.total >= 0 && b.total <= 100);
 });
 
 test("score changes visibly when price, photos, or documents change", () => {
-  const before = computeListingScore(baseInput({ askingRatePerSqYd: 36000, fairValueP50PerSqYd: 24000, photoCount: 5 }));
-  const cheaper = computeListingScore(baseInput({ askingRatePerSqYd: 24000, fairValueP50PerSqYd: 24000, photoCount: 5 }));
-  const morePhotos = computeListingScore(baseInput({ askingRatePerSqYd: 36000, fairValueP50PerSqYd: 24000, photoCount: 12 }));
-  const withDoc = computeListingScore(baseInput({ askingRatePerSqYd: 36000, fairValueP50PerSqYd: 24000, photoCount: 5, ownershipDocApproved: true }));
+  const before = computeListingScore(baseInput({ askingRate: 36000, fairValueP50: 24000, photoCount: 5 }));
+  const cheaper = computeListingScore(baseInput({ askingRate: 24000, fairValueP50: 24000, photoCount: 5 }));
+  const morePhotos = computeListingScore(baseInput({ askingRate: 36000, fairValueP50: 24000, photoCount: 12 }));
+  const withDoc = computeListingScore(baseInput({ askingRate: 36000, fairValueP50: 24000, photoCount: 5, ownershipDocApproved: true }));
   assert.ok(cheaper.total > before.total, "lower price should raise score");
   assert.ok(morePhotos.total > before.total, "more photos should raise score");
   assert.ok(withDoc.total > before.total, "verified doc should raise score");
@@ -158,7 +158,7 @@ test("gradeFor thresholds A/B/C and null below 50", () => {
 
 // ── IMPROVEMENTS ──
 test("improvements point at real gaps, sorted by points, with values", () => {
-  const i = baseInput({ askingRatePerSqYd: 36000, fairValueP50PerSqYd: 24000, photoCount: 6 });
+  const i = baseInput({ askingRate: 36000, fairValueP50: 24000, photoCount: 6 });
   const b = computeListingScore(i);
   const imp = deriveImprovements(i, b);
   assert.ok(imp.length > 0);
@@ -172,8 +172,8 @@ test("improvements point at real gaps, sorted by points, with values", () => {
 test("improvements: a maxed-out listing produces none", () => {
   const i = baseInput({
     villageLandIQScore: 90,
-    askingRatePerSqYd: 24000,
-    fairValueP50PerSqYd: 24000,
+    askingRate: 24000,
+    fairValueP50: 24000,
     photoCount: 12,
     hasLayoutOrFloorPlan: true,
     descriptionLength: 300,

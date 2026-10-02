@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Check, X, Plus, Upload, MapPin, ArrowLeft, Loader2, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { formatINRFull } from "@/lib/format";
+import { UNIT_LABEL, areaUnitFor, listingArea, ratePerUnit, type AreaUnit } from "@/lib/listings/units";
 
 const PROPERTY_TYPES = ["Plots", "Land", "Apartment", "Villa", "Commercial"];
 const APPROVALS = ["HMDA_APPROVED", "DTCP_APPROVED", "GHMC_APPROVED", "PANCHAYAT", "UNAPPROVED"];
@@ -14,14 +15,14 @@ interface Listing {
   id: string; name: string; corridor: string; city: string; propertyType: string; description: string;
   minBudgetLakhs: number; maxBudgetLakhs: number; villageId: string | null;
   surveyNumbers: string[]; latitude: number | null; longitude: number | null; pinInsideVillage: boolean | null;
-  totalAreaSqYd: number | null; totalPlots: number | null; availablePlots: number | null;
+  totalAreaSqYd: number | null; totalAreaSqFt: number | null; totalPlots: number | null; availablePlots: number | null;
   plotSizesSqYd: number[]; facingOptions: string[]; roadWidthFeet: number | null;
   ownershipType: string | null; landClassification: string | null; approvalStatus: string | null;
   approvalNumber: string | null; reraNumber: string | null; imageUrls: string[]; listingStatus: string;
 }
 interface Media { id: string; fileUrl: string; mediaType: string; isPublic: boolean }
 interface Corridor { name: string; shortName: string }
-interface FairValue { corridorName: string | null; p10PerSqYd: number | null; p50PerSqYd: number | null; p90PerSqYd: number | null }
+interface FairValue { corridorName: string | null; unit: AreaUnit; p10: number | null; p50: number | null; p90: number | null }
 
 const STEPS = ["Property & location", "Details", "Pricing & description", "Media & submit"];
 
@@ -65,8 +66,10 @@ export default function ListingWizard({ id }: { id: string }) {
     if (f.villageId) params.set("villageId", f.villageId);
     if (f.corridor) params.set("corridor", f.corridor);
     if (![...params].length) { setFairValue(null); return; }
+    // The model range is in the listing's unit, so it changes with the property type too.
+    if (f.propertyType) params.set("propertyType", f.propertyType);
     fetch(`/api/listings/fair-value?${params}`).then((r) => r.json()).then(setFairValue).catch(() => setFairValue(null));
-  }, [f?.corridor, f?.villageId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [f?.corridor, f?.villageId, f?.propertyType]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const patch = useCallback(async (partial: Partial<Listing>) => {
     setSaved("saving");
@@ -206,9 +209,15 @@ function Step1({ f, set, blur, corridors, id }: { f: Listing; set: (p: Partial<L
 // ── Step 2 ──
 function Step2({ f, set, blur }: { f: Listing; set: (p: Partial<Listing>) => void; blur: () => void }) {
   const isPlot = /plot/i.test(f.propertyType);
+  // Land is measured in sq.yd; apartments, villas and commercial space in sq.ft.
+  const unit = areaUnitFor(f.propertyType);
   return (
     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px,1fr))", gap: 16 }}>
-      <Field label="Total area (sq.yd)"><input type="number" value={f.totalAreaSqYd ?? ""} onChange={(e) => set({ totalAreaSqYd: e.target.value === "" ? null : Number(e.target.value) })} onBlur={blur} style={inp} /></Field>
+      {unit === "SQFT" ? (
+        <Field label="Built-up area (sq.ft)"><input type="number" value={f.totalAreaSqFt ?? ""} onChange={(e) => set({ totalAreaSqFt: e.target.value === "" ? null : Number(e.target.value) })} onBlur={blur} placeholder="e.g. 1650" style={inp} /></Field>
+      ) : (
+        <Field label="Total area (sq.yd)"><input type="number" value={f.totalAreaSqYd ?? ""} onChange={(e) => set({ totalAreaSqYd: e.target.value === "" ? null : Number(e.target.value) })} onBlur={blur} placeholder="e.g. 200" style={inp} /></Field>
+      )}
       {isPlot && <>
         <Field label="Total plots"><input type="number" value={f.totalPlots ?? ""} onChange={(e) => set({ totalPlots: e.target.value === "" ? null : Number(e.target.value) })} onBlur={blur} style={inp} /></Field>
         <Field label="Available plots"><input type="number" value={f.availablePlots ?? ""} onChange={(e) => set({ availablePlots: e.target.value === "" ? null : Number(e.target.value) })} onBlur={blur} style={inp} /></Field>
@@ -228,22 +237,26 @@ function Step2({ f, set, blur }: { f: Listing; set: (p: Partial<Listing>) => voi
 // ── Step 3 ──
 function Step3({ f, set, blur, fairValue }: { f: Listing; set: (p: Partial<Listing>) => void; blur: () => void; fairValue: FairValue | null }) {
   const price = f.maxBudgetLakhs || f.minBudgetLakhs || 0;
-  const rate = f.totalAreaSqYd && f.totalAreaSqYd > 0 && price > 0 ? Math.round((price * 100000) / f.totalAreaSqYd) : null;
-  const p50 = fairValue?.p50PerSqYd ?? null;
+  const area = listingArea(f);
+  const per = UNIT_LABEL[area.unit];
+  const rate = ratePerUnit(price, area.value);
+  // Ignore a range still in the previous unit while a type change refetches it.
+  const fv = fairValue && fairValue.unit === area.unit ? fairValue : null;
+  const p50 = fv?.p50 ?? null;
   const gapPct = rate && p50 ? Math.round(((rate - p50) / p50) * 100) : null;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px,1fr))", gap: 16 }}>
         <Field label="Total price (₹ Lakh)"><input type="number" value={f.maxBudgetLakhs || ""} onChange={(e) => { const v = e.target.value === "" ? 0 : Number(e.target.value); set({ minBudgetLakhs: v, maxBudgetLakhs: v }); }} onBlur={blur} style={inp} /></Field>
-        {rate && <div style={{ alignSelf: "end", fontSize: "0.8125rem", color: "var(--color-text-mid)" }}>Rate: <b className="uv-mono">{formatINRFull(rate)}/sq.yd</b></div>}
+        {rate && <div style={{ alignSelf: "end", fontSize: "0.8125rem", color: "var(--color-text-mid)" }}>Rate: <b className="uv-mono">{formatINRFull(rate)}/{per}</b></div>}
       </div>
 
-      {fairValue && (p50 != null) && (
+      {fv && (p50 != null) && (
         <div style={{ background: "var(--color-surface-dim)", borderRadius: 12, padding: "14px 16px" }}>
-          <div style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--color-text-lo)" }}>Model range for {fairValue.corridorName}</div>
+          <div style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--color-text-lo)" }}>Model range for {fv.corridorName}</div>
           <div className="uv-mono" style={{ fontSize: "1rem", fontWeight: 700, color: "var(--color-text-hi)", marginTop: 4 }}>
-            {fairValue.p10PerSqYd ? formatINRFull(fairValue.p10PerSqYd) : "—"} – {fairValue.p90PerSqYd ? formatINRFull(fairValue.p90PerSqYd) : "—"}<span style={{ fontSize: "0.75rem", color: "var(--color-text-lo)", fontWeight: 400 }}>/sq.yd</span>
+            {fv.p10 ? formatINRFull(fv.p10) : "—"} – {fv.p90 ? formatINRFull(fv.p90) : "—"}<span style={{ fontSize: "0.75rem", color: "var(--color-text-lo)", fontWeight: 400 }}>/{per}</span>
           </div>
           {gapPct != null && (
             <div style={{ marginTop: 8, fontSize: "0.8125rem", color: gapPct > 5 ? "#8A5A00" : "var(--color-growth)" }}>

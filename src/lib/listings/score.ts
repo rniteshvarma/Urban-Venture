@@ -14,6 +14,8 @@
 // `scoreAndPersist` at the bottom is the only DB-touching entry point.
 // ═══════════════════════════════════════════════════════════════════
 
+import { UNIT_LABEL, type AreaUnit } from "./units";
+
 export type Confidence = "HIGH" | "LOW";
 
 export interface ScoreComponent {
@@ -43,9 +45,12 @@ export interface ListingScoreInput {
   corridorOverallScore?: number | null;
 
   // ── Price ──
-  askingRatePerSqYd?: number | null;
-  /** model fair-value p50 (mid) rate for the village/corridor */
-  fairValueP50PerSqYd?: number | null;
+  /** asking ₹ per area unit (sq.yd for land, sq.ft for built property) */
+  askingRate?: number | null;
+  /** model fair-value p50 (mid) rate for the village/corridor, same unit */
+  fairValueP50?: number | null;
+  /** unit of the two rates above; defaults to sq.yd */
+  areaUnit?: AreaUnit;
 
   // ── Quality ──
   photoCount: number;
@@ -94,7 +99,7 @@ export function locationComponent(i: ListingScoreInput): ScoreComponent {
 
 // ── PRICE — 25 pts ───────────────────────────────────────────────────
 export function priceComponent(i: ListingScoreInput): ScoreComponent {
-  if (i.askingRatePerSqYd == null || i.fairValueP50PerSqYd == null || i.fairValueP50PerSqYd <= 0) {
+  if (i.askingRate == null || i.fairValueP50 == null || i.fairValueP50 <= 0) {
     return {
       points: 15,
       max: 25,
@@ -102,7 +107,7 @@ export function priceComponent(i: ListingScoreInput): ScoreComponent {
       note: "No model price for this village yet — price score is provisional.",
     };
   }
-  const gap = (i.askingRatePerSqYd - i.fairValueP50PerSqYd) / i.fairValueP50PerSqYd;
+  const gap = (i.askingRate - i.fairValueP50) / i.fairValueP50;
   let points: number;
   if (gap <= 0.05) points = 25;
   else if (gap <= 0.2) points = 18;
@@ -207,14 +212,14 @@ export function deriveImprovements(i: ListingScoreInput, b: ListingScoreBreakdow
   const out: Improvement[] = [];
 
   // Price — usually the single biggest lever
-  if (i.askingRatePerSqYd != null && i.fairValueP50PerSqYd != null && i.fairValueP50PerSqYd > 0) {
+  if (i.askingRate != null && i.fairValueP50 != null && i.fairValueP50 > 0) {
     const gain = 25 - b.price.points;
     if (gain > 0) {
-      const target = Math.round(i.fairValueP50PerSqYd * 1.05);
+      const target = Math.round(i.fairValueP50 * 1.05);
       out.push({
         key: "price",
         points: gain,
-        label: `Reduce price to ₹${target.toLocaleString("en-IN")}/sq.yd or below`,
+        label: `Reduce price to ₹${target.toLocaleString("en-IN")}/${UNIT_LABEL[i.areaUnit ?? "SQYD"]} or below`,
         action: "Edit price",
         href: "?step=3",
       });
