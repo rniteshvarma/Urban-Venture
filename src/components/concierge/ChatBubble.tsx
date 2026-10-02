@@ -123,6 +123,19 @@ export function ChatBubble({ m, onPick, perspective = "business" }: { m: ChatMes
 }
 
 /** Map a stored ConciergeMessage (payload holds buttons/list) to a ChatMessage. */
+/**
+ * Taps stored before the simulator sent the option's title (as WhatsApp does)
+ * read "[tapped b:200-]"; show the title of the option that was tapped instead.
+ */
+export function withTapLabels(messages: ChatMessage[]): ChatMessage[] {
+  const titles = new Map<string, string>();
+  for (const m of messages) for (const o of [...(m.buttons ?? []), ...(m.list?.rows ?? [])]) titles.set(o.id, o.title);
+  return messages.map((m) => {
+    const id = m.direction === "IN" ? /^\[tapped (.+)\]$/.exec(m.text)?.[1] : undefined;
+    return id && titles.has(id) ? { ...m, text: titles.get(id)! } : m;
+  });
+}
+
 export function fromStored(m: { id: string; direction: string; author: string; text: string; createdAt: string; payload: unknown }): ChatMessage {
   const p = (m.payload ?? {}) as { buttons?: ChatOption[]; list?: { button: string; rows: ChatOption[] } };
   return { id: m.id, direction: m.direction as "IN" | "OUT", author: m.author, text: m.text, createdAt: m.createdAt, buttons: p.buttons, list: p.list };

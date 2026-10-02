@@ -224,6 +224,34 @@ describe("matching and rating", () => {
     assert.equal(r.matches.length, 1);
   });
 
+  test("a listing outside the chosen area is only a closest option, and the gap is named", () => {
+    const r = rankProjects(
+      [
+        P({ id: "plot", name: "Shadnagar Plots" }),
+        P({ id: "apt", name: "Kokapet Towers", propertyType: "Apartment", corridor: "Kokapet", corridorSlug: "kokapet-neopolis" }),
+      ],
+      { ...profile, areas: ["kokapet-neopolis"] },
+      corridors,
+    );
+    assert.equal(r.closestOnly, true);
+    assert.equal(r.gap, "We don't have an open plot listed in Kokapet yet");
+    assert.equal(r.matches[0].project.id, "apt"); // the best listing in their area leads
+    assert.ok(r.matches.some((m) => m.project.id === "plot"));
+  });
+
+  test("a right-type listing in the area but out of budget names the budget gap", () => {
+    const r = rankProjects([P({ corridor: "Kokapet", corridorSlug: "kokapet-neopolis", minBudgetLakhs: 300, maxBudgetLakhs: 500 })], { ...profile, areas: ["kokapet-neopolis"] }, corridors);
+    assert.equal(r.closestOnly, true);
+    assert.match(r.gap ?? "", /^No open plot in Kokapet fits ₹25L–₹40L yet$/);
+  });
+
+  test("a good fit in the chosen area is still a top match", () => {
+    const r = rankProjects([P({}), P({ id: "far", corridor: "Kokapet", corridorSlug: "kokapet-neopolis" })], profile, corridors);
+    assert.equal(r.closestOnly, false);
+    assert.equal(r.gap, null);
+    assert.deepEqual(r.matches.map((m) => m.project.id), ["p1"]);
+  });
+
   test("area suggestions respect budget for land buyers", () => {
     const picks = pickAreas({ ...profile, areas: [] }, corridors, 1);
     assert.equal(picks[0].slug, "shadnagar"); // Kokapet scores higher but a plot there is out of a ₹40L budget
@@ -231,6 +259,15 @@ describe("matching and rating", () => {
 });
 
 describe("result messages", () => {
+  test("when only closest options exist, the headline names what is missing", () => {
+    const corridors = [C({}), C({ slug: "kokapet-neopolis", shortName: "Kokapet", direction: "WEST" })];
+    const slots = { types: ["OPEN_PLOT" as const], areas: ["kokapet-neopolis"], budgetMaxLakh: 40 };
+    const r = rankProjects([P({ name: "Shadnagar Plots" })], slots, corridors);
+    const [results] = composeResults({ name: "Asha", slots, profile: {}, matches: r.matches, closestOnly: r.closestOnly, gap: r.gap, areas: [], quickTake: "x", reportUrl: null });
+    assert.match(results.text, /^\*Asha, we don't have an open plot listed in Kokapet yet\.\* Here are the closest options:/);
+    assert.doesNotMatch(results.text, /top matches/);
+  });
+
   test("lists matches with rating, reasons, watch-out, disclaimer and next-step buttons", () => {
     const corridors = [C({})];
     const matches = rankProjects([P({ name: "Elite Green Meadows" })], { types: ["OPEN_PLOT"], areas: ["shadnagar"], budgetMaxLakh: 40 }, corridors).matches;

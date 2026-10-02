@@ -11,7 +11,7 @@ import type { BuyerPersona, ListingPropertyType, RiskLevel } from "@prisma/clien
 import prisma from "../prisma";
 import { LISTING_TYPE_LABELS, PERSONA_META, listingTypesFromText, suggestPersonasForListing } from "../personas";
 import type { BuyerProfile } from "./persona";
-import { formatBudget } from "./engine";
+import { describeType, formatBudget } from "./engine";
 import { parseAreas } from "./parse";
 
 export interface ProjectCand {
@@ -191,14 +191,46 @@ export function scoreProject(p: ProjectCand, prof: MatchProfile, corridors: Map<
   };
 }
 
-/** Ranked matches: good fits first; if none clear the bar, the closest options (flagged). */
-export function rankProjects(projects: ProjectCand[], prof: MatchProfile, corridors: CorridorCand[], limit = 3): { matches: RankedMatch[]; closestOnly: boolean } {
+/**
+ * Ranked matches: good fits first; if none clear the bar, the closest options
+ * (flagged) and `gap`, which says in the buyer's terms what is missing.
+ */
+export function rankProjects(
+  projects: ProjectCand[],
+  prof: MatchProfile,
+  corridors: CorridorCand[],
+  limit = 3,
+): { matches: RankedMatch[]; closestOnly: boolean; gap: string | null } {
   const bySlug = new Map(corridors.map((c) => [c.slug, c]));
   const scored = projects.map((p) => scoreProject(p, prof, bySlug)).sort((a, b) => b.rating - a.rating || b.fit - a.fit);
-  // A "match" must be the type they asked for; otherwise we say it's only the closest option.
-  const good = scored.filter((m) => m.fit >= 60 && m.exactType);
-  if (good.length) return { matches: good.slice(0, limit), closestOnly: false };
-  return { matches: scored.slice(0, Math.min(2, limit)), closestOnly: true };
+  const areas = prof.areas ?? [];
+  const inArea = (m: RankedMatch) => !areas.length || (m.project.corridorSlug != null && areas.includes(m.project.corridorSlug));
+  // Entry price at most ~20% over budget (the scorer already flags that stretch).
+  const affordable = (m: RankedMatch) => prof.budgetMaxLakh == null || m.project.minBudgetLakhs <= prof.budgetMaxLakh * 1.2;
+  // A "match" must be the type they asked for, affordable and, when they picked
+  // areas, in one of them; anything else is only ever offered as a closest option.
+  const good = scored.filter((m) => m.fit >= 60 && m.exactType && affordable(m) && inArea(m));
+  if (good.length) return { matches: good.slice(0, limit), closestOnly: false, gap: null };
+  // Lead with the best listing in their area (if any), then the best elsewhere.
+  const nearestInArea = areas.length ? scored.find(inArea) : undefined;
+  const closest = [...(nearestInArea ? [nearestInArea] : []), ...scored.filter((m) => m !== nearestInArea)].slice(0, Math.min(2, limit));
+  return { matches: closest, closestOnly: true, gap: describeGap(scored, prof, bySlug, inArea) };
+}
+
+/** Why nothing qualified, e.g. "We don't have an open plot listed in Kokapet yet". */
+function describeGap(scored: RankedMatch[], prof: MatchProfile, bySlug: Map<string, CorridorCand>, inArea: (m: RankedMatch) => boolean): string | null {
+  const areas = prof.areas ?? [];
+  if (!areas.length) return null;
+  const where = areas.map((a) => bySlug.get(a)?.shortName ?? a).join(" or ");
+  const what = describeType(prof.types);
+  const a = /^[aeiou]/i.test(what) ? "an" : "a";
+  const sameType = scored.filter((m) => inArea(m) && m.exactType);
+  if (!sameType.length) return `We don't have ${a} ${what} listed in ${where} yet`;
+  const bMin = prof.budgetMinLakh ?? 0;
+  const bMax = prof.budgetMaxLakh ?? null;
+  const inBudget = (m: RankedMatch) => bMax === null || (m.project.minBudgetLakhs <= bMax && m.project.maxBudgetLakhs >= bMin);
+  if (!sameType.some(inBudget)) return `No ${what} in ${where} fits ${formatBudget(prof.budgetMinLakh, bMax)} yet`;
+  return `Nothing in ${where} fits every detail yet`;
 }
 
 /** The best corridors for this buyer — used when they asked us to suggest, or nothing listed fits. */
@@ -233,7 +265,7 @@ export async function loadCandidates(): Promise<{ projects: ProjectCand[]; corri
         minBudgetLakhs: true, maxBudgetLakhs: true, minHorizonYears: true, maxHorizonYears: true, riskLevel: true,
         possessionDate: true, reraNumber: true, expectedRentalYieldPct: true,
       },
-      take: 500,
+      orderBy: { id: "asc" }, // every eligible listing, in a stable order
     }),
     prisma.corridorProfile.findMany({
       select: {
@@ -244,7 +276,12 @@ export async function loadCandidates(): Promise<{ projects: ProjectCand[]; corri
     }),
   ]);
   // Project.corridor is free text ("Shamshabad / Aerospace SEZ", "Pharma City Influence Zone").
-  const slugFor = (text: string): string | null => parseAreas(text, corridorRows)?.slugs[0] ?? null;
+  // Few distinct values across hundreds of listings, so resolve each once.
+  const slugByText = new Map<string, string | null>();
+  const slugFor = (text: string): string | null => {
+    if (!slugByText.has(text)) slugByText.set(text, parseAreas(text, corridorRows)?.slugs[0] ?? null);
+    return slugByText.get(text)!;
+  };
   return {
     projects: rows.map((p) => ({ ...p, corridorSlug: slugFor(p.corridor), purposes: p.purposes as string[] })),
     corridors: corridorRows.map((c) => ({ ...c, direction: c.direction as string | null })),

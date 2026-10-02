@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, ExternalLink, RotateCcw, Send } from "lucide-react";
 import { toast } from "@/lib/toast";
-import { ChatBubble, fromStored, type ChatMessage, type ChatOption } from "@/components/concierge/ChatBubble";
+import { ChatBubble, fromStored, withTapLabels, type ChatMessage, type ChatOption } from "@/components/concierge/ChatBubble";
 
 const STORE = "uv:concierge-sim";
 
@@ -53,7 +53,7 @@ export default function ConciergeSimulatorPage() {
         .then((r) => (r.ok ? r.json() : null))
         .then((c) => {
           if (!c) return;
-          setMessages(c.messages.map(fromStored));
+          setMessages(withTapLabels(c.messages.map(fromStored)));
           setMeta({ state: c.state, leadId: c.leadId, reportUrl: c.reportUrl });
         })
         .catch(() => {});
@@ -68,7 +68,7 @@ export default function ConciergeSimulatorPage() {
         .then((r) => (r.ok ? r.json() : null))
         .then((c) => {
           if (!c) return;
-          setMessages((prev) => (c.messages.length > prev.filter((m) => m.direction !== "SYSTEM").length ? c.messages.map(fromStored) : prev));
+          setMessages((prev) => (c.messages.length > prev.filter((m) => m.direction !== "SYSTEM").length ? withTapLabels(c.messages.map(fromStored)) : prev));
           setMeta((m) => (m.state === c.state ? m : { ...m, state: c.state }));
         })
         .catch(() => {});
@@ -92,7 +92,8 @@ export default function ConciergeSimulatorPage() {
       const res = await fetch("/api/admin/concierge/simulate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone, name, text: input.text, optionId: input.optionId }),
+        // A tap carries the option's title as its text, exactly like a WhatsApp interactive reply.
+        body: JSON.stringify({ phone, name, text: input.text ?? input.label, optionId: input.optionId }),
       });
       const r = await res.json();
       if (!res.ok) {

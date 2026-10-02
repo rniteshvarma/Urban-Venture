@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, Bot, ExternalLink, Hand, MessageCircle, RefreshCw, Search, Send, UserRound } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { LISTING_TYPE_LABELS, PURPOSE_LABELS, personaMeta } from "@/lib/personas";
-import { ChatBubble, fromStored } from "@/components/concierge/ChatBubble";
+import { ChatBubble, fromStored, withTapLabels } from "@/components/concierge/ChatBubble";
 
 type Row = {
   id: string;
@@ -374,8 +374,8 @@ function Inbox() {
               </header>
 
               <div className="flex-1 overflow-y-auto bg-[#EFEAE2] px-3 sm:px-5 py-4 space-y-2.5 max-h-[60vh]">
-                {detail.messages.map((m) => (
-                  <ChatBubble key={m.id} m={fromStored(m)} />
+                {withTapLabels(detail.messages.map(fromStored)).map((m) => (
+                  <ChatBubble key={m.id} m={m} />
                 ))}
               </div>
 

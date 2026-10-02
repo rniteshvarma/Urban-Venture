@@ -135,6 +135,8 @@ export interface FinalizeResult {
   persona: PersonaResult;
   matches: RankedMatch[];
   closestOnly: boolean;
+  /** What is missing when only closest options were found, e.g. no open plot in Kokapet. */
+  gap: string | null;
   areas: CorridorCand[];
   reportId: string | null;
   reportUrl: string | null;
@@ -147,7 +149,7 @@ export async function finalizeConversation(input: { conversationId: string; phon
   profile.persona = persona.persona;
 
   const { projects, corridors } = await loadCandidates();
-  const { matches, closestOnly } = rankProjects(projects, profile, corridors);
+  const { matches, closestOnly, gap } = rankProjects(projects, profile, corridors);
   const areas = pickAreas(profile, corridors);
 
   const leadId = await upsertLead({
@@ -211,5 +213,5 @@ export async function finalizeConversation(input: { conversationId: string; phon
   }
 
   await prisma.conciergeConversation.update({ where: { id: input.conversationId }, data: { leadId, userId, reportId, reportUrl } });
-  return { leadId, userId, persona, matches, closestOnly, areas, reportId, reportUrl };
+  return { leadId, userId, persona, matches, closestOnly, gap, areas, reportId, reportUrl };
 }

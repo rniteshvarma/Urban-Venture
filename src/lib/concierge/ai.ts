@@ -122,6 +122,7 @@ export async function writeQuickTake(facts: unknown, fallback: string): Promise<
       output_config: { effort: "low" },
       system:
         "You write a short WhatsApp note (max 3 sentences, under 350 characters, no markdown headings, no emojis) summarising why the top property suits this buyer. " +
+        "If `nothingFits` is set, the message headline already says it, so do not repeat it; present the properties only as the closest alternatives, never as a good fit. " +
         "Use ONLY the facts in the JSON. Do not add prices, returns, dates or claims that are not in it. Do not promise returns. Plain, warm Indian English.",
       messages: [{ role: "user", content: JSON.stringify(facts) }],
       betas: ["server-side-fallback-2026-07-01"],

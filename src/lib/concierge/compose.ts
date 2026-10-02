@@ -15,19 +15,23 @@ export const RESULT_OPTIONS = [
   { id: "c:WEEKLY", title: "Weekly updates" },
 ];
 
-export function quickTakeFallback(name: string, slots: Slots, matches: RankedMatch[], closestOnly: boolean): string {
+export function quickTakeFallback(name: string, slots: Slots, matches: RankedMatch[], closestOnly: boolean, gap: string | null = null): string {
   const top = matches[0];
   const what = `${describeType(slots.types)}${slots.budgetMaxLakh || slots.budgetMinLakh ? ` at ${formatBudget(slots.budgetMinLakh, slots.budgetMaxLakh)}` : ""}`;
   const a = /^[aeiou]/i.test(what) ? "an" : "a";
   if (!top) return `${name ? `${name}, ` : ""}nothing listed fits ${a} ${what} yet — the areas below are where we'd look first.`;
+  // With a gap the headline already says what is missing, so don't repeat it here.
+  if (closestOnly && gap) return `${top.project.name}${top.corridorName ? ` in ${top.corridorName}` : ""} comes closest.`;
   if (closestOnly) return `Nothing listed fits every detail of ${a} ${what} yet; ${top.project.name} comes closest.`;
   const why = top.reasons.find((r) => !/exactly the type/.test(r));
   return `For ${a} ${what}, ${top.project.name} scores highest at ${top.rating}/10${why ? ` — ${why.charAt(0).toLowerCase()}${why.slice(1)}` : ""}.`;
 }
 
 /** Facts handed to Claude for the quick take — nothing else may appear in it. */
-export function quickTakeFacts(slots: Slots, persona: BuyerPersona | null, matches: RankedMatch[], areas: CorridorCand[]) {
+export function quickTakeFacts(slots: Slots, persona: BuyerPersona | null, matches: RankedMatch[], areas: CorridorCand[], gap: string | null = null) {
   return {
+    // Set when nothing fits (already shown as the headline): the matches are only the closest alternatives.
+    nothingFits: gap,
     buyer: {
       purpose: slots.purpose ? PURPOSE_LABELS[slots.purpose] : null,
       wants: slots.types?.map((t) => LISTING_TYPE_LABELS[t]) ?? [],
@@ -46,14 +50,16 @@ export function composeResults(input: {
   profile: MatchProfile;
   matches: RankedMatch[];
   closestOnly: boolean;
+  gap?: string | null;
   areas: CorridorCand[];
   quickTake: string;
   reportUrl: string | null;
 }): Reply[] {
-  const { name, matches, closestOnly, areas, quickTake, reportUrl } = input;
+  const { name, matches, closestOnly, gap, areas, quickTake, reportUrl } = input;
   const lines: string[] = [];
   const first = name ? `${name}, h` : "H";
   if (!matches.length) lines.push(`*${first}ere's where I'd look* 📍`);
+  else if (closestOnly && gap) lines.push(`*${name ? `${name}, ${gap.charAt(0).toLowerCase()}${gap.slice(1)}` : gap}.* Here are the closest options:`);
   else if (closestOnly) lines.push(`*${first}ere are the closest options* — nothing listed matches every detail yet.`);
   else lines.push(`*${first}ere are your top matches* 🏆`);
   lines.push(`_${quickTake}_`);

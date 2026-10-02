@@ -175,14 +175,15 @@ async function complete(conv: ConciergeConversation): Promise<Reply[]> {
 
   const corridors = await corridorOptions();
   const result = await finalizeConversation({ conversationId: conv.id, phone: conv.phone, name: name || null, slots, simulated: conv.channel === "SIMULATOR" });
-  const fallback = quickTakeFallback(first, slots, result.matches, result.closestOnly);
-  const quickTake = await writeQuickTake(quickTakeFacts(slots, result.persona.persona, result.matches, result.areas), fallback);
+  const fallback = quickTakeFallback(first, slots, result.matches, result.closestOnly, result.gap);
+  const quickTake = await writeQuickTake(quickTakeFacts(slots, result.persona.persona, result.matches, result.areas, result.gap), fallback);
   const replies = composeResults({
     name: first,
     slots,
     profile: profileFromSlots(slots, conv.phone),
     matches: result.matches,
     closestOnly: result.closestOnly,
+    gap: result.gap,
     areas: result.areas,
     quickTake,
     reportUrl: result.reportUrl,
