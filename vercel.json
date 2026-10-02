@@ -1,5 +1,6 @@
 {
   "framework": "nextjs",
+  "regions": ["hnd1"],
   "buildCommand": "node scripts/copy-maplibre-worker.mjs && npx prisma db push && npx prisma generate && npx tsx scripts/inventory/seed-inventory.ts && next build",
   "crons": [
     {
