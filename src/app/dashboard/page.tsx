@@ -4,6 +4,7 @@ export const dynamic = "force-dynamic";
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import { signOut } from "next-auth/react";
 import {
   Phone, Sliders, Sparkles, Map, TrendingUp, Compass, ArrowRight, MessageCircle,
   Bookmark, Eye, FileText, Pin, Building2,
@@ -71,10 +72,12 @@ export default function DashboardPage() {
       .then((d) => { setData(d); fetch("/api/dashboard/mark-seen", { method: "POST" }).catch(() => {}); })
       .catch((status) => {
         if (!active) return; // unmounted / superseded by a retry
-        // Session cookie is valid but the user row is gone (e.g. after a DB
-        // reset) or unauthenticated — bounce to login.
+        // The session cookie names a user that no longer exists (e.g. after a
+        // DB reset) or carries no user. Middleware trusts the cookie and would
+        // bounce /login straight back here, looping forever — so clear the
+        // stale session first, then show the login form.
         if (status === 401 || status === 404) {
-          window.location.href = "/login?next=/dashboard";
+          void signOut({ callbackUrl: "/login?next=/dashboard" });
           return;
         }
         console.error("[dashboard] could not load:", status);
