@@ -15,6 +15,16 @@ import SellingMode from "@/components/seller/SellingMode";
 
 type DashMode = "buying" | "selling";
 
+function LoadError({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div role="alert" style={{ background: "var(--color-surface, #fff)", border: "1px solid var(--color-line)", borderRadius: 20, padding: "2.25rem 1.5rem", textAlign: "center" }}>
+      <p style={{ fontFamily: "var(--font-jakarta)", fontWeight: 700, fontSize: "1.05rem", color: "var(--color-text-hi)", margin: 0 }}>We couldn&rsquo;t load your dashboard</p>
+      <p style={{ color: "var(--color-text-mid)", fontSize: "0.875rem", margin: "6px 0 18px" }}>This is usually temporary. Your saved projects and reports are safe.</p>
+      <button type="button" onClick={onRetry} className="uv-btn uv-btn-primary" style={{ fontSize: "0.8125rem", padding: "9px 18px" }}>Try again</button>
+    </div>
+  );
+}
+
 function readCookie(name: string): string | null {
   if (typeof document === "undefined") return null;
   const m = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
@@ -47,21 +57,38 @@ export default function DashboardPage() {
   const [tab, setTab] = useState<"projects" | "corridors" | "reports">("projects");
   const [seller, setSeller] = useState<SellerStatus>({ hasProfile: false, unread: 0 });
   const [mode, setMode] = useState<DashMode>("buying");
+  const [failed, setFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
-    fetch("/api/dashboard")
+    // A stalled request gives up after 15 s, so a failure shows a retry
+    // instead of skeletons that never resolve.
+    let active = true;
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 15_000);
+    fetch("/api/dashboard", { signal: ctrl.signal })
       .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
       .then((d) => { setData(d); fetch("/api/dashboard/mark-seen", { method: "POST" }).catch(() => {}); })
       .catch((status) => {
+        if (!active) return; // unmounted / superseded by a retry
         // Session cookie is valid but the user row is gone (e.g. after a DB
-        // reset) or unauthenticated — bounce to login instead of hanging on
-        // skeletons forever.
+        // reset) or unauthenticated — bounce to login.
         if (status === 401 || status === 404) {
           window.location.href = "/login?next=/dashboard";
           return;
         }
-        setData(null);
-      });
+        console.error("[dashboard] could not load:", status);
+        setFailed(true);
+      })
+      .finally(() => clearTimeout(timer));
+    return () => {
+      active = false;
+      clearTimeout(timer);
+      ctrl.abort();
+    };
+  }, [attempt]);
+
+  useEffect(() => {
 
     // Seller status — governs the mode toggle. Buying path is untouched.
     fetch("/api/seller/profile")
@@ -93,7 +120,9 @@ export default function DashboardPage() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ paddingTop: "1.5rem", paddingBottom: "3rem", display: "flex", flexDirection: "column", gap: 16 }}>
-        {!data ? (
+        {!data && failed ? (
+          <LoadError onRetry={() => { setFailed(false); setAttempt((n) => n + 1); }} />
+        ) : !data ? (
           <>
             <div className="uv-skeleton" style={{ height: 140, borderRadius: 20 }} />
             <div className="uv-skeleton" style={{ height: 110, borderRadius: 14 }} />
