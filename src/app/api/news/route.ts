@@ -17,10 +17,11 @@ export async function GET(req: NextRequest) {
     const page = Math.max(1, Number(q.get('page') || 1));
     const sort = q.get('sort') === 'impact' ? 'impact' : 'latest';
 
+    // `id` breaks publishedAt ties (common in RSS), so pages never repeat or skip a story.
     const orderBy: Prisma.NewsArticleOrderByWithRelationInput[] =
       sort === 'impact'
-        ? [{ isPinned: 'desc' }, { impactScore: 'desc' }, { publishedAt: 'desc' }]
-        : [{ isPinned: 'desc' }, { publishedAt: 'desc' }];
+        ? [{ isPinned: 'desc' }, { impactScore: 'desc' }, { publishedAt: 'desc' }, { id: 'desc' }]
+        : [{ isPinned: 'desc' }, { publishedAt: 'desc' }, { id: 'desc' }];
 
     const where = await buildFeedWhere({
       ...(city === 'india' ? {} : { cityScope: city }),

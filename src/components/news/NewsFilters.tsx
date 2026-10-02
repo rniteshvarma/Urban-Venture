@@ -34,6 +34,7 @@ export default function NewsFilters({
 
   function update(next: Record<string, string | null>) {
     const q = new URLSearchParams(params.toString());
+    q.delete('page'); // a new filter starts again from the latest stories
     for (const [k, v] of Object.entries(next)) {
       if (v == null || v === '') q.delete(k);
       else q.set(k, v);

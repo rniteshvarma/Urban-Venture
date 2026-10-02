@@ -47,3 +47,27 @@ export async function seedCities(): Promise<number> {
   }
   return prisma.newsCity.count();
 }
+
+/**
+ * Bootstrap an empty city table (a fresh database that never ran
+ * `npm run news:seed`). Without these rows every refresh is a silent no-op and
+ * /news stays empty forever. Create-only, and only when no city exists at all,
+ * so admin tuning and deliberately removed cities are never overwritten.
+ */
+export async function ensureNewsCities(): Promise<void> {
+  if ((await prisma.newsCity.count()) > 0) return;
+  await prisma.newsCity.createMany({
+    data: SEED_CITIES.map((c) => ({
+      slug: c.slug,
+      name: c.name,
+      stateCode: c.stateCode ?? null,
+      displayOrder: c.displayOrder,
+      queryTerms: c.queryTerms,
+      excludeTerms: [...EXCLUDE, ...(CITY_EXCLUDE[c.slug] ?? [])],
+      geoLat: c.geoLat ?? null,
+      geoLng: c.geoLng ?? null,
+      isActive: true,
+    })),
+    skipDuplicates: true,
+  });
+}

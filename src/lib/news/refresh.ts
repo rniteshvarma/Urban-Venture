@@ -10,6 +10,7 @@
 import prisma from '../prisma';
 import { ingestCity } from './ingest';
 import { isMockMode } from './providers';
+import { ensureNewsCities } from './seed-cities';
 
 export const MIN_INTERVAL_SEC = 120;
 const LOCK_SEC = 90;
@@ -24,7 +25,11 @@ export interface RefreshResult {
 }
 
 export async function refreshCityIfStale(slug: string): Promise<RefreshResult> {
-  const city = await prisma.newsCity.findUnique({ where: { slug } });
+  let city = await prisma.newsCity.findUnique({ where: { slug } });
+  if (!city) {
+    await ensureNewsCities();
+    city = await prisma.newsCity.findUnique({ where: { slug } });
+  }
   if (!city || !city.isActive) return { ran: false, reason: 'unknown-city', newCount: 0, lastIngestAt: null, nextRefreshInSec: 0 };
   const last = city.lastIngestAt?.getTime() ?? 0;
   const ageSec = (Date.now() - last) / 1000;

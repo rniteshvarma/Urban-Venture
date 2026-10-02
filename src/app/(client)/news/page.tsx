@@ -9,6 +9,7 @@ import { cookies } from 'next/headers';
 import type { NewsCategory, Prisma } from '@prisma/client';
 import prisma from '@/lib/prisma';
 import { buildFeedWhere } from '@/lib/news/query';
+import { ensureNewsCities } from '@/lib/news/seed-cities';
 import { isMockMode } from '@/lib/news/providers';
 import { ALL_CATEGORIES } from '@/lib/news/categories';
 import { relativeTime } from '@/lib/news/format';
@@ -28,7 +29,7 @@ function hoursAgo(h: number): Date {
   return new Date(Date.now() - h * 3600_000);
 }
 
-type SP = Promise<{ city?: string; category?: string; minImpact?: string; sort?: string }>;
+type SP = Promise<{ city?: string; category?: string; minImpact?: string; sort?: string; page?: string }>;
 
 async function resolveCity(paramCity?: string): Promise<string> {
   if (paramCity) return paramCity;
@@ -42,15 +43,23 @@ export default async function NewsPage({ searchParams }: { searchParams: SP }) {
   const category = ALL_CATEGORIES.includes(sp.category as NewsCategory) ? (sp.category as NewsCategory) : null;
   const minImpact = sp.minImpact ? Number(sp.minImpact) : 0;
   const sort = sp.sort === 'impact' ? 'impact' : 'latest';
+  const requestedPage = Math.max(1, Math.floor(Number(sp.page) || 1));
 
-  const cities = await prisma.newsCity.findMany({ where: { isActive: true }, orderBy: { displayOrder: 'asc' } });
+  const cityQuery = { where: { isActive: true }, orderBy: { displayOrder: 'asc' as const } };
+  let cities = await prisma.newsCity.findMany(cityQuery);
+  if (cities.length === 0) {
+    // Fresh database: create the default cities so the live refresh has feeds to pull.
+    await ensureNewsCities();
+    cities = await prisma.newsCity.findMany(cityQuery);
+  }
   let city = await resolveCity(sp.city);
   if (!cities.some((c) => c.slug === city)) city = 'india';
 
+  // `id` breaks publishedAt ties (common in RSS), so pages never repeat or skip a story.
   const orderBy: Prisma.NewsArticleOrderByWithRelationInput[] =
     sort === 'impact'
-      ? [{ isPinned: 'desc' }, { impactScore: 'desc' }, { publishedAt: 'desc' }]
-      : [{ isPinned: 'desc' }, { publishedAt: 'desc' }];
+      ? [{ isPinned: 'desc' }, { impactScore: 'desc' }, { publishedAt: 'desc' }, { id: 'desc' }]
+      : [{ isPinned: 'desc' }, { publishedAt: 'desc' }, { id: 'desc' }];
 
   // "All India" is the union of every city's feed plus national stories.
   const extra: Prisma.NewsArticleWhereInput = {
@@ -59,18 +68,30 @@ export default async function NewsPage({ searchParams }: { searchParams: SP }) {
     ...(minImpact ? { impactScore: { gte: minImpact } } : {}),
   };
 
-  let articles = await prisma.newsArticle.findMany({ where: await buildFeedWhere(extra), orderBy, take: PAGE_SIZE });
+  let where = await buildFeedWhere(extra);
+  let total = await prisma.newsArticle.count({ where });
 
   // Empty city coverage → fall back to India-wide (spec Part 7.5).
   let fellBackToIndia = false;
-  if (articles.length === 0 && city !== 'india') {
+  if (total === 0 && city !== 'india') {
     fellBackToIndia = true;
-    articles = await prisma.newsArticle.findMany({
-      where: await buildFeedWhere({ cityScope: 'india', ...(category ? { category } : {}), ...(minImpact ? { impactScore: { gte: minImpact } } : {}) }),
-      orderBy,
-      take: PAGE_SIZE,
-    });
+    where = await buildFeedWhere({ cityScope: 'india', ...(category ? { category } : {}), ...(minImpact ? { impactScore: { gte: minImpact } } : {}) });
+    total = await prisma.newsArticle.count({ where });
   }
+
+  // Newest first, PAGE_SIZE per page: new stories land on page 1 and push older
+  // ones onto later pages. Nothing is hidden for its age (ingest prunes at 90 days).
+  const lastPage = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const page = Math.min(requestedPage, lastPage);
+  const articles = await prisma.newsArticle.findMany({ where, orderBy, skip: (page - 1) * PAGE_SIZE, take: PAGE_SIZE });
+  const pageHref = (p: number) => {
+    const q = new URLSearchParams({ city });
+    if (category) q.set('category', category);
+    if (minImpact) q.set('minImpact', String(minImpact));
+    if (sort !== 'latest') q.set('sort', sort);
+    if (p > 1) q.set('page', String(p));
+    return `/news?${q.toString()}`;
+  };
 
   // Corridor chips: resolve scores for every referenced slug.
   const slugs = [...new Set(articles.flatMap((a) => a.corridorSlugs))];
@@ -93,7 +114,8 @@ export default async function NewsPage({ searchParams }: { searchParams: SP }) {
   const sourceCount = cityRow ? feedsForCity(cityRow).length : 0;
   const publishers = [...new Set(articles.map((a) => a.sourceName))].sort();
 
-  const updatedAgo = articles.length ? relativeTime(articles.reduce((m, a) => (a.ingestedAt > m ? a.ingestedAt : m), articles[0].ingestedAt)) : null;
+  // Only page 1 holds the newest stories, so only it can say when the feed last moved.
+  const updatedAgo = page === 1 && articles.length ? relativeTime(articles.reduce((m, a) => (a.ingestedAt > m ? a.ingestedAt : m), articles[0].ingestedAt)) : null;
   const cityName = cities.find((c) => c.slug === city)?.name ?? 'All India';
   const lockedBanner = process.env.NODE_ENV === 'production' && isMockMode();
 
@@ -144,7 +166,11 @@ export default async function NewsPage({ searchParams }: { searchParams: SP }) {
 
       {articles.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '80px 20px', color: 'var(--color-text-lo)' }}>
-          <p style={{ fontSize: '1rem' }}>No {category ? category.toLowerCase().replace('_', ' ') : ''} stories in the last 7 days.</p>
+          <p style={{ fontSize: '1rem' }}>
+            {category || minImpact
+              ? `No ${category ? `${CATEGORY_LABEL[category].toLowerCase()} ` : ''}stories match these filters yet.`
+              : 'No stories yet. We’re checking the sources now, and new stories will appear here automatically.'}
+          </p>
         </div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(340px, 100%), 1fr))', gap: 22, alignItems: 'stretch' }}>
@@ -153,6 +179,8 @@ export default async function NewsPage({ searchParams }: { searchParams: SP }) {
           ))}
         </div>
       )}
+
+      {lastPage > 1 && <Pager page={page} lastPage={lastPage} total={total} sort={sort} href={pageHref} />}
 
       {/* Attribution & content policy — every headline belongs to its publisher. */}
       <footer style={{ marginTop: 48, paddingTop: 18, borderTop: '1px solid var(--color-line)', fontSize: '0.76rem', lineHeight: 1.6, color: 'var(--color-text-lo)', maxWidth: 820 }}>
@@ -165,5 +193,68 @@ export default async function NewsPage({ searchParams }: { searchParams: SP }) {
         </p>
       </footer>
     </div>
+  );
+}
+
+/** Page numbers to show: first, last, and the current page's neighbours, with gaps. */
+function pageList(page: number, last: number): (number | null)[] {
+  const keep = new Set([1, last, page - 1, page, page + 1].filter((p) => p >= 1 && p <= last));
+  const sorted = [...keep].sort((a, b) => a - b);
+  const out: (number | null)[] = [];
+  sorted.forEach((p, i) => {
+    if (i > 0 && p - sorted[i - 1] > 1) out.push(null);
+    out.push(p);
+  });
+  return out;
+}
+
+const pagerLink: React.CSSProperties = {
+  minWidth: 36,
+  padding: '6px 12px',
+  borderRadius: 999,
+  borderWidth: 1,
+  borderStyle: 'solid',
+  borderColor: 'var(--color-line)',
+  background: 'var(--color-surface, #fff)',
+  color: 'var(--color-text-mid)',
+  fontSize: '0.85rem',
+  fontWeight: 600,
+  textAlign: 'center',
+  textDecoration: 'none',
+};
+
+function Pager({ page, lastPage, total, sort, href }: { page: number; lastPage: number; total: number; sort: string; href: (p: number) => string }) {
+  const from = (page - 1) * PAGE_SIZE + 1;
+  const to = Math.min(page * PAGE_SIZE, total);
+  const edge = (label: string, target: number, enabled: boolean) =>
+    enabled ? (
+      <a href={href(target)} style={pagerLink}>{label}</a>
+    ) : (
+      <span aria-disabled="true" style={{ ...pagerLink, opacity: 0.4 }}>{label}</span>
+    );
+  return (
+    <nav aria-label="News pages" style={{ marginTop: 36 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', gap: 8 }}>
+        {edge(sort === 'impact' ? '← Previous' : '← Newer', page - 1, page > 1)}
+        {pageList(page, lastPage).map((p, i) =>
+          p === null ? (
+            <span key={`gap-${i}`} style={{ color: 'var(--color-text-lo)' }}>…</span>
+          ) : (
+            <a
+              key={p}
+              href={href(p)}
+              aria-current={p === page ? 'page' : undefined}
+              style={p === page ? { ...pagerLink, background: 'var(--color-saffron)', borderColor: 'var(--color-saffron)', color: 'var(--color-ink)' } : pagerLink}
+            >
+              {p}
+            </a>
+          ),
+        )}
+        {edge(sort === 'impact' ? 'Next →' : 'Older →', page + 1, page < lastPage)}
+      </div>
+      <p style={{ textAlign: 'center', marginTop: 10, fontSize: '0.78rem', color: 'var(--color-text-lo)' }}>
+        Stories {from}–{to} of {total}, {sort === 'impact' ? 'highest impact first' : 'newest first'}
+      </p>
+    </nav>
   );
 }

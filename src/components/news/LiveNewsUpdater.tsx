@@ -31,6 +31,8 @@ export default function LiveNewsUpdater({ city, sourceCount }: { city: string; s
       const r = await fetch('/api/news/refresh', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ city }) });
       const body = await r.json();
       if (!r.ok) throw new Error(body.error);
+      // The server has no feeds for this city — don't claim the sources were checked.
+      if (body.reason === 'unknown-city') throw new Error('unknown city');
       setNow(Date.now());
       setCheckedAt(body.lastIngestAt ? new Date(body.lastIngestAt).getTime() : Date.now());
       if (body.newCount > 0) {
