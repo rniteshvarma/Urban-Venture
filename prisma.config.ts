@@ -32,17 +32,44 @@ if (!process.env.DATABASE_URL) {
  * own client in src/lib/prisma.ts and keeps using the pooled connection, which
  * is the right one for serverless request handling.
  */
+const DB_VARS = ["POSTGRES_PRISMA_URL", "POSTGRES_URL", "DATABASE_URL", "POSTGRES_URL_NON_POOLING"] as const;
+
+/** `user@host:port` of a connection string — never the password. */
+function describeDbUrl(url: string): string {
+  try {
+    const u = new URL(url);
+    return `${decodeURIComponent(u.username)}@${u.hostname}:${u.port || "5432"}`;
+  } catch {
+    return "(unparseable)";
+  }
+}
+
+/**
+ * Print which variable the build connects with, plus every other DB variable
+ * that is set. A stale integration variable shadowing a corrected one (the
+ * Supabase "tenant/user not found" build failure) is then visible in the log.
+ */
+function reportDbVars(source: string | undefined) {
+  const set = DB_VARS.filter((name) => process.env[name]);
+  if (!source) {
+    console.log("[db] no database URL variable is set");
+    return;
+  }
+  console.log(`[db] schema sync uses ${source} → ${describeDbUrl(process.env[source]!)}`);
+  for (const name of set) {
+    if (name !== source) console.log(`[db]   also set: ${name} → ${describeDbUrl(process.env[name]!)}`);
+  }
+}
+
 function schemaUrl(): string | undefined {
   // Must mirror the runtime's precedence in src/lib/prisma.ts exactly. Vercel's
   // Postgres integration injects POSTGRES_PRISMA_URL / POSTGRES_URL, and the
   // runtime prefers those over DATABASE_URL. When this file read DATABASE_URL
   // alone, `db push` reported "in sync" against one database while the app
   // queried another — the sync looked successful and production stayed broken.
-  const db =
-    process.env["POSTGRES_PRISMA_URL"] ||
-    process.env["POSTGRES_URL"] ||
-    process.env["DATABASE_URL"] ||
-    process.env["POSTGRES_URL_NON_POOLING"];
+  const source = DB_VARS.find((name) => process.env[name]);
+  const db = source ? process.env[source] : undefined;
+  if (process.env.VERCEL || process.env.CI) reportDbVars(source);
   const direct = process.env["DIRECT_URL"]?.trim();
 
   // Supabase exposes three endpoints, and only one of them suits schema work
