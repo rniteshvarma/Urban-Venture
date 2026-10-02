@@ -5,10 +5,14 @@
  *   npx tsx --env-file=.env.local scripts/inventory/seed-inventory.ts [--dry-run] [--keep-dummies]
  *
  * Safe to re-run: projects are upserted by specifications.inventoryKey and their
- * unit types / media are rebuilt. It also removes the 8 placeholder projects the
+ * unit types / media are rebuilt. Rows whose content is unchanged since the last
+ * run (fingerprint in specifications.inventoryHash) are skipped, because this
+ * runs in every Vercel build and each database round trip there crosses regions.
+ * It also removes the 8 placeholder projects the
  * original prisma/seed.ts created — matched by exact name + developer, admin-owned
  * and MANUAL-sourced, so a project anyone added by hand is never touched.
  */
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import type { Prisma } from "@prisma/client";
@@ -19,6 +23,17 @@ import { zoneFor } from "../../src/lib/inventory/zones";
 const DRY = process.argv.includes("--dry-run");
 const KEEP_DUMMIES = process.argv.includes("--keep-dummies");
 const DATA = path.join(process.cwd(), "prisma/data/hyderabad-inventory.json");
+// Matches the production pool size in src/lib/prisma.ts.
+const WRITE_CONCURRENCY = 5;
+
+/** Run tasks with at most `size` in flight; rejects on the first failure. */
+async function runPool(tasks: (() => Promise<void>)[], size: number): Promise<void> {
+  let next = 0;
+  const worker = async () => {
+    while (next < tasks.length) await tasks[next++]();
+  };
+  await Promise.all(Array.from({ length: Math.min(size, tasks.length) }, worker));
+}
 
 // The placeholder projects shipped in the original prisma/seed.ts.
 const DUMMIES: [string, string][] = [
@@ -161,13 +176,17 @@ async function main() {
     select: { id: true, specifications: true },
   });
   const idByKey = new Map<string, string>();
+  const hashByKey = new Map<string, string>();
   for (const e of existing) {
-    const k = (e.specifications as { inventoryKey?: string } | null)?.inventoryKey;
-    if (k) idByKey.set(k, e.id);
+    const spec = e.specifications as { inventoryKey?: string; inventoryHash?: string } | null;
+    if (!spec?.inventoryKey) continue;
+    idByKey.set(spec.inventoryKey, e.id);
+    if (spec.inventoryHash) hashByKey.set(spec.inventoryKey, spec.inventoryHash);
   }
 
   const grades: Record<string, number> = {};
-  let created = 0, updated = 0;
+  let created = 0, updated = 0, unchanged = 0;
+  const writes: (() => Promise<void>)[] = [];
   for (const r of records) {
     const zone = zoneOf.get(r.key)!;
     const possession = r.possessionRera ?? r.possessionTarget;
@@ -282,23 +301,39 @@ async function main() {
       altText: `${r.name} — ${m.mediaType.replace("_", " ").toLowerCase()}`,
     }));
 
+    // Fingerprint everything written except the run timestamps. The rating is
+    // month-granular, so the hash only moves when the data or the month changes.
+    const hash = createHash("sha256")
+      .update(JSON.stringify({ data: { ...data, approvedAt: null, scoredAt: null }, units, media }))
+      .digest("hex");
+    const row = { ...data, specifications: { ...data.specifications, inventoryHash: hash } };
+
     if (DRY) continue;
     const id = idByKey.get(r.key);
-    if (id) {
-      await prisma.$transaction([
-        prisma.projectUnitType.deleteMany({ where: { projectId: id } }),
-        prisma.projectMedia.deleteMany({ where: { projectId: id } }),
-        prisma.project.update({
-          where: { id },
-          data: { ...data, unitTypes: { create: units }, media: { create: media } },
-        }),
-      ]);
-      updated++;
-    } else {
-      await prisma.project.create({ data: { ...data, unitTypes: { create: units }, media: { create: media } } });
-      created++;
+    if (id && hashByKey.get(r.key) === hash) {
+      unchanged++;
+      continue;
     }
+    writes.push(
+      id
+        ? async () => {
+            await prisma.$transaction([
+              prisma.projectUnitType.deleteMany({ where: { projectId: id } }),
+              prisma.projectMedia.deleteMany({ where: { projectId: id } }),
+              prisma.project.update({
+                where: { id },
+                data: { ...row, unitTypes: { create: units }, media: { create: media } },
+              }),
+            ]);
+            updated++;
+          }
+        : async () => {
+            await prisma.project.create({ data: { ...row, unitTypes: { create: units }, media: { create: media } } });
+            created++;
+          },
+    );
   }
+  await runPool(writes, WRITE_CONCURRENCY);
 
   // ── 3. retire inventory rows that dropped out of the dataset ──
   // Untouched rows are deleted; any a user saved, enquired on or bought are
@@ -318,7 +353,7 @@ async function main() {
     if (keep.length) archived = (await prisma.project.updateMany({ where: { id: { in: keep } }, data: { status: "ARCHIVED", listingStatus: "PAUSED" } })).count;
   }
 
-  console.log(`created ${created}, updated ${updated}, removed ${removed}, archived ${archived}`);
+  console.log(`created ${created}, updated ${updated}, unchanged ${unchanged}, removed ${removed}, archived ${archived}`);
   console.log("grades:", grades);
 }
 
