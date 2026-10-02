@@ -1,7 +1,7 @@
 {
   "framework": "nextjs",
   "regions": ["hnd1"],
-  "buildCommand": "node scripts/copy-maplibre-worker.mjs && npx prisma db push && npx prisma generate && npx tsx scripts/inventory/seed-inventory.ts && next build",
+  "buildCommand": "node scripts/copy-maplibre-worker.mjs && npx prisma db push && npx prisma generate && npx tsx scripts/reference/seed-corridors.ts && npx tsx scripts/inventory/seed-inventory.ts && next build",
   "crons": [
     {
       "path": "/api/cron/renew-gmail-watch",
