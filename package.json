@@ -9,7 +9,7 @@
     "build": "prisma db push && prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
-    "test:geo": "tsx --test src/lib/geo/*.test.ts scripts/etl/lib/*.test.ts src/lib/landiq/*.test.ts src/lib/news/*.test.ts src/lib/extraction/*.test.ts src/lib/listings/*.test.ts src/lib/reports/*.test.ts src/lib/infra-intel/*.test.ts src/lib/whatsapp/*.test.ts src/lib/concierge/*.test.ts src/lib/inventory/*.test.ts src/lib/osm/*.test.ts",
+    "test:geo": "tsx --test src/lib/geo/*.test.ts scripts/etl/lib/*.test.ts src/lib/landiq/*.test.ts src/lib/news/*.test.ts src/lib/extraction/*.test.ts src/lib/listings/*.test.ts src/lib/reports/*.test.ts src/lib/infra-intel/*.test.ts src/lib/whatsapp/*.test.ts src/lib/concierge/*.test.ts src/lib/inventory/*.test.ts src/lib/osm/*.test.ts src/lib/market/*.test.ts",
     "etl:lgd": "tsx scripts/etl/load-lgd.ts",
     "etl:boundaries": "tsx scripts/etl/load-boundaries.ts",
     "eval:resolver": "tsx scripts/eval/run-resolver-eval.ts",
@@ -32,7 +32,8 @@
     "test:whatsapp": "tsx --env-file=.env.local --test --test-concurrency=1 scripts/test/whatsapp.test.ts",
     "whatsapp:verify-templates": "tsx --env-file-if-exists=.env.local scripts/whatsapp/verify-templates.ts",
     "seed:market": "tsx scripts/seed-market-data.ts",
-    "seed:appreciation": "tsx scripts/seed-appreciation.ts"
+    "seed:appreciation": "tsx scripts/seed-appreciation.ts",
+    "market:recompute": "tsx --env-file-if-exists=.env.local scripts/market/recompute.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.102.0",

@@ -105,12 +105,12 @@ export default function ApprovalsDirectoryPage() {
       {/* Hero Section */}
       <section className="px-6 py-14" style={{ background: "var(--color-ink)" }}>
         <div className="max-w-7xl mx-auto space-y-4 text-center">
-          <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full" style={{ background: "var(--color-ink-soft)", border: "1px solid var(--color-ink-line)", color: "var(--color-saffron)", fontFamily: "var(--font-mono)" }}>Verifiable Registry Records</span>
+          <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full" style={{ background: "var(--color-ink-soft)", border: "1px solid var(--color-ink-line)", color: "var(--color-saffron)", fontFamily: "var(--font-mono)" }}>Linked to the RERA portal</span>
           <h1 className="text-3xl md:text-5xl tracking-tight leading-tight" style={{ fontFamily: "var(--font-jakarta)", fontWeight: 800, letterSpacing: "-0.02em", color: "#fff" }}>
-            HMDA / DTCP & RERA Layout Directory
+            TG-RERA Project Directory
           </h1>
           <p className="max-w-xl mx-auto text-sm leading-relaxed" style={{ color: "var(--color-text-invert-mid)" }}>
-            Search our legally audited database of land layouts, housing projects, building permits, and RERA registration codes across major Hyderabad growth corridors.
+            TG-RERA registrations of the projects in our listings, grouped by growth corridor — each linked to its record on the Telangana RERA portal so you can check it yourself.
           </p>
         </div>
       </section>
@@ -122,7 +122,7 @@ export default function ApprovalsDirectoryPage() {
           <div className="space-y-1">
             <span className="font-bold text-text-primary block flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-warning animate-pulse"></span> Official Verification Disclaimer</span>
             <p className="text-text-secondary leading-relaxed">
-              This directory is maintained by our real estate research team. For official, legally binding verification, always check the RERA Telangana or HMDA portal directly.
+              Built from the RERA numbers in our project listings — not an official register. HMDA / DTCP layout approvals aren&apos;t included yet. For legally binding verification, always check the RERA Telangana or HMDA portal directly.
             </p>
           </div>
           <div className="flex gap-2 shrink-0">
@@ -247,7 +247,9 @@ export default function ApprovalsDirectoryPage() {
                         </span>
                       </td>
                       <td className="px-4 py-3.5 text-text-secondary">{app.approvalType.replace(/_/g, " ")}</td>
-                      <td className="px-4 py-3.5 font-mono text-[10px] text-text-secondary">{app.approvalNumber || "—"}</td>
+                      <td className="px-4 py-3.5 font-mono text-[10px] text-text-secondary">
+                        {app.reraUrl ? <a href={app.reraUrl} target="_blank" rel="noreferrer" className="underline">{app.approvalNumber}</a> : app.approvalNumber || "—"}
+                      </td>
                       <td className="px-4 py-3.5 text-text-secondary">
                         {app.approvalDate ? (
                           <span className="flex items-center gap-1.5">

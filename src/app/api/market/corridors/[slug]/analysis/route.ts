@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import type { CorridorMarketStats } from "@/lib/market/compute";
 import Anthropic from "@anthropic-ai/sdk";
 import fs from "fs";
 import path from "path";
@@ -92,8 +93,7 @@ function getFallbackReport(corridor: string) {
     investmentThesis: `The ${corridor} corridor is exhibiting positive appreciation and developer activity, anchored by government zoning plans and connectivity enhancements. It represents a balanced investment zone.`,
     nearTermCatalysts: [
       "Zoning approvals for highway extensions.",
-      "New layout launches by regional builders.",
-      "Increased portal search inquiry volumes."
+      "New layout launches by regional builders."
     ],
     longTermDrivers: [
       "Connectivity loops via ORR and arterial roads.",
@@ -115,6 +115,20 @@ function getFallbackReport(corridor: string) {
   };
 
   return reports[corridor] || defaultReport;
+}
+
+/**
+ * The price outlook always comes from the scenario model (src/lib/market/),
+ * whatever wrote the rest of the report — cached files, the AI or the
+ * fallback text — so the analysis never contradicts the forecast page.
+ */
+function modelOutlook(stats: unknown) {
+  const m = stats as CorridorMarketStats | null;
+  if (!m) return null;
+  const f = m.forecast[m.primaryAsset].scenarios;
+  const what = m.primaryAsset === "plot" ? "plot prices" : "apartment prices";
+  const line = (s: keyof typeof f) => `about ${f[s].cagr5}% a year for ${what} over 5 years (+${f[s].index[5] - 100}%)`;
+  return { conservative: line("conservative"), base: line("base"), optimistic: line("optimistic") };
 }
 
 // GET /api/market/corridors/[slug]/analysis - AI analyst deep dive report
@@ -152,6 +166,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
           const cachedData = JSON.parse(fs.readFileSync(cacheFile, "utf-8"));
           return NextResponse.json({
             ...cachedData,
+            priceOutlook: modelOutlook(metric.marketStats) ?? cachedData.priceOutlook,
             cached: true,
             generatedAt: stats.mtime
           });
@@ -161,18 +176,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
       }
     }
 
-    // Fetch context data
-    const appreciation = await prisma.appreciationHistory.findMany({
-      where: { corridor: corridorName },
-      orderBy: { year: "asc" }
-    });
-
-    const demand = await prisma.demandTrend.findMany({
-      where: { corridor: corridorName },
-      orderBy: [{ year: "asc" }, { month: "asc" }],
-      take: 24
-    });
-
+    const stats = metric.marketStats as unknown as CorridorMarketStats | null;
     const infra = await prisma.infraProject.findMany({
       where: { affectedCorridorSlugs: { has: corridorName }, isPublished: true }
     });
@@ -200,11 +204,11 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
         const userPrompt = `
           Provide a comprehensive investment analysis for the ${corridorName} corridor in Hyderabad.
           Data context:
-          Appreciation history: ${JSON.stringify(appreciation.map(p => ({ year: p.year, price: p.pricePerSqFt, yoy: p.yoyChange })))}
-          Demand trends (last 24 months): ${JSON.stringify(demand.map(d => ({ date: `${d.year}-${d.month}`, absorption: d.absorptionRate, search: d.searchVolume, inquiry: d.inquiryCount })))}
+          Measured prices, project counts and scenario growth rates: ${JSON.stringify(stats ? { rates: stats.rates, counts: stats.counts, outlook: modelOutlook(stats) } : null)}
+          Use only these figures for any number you state; do not invent prices, growth rates, search or enquiry statistics.
           Active infrastructure projects affecting zone: ${JSON.stringify(infra.map(i => ({ name: i.name, category: i.category, status: i.status, investment: i.totalInvestmentCr })))}
           Recent approvals (3 years): ${JSON.stringify(approvals.map(a => ({ name: a.projectName, type: a.approvalType, auth: a.authority, status: a.status })))}
-          Intelligence score: ${intel?.overallScore || 70}/100
+          Intelligence score: ${intel?.overallScore ?? "not computed"}/100
 
           Write a structured analysis in JSON:
           {
@@ -258,6 +262,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
 
     return NextResponse.json({
       ...analysisResult,
+      priceOutlook: modelOutlook(metric.marketStats) ?? analysisResult.priceOutlook,
       cached: false,
       generatedAt: new Date()
     });

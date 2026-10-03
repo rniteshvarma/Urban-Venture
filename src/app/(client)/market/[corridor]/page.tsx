@@ -38,6 +38,8 @@ import {
 } from "recharts";
 import { formatDate } from "@/lib/format";
 import { toast } from "@/lib/toast";
+import type { CorridorMarketStats } from "@/lib/market/compute";
+import { SCORE_LABELS } from "@/lib/market/scores";
 
 /** One contributor to a corridor's infra score (see /api/market/corridors/[slug]/infra). */
 interface InfraDriver {
@@ -200,26 +202,18 @@ export default function CorridorDetailPage() {
     );
   }
 
-  // Pre-process pricing charts
-  const priceChartData = pricing?.pricePoints?.map((pt: any) => {
-    const hydAvg = pricing.hyderabadAverages.find((h: any) => h.year === pt.year)?.pricePerSqFt || 0;
-    return {
-      year: pt.year,
-      price: pt.pricePerSqFt,
-      benchmark: hydAvg,
-      yoy: pt.yoyChange
-    };
-  }) || [];
-
-  // Pre-process demand trends
-  const demandChartData = demand?.trends?.map((t: any) => ({
-    name: `${t.year}-${t.month}`,
-    inquiries: t.inquiryCount || 0,
-    absorption: t.absorptionRate || 0,
-    listings: t.newListings || 0,
-    sold: t.soldUnits || 0,
-    inventory: t.inventoryUnits || 0
-  })) || [];
+  // Measured market figures (src/lib/market) and the quarterly observations recorded from them.
+  const market: CorridorMarketStats | null = profile.market ?? null;
+  const inr = (n: number) => `₹${Math.round(n).toLocaleString("en-IN")}`;
+  const observations = (pricing?.pricePoints ?? []) as { id: string; year: number; quarter: number | null; pricePerSqFt: number; pricePerSqYd: number | null; yoyChange: number | null; sampleSize: number | null; source: string | null; notes: string | null }[];
+  const obsSeries = (plot: boolean) => observations
+    .filter((o) => (o.pricePerSqYd != null) === plot)
+    .map((o) => ({ period: `Q${o.quarter ?? 4} ${o.year}`, price: plot ? o.pricePerSqYd! : o.pricePerSqFt }));
+  const plotSeries = obsSeries(true);
+  const aptSeries = obsSeries(false);
+  const outlook = market ? market.forecast[market.primaryAsset].scenarios : null;
+  // Recorded monthly demand rows (admin-entered); empty unless real data exists.
+  const demandChartData = (demand?.trends ?? []).map((t: any) => ({ name: `${t.year}-${t.month}`, listings: t.newListings ?? 0, sold: t.soldUnits ?? 0 }));
 
   return (
     <div className="bg-luxury-bg text-text-primary min-h-screen font-sans">
@@ -252,19 +246,19 @@ export default function CorridorDetailPage() {
             <div className="grid grid-cols-4 gap-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-4">
               <div className="text-center">
                 <div className="text-[11px] font-bold text-slate-300 uppercase tracking-wider">Infra</div>
-                <div className="text-base font-black text-white mt-1">{profile.infraScore}/25</div>
+                <div className="text-base font-black text-white mt-1">{profile.infraScore ?? "—"}/25</div>
               </div>
               <div className="text-center border-l border-white/20">
-                <div className="text-[11px] font-bold text-slate-300 uppercase tracking-wider">Approvals</div>
-                <div className="text-base font-black text-white mt-1">{profile.approvalScore}/25</div>
+                <div className="text-[11px] font-bold text-slate-300 uppercase tracking-wider" title={SCORE_LABELS.approvalScore}>RERA projects</div>
+                <div className="text-base font-black text-white mt-1">{profile.approvalScore ?? "—"}/25</div>
               </div>
               <div className="text-center border-l border-white/20">
-                <div className="text-[11px] font-bold text-slate-300 uppercase tracking-wider">Demand</div>
-                <div className="text-base font-black text-white mt-1">{profile.demandScore}/25</div>
+                <div className="text-[11px] font-bold text-slate-300 uppercase tracking-wider" title={SCORE_LABELS.demandScore}>Activity</div>
+                <div className="text-base font-black text-white mt-1">{profile.demandScore ?? "—"}/25</div>
               </div>
               <div className="text-center border-l border-white/20">
-                <div className="text-[11px] font-bold text-slate-300 uppercase tracking-wider">Appr.</div>
-                <div className="text-base font-black text-white mt-1">{profile.appreciationScore}/25</div>
+                <div className="text-[11px] font-bold text-slate-300 uppercase tracking-wider" title={SCORE_LABELS.appreciationScore}>Outlook</div>
+                <div className="text-base font-black text-white mt-1">{profile.appreciationScore ?? "—"}/25</div>
               </div>
             </div>
 
@@ -291,12 +285,12 @@ export default function CorridorDetailPage() {
                   strokeWidth="8" 
                   fill="transparent" 
                   strokeDasharray="301"
-                  strokeDashoffset={301 - (301 * profile.overallScore) / 100}
+                  strokeDashoffset={301 - (301 * (profile.overallScore ?? 0)) / 100}
                   className="transition-all duration-1000"
                 />
               </svg>
               <div className="absolute text-center">
-                <span className="text-3xl font-black text-text-primary block leading-none font-mono">{profile.overallScore}</span>
+                <span className="text-3xl font-black text-text-primary block leading-none font-mono">{profile.overallScore ?? "—"}</span>
                 <span className="text-[8px] text-accent uppercase font-black tracking-widest mt-1 inline-block font-mono">Score</span>
               </div>
             </div>
@@ -306,7 +300,7 @@ export default function CorridorDetailPage() {
               profile.investorSentiment === "CAUTIOUS" ? "bg-red-50 text-[#D93B30] border-red-200" :
               "bg-amber-50 text-[#9A6A1E] border-amber-200"
             }`}>
-              {profile.investorSentiment} sentiment
+              {profile.investorSentiment ?? "No"} sentiment
             </span>
           </div>
         </div>
@@ -316,10 +310,10 @@ export default function CorridorDetailPage() {
       <section className="bg-white border-b border-[#E2E8F0] px-6 sticky z-30 backdrop-blur-md shadow-sm" style={{ top: 68 }}>
         <div className="max-w-7xl mx-auto flex overflow-x-auto whitespace-nowrap gap-6">
           {[
-            { id: "pricing", label: "Price History", icon: <TrendingUp size={14} /> },
-            { id: "demand", label: "Demand Trends", icon: <TrendingDown size={14} /> },
+            { id: "pricing", label: "Prices", icon: <TrendingUp size={14} /> },
+            { id: "demand", label: "Developer Activity", icon: <TrendingDown size={14} /> },
             { id: "infra", label: "Infrastructure Timeline", icon: <Hammer size={14} /> },
-            { id: "approvals", label: "Approvals Directory", icon: <FileCheck size={14} /> },
+            { id: "approvals", label: "RERA Projects", icon: <FileCheck size={14} /> },
             { id: "ai", label: "AI Investment Analysis", icon: <Brain size={14} /> },
             { id: "50yr", label: "50yr Context", icon: <Calendar size={14} /> },
             { id: "legal", label: "Legal Checklist", icon: <ShieldCheck size={14} /> },
@@ -342,220 +336,184 @@ export default function CorridorDetailPage() {
       {/* Tabs Contents */}
       <main className="max-w-7xl mx-auto py-12 px-6">
         
-        {/* Tab 1: Price History */}
+        {/* Tab 1: Prices — measured today, plus the quarterly record */}
         {activeTab === "pricing" && (
           <div className="space-y-10 animate-fade-in">
-            {/* Charts Row */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {(["plot", "apartment"] as const).map((a) => {
+                const r = market?.rates[a];
+                const unit = a === "plot" ? "/sq.yd" : "/sq.ft";
+                return (
+                  <div key={a} className="stat-card">
+                    <div className="stat-label">{a === "plot" ? "Plot price today" : "Apartment price today"}</div>
+                    {r ? (
+                      <>
+                        <div className="stat-value mt-1">{inr(r.median)} <span className="text-xs font-normal text-text-secondary">{unit}</span></div>
+                        <p className="text-[10px] text-text-secondary mt-1 leading-relaxed">
+                          Middle half {inr(r.p25)}–{inr(r.p75)} · {r.projects} project{r.projects === 1 ? "" : "s"} within {r.radiusKm} km · {r.confidence.toLowerCase()} confidence
+                        </p>
+                      </>
+                    ) : (
+                      <p className="text-xs text-text-secondary mt-2 leading-relaxed">Not enough {a === "plot" ? "plot" : "apartment"} listings nearby to measure.</p>
+                    )}
+                  </div>
+                );
+              })}
+              <div className="stat-card">
+                <div className="stat-label">5-year outlook (base case)</div>
+                {outlook ? (
+                  <>
+                    <div className="stat-value mt-1">{outlook.base.cagr5}% <span className="text-xs font-normal text-text-secondary">a year</span></div>
+                    <p className="text-[10px] text-text-secondary mt-1 leading-relaxed">
+                      Range {outlook.conservative.cagr5}–{outlook.optimistic.cagr5}% · <Link href="/market/forecast" className="underline">how it&apos;s built</Link>
+                    </p>
+                  </>
+                ) : <p className="text-xs text-text-secondary mt-2">Not computed yet.</p>}
+              </div>
+              <div className="stat-card">
+                <div className="stat-label">Hyderabad average</div>
+                {market ? (
+                  <>
+                    <div className="stat-value mt-1">{inr(market.city.aptAvgSqFt.value)} <span className="text-xs font-normal text-text-secondary">/sq.ft</span></div>
+                    <p className="text-[10px] text-text-secondary mt-1 leading-relaxed">
+                      Apartments, {market.city.aptAvgSqFt.period} ({market.city.aptAvgSqFt.note?.toLowerCase()}) ·{" "}
+                      <a href={market.city.aptAvgSqFt.url} target="_blank" rel="noreferrer" className="underline">{market.city.aptAvgSqFt.source}</a>
+                    </p>
+                  </>
+                ) : <p className="text-xs text-text-secondary mt-2">—</p>}
+              </div>
+            </div>
+
+            {market?.landEvidence.map((e) => (
+              <div key={e.url} className="bg-white border border-luxury rounded p-4 text-xs text-text-secondary leading-relaxed">
+                <strong className="text-text-primary">{e.source}:</strong> ₹{e.value} {e.unit} ({e.period}). {e.note}{" "}
+                <a href={e.url} target="_blank" rel="noreferrer" className="underline inline-flex items-center gap-0.5">Source <ExternalLink size={10} /></a>
+              </div>
+            ))}
+
+            {/* Recorded history */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Chart 1: Price per SqFt vs Benchmark */}
-              <div className="card-premium p-5 flex flex-col">
-                <div className="section-header border-l-4 border-saffron pl-3 mb-4">
-                  <h3 className="text-xs font-bold text-text-primary uppercase tracking-wider flex items-center gap-1.5">
-                    <TrendingUp size={14} className="text-accent" /> Price per SqFt (₹) vs Hyderabad Average
-                  </h3>
-                </div>
-                {priceChartData.length === 0 ? (
-                  <div className="h-[220px] flex items-center justify-center text-text-secondary text-xs italic">No price points seeded.</div>
-                ) : (
-                  <div className="h-[250px] w-full text-[10px] text-text-secondary">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={priceChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
-                        <XAxis dataKey="year" stroke="#94A3B8" />
-                        <YAxis stroke="#94A3B8" />
-                        <Tooltip contentStyle={{ backgroundColor: "#FFFFFF", borderColor: "#E2E8F0", fontSize: "11px", color: "#0F172A" }} />
-                        <Legend wrapperStyle={{ fontSize: "10px" }} />
-                        <Line type="monotone" dataKey="price" stroke="#FFB400" strokeWidth={2.5} name={profile.shortName || profile.name || profile.corridor} dot={{ r: 4 }} />
-                        <Line type="monotone" dataKey="benchmark" stroke="#94A3B8" strokeDasharray="4 4" strokeWidth={1.5} name="Hyd Metro Average" dot={false} />
-                      </LineChart>
-                    </ResponsiveContainer>
+              {([["plot", plotSeries, "/sq.yd"], ["apartment", aptSeries, "/sq.ft"]] as const).map(([a, series, unit]) => (
+                <div key={a} className="card-premium p-5 flex flex-col">
+                  <div className="section-header border-l-4 border-saffron pl-3 mb-4">
+                    <h3 className="text-xs font-bold text-text-primary uppercase tracking-wider flex items-center gap-1.5">
+                      <TrendingUp size={14} className="text-accent" /> {a === "plot" ? "Plot" : "Apartment"} price record (₹{unit})
+                    </h3>
                   </div>
-                )}
-              </div>
-
-              {/* Chart 2: YoY price growth */}
-              <div className="card-premium p-5 flex flex-col">
-                <div className="section-header border-l-4 border-success pl-3 mb-4">
-                  <h3 className="text-xs font-bold text-text-primary uppercase tracking-wider flex items-center gap-1.5">
-                    <TrendingUp size={14} className="text-success" /> Year-over-Year (YoY) Change %
-                  </h3>
+                  {series.length < 2 ? (
+                    <div className="h-[200px] flex flex-col items-center justify-center text-center gap-2 text-text-secondary text-xs px-6">
+                      <Info size={16} />
+                      {series.length === 1
+                        ? <span>First recorded {series[0].period}: {inr(series[0].price)}{unit}. We record the measured price every quarter — the trend line appears from the next one.</span>
+                        : <span>No recorded prices yet for this property type here.</span>}
+                    </div>
+                  ) : (
+                    <div className="h-[220px] w-full text-[10px] text-text-secondary">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={series} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
+                          <XAxis dataKey="period" stroke="#94A3B8" />
+                          <YAxis stroke="#94A3B8" />
+                          <Tooltip contentStyle={{ backgroundColor: "#FFFFFF", borderColor: "#E2E8F0", fontSize: "11px", color: "#0F172A" }} />
+                          <Line type="monotone" dataKey="price" stroke="#FFB400" strokeWidth={2.5} name={`₹${unit}`} dot={{ r: 4 }} />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  )}
                 </div>
-                {priceChartData.length === 0 ? (
-                  <div className="h-[220px] flex items-center justify-center text-text-secondary text-xs italic">No price points seeded.</div>
-                ) : (
-                  <div className="h-[250px] w-full text-[10px] text-text-secondary">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={priceChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
-                        <XAxis dataKey="year" stroke="#94A3B8" />
-                        <YAxis stroke="#94A3B8" />
-                        <Tooltip contentStyle={{ backgroundColor: "#FFFFFF", borderColor: "#E2E8F0", fontSize: "11px", color: "#0F172A" }} />
-                        <Bar dataKey="yoy" fill="#FFB400" name="YoY Change %" radius={[2, 2, 0, 0]} />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                )}
-              </div>
+              ))}
             </div>
 
-            {/* Price Stats Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="stat-card">
-                <div className="stat-label">CAGR (5yr)</div>
-                <div className="stat-value mt-1">~14.5%</div>
-              </div>
-              <div className="stat-card">
-                <div className="stat-label">CAGR (3yr)</div>
-                <div className="stat-value mt-1">~13.2%</div>
-              </div>
-              <div className="stat-card">
-                <div className="stat-label">Current price</div>
-                <div className="stat-value mt-1">
-                  ₹{pricing?.pricePoints?.slice(-1)[0]?.pricePerSqFt?.toLocaleString() || "4,200"} <span className="text-xs font-normal text-text-secondary">/sqft</span>
+            {observations.length > 0 && (
+              <div className="bg-white border border-luxury rounded overflow-x-auto shadow-sm">
+                <div className="px-4 py-3 border-b border-luxury bg-white flex items-center justify-between">
+                  <span className="text-xs font-bold text-text-primary">Recorded observations</span>
                 </div>
-              </div>
-              <div className="stat-card">
-                <div className="stat-label">Historical Multiplier</div>
-                <div className="stat-value text-success mt-1">2.4x <span className="text-xs font-normal text-text-secondary">since 2018</span></div>
-              </div>
-            </div>
-
-            {/* Tabular data log */}
-            <div className="bg-white border border-luxury rounded overflow-x-auto shadow-sm">
-              <div className="px-4 py-3 border-b border-luxury bg-white flex items-center justify-between">
-                <span className="text-xs font-bold text-text-primary">Price History Data Table</span>
-              </div>
-              <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
                     <tr className="bg-slate-50 border-b border-luxury text-[10px] font-bold uppercase text-text-secondary">
-                      <th className="px-4 py-3">Year</th>
-                      <th className="px-4 py-3 text-center">Quarter</th>
-                      <th className="px-4 py-3 text-right">Price per SqFt (₹)</th>
-                      <th className="px-4 py-3 text-center">YoY Change (%)</th>
+                      <th className="px-4 py-3">Quarter</th>
+                      <th className="px-4 py-3 text-right">Price</th>
+                      <th className="px-4 py-3 text-center">Year on year</th>
+                      <th className="px-4 py-3">Basis</th>
                       <th className="px-4 py-3">Source</th>
-                      <th className="px-4 py-3">Commentary</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 text-text-primary">
-                    {pricing?.pricePoints?.slice().reverse().map((pt: any) => (
+                    {observations.slice().reverse().map((pt) => (
                       <tr key={pt.id} className="hover:bg-slate-50">
-                        <td className="px-4 py-3 font-semibold text-text-primary">{pt.year}</td>
-                        <td className="px-4 py-3 text-center text-text-secondary">{pt.quarter || "—"}</td>
-                        <td className="px-4 py-3 text-right font-mono font-bold text-text-primary">₹{pt.pricePerSqFt.toLocaleString()}</td>
-                        <td className="px-4 py-3 text-center">
-                          <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold border ${
-                            pt.yoyChange >= 15 ? "bg-green-50 text-green-700 border-green-200" :
-                            pt.yoyChange > 0 ? "bg-blue-50 text-blue-700 border-blue-200" :
-                            "bg-slate-100 text-slate-500 border border-slate-200"
-                          }`}>
-                            {pt.yoyChange >= 0 ? `+${pt.yoyChange}%` : `${pt.yoyChange}%`}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-text-secondary">{pt.source || "—"}</td>
+                        <td className="px-4 py-3 font-semibold">Q{pt.quarter ?? "—"} {pt.year}</td>
+                        <td className="px-4 py-3 text-right font-mono font-bold">{pt.pricePerSqYd != null ? `${inr(pt.pricePerSqYd)}/sq.yd` : `${inr(pt.pricePerSqFt)}/sq.ft`}</td>
+                        <td className="px-4 py-3 text-center">{pt.yoyChange == null ? "—" : `${pt.yoyChange >= 0 ? "+" : ""}${pt.yoyChange}%`}</td>
                         <td className="px-4 py-3 text-text-secondary text-[11px]">{pt.notes || "—"}</td>
+                        <td className="px-4 py-3 text-text-secondary text-[11px]">{pt.source || "—"}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-            </div>
+            )}
+
+            {pricing?.cityBenchmarks?.length > 0 && (
+              <p className="text-[11px] text-text-secondary leading-relaxed">
+                City context: Hyderabad apartments averaged{" "}
+                {pricing.cityBenchmarks.map((b: { period: string; pricePerSqFt: number; source: string; url: string }, i: number) => (
+                  <span key={b.period}>{i > 0 ? ", " : ""}{inr(b.pricePerSqFt)}/sq.ft in {b.period} (<a href={b.url} target="_blank" rel="noreferrer" className="underline">{b.source}</a>)</span>
+                ))}.
+              </p>
+            )}
           </div>
         )}
 
         {/* Tab 2: Demand Trends */}
         {activeTab === "demand" && (
           <div className="space-y-10 animate-fade-in">
-            {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="stat-card text-center">
-                <span className="stat-label block">Absorption Rate</span>
-                <span className="stat-value mt-1 block">{demand?.currentAbsorptionRate || 18.2}%</span>
-                <span className="text-[9px] text-text-secondary block mt-1">Percent of inventory absorbed monthly</span>
+            {demand?.activity ? (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {[
+                  ["Projects tracked", demand.activity.totalProjects, `Within ${demand.activity.radiusKm} km`],
+                  ["Under construction", demand.activity.activeProjects, "Building or newly launched"],
+                  ["Ready to move", demand.activity.readyProjects, "Completed projects still selling"],
+                  ["TG-RERA registered", demand.activity.reraProjects, "With a RERA number on record"],
+                ].map(([label, value, note]) => (
+                  <div key={label as string} className="stat-card text-center">
+                    <span className="stat-label block">{label}</span>
+                    <span className="stat-value mt-1 block">{value}</span>
+                    <span className="text-[9px] text-text-secondary block mt-1">{note}</span>
+                  </div>
+                ))}
               </div>
-              <div className="stat-card text-center">
-                <span className="stat-label block">Days on Market</span>
-                <span className="stat-value mt-1 block">{demand?.avgDaysOnMkt || 48} days</span>
-                <span className="text-[9px] text-text-secondary block mt-1">Median listing conversion speed</span>
-              </div>
-              <div className="stat-card text-center">
-                <span className="stat-label block">Inquiry Growth</span>
-                <span className="stat-value text-success mt-1 block">+{demand?.yoyInquiryGrowth || 34}%</span>
-                <span className="text-[9px] text-text-secondary block mt-1">Year-over-Year inquiry growth</span>
-              </div>
-              <div className="stat-card text-center">
-                <span className="stat-label block">Active Inventory</span>
-                <span className="stat-value mt-1 block">{demand?.activeListings || 120} units</span>
-                <span className="text-[9px] text-text-secondary block mt-1">Available layout inventory units</span>
-              </div>
-            </div>
+            ) : (
+              <div className="bg-white border border-luxury rounded p-12 text-center text-text-secondary italic text-xs shadow-sm">Developer activity hasn&apos;t been computed for this corridor yet.</div>
+            )}
 
-            {/* AI Generated paragraph summary */}
             {demand?.contextParagraph && (
               <div className="bg-blue-50/40 border border-blue-200 rounded-lg p-5 flex items-start gap-3 shadow-sm">
-                <Brain className="text-primary mt-0.5 flex-shrink-0" size={16} />
-                <div className="space-y-1">
-                  <span className="text-[10px] text-text-secondary font-bold uppercase tracking-wider block">Demand context analysis</span>
-                  <p className="text-xs text-text-secondary leading-relaxed font-medium">{demand.contextParagraph}</p>
-                </div>
+                <Info className="text-primary mt-0.5 flex-shrink-0" size={16} />
+                <p className="text-xs text-text-secondary leading-relaxed font-medium">{demand.contextParagraph}</p>
               </div>
             )}
 
-            {/* Charts Row */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Chart 1: Dual axis inquiry vs absorption */}
+            {demandChartData.length > 0 && (
               <div className="card-premium p-5 flex flex-col">
                 <div className="section-header border-l-4 border-saffron pl-3 mb-4">
-                  <h3 className="text-xs font-bold text-text-primary uppercase tracking-wider flex items-center gap-1.5">
-                    <TrendingDown size={14} className="text-accent" /> Inquiries vs Absorption Rate % (Last 24 Months)
-                  </h3>
+                  <h3 className="text-xs font-bold text-text-primary uppercase tracking-wider">Recorded monthly activity</h3>
                 </div>
-                {demandChartData.length === 0 ? (
-                  <div className="h-[220px] flex items-center justify-center text-text-secondary text-xs italic">No monthly logs found.</div>
-                ) : (
-                  <div className="h-[250px] w-full text-[10px] text-text-secondary">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={demandChartData.slice(-12)} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
-                        <XAxis dataKey="name" stroke="#94A3B8" />
-                        <YAxis yAxisId="left" stroke="#94A3B8" />
-                        <YAxis yAxisId="right" orientation="right" stroke="#94A3B8" />
-                        <Tooltip contentStyle={{ backgroundColor: "#FFFFFF", borderColor: "#E2E8F0", fontSize: "11px", color: "#0F172A" }} />
-                        <Legend wrapperStyle={{ fontSize: "10px" }} />
-                        <Bar yAxisId="left" dataKey="inquiries" fill="#FFB400" name="Inquiries" radius={[2, 2, 0, 0]} />
-                        <Bar yAxisId="right" dataKey="absorption" fill="#10B981" name="Absorption %" radius={[2, 2, 0, 0]} />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                )}
-              </div>
-
-              {/* Chart 2: Inventory vs Sold units */}
-              <div className="card-premium p-5 flex flex-col">
-                <div className="section-header border-l-4 border-saffron pl-3 mb-4">
-                  <h3 className="text-xs font-bold text-text-primary uppercase tracking-wider flex items-center gap-1.5">
-                    <TrendingDown size={14} className="text-accent-purple" /> Available Inventory vs Sold Units (Monthly)
-                  </h3>
+                <div className="h-[250px] w-full text-[10px] text-text-secondary">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={demandChartData.slice(-12)} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
+                      <XAxis dataKey="name" stroke="#94A3B8" />
+                      <YAxis stroke="#94A3B8" />
+                      <Tooltip contentStyle={{ backgroundColor: "#FFFFFF", borderColor: "#E2E8F0", fontSize: "11px", color: "#0F172A" }} />
+                      <Legend wrapperStyle={{ fontSize: "10px" }} />
+                      <Bar dataKey="listings" fill="#FFB400" name="New listings" radius={[2, 2, 0, 0]} />
+                      <Bar dataKey="sold" fill="#10233F" name="Units sold" radius={[2, 2, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
                 </div>
-                {demandChartData.length === 0 ? (
-                  <div className="h-[220px] flex items-center justify-center text-text-secondary text-xs italic">No monthly logs found.</div>
-                ) : (
-                  <div className="h-[250px] w-full text-[10px] text-text-secondary">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={demandChartData.slice(-12)} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
-                        <XAxis dataKey="name" stroke="#94A3B8" />
-                        <YAxis stroke="#94A3B8" />
-                        <Tooltip contentStyle={{ backgroundColor: "#FFFFFF", borderColor: "#E2E8F0", fontSize: "11px", color: "#0F172A" }} />
-                        <Legend wrapperStyle={{ fontSize: "10px" }} />
-                        <Bar dataKey="inventory" fill="#94A3B8" name="Total Inventory" stackId="a" />
-                        <Bar dataKey="sold" fill="#10233F" name="Units Sold" stackId="a" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                )}
               </div>
-            </div>
+            )}
           </div>
         )}
 
@@ -734,8 +692,8 @@ export default function CorridorDetailPage() {
           <div className="space-y-10 animate-fade-in">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
-                <h3 className="text-sm font-bold text-text-primary uppercase tracking-wider">Layout permissions & RERA registry</h3>
-                <p className="text-text-secondary text-xs mt-1">Legally cleared layout approvals under HMDA metropolitan limits or DTCP district boundaries.</p>
+                <h3 className="text-sm font-bold text-text-primary uppercase tracking-wider">TG-RERA registered projects</h3>
+                <p className="text-text-secondary text-xs mt-1">Projects in our listings near this corridor, with their Telangana RERA registration. Open the RERA record to check the certificate and possession date.</p>
               </div>
 
               {/* Counters */}
@@ -754,7 +712,7 @@ export default function CorridorDetailPage() {
             {/* Approvals Table */}
             {!approvals?.approvals || approvals.approvals.length === 0 ? (
               <div className="bg-white border border-luxury rounded p-12 text-center text-text-secondary italic text-xs shadow-sm">
-                No layout approval records tracked for this corridor recently.
+                No RERA-registered projects in our listings near this corridor yet.
               </div>
             ) : (
               <div className="bg-white border border-luxury rounded overflow-x-auto shadow-sm">
@@ -787,9 +745,11 @@ export default function CorridorDetailPage() {
                             </span>
                           </td>
                           <td className="px-4 py-3.5 text-text-secondary">{app.approvalType.replace(/_/g, " ")}</td>
-                          <td className="px-4 py-3.5 font-mono text-[11px] text-text-secondary">{app.approvalNumber || "—"}</td>
+                          <td className="px-4 py-3.5 font-mono text-[11px] text-text-secondary">
+                            {app.reraUrl ? <a href={app.reraUrl} target="_blank" rel="noreferrer" className="underline inline-flex items-center gap-0.5">{app.approvalNumber} <ExternalLink size={9} /></a> : app.approvalNumber || "—"}
+                          </td>
                           <td className="px-4 py-3.5 text-text-secondary">
-                            {formatDate(app.approvalDate)}
+                            {app.approvalDate ? formatDate(app.approvalDate) : "—"}
                           </td>
                           <td className="px-4 py-3.5 text-right font-semibold text-text-primary">{app.areaAcres ? `${app.areaAcres} ac` : "—"}</td>
                           <td className="px-4 py-3.5">

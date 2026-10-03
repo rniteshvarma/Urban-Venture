@@ -4,6 +4,7 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
+import { CITY } from "@/lib/market/anchors";
 import { ArrowRight, Search, Bot, Building2, CheckCircle2, Calculator, Ruler, FileText, Repeat } from "lucide-react";
 import HeroAppShowcase from "@/components/home/HeroAppShowcase";
 import {
@@ -21,15 +22,6 @@ import {
 } from "@/components/ui";
 import { formatDate, formatCount } from "@/lib/format";
 
-interface Pulse {
-  totalRegistrations?: number | null;
-  totalValueCr?: number | null;
-  yoyGrowthPct?: number | null;
-  avgAskingPriceSqFt?: number | null;
-  gccTotalPct?: number | null;
-  source?: string | null;
-  reportDate?: string | null;
-}
 
 // Homepage positioning copy — swappable (spec Part 1).
 const HERO = {
@@ -47,7 +39,6 @@ const CYCLE_FILTERS: (InvCycle | "ALL")[] = ["ALL", "ACT_NOW", "MID_CYCLE", "WAT
 export default function HomePage() {
   const [corridors, setCorridors] = useState<CorridorCardData[] | null>(null);
   const [projects, setProjects] = useState<ProjectCardData[] | null>(null);
-  const [pulse, setPulse] = useState<Pulse | null>(null);
   const [infraCount, setInfraCount] = useState<number | null>(null);
   const [cycleFilter, setCycleFilter] = useState<InvCycle | "ALL">("ALL");
 
@@ -55,7 +46,6 @@ export default function HomePage() {
     const j = (r: Response) => (r.ok ? r.json() : Promise.reject(r.status));
     fetch("/api/market/corridors").then(j).then(setCorridors).catch(() => setCorridors([]));
     fetch("/api/projects?limit=8").then(j).then(setProjects).catch(() => setProjects([]));
-    fetch("/api/market/pulse").then(j).then((d) => setPulse(d?.pulse ?? null)).catch(() => setPulse(null));
     fetch("/api/market/infrastructure")
       .then(j)
       .then((d) => setInfraCount(Array.isArray(d) ? d.length : Array.isArray(d?.projects) ? d.projects.length : null))
@@ -72,9 +62,7 @@ export default function HomePage() {
     (c) => cycleFilter === "ALL" || (c as any).investmentCycle === cycleFilter
   );
 
-  const lastUpdated = pulse?.reportDate
-    ? formatDate(pulse.reportDate)
-    : corridors?.[0]?.["lastComputedAt" as keyof CorridorCardData]
+  const lastUpdated = corridors?.[0]?.["lastComputedAt" as keyof CorridorCardData]
     ? formatDate(corridors[0]["lastComputedAt" as keyof CorridorCardData] as any)
     : formatDate(new Date());
 
@@ -183,14 +171,14 @@ export default function HomePage() {
       <section style={{ background: "var(--color-ink)", marginTop: "4.5rem", padding: "3.25rem 0" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 28 }}>
-            <MetricStat value={pulse?.totalRegistrations ?? 51089} label="Registrations" sub="FY 2025-26" />
-            <MetricStat value={pulse?.totalValueCr ?? 34420} prefix="₹" suffix=" Cr" label="Transaction Value" />
-            <MetricStat value={pulse?.yoyGrowthPct ?? 40} prefix="+" suffix="%" label="YoY Growth" sub="Mar 2026" />
-            <MetricStat value={pulse?.avgAskingPriceSqFt ?? 9430} prefix="₹" label="Avg / sq.ft" />
-            <MetricStat value={pulse?.gccTotalPct ?? 20} suffix="%" label="of India's GCCs" />
+            <MetricStat value={CITY.registrationsYtd.value} label="Homes registered" sub={CITY.registrationsYtd.period} />
+            <MetricStat value={CITY.registrationsValueCr.value} prefix="₹" suffix=" Cr" label="Registered value" sub={CITY.registrationsValueCr.period} />
+            <MetricStat value={CITY.priceGrowthYoY.value} prefix="+" suffix="%" label="Price growth, YoY" sub={CITY.priceGrowthYoY.period} />
+            <MetricStat value={CITY.avgPriceSqFt.value} prefix="₹" label="Avg / sq.ft" sub={CITY.avgPriceSqFt.period} />
+            <MetricStat value={CITY.gccShareOfLeasing.value} suffix="%" label="Office leasing by GCCs" sub={CITY.gccShareOfLeasing.period} />
           </div>
           <div style={{ marginTop: 22, textAlign: "right" }}>
-            <SourceTag align="right">{pulse?.source || "Knight Frank · SquareYards · TG-RERA"}</SourceTag>
+            <SourceTag align="right">Knight Frank India (Telangana registration data) · H1 & Jan–Jul 2026</SourceTag>
           </div>
         </div>
       </section>

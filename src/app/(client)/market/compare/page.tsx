@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, Legend } from "recharts";
 
-export function ComparePageContent() {
+function ComparePageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -122,16 +122,14 @@ export function ComparePageContent() {
     if (comparisons.length === 0) return [];
     
     // Find all unique years across all price histories
-    const yearsSet = new Set<number>();
-    comparisons.forEach(c => {
-      c.priceHistory?.forEach((h: any) => yearsSet.add(h.year));
-    });
-
-    const years = Array.from(yearsSet).sort();
-    return years.map(yr => {
-      const row: any = { year: yr };
-      comparisons.forEach(c => {
-        const match = c.priceHistory?.find((h: any) => h.year === yr);
+    // Recorded apartment observations (₹/sq.ft), one point per quarter.
+    const key = (h: any) => h.year * 10 + (h.quarter ?? 4);
+    const flats = (c: any) => (c.priceHistory ?? []).filter((h: any) => h.pricePerSqYd == null);
+    const periods = Array.from(new Set<number>(comparisons.flatMap((c) => flats(c).map(key)))).sort();
+    return periods.map((k) => {
+      const row: any = { year: `Q${k % 10} ${Math.floor(k / 10)}` };
+      comparisons.forEach((c) => {
+        const match = flats(c).find((h: any) => key(h) === k);
         row[c.corridor] = match ? match.pricePerSqFt : null;
       });
       return row;
@@ -260,11 +258,11 @@ export function ComparePageContent() {
                         strokeWidth="5" 
                         fill="transparent" 
                         strokeDasharray="213"
-                        strokeDashoffset={213 - (213 * c.overallScore) / 100}
+                        strokeDashoffset={213 - (213 * (c.overallScore ?? 0)) / 100}
                         className="transition-all duration-1000"
                       />
                     </svg>
-                    <span className="absolute text-base font-black text-text-primary">{c.overallScore}</span>
+                    <span className="absolute text-base font-black text-text-primary">{c.overallScore ?? "—"}</span>
                   </div>
 
                   <span className={`mt-3 badge ${
@@ -289,8 +287,11 @@ export function ComparePageContent() {
             {/* Row 2: Overlaid Appreciation Line Chart */}
             <div className="card-premium p-5">
               <h2 className="text-xs font-bold text-text-primary uppercase tracking-wider mb-4 flex items-center gap-1.5 section-header border-l-4 border-accent pl-2">
-                <TrendingUp size={14} className="text-navy-ink" /> Overlaid 5-Year price Appreciation (₹/sqft)
+                <TrendingUp size={14} className="text-navy-ink" /> Recorded apartment prices (₹/sq.ft)
               </h2>
+              {overlaidData.length < 2 && (
+                <p className="text-[11px] text-text-secondary mb-2">We record each corridor&apos;s measured price every quarter; the comparison lines fill in as quarters accumulate.</p>
+              )}
               <div className="h-[250px] w-full text-[10px] text-text-secondary">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={overlaidData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
@@ -338,30 +339,30 @@ export function ComparePageContent() {
                   </thead>
                   <tbody>
                     <tr className="border-b border-slate-100">
-                      <td className="px-4 py-3 font-semibold text-text-secondary bg-slate-50/50 w-44">Historical CAGR</td>
+                      <td className="px-4 py-3 font-semibold text-text-secondary bg-slate-50/50 w-44">Plot price (median)</td>
                       {comparisons.map((c, idx) => (
-                        <td key={idx} className="px-4 py-3 font-bold text-text-primary">{c.historicalCAGR}%</td>
+                        <td key={idx} className="px-4 py-3 font-bold text-text-primary">{c.plotPriceMidSqYd != null ? `₹${Math.round(c.plotPriceMidSqYd).toLocaleString("en-IN")}/sq.yd` : "Not enough listings"}</td>
                       ))}
                       {comparisons.length === 2 && <td className="px-4 py-3 text-text-secondary">—</td>}
                     </tr>
                     <tr className="border-b border-slate-100">
-                      <td className="px-4 py-3 font-semibold text-text-secondary bg-slate-50/50 w-44">Projected CAGR Min</td>
+                      <td className="px-4 py-3 font-semibold text-text-secondary bg-slate-50/50 w-44">Apartment price (middle half)</td>
                       {comparisons.map((c, idx) => (
-                        <td key={idx} className="px-4 py-3 text-text-secondary">{c.projectedCAGRMin}%</td>
+                        <td key={idx} className="px-4 py-3 text-text-primary">{c.aptPriceMinSqFt != null ? `₹${Math.round(c.aptPriceMinSqFt).toLocaleString("en-IN")}–${Math.round(c.aptPriceMaxSqFt).toLocaleString("en-IN")}/sq.ft` : "Not enough listings"}</td>
                       ))}
                       {comparisons.length === 2 && <td className="px-4 py-3 text-text-secondary">—</td>}
                     </tr>
                     <tr className="border-b border-slate-100">
-                      <td className="px-4 py-3 font-semibold text-text-secondary bg-slate-50/50 w-44">Projected CAGR Max</td>
+                      <td className="px-4 py-3 font-semibold text-text-secondary bg-slate-50/50 w-44">Growth a year (10y, cons.–opt.)</td>
                       {comparisons.map((c, idx) => (
-                        <td key={idx} className="px-4 py-3 font-bold text-success bg-success-light/30">{c.projectedCAGRMax}%</td>
+                        <td key={idx} className="px-4 py-3 font-bold text-success bg-success-light/30">{c.projectedCAGRMin != null ? `${c.projectedCAGRMin}% – ${c.projectedCAGRMax}%` : "—"}</td>
                       ))}
                       {comparisons.length === 2 && <td className="px-4 py-3 text-text-secondary">—</td>}
                     </tr>
                     <tr className="border-b border-slate-100">
-                      <td className="px-4 py-3 font-semibold text-text-secondary bg-slate-50/50 w-44">Rental Yield Range</td>
+                      <td className="px-4 py-3 font-semibold text-text-secondary bg-slate-50/50 w-44">Projects tracked (under constr.)</td>
                       {comparisons.map((c, idx) => (
-                        <td key={idx} className="px-4 py-3 text-text-primary">{c.rentalYieldMin}% - {c.rentalYieldMax}%</td>
+                        <td key={idx} className="px-4 py-3 text-text-primary">{c.market ? `${c.market.counts.totalProjects} (${c.market.counts.activeProjects})` : "—"}</td>
                       ))}
                       {comparisons.length === 2 && <td className="px-4 py-3 text-text-secondary">—</td>}
                     </tr>

@@ -1,14 +1,12 @@
 import prisma from "./prisma";
 import Anthropic from "@anthropic-ai/sdk";
-import { ApprovalType, Sentiment } from "@prisma/client";
-import { corridorInfraFromDb, snapshotCorridor } from "./infra-intel/rescore";
+import { Sentiment } from "@prisma/client";
+import { corridorInfraFromDb, loadScoringProjects, snapshotCorridor } from "./infra-intel/rescore";
+import { buildCorridorMarket, corridorCentre, loadMarketContext, syncReraApprovals, writeCorridorMarket, type CorridorMarketStats, type MarketContext } from "./market/compute";
+import { marketScores } from "./market/scores";
 
-// Generate static fallback AI commentary and drivers for local/mock testing
-function getFallbackAIAnalysis(corridor: string, score: number, label: string = corridor) {
-  let sentiment = "NEUTRAL";
-  if (score >= 75) sentiment = "BULLISH";
-  else if (score < 50) sentiment = "CAUTIOUS";
-
+// Static fallback drivers / risks when the AI commentary isn't available
+function getFallbackAIAnalysis(corridor: string) {
   const driversMap: Record<string, string[]> = {
     "adibatla": [
       "Tata Aerospace & TCS jobs expansion driving local housing demand.",
@@ -32,8 +30,7 @@ function getFallbackAIAnalysis(corridor: string, score: number, label: string = 
     ],
     "shadnagar": [
       "Strategic proximity to the upcoming Regional Ring Road (RRR) Southern Corridor.",
-      "High affordability with residential plotting rates.",
-      "Rapidly rising search volume and investor inquiries on the portal."
+      "High affordability with residential plotting rates."
     ],
     "shankarpally-mokila": [
       "Premium eco-sanctuary and green zone status in West Hyderabad.",
@@ -125,8 +122,7 @@ function getFallbackAIAnalysis(corridor: string, score: number, label: string = 
 
   const defaultDrivers = [
     `Strong connectivity improvements via key highway projects.`,
-    `Rapid developer layouts acquisition in the region.`,
-    `Increasing inquiry velocity on the investor portal.`
+    `Rapid developer layouts acquisition in the region.`
   ];
 
   const defaultRisks = [
@@ -145,153 +141,57 @@ function getFallbackAIAnalysis(corridor: string, score: number, label: string = 
     keyDrivers,
     keyRisks,
     bestFor,
-    adminNote: `${label} shows a ${sentiment.toLowerCase()} sentiment score of ${score}/100. Growth is anchored by major government announcements, developer activity, and steady historical price growth.`
   };
 }
 
-export async function computeCorridorScore(corridor: string) {
+const inr = (n: number) => `₹${Math.round(n).toLocaleString("en-IN")}`;
+
+/** One-paragraph commentary from measured figures only. */
+export function marketSummary(label: string, m: CorridorMarketStats): string {
+  const parts: string[] = [];
+  if (m.rates.plot) parts.push(`plots around ${inr(m.rates.plot.median)}/sq.yd (${m.rates.plot.projects} projects)`);
+  if (m.rates.apartment) parts.push(`apartments around ${inr(m.rates.apartment.median)}/sq.ft (${m.rates.apartment.projects} projects)`);
+  const f = m.forecast[m.primaryAsset].scenarios;
+  const prices = parts.length ? `Our listings put ${label} at ${parts.join(" and ")}.` : `We don't have enough listings in ${label} yet to measure prices.`;
+  return `${prices} Base-case outlook: about ${f.base.cagr5}% a year over five years (range ${f.conservative.cagr5}–${f.optimistic.cagr5}%), based on Hyderabad's published price growth and the area's infrastructure pipeline.`;
+}
+
+export async function computeCorridorScore(
+  corridor: string,
+  opts: { ctx?: MarketContext; scoringProjects?: Awaited<ReturnType<typeof loadScoringProjects>>; skipAI?: boolean } = {},
+) {
   console.log(`Calculating Corridor Intelligence Score for: ${corridor}`);
 
   // 1. INFRA SCORE (0-25) — dynamic: distance, stage, time-to-completion,
   // 90-day momentum and staleness per project (src/lib/infra-intel/scoring.ts).
   // Replaces the old Σ statusWeight × reImpactScore × 0.2, which saturated at
   // three projects and ignored distance, time and change.
-  const labelRow = await prisma.corridorProfile.findUnique({ where: { slug: corridor }, select: { shortName: true, name: true } });
+  const labelRow = await prisma.corridorProfile.findUnique({ where: { slug: corridor }, select: { shortName: true, name: true, centroidLat: true, centroidLng: true } });
   const corridorLabel = labelRow?.shortName || labelRow?.name || corridor;
-  const infraResult = await corridorInfraFromDb(corridor);
+  // A corridor without a stored centre gets its gazetteer location, so the
+  // infra scorer can use real distances and the price radius has a middle.
+  const centre = labelRow ? corridorCentre(labelRow) : null;
+  if (labelRow && labelRow.centroidLat == null && centre) {
+    await prisma.corridorProfile.update({ where: { slug: corridor }, data: { centroidLat: centre.lat, centroidLng: centre.lng } });
+  }
+  const infraResult = await corridorInfraFromDb(corridor, opts.scoringProjects);
   const infraScore = infraResult.infraScore;
   const infraProjects = infraResult.drivers.map((d) => ({ name: d.name, status: d.status, reImpactScore: Math.round(d.contribution * 10) }));
 
-  // 2. APPROVAL SCORE (0-25)
-  // Count approvals in the last 3 years (36 months). Recency bonus: last 12 months = 1.5x
-  const threeYearsAgo = new Date();
-  threeYearsAgo.setFullYear(threeYearsAgo.getFullYear() - 3);
-
-  const approvals = await prisma.approvalRecord.findMany({
-    where: {
-      corridor: corridor,
-      isPublished: true,
-      approvalDate: {
-        gte: threeYearsAgo
-      }
-    }
+  // 2–4. RERA projects, developer activity and growth outlook — measured
+  // from our listings and the published city anchors (src/lib/market/).
+  // These used to read synthetic absorption / search / price-history tables.
+  const ctx = opts.ctx ?? (await loadMarketContext());
+  const market = buildCorridorMarket(corridor, centre, infraScore, ctx);
+  await writeCorridorMarket(corridor, market, false);
+  const primary = market.forecast[market.primaryAsset];
+  const { approvalScore, demandScore, appreciationScore, overallScore, sentiment: investorSentiment } = marketScores({
+    infraScore,
+    reraProjects: market.counts.reraProjects,
+    activeProjects: market.counts.activeProjects,
+    baseCagr5: primary.scenarios.base.cagr5,
   });
-
-  const oneYearAgo = new Date();
-  oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-
-  let approvalPoints = 0;
-  for (const app of approvals) {
-    let basePoints = 3; // default
-    if (app.approvalType === ApprovalType.RERA_REGISTRATION) {
-      basePoints = 5;
-    } else if (app.approvalType === ApprovalType.LAYOUT_APPROVAL) {
-      basePoints = 4;
-    } else if (app.approvalType === ApprovalType.BUILDING_PERMISSION) {
-      basePoints = 2;
-    }
-
-    let isRecent = false;
-    if (app.approvalDate) {
-      const appDate = new Date(app.approvalDate);
-      isRecent = appDate >= oneYearAgo;
-    }
-
-    const multiplier = isRecent ? 1.5 : 1.0;
-    approvalPoints += basePoints * multiplier;
-  }
-  const approvalScore = Math.min(25, Math.round(approvalPoints));
-
-  // 3. DEMAND SCORE (0-25)
-  // Average absorption last 6 months * 0.5 + trends
-  const sixMonthsAgo = new Date();
-  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-
-  const demandTrends = await prisma.demandTrend.findMany({
-    where: {
-      corridor: corridor,
-      createdAt: {
-        gte: sixMonthsAgo
-      }
-    },
-    orderBy: {
-      year: "desc"
-    }
-  });
-
-  let avgAbsorption = 12.0; // fallback standard absorption rate (12%)
-  if (demandTrends.length > 0) {
-    const validAbsorptions = demandTrends.filter(d => d.absorptionRate !== null);
-    if (validAbsorptions.length > 0) {
-      avgAbsorption = validAbsorptions.reduce((sum, d) => sum + (d.absorptionRate || 0), 0) / validAbsorptions.length;
-    }
-  }
-
-  // Calculate search & inquiry trends (compare last 3 months vs previous 3 months)
-  let searchTrendPoints = 0;
-  let inquiryTrendPoints = 0;
-
-  if (demandTrends.length >= 6) {
-    const recent3 = demandTrends.slice(0, 3);
-    const older3 = demandTrends.slice(3, 6);
-
-    const recentSearch = recent3.reduce((sum, d) => sum + (d.searchVolume || 0), 0);
-    const olderSearch = older3.reduce((sum, d) => sum + (d.searchVolume || 0), 0);
-
-    const recentInquiries = recent3.reduce((sum, d) => sum + (d.inquiryCount || 0), 0);
-    const olderInquiries = older3.reduce((sum, d) => sum + (d.inquiryCount || 0), 0);
-
-    if (olderSearch > 0) {
-      const searchRatio = recentSearch / olderSearch;
-      if (searchRatio >= 1.2) searchTrendPoints = 6;
-      else if (searchRatio >= 1.05) searchTrendPoints = 4;
-      else if (searchRatio >= 0.95) searchTrendPoints = 2;
-    }
-
-    if (olderInquiries > 0) {
-      const inquiryRatio = recentInquiries / olderInquiries;
-      if (inquiryRatio >= 1.2) inquiryTrendPoints = 6;
-      else if (inquiryRatio >= 1.05) inquiryTrendPoints = 4;
-      else if (inquiryRatio >= 0.95) inquiryTrendPoints = 2;
-    }
-  } else {
-    // If not enough data, give moderate default points
-    searchTrendPoints = 3;
-    inquiryTrendPoints = 3;
-  }
-
-  const demandScore = Math.min(25, Math.round(avgAbsorption * 0.5 + searchTrendPoints + inquiryTrendPoints));
-
-  // 4. APPRECIATION SCORE (0-25)
-  // Average YoY price change last 3 years
-  const priceHistory = await prisma.appreciationHistory.findMany({
-    where: {
-      corridor: corridor
-    },
-    orderBy: {
-      year: "desc"
-    },
-    take: 3
-  });
-
-  let avgYoY = 12.0; // fallback standard 12% YoY appreciation
-  if (priceHistory.length > 0) {
-    avgYoY = priceHistory.reduce((sum, p) => sum + p.yoyChange, 0) / priceHistory.length;
-  }
-
-  // Points: 5%=5pts, 10%=10pts, 15%=15pts, 20%=20pts, 25%+=25pts
-  const appreciationScore = Math.min(25, Math.max(0, Math.round(avgYoY)));
-
-  // 5. OVERALL SCORE
-  const overallScore = infraScore + approvalScore + demandScore + appreciationScore;
-
-  // SENTIMENT
-  let investorSentiment: "BULLISH" | "NEUTRAL" | "CAUTIOUS" = "NEUTRAL";
-  if (overallScore >= 75) {
-    investorSentiment = "BULLISH";
-  } else if (overallScore < 50) {
-    investorSentiment = "CAUTIOUS";
-  }
+  const measured = marketSummary(corridorLabel, market);
 
   // 6. CALL CLAUDE FOR KEY DRIVERS AND COMMENTARY (with fallback)
   let keyDrivers: string[] = [];
@@ -300,13 +200,13 @@ export async function computeCorridorScore(corridor: string) {
   let adminNote = "";
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey || apiKey === "mock-anthropic-key-for-local-testing" || apiKey.trim() === "") {
+  if (opts.skipAI || !apiKey || apiKey === "mock-anthropic-key-for-local-testing" || apiKey.trim() === "") {
     console.log("Using local mock AI commentary (API key not configured/mocked)");
-    const fallback = getFallbackAIAnalysis(corridor, overallScore, corridorLabel);
+    const fallback = getFallbackAIAnalysis(corridor);
     keyDrivers = fallback.keyDrivers;
     keyRisks = fallback.keyRisks;
     bestFor = fallback.bestFor;
-    adminNote = fallback.adminNote;
+    adminNote = measured;
   } else {
     try {
       const anthropic = new Anthropic({ apiKey });
@@ -315,9 +215,8 @@ export async function computeCorridorScore(corridor: string) {
       const userPrompt = `
         Corridor: ${corridor}
         Infrastructure projects nearby: ${JSON.stringify(infraProjects.map(p => ({ name: p.name, status: p.status, score: p.reImpactScore })))}
-        Recent layout and RERA approvals: ${JSON.stringify(approvals.map(a => ({ name: a.projectName, type: a.approvalType, authority: a.authority })))}
-        Price appreciation history: ${JSON.stringify(priceHistory.map(p => ({ year: p.year, price: p.pricePerSqFt, yoy: p.yoyChange })))}
-        Average absorption rate: ${avgAbsorption.toFixed(1)}%
+        Measured market data: ${JSON.stringify({ rates: market.rates, counts: market.counts, baseCaseGrowthPerYear: primary.scenarios.base.cagr5 })}
+        Use only these figures for any numbers you mention; do not invent prices, growth rates or search/demand statistics.
         Overall calculated intelligence score: ${overallScore}/100
         Sentiment: ${investorSentiment}
 
@@ -354,11 +253,11 @@ export async function computeCorridorScore(corridor: string) {
       }
     } catch (e) {
       console.error("Failed to generate AI commentary from Claude, falling back", e);
-      const fallback = getFallbackAIAnalysis(corridor, overallScore, corridorLabel);
+      const fallback = getFallbackAIAnalysis(corridor);
       keyDrivers = fallback.keyDrivers;
       keyRisks = fallback.keyRisks;
       bestFor = fallback.bestFor;
-      adminNote = fallback.adminNote;
+      adminNote = measured;
     }
   }
 
@@ -420,7 +319,7 @@ export async function computeCorridorScore(corridor: string) {
   return result;
 }
 
-export async function computeAllCorridorScores() {
+export async function computeAllCorridorScores(opts: { skipAI?: boolean } = {}) {
   // Get all unique corridors from CorridorProfile
   const corridors = await prisma.corridorProfile.findMany({
     select: {
@@ -429,15 +328,20 @@ export async function computeAllCorridorScores() {
   });
 
   console.log(`Starting scoring recomputation for ${corridors.length} corridors...`);
+  const ctx = await loadMarketContext();
+  const scoringProjects = await loadScoringProjects();
   const results = [];
   for (const c of corridors) {
     try {
-      const res = await computeCorridorScore(c.slug);
+      const res = await computeCorridorScore(c.slug, { ctx, scoringProjects, skipAI: opts.skipAI });
       results.push(res);
     } catch (e) {
       console.error(`Failed to compute score for ${c.slug}:`, e);
     }
   }
+  const centres = await prisma.corridorProfile.findMany({ select: { slug: true, centroidLat: true, centroidLng: true } });
+  const synced = await syncReraApprovals(ctx, centres.map((c) => ({ slug: c.slug, centre: c.centroidLat != null && c.centroidLng != null ? { lat: c.centroidLat, lng: c.centroidLng } : null })));
+  console.log(`Rebuilt ${synced} RERA approval records from listings`);
   return results;
 }
 

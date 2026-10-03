@@ -715,6 +715,11 @@ model CorridorProfile {
   forecast10yrMax Float?
   priceIndex2031  Int? // e.g. 210 (2026=100)
 
+  // Measured prices + scenario forecast with provenance (src/lib/market/compute.ts).
+  // The flat price / forecast fields above are written from this.
+  marketStats      Json?
+  marketComputedAt DateTime?
+
   // Intelligence score components (auto-computed)
   overallScore      Int?
   infraScore        Int?
@@ -977,7 +982,7 @@ model AppreciationHistory {
   quarter      Int? // 1-4, null = annual
   pricePerSqFt Float // Average price per sq ft in ₹
   pricePerSqYd Float? // For plot markets
-  yoyChange    Float // Year-over-year % change
+  yoyChange    Float? // Year-over-year % change (null until a year of observations exists)
   qoqChange    Float? // Quarter-over-quarter % change
   sampleSize   Int? // Number of transactions this is based on
   source       String? // "RERA Data", "Market Research", "Admin Estimate"

@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import type { CorridorMarketStats } from "@/lib/market/compute";
 
-// GET /api/market/corridors/[slug]/demand - Fetch demand trends for a corridor
+// GET /api/market/corridors/[slug]/demand — developer activity measured from
+// our listings, plus any recorded monthly demand rows. Nothing is defaulted:
+// figures we don't have are returned as null.
 export async function GET(req: Request, { params }: { params: Promise<{ slug: string }> }) {
   try {
     const { slug } = await params;
@@ -12,67 +15,31 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
         OR: [
           { slug: { equals: decodedSlug, mode: "insensitive" } },
           { name: { equals: decodedSlug, mode: "insensitive" } },
-          { shortName: { equals: decodedSlug, mode: "insensitive" } }
-        ]
-      }
+          { shortName: { equals: decodedSlug, mode: "insensitive" } },
+        ],
+      },
+      select: { slug: true, name: true, shortName: true, marketStats: true, marketComputedAt: true },
     });
-
-    if (!metric) {
-      return NextResponse.json({ error: "Corridor not found" }, { status: 404 });
-    }
+    if (!metric) return NextResponse.json({ error: "Corridor not found" }, { status: 404 });
 
     const trends = await prisma.demandTrend.findMany({
-      where: {
-        corridor: { equals: metric.slug, mode: "insensitive" }
-      },
-      orderBy: [
-        { year: "asc" },
-        { month: "asc" }
-      ]
+      where: { corridor: { equals: metric.slug, mode: "insensitive" } },
+      orderBy: [{ year: "asc" }, { month: "asc" }],
     });
 
-    // Compute key metrics
-    const latest = trends[trends.length - 1];
-    const currentAbsorptionRate = latest?.absorptionRate || 12.0;
-    const activeListings = latest?.inventoryUnits || 0;
-
-    // Avg Days on Market (last 6 records)
-    const last6 = trends.slice(-6);
-    const avgDaysOnMkt = last6.length > 0 
-      ? Math.round(last6.reduce((sum, t) => sum + (t.medianDaysOnMkt || 45), 0) / last6.length)
-      : 45;
-
-    // YoY Inquiry Growth (last 3 months vs same 3 months in previous year)
-    let yoyInquiryGrowth = 0;
-    if (trends.length >= 15) {
-      const recent3 = trends.slice(-3);
-      const preceding3SamePeriod = trends.slice(-15, -12); // same months of prior year
-
-      const recentInq = recent3.reduce((sum, t) => sum + (t.inquiryCount || 0), 0);
-      const priorInq = preceding3SamePeriod.reduce((sum, t) => sum + (t.inquiryCount || 0), 0);
-
-      if (priorInq > 0) {
-        yoyInquiryGrowth = parseFloat((((recentInq - priorInq) / priorInq) * 100).toFixed(1));
-      }
-    } else {
-      // Default fallback
-      yoyInquiryGrowth = 15.4;
-    }
-
-    // Generate dynamic context paragraph
-    const growthTrendWord = yoyInquiryGrowth >= 0 ? "increase" : "decrease";
-    const absoluteGrowth = Math.abs(yoyInquiryGrowth);
-    
-    const contextParagraph = `${metric.name} has seen a ${absoluteGrowth}% ${growthTrendWord} in buyer inquiries over the past 12 months, driven by the announcement of regional infrastructure projects and layout approvals. The current absorption rate of ${currentAbsorptionRate}% is healthy, showing stable sales momentum. Projects spend a median of ${avgDaysOnMkt} days on market, indicating high developer transaction velocity.`;
+    const m = metric.marketStats as unknown as CorridorMarketStats | null;
+    const activity = m?.counts ?? null;
+    const label = metric.shortName || metric.name;
+    const contextParagraph = activity
+      ? `We track ${activity.totalProjects} project${activity.totalProjects === 1 ? "" : "s"} within ${activity.radiusKm} km of ${label}: ${activity.activeProjects} under construction, ${activity.readyProjects} ready to move, and ${activity.reraProjects} registered with TG-RERA. Sales and enquiry volumes per area aren't published, so we don't estimate them.`
+      : null;
 
     return NextResponse.json({
       corridor: metric.slug,
       trends,
-      currentAbsorptionRate,
-      avgDaysOnMkt,
-      yoyInquiryGrowth,
-      activeListings,
-      contextParagraph
+      activity,
+      contextParagraph,
+      computedAt: metric.marketComputedAt,
     });
   } catch (error: any) {
     console.error("Error in GET /api/market/corridors/[slug]/demand:", error);

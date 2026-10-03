@@ -7,7 +7,7 @@ export interface AppreciationResult {
   appreciationPct: number;
   cagr: number;
   yearsHeld: number;
-  priceHistory: { year: number; quarter?: number; price: number; yoyChange: number }[];
+  priceHistory: { year: number; quarter?: number; price: number; yoyChange: number | null }[];
   corridorName: string;
   corridorSlug: string;
   calculatedAt: Date;
@@ -44,7 +44,12 @@ export async function calculateAppreciation(purchase: {
 
   const resolvedSlug = corridorProfile?.slug || corridorSlug;
 
-  // Fetch appreciation history sorted by year
+  // Determine whether to use sqYd or sqFt prices
+  const useSqYd = !!(purchase.pricePerSqYd || purchase.areaSqYd);
+
+  // Fetch appreciation history sorted by year. Plot observations carry a
+  // ₹/sq.yd price and apartment ones don't, so a plot is only ever compared
+  // with plots and a flat with flats.
   const history = await prisma.appreciationHistory.findMany({
     where: {
       OR: [
@@ -52,6 +57,7 @@ export async function calculateAppreciation(purchase: {
         { corridorProfileSlug: resolvedSlug },
         { corridor: { equals: purchase.project.corridor, mode: 'insensitive' } },
       ],
+      pricePerSqYd: useSqYd ? { not: null } : null,
     },
     orderBy: [{ year: 'asc' }, { quarter: 'asc' }],
   });
@@ -59,9 +65,6 @@ export async function calculateAppreciation(purchase: {
   const purchaseYear = purchase.purchaseDate.getFullYear();
   const currentYear = new Date().getFullYear();
   const yearsHeld = Math.max(0.5, (Date.now() - purchase.purchaseDate.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
-
-  // Determine whether to use sqYd or sqFt prices
-  const useSqYd = !!(purchase.pricePerSqYd || purchase.areaSqYd);
 
   // Build price history array
   const priceHistory = history.map(h => ({

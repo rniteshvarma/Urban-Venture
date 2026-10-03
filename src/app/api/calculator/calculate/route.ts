@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { runRoiCalculations } from "@/lib/calculator";
 import prisma from "@/lib/prisma";
+import { ANCHOR_RATES } from "@/lib/market/forecast";
+import { CITY } from "@/lib/market/anchors";
 import Anthropic from "@anthropic-ai/sdk";
 
 /** Lakh amount → "₹45.5 Lakh" or "₹1.74 Cr" (matches how prices are shown across the site). */
@@ -26,10 +28,11 @@ export async function POST(req: Request) {
     }
 
     let corridorName = "General Hyderabad Corridor";
-    let cagrMin = customCagrMin !== undefined ? parseFloat(customCagrMin) : 10;
-    let cagrMax = customCagrMax !== undefined ? parseFloat(customCagrMax) : 15;
-    let rentMin = customRentMin !== undefined ? parseFloat(customRentMin) : 2;
-    let rentMax = customRentMax !== undefined ? parseFloat(customRentMax) : 4;
+    // Defaults are the published city anchors (src/lib/market/anchors.ts), not a hoped-for return.
+    let cagrMin = customCagrMin !== undefined ? parseFloat(customCagrMin) : ANCHOR_RATES.conservative;
+    let cagrMax = customCagrMax !== undefined ? parseFloat(customCagrMax) : ANCHOR_RATES.optimistic;
+    let rentMin = customRentMin !== undefined ? parseFloat(customRentMin) : CITY.rentalYield.value;
+    let rentMax = customRentMax !== undefined ? parseFloat(customRentMax) : CITY.rentalYield.value;
 
     let infrastructureTailwinds: any[] = [];
 
@@ -39,10 +42,12 @@ export async function POST(req: Request) {
       });
       if (corridorMetrics) {
         corridorName = corridorMetrics.name;
-        cagrMin = corridorMetrics.projectedCAGRMin || 10;
-        cagrMax = corridorMetrics.projectedCAGRMax || 15;
-        rentMin = corridorMetrics.rentalYieldMin || 2;
-        rentMax = corridorMetrics.rentalYieldMax || 4;
+        // The corridor's scenario range (conservative → optimistic, 10-year CAGR).
+        cagrMin = corridorMetrics.projectedCAGRMin ?? cagrMin;
+        cagrMax = corridorMetrics.projectedCAGRMax ?? cagrMax;
+        // Plots earn no rent; built property uses the city's published yield.
+        const primary = (corridorMetrics.marketStats as { primaryAsset?: string } | null)?.primaryAsset;
+        if (primary === "plot" && customRentMin === undefined && customRentMax === undefined) { rentMin = 0; rentMax = 0; }
 
         // Query upcoming infra projects to boost CAGR and list tailwinds
         try {
@@ -64,10 +69,8 @@ export async function POST(req: Request) {
             }
           });
 
-          // cagrMax boost: +0.2% per project, cap at +1.5%
-          const cagrBoost = Math.min(1.5, upcomingInfra.length * 0.2);
-          cagrMax = parseFloat((cagrMax + cagrBoost).toFixed(2));
-
+          // Listed for context only — the corridor's growth range already
+          // includes its infrastructure premium, so it isn't added again.
           infrastructureTailwinds = upcomingInfra.slice(0, 2).map(p => ({
             name: p.name,
             status: p.status,
@@ -85,8 +88,10 @@ export async function POST(req: Request) {
 
     // Call Anthropic Claude for takeaways if API key is valid, else use local heuristics fallback
     let takeaways = [
-      `Investing ${inr(initialAmount)} in ${corridorName} is projected to grow to between ${inr(summary.finalRealEstateMin)} and ${inr(summary.finalRealEstateMax)} over ${years} years, significantly outperforming Fixed Deposits.`,
-      `The projected annual rental yield of ${rentMin}%-${rentMax}% provides a stable cash flow stream that cushions against market volatility.`,
+      `Investing ${inr(initialAmount)} in ${corridorName} grows to between ${inr(summary.finalRealEstateMin)} and ${inr(summary.finalRealEstateMax)} over ${years} years in our conservative-to-optimistic scenarios${summary.finalRealEstateMin > summary.finalFD ? ", ahead of a fixed deposit even in the conservative case" : summary.finalRealEstateMax > summary.finalFD ? " — the conservative case trails a fixed deposit, so the outcome depends on the area delivering" : ", which trails a fixed deposit"}.`,
+      rentMax > 0
+        ? `Rental yield is taken as ${rentMin === rentMax ? `${rentMin}%` : `${rentMin}–${rentMax}%`} a year (Hyderabad average, ANAROCK Q2 2026).`
+        : `Plots earn no rent, so the return depends entirely on price growth and on how easily you can resell.`,
       `Key infrastructure projects in the ${corridorName} corridor serve as major growth multipliers, though buyers should ensure RERA compliance to mitigate construction delay risks.`
     ];
 

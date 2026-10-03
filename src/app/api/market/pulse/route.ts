@@ -1,14 +1,18 @@
 import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import { CITY, CITY_LONG_RUN_CAGR } from "@/lib/market/anchors";
 
+// City-level market figures — published numbers with their sources
+// (src/lib/market/anchors.ts), never a stored guess.
 export async function GET() {
-  try {
-    const pulse = await prisma.marketPulse.findFirst({
-      orderBy: { reportDate: "desc" }
-    });
-    return NextResponse.json({ success: true, pulse });
-  } catch (error: any) {
-    console.error("Error in GET /api/market/pulse:", error);
-    return NextResponse.json({ error: "Internal Server Error", details: error.message }, { status: 500 });
-  }
+  return NextResponse.json({
+    success: true,
+    figures: {
+      registrations: CITY.registrationsYtd,
+      avgPrice: CITY.avgPriceSqFt,
+      sales: CITY.salesUnits,
+      officeLeasing: CITY.officeLeasingMSqFt,
+      rentalYield: CITY.rentalYield,
+    },
+    longRunCagr: CITY_LONG_RUN_CAGR,
+  });
 }

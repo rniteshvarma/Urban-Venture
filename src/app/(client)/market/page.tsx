@@ -91,8 +91,8 @@ export default function MarketHubPage() {
       const pulseRes = await fetch("/api/market/pulse");
       if (pulseRes.ok) {
         const pData = await pulseRes.json();
-        if (pData.success && pData.pulse) {
-          setPulseData(pData.pulse);
+        if (pData.success && pData.figures) {
+          setPulseData(pData.figures);
         }
       }
 
@@ -134,8 +134,11 @@ export default function MarketHubPage() {
   };
 
   // Sparkline SVG generator
-  const renderSparkline = (points: any[]) => {
-    if (!points || points.length < 2) {
+  const renderSparkline = (all: any[]) => {
+    // One property type per line: plots when the corridor has plot observations, else flats.
+    const plots = (all ?? []).filter((p) => p.pricePerSqYd != null);
+    const points = plots.length ? plots : (all ?? []).filter((p) => p.pricePerSqYd == null);
+    if (points.length < 2) {
       return (
         <svg className="w-16 h-8 text-[#E2E8F0]" viewBox="0 0 100 30">
           <line x1="0" y1="15" x2="100" y2="15" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3,3" />
@@ -213,7 +216,7 @@ export default function MarketHubPage() {
             Government Infrastructure Data
           </h2>
           <p className="max-w-2xl mx-auto text-sm md:text-base font-medium" style={{ color: "var(--color-text-invert-mid)" }}>
-            A verified research portal integrating HMDA master plans, RERA approvals, official Telangana Government orders, NHAI updates, and real property transaction indices.
+            Corridor prices measured from developer price lists, TG-RERA registrations, infrastructure tracked from official sources, and city figures from published research — each shown with its source.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-3 pt-3">
@@ -227,45 +230,24 @@ export default function MarketHubPage() {
         </div>
       </section>
 
-      {/* Live Stats Bar - Seeded Real Data */}
+      {/* City figures — published numbers with their sources (src/lib/market/anchors.ts) */}
       <section className="bg-surface border-b border-slate-200 py-12 md:py-16 px-6 shadow-sm">
         <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-          <div className="stat-card animate-fade-in-up stagger-1">
-            <div className="stat-icon bg-saffron-wash text-saffron-deep mx-auto mb-3">
-              <FileCheck size={20} />
+          {pulseData && ([
+            [<FileCheck key="i" size={20} />, pulseData.registrations, `${pulseData.registrations.value.toLocaleString("en-IN")}`, `Homes registered (${pulseData.registrations.period})`],
+            [<TrendingUp key="i" size={20} />, pulseData.avgPrice, `₹${pulseData.avgPrice.value.toLocaleString("en-IN")}/sq.ft`, `Average price (${pulseData.avgPrice.period})`],
+            [<LineChart key="i" size={20} />, pulseData.sales, pulseData.sales.value.toLocaleString("en-IN"), `Homes sold (${pulseData.sales.period})`],
+            [<MapPin key="i" size={20} />, pulseData.officeLeasing, `${pulseData.officeLeasing.value} mn sq.ft`, `Office leasing (${pulseData.officeLeasing.period})`],
+          ] as const).map(([icon, fig, value, label], idx) => (
+            <div key={label} className={`stat-card animate-fade-in-up stagger-${idx + 1}`}>
+              <div className="stat-icon bg-saffron-wash text-saffron-deep mx-auto mb-3">{icon}</div>
+              <div className="stat-value font-display">{value}</div>
+              <div className="stat-label font-mono text-navy-ink uppercase tracking-widest font-bold mt-1">{label}</div>
+              <div className="text-[10px] text-text-secondary mt-1">
+                {fig.note ? `${fig.note} · ` : ""}<a href={fig.url} target="_blank" rel="noreferrer" className="underline">{fig.source}</a>
+              </div>
             </div>
-            <div className="stat-value font-display">
-              {pulseData?.totalRegistrations?.toLocaleString() || "51,089"}
-            </div>
-            <div className="stat-label font-mono text-navy-ink uppercase tracking-widest font-bold mt-1">Total Registrations (FY26)</div>
-          </div>
-          <div className="stat-card animate-fade-in-up stagger-2">
-            <div className="stat-icon bg-saffron-wash text-saffron-deep mx-auto mb-3">
-              <TrendingUp size={20} />
-            </div>
-            <div className="stat-value font-display">
-              ₹{(pulseData?.totalValueCr)?.toLocaleString() || "34,420"} Cr
-            </div>
-            <div className="stat-label font-mono text-navy-ink uppercase tracking-widest font-bold mt-1">Transaction Value</div>
-          </div>
-          <div className="stat-card animate-fade-in-up stagger-3">
-            <div className="stat-icon bg-saffron-wash text-saffron-deep mx-auto mb-3">
-              <LineChart size={20} />
-            </div>
-            <div className="stat-value font-display stat-trend stat-trend-up">
-              {pulseData?.yoyGrowthPct || "40"}%
-            </div>
-            <div className="stat-label font-mono text-navy-ink uppercase tracking-widest font-bold mt-1">YoY Growth Index</div>
-          </div>
-          <div className="stat-card animate-fade-in-up stagger-4">
-            <div className="stat-icon bg-saffron-wash text-saffron-deep mx-auto mb-3">
-              <MapPin size={20} />
-            </div>
-            <div className="stat-value font-display">
-              ₹{(pulseData?.avgGovtCircleRateSqFt || 3654).toLocaleString()} / sqft
-            </div>
-            <div className="stat-label font-mono text-navy-ink uppercase tracking-widest font-bold mt-1">Avg Circle Rate</div>
-          </div>
+          ))}
         </div>
       </section>
 
@@ -365,11 +347,11 @@ export default function MarketHubPage() {
                           strokeWidth="4"
                           fill="transparent" 
                           strokeDasharray="132"
-                          strokeDashoffset={132 - (132 * c.overallScore) / 100}
+                          strokeDashoffset={132 - (132 * (c.overallScore ?? 0)) / 100}
                           className="transition-all duration-1000"
                         />
                       </svg>
-                      <span className="absolute text-[11px] font-mono font-bold text-text-primary">{c.overallScore}</span>
+                      <span className="absolute text-[11px] font-mono font-bold text-text-primary">{c.overallScore ?? "—"}</span>
                     </div>
                   </div>
 
@@ -401,7 +383,7 @@ export default function MarketHubPage() {
 
                 {/* Deep Dive Action */}
                 <div className="pt-4 mt-4 border-t border-slate-200 flex items-center justify-between">
-                  <span className="text-[10px] font-mono text-text-secondary">CAGR: <strong className="text-navy-ink badge-hot">{c.projectedCAGRMin || 12}% - {c.projectedCAGRMax || 16}%</strong></span>
+                  <span className="text-[10px] font-mono text-text-secondary">Growth a year (10y range): <strong className="text-navy-ink badge-hot">{c.projectedCAGRMin != null && c.projectedCAGRMax != null ? `${c.projectedCAGRMin}% – ${c.projectedCAGRMax}%` : "—"}</strong></span>
                   <Link
                     href={`/market/${c.corridor}`}
                     className="inline-flex items-center gap-1 text-xs font-bold text-navy-ink hover:text-accent transition-colors py-2 -my-2"

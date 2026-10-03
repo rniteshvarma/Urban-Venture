@@ -52,12 +52,12 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
       rentalYieldMin: corridor.rentalYieldMin,
       rentalYieldMax: corridor.rentalYieldMax,
       riskLevel: corridor.riskLevel,
-      overallScore: corridor.overallScore || 0,
-      infraScore: corridor.infraScore || 0,
-      approvalScore: corridor.approvalScore || 0,
-      demandScore: corridor.demandScore || 0,
-      appreciationScore: corridor.appreciationScore || 0,
-      investorSentiment: corridor.sentiment || "NEUTRAL",
+      overallScore: corridor.overallScore ?? null,
+      infraScore: corridor.infraScore ?? null,
+      approvalScore: corridor.approvalScore ?? null,
+      demandScore: corridor.demandScore ?? null,
+      appreciationScore: corridor.appreciationScore ?? null,
+      investorSentiment: corridor.sentiment ?? null,
       adminNote: corridor.adminNote || "",
       keyDrivers: corridor.keyDrivers || [],
       keyRisks: corridor.keyRisks || [],
@@ -70,7 +70,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
       forecast10yrMin: corridor.forecast10yrMin,
       forecast10yrMax: corridor.forecast10yrMax,
       priceIndex2031: corridor.priceIndex2031,
-      lastComputedAt: corridor.updatedAt
+      lastComputedAt: corridor.marketComputedAt ?? corridor.updatedAt,
+      market: corridor.marketStats ?? null,
     });
   } catch (error: any) {
     console.error("Error in GET /api/market/corridors/[slug]:", error);

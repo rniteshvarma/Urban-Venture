@@ -20,6 +20,8 @@ export interface CorridorCardData {
   overallScore?: number;
   plotPriceMinSqYd?: number | null;
   plotPriceMaxSqYd?: number | null;
+  aptPriceMinSqFt?: number | null;
+  aptPriceMaxSqFt?: number | null;
   appreciationSince2020?: number | null;
   keyDrivers?: string[];
   bestFor?: string[];
@@ -45,12 +47,18 @@ function humanize(s: string): string {
 export default function CorridorCard({ corridor: c, className = "" }: CorridorCardProps) {
   const min = c.plotPriceMinSqYd ?? null;
   const max = c.plotPriceMaxSqYd ?? null;
+  // Measured from our listings (middle half of projects); apartments when the
+  // corridor has no plotted layouts listed.
+  const aMin = c.aptPriceMinSqFt ?? null;
+  const aMax = c.aptPriceMaxSqFt ?? null;
   const priceLabel =
     min != null && max != null
       ? `${formatINRFull(min)} – ${formatINRFull(max)} / sq.yd`
       : min != null
       ? `${formatINRFull(min)} / sq.yd`
-      : "Price on request";
+      : aMin != null && aMax != null
+      ? `${formatINRFull(aMin)} – ${formatINRFull(aMax)} / sq.ft`
+      : "Not enough listings to price";
   const locationLine = [c.direction, c.district].filter(Boolean).join(" · ");
   const drivers = (c.keyDrivers ?? []).slice(0, 2);
 
