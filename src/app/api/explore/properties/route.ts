@@ -1,13 +1,14 @@
 // GET /api/explore/properties — viewport GeoJSON for the Explore Map.
 //
-// Returns ONLY what the map paints plus what the hover tooltip shows. Full
-// detail is a separate fetch on click (/api/explore/properties/[id]).
+// Returns what the map paints plus the facts the list cards show (BHK, size,
+// locality, developer, possession, RERA). Full detail is a separate fetch on
+// click (/api/explore/properties/[id]).
 // Never returns seller contact details or document URLs.
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import {
   MAX_FEATURES, parseBbox, parseFilters, buildWhere, quintileBreaks, bandFor,
-  round5, displayArea, unitWord, tokenForStoredType, headlinePrice, inventoryOrSellerGrade } from "@/lib/explore/query";
+  round5, displayArea, unitWord, tokenForStoredType, headlinePrice, inventoryOrSellerGrade, listingFacts } from "@/lib/explore/query";
 
 export const dynamic = "force-dynamic";
 
@@ -61,9 +62,18 @@ export async function GET(req: Request) {
           minBudgetLakhs: true, maxBudgetLakhs: true, totalAreaSqYd: true, totalAreaSqFt: true,
           propertyType: true, listingSource: true, listingScore: true,
           approvalStatus: true, approvalVerified: true, imageUrls: true, sourceType: true,
+          developer: true, corridor: true, possessionText: true, reraNumber: true,
+          unitTypes: { select: { bedrooms: true, areaSqFt: true, areaSqYd: true } },
         },
       }),
     ]);
+
+    // Locality lives in the specifications JSON; read just that key rather than
+    // pulling every listing's full JSON.
+    const localityRows = rows.length
+      ? await prisma.$queryRaw<{ id: string; locality: string | null }[]>`SELECT id, specifications->>'locality' AS locality FROM "Project" WHERE id = ANY(${rows.map((r) => r.id)})`
+      : [];
+    const localityOf = new Map(localityRows.map((l) => [l.id, l.locality]));
 
     // Price bands are computed from THIS viewport's distribution.
     const prices = rows.map((r) => headlinePrice(r).priceLakh).filter((n) => n > 0);
@@ -98,6 +108,13 @@ export async function GET(req: Request) {
             scoreGrade: inventoryOrSellerGrade(r),
             priceBand: bandFor(priceLakh, breaks),
             thumb: r.imageUrls?.[0] ?? null,
+            priceMaxLakh: r.maxBudgetLakhs || null,
+            developer: r.developer || null,
+            locality: localityOf.get(r.id) ?? r.corridor ?? null,
+            ...listingFacts(r),
+            // "RERA possession Dec 2027" → "Possession Dec 2027"
+            possession: r.possessionText ? r.possessionText.replace(/^(RERA|Target) possession/i, "Possession") : null,
+            rera: !!r.reraNumber,
           },
         };
       });

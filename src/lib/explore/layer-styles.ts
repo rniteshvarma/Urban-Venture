@@ -59,7 +59,6 @@ export function baseStyle(id: BasemapId): StyleSpecification {
 export const CLUSTER_LAYER = "clusters";
 export const CLUSTER_COUNT_LAYER = "cluster-count";
 export const DOT_LAYER = "property-dots";
-export const SELECTED_LAYER = "property-selected";
 
 export const clusterLayer = {
   id: CLUSTER_LAYER,
@@ -110,17 +109,55 @@ export function dotLayer(mode: ColorMode) {
   };
 }
 
-/** Keeps the selected pin visible while its card is open. */
-export const selectedLayer = {
-  id: SELECTED_LAYER,
+// ── Hover / selection marker ─────────────────────────────────────────
+// Drawn from its own unclustered source, above clusters and dots, so the home a
+// buyer is looking at shows even while it sits inside a cluster bubble. A dark
+// pin with a white ring reads against every price colour and basemap; the
+// selected home also gets a pulsing saffron halo (animated in ExploreMap).
+export const HIGHLIGHT_SOURCE_ID = "property-highlight";
+export const HIGHLIGHT_HALO_LAYER = "property-highlight-halo";
+export const HIGHLIGHT_PIN_LAYER = "property-highlight-pin";
+export const HIGHLIGHT_RING_LAYER = "property-highlight-ring";
+
+/** Static halo paint; `pulse` (0–1) grows and fades the selected halo. */
+export function highlightHaloPaint(pulse = 0.35) {
+  return {
+    "circle-radius": ["match", ["get", "kind"], "selected", 18 + 22 * pulse, 16],
+    "circle-color": "#FFB400",
+    "circle-opacity": ["match", ["get", "kind"], "selected", 0.6 * (1 - pulse), 0.35],
+  };
+}
+
+export const highlightHaloLayer = {
+  id: HIGHLIGHT_HALO_LAYER,
   type: "circle" as const,
-  source: SOURCE_ID,
-  filter: ["==", ["get", "id"], "__none__"],
+  source: HIGHLIGHT_SOURCE_ID,
+  paint: highlightHaloPaint(),
+};
+
+/** A solid saffron ring that always marks the selected home, pulse or not. */
+export const highlightRingLayer = {
+  id: HIGHLIGHT_RING_LAYER,
+  type: "circle" as const,
+  source: HIGHLIGHT_SOURCE_ID,
+  filter: ["==", ["get", "kind"], "selected"],
   paint: {
-    "circle-radius": ["interpolate", ["linear"], ["zoom"], 8, 7, 11, 9, 14, 11, 16, 13],
+    "circle-radius": 19,
     "circle-color": "rgba(0,0,0,0)",
-    "circle-stroke-width": 3,
+    "circle-stroke-width": 4,
     "circle-stroke-color": "#FFB400",
+  },
+};
+
+export const highlightPinLayer = {
+  id: HIGHLIGHT_PIN_LAYER,
+  type: "circle" as const,
+  source: HIGHLIGHT_SOURCE_ID,
+  paint: {
+    "circle-radius": ["match", ["get", "kind"], "selected", 12, 8],
+    "circle-color": "#0D0D12",
+    "circle-stroke-width": ["match", ["get", "kind"], "selected", 4, 3],
+    "circle-stroke-color": "#FFFFFF",
   },
 };
 

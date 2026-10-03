@@ -14,8 +14,10 @@ export interface GeoResult {
   id: string;
   label: string;
   sublabel: string | null;
-  group: "Corridors" | "Villages" | "Mandals" | "Districts";
+  group: "Localities" | "Areas" | "Corridors" | "Villages" | "Mandals" | "Districts";
   flyTo: { lat: number; lng: number; zoom: number } | null;
+  /** [west, south, east, north] — frame the map on the place's listings */
+  bounds?: [number, number, number, number];
   corridorSlug?: string;
 }
 

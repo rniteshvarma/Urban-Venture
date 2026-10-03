@@ -10,7 +10,7 @@
 import type { Prisma } from "@prisma/client";
 import { gradeFor } from "@/lib/listings/score";
 import { gradeOf } from "@/lib/inventory/rating";
-import { listingArea } from "@/lib/listings/units";
+import { areaUnitFor, listingArea } from "@/lib/listings/units";
 
 export const MAX_FEATURES = 3000;
 
@@ -199,8 +199,9 @@ export function unitWord(unit: string | null | undefined): string {
 
 /** "1650 sq.ft", "2.5 acres", "200 sq.yd" — for a displayArea() result. */
 export function areaLabel(value: number, unit: string | null | undefined): string {
-  if (unit === "acre") return `${value} ${value === 1 ? "acre" : "acres"}`;
-  return `${value} ${unit === "sqft" ? "sq.ft" : "sq.yd"}`;
+  const n = value.toLocaleString("en-IN", { maximumFractionDigits: 2 });
+  if (unit === "acre") return `${n} ${value === 1 ? "acre" : "acres"}`;
+  return `${n} ${unit === "sqft" ? "sq.ft" : "sq.yd"}`;
 }
 
 // ── Headline price & grade for a pin ─────────────────────────────────
@@ -218,4 +219,30 @@ export function inventoryOrSellerGrade(r: { listingSource: string; sourceType?: 
   if (r.listingScore == null) return null;
   if (r.listingSource === "SELLER") return gradeFor(r.listingScore);
   return r.sourceType === "CSV_IMPORT" ? gradeOf(r.listingScore) : null;
+}
+
+// ── Card facts for the list panel ────────────────────────────────────
+/** "2, 3 BHK" and a size range in the property's own unit, from its unit types. */
+export function listingFacts(r: {
+  propertyType: string;
+  totalAreaSqYd?: number | null;
+  totalAreaSqFt?: number | null;
+  unitTypes: { bedrooms: number | null; areaSqFt: number | null; areaSqYd: number | null }[];
+}): { bhk: string | null; size: string | null } {
+  const beds = [...new Set(r.unitTypes.map((u) => u.bedrooms).filter((b): b is number => b != null && b > 0))].sort((a, b) => a - b);
+  const bhk = beds.length ? `${beds.join(", ")} BHK` : null;
+
+  const unit = areaUnitFor(r.propertyType);
+  const values = r.unitTypes
+    .map((u) => (unit === "SQFT" ? u.areaSqFt : u.areaSqYd))
+    .filter((v): v is number => v != null && v > 0);
+  const fmt = (n: number) => Math.round(n).toLocaleString("en-IN");
+  const word = unit === "SQFT" ? "sq.ft" : "sq.yd";
+  if (values.length) {
+    const lo = Math.min(...values), hi = Math.max(...values);
+    return { bhk, size: Math.round(lo) === Math.round(hi) ? `${fmt(lo)} ${word}` : `${fmt(lo)}–${fmt(hi)} ${word}` };
+  }
+  // No unit types (a seller listing): its single total area.
+  const area = displayArea(r);
+  return { bhk, size: area ? areaLabel(area.value, area.unit) : null };
 }

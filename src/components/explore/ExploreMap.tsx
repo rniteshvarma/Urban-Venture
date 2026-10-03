@@ -37,8 +37,10 @@ import { useUrlState, DEFAULT_VIEW, DEFAULT_FILTERS, type ExploreFilterState } f
 import { useMapData, type Bounds, type PropertyFeature } from "@/lib/explore/use-map-data";
 import { colorExpression, type ColorMode } from "@/lib/explore/color-modes";
 import {
-  SOURCE_ID, INFRA_SOURCE_ID, baseStyle, clusterLayer, clusterCountLayer, dotLayer, selectedLayer,
-  CLUSTER_LAYER, DOT_LAYER, SELECTED_LAYER, infraLineLayer, infraPointLayer,
+  SOURCE_ID, INFRA_SOURCE_ID, baseStyle, clusterLayer, clusterCountLayer, dotLayer,
+  HIGHLIGHT_SOURCE_ID, HIGHLIGHT_HALO_LAYER, HIGHLIGHT_RING_LAYER, HIGHLIGHT_PIN_LAYER,
+  highlightHaloLayer, highlightRingLayer, highlightPinLayer, highlightHaloPaint,
+  CLUSTER_LAYER, DOT_LAYER, infraLineLayer, infraPointLayer,
   INFRA_CATEGORY_COLORS, BASEMAPS, type BasemapId,
 } from "@/lib/explore/layer-styles";
 
@@ -48,7 +50,7 @@ import FiltersPanel from "./FiltersPanel";
 import LayersPanel, { type InfraLayer } from "./LayersPanel";
 import RequirementsPanel from "./RequirementsPanel";
 import PropertyDetailCard from "./PropertyDetailCard";
-import ListPanel, { type SortKey } from "./ListPanel";
+import ListPanel, { LIST_PANEL_WIDTH, type SortKey } from "./ListPanel";
 import ColorModeToggle from "./ColorModeToggle";
 import MapControls from "./MapControls";
 import { NoPropertiesAnywhere, NoneInViewport, NoFilterMatches, StaleBanner, LoadingBar } from "./EmptyStates";
@@ -56,6 +58,14 @@ import { areaLabel } from "@/lib/explore/query";
 
 const BASEMAP_KEY = "uv_explore_basemap";
 const EMPTY_FC = { type: "FeatureCollection" as const, features: [] };
+
+/** The hover / selection marker: its own source, drawn above everything else. */
+function addHighlight(map: MapLibreMap) {
+  if (!map.getSource(HIGHLIGHT_SOURCE_ID)) map.addSource(HIGHLIGHT_SOURCE_ID, { type: "geojson", data: EMPTY_FC });
+  if (!map.getLayer(HIGHLIGHT_HALO_LAYER)) map.addLayer(highlightHaloLayer as never);
+  if (!map.getLayer(HIGHLIGHT_RING_LAYER)) map.addLayer(highlightRingLayer as never);
+  if (!map.getLayer(HIGHLIGHT_PIN_LAYER)) map.addLayer(highlightPinLayer as never);
+}
 
 export default function ExploreMap() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -71,7 +81,8 @@ export default function ExploreMap() {
 
   const { data, loading, staleError, loadedOnce, request } = useMapData(filters);
 
-  const [basemap, setBasemap] = useState<BasemapId>("satellite");
+  // Streets by default (clearest for finding a locality); a choice made in Layers is remembered.
+  const [basemap, setBasemap] = useState<BasemapId>("streets");
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [layersOpen, setLayersOpen] = useState(false);
   const [reqOpen, setReqOpen] = useState(false);
@@ -143,7 +154,7 @@ export default function ExploreMap() {
       map.addLayer(clusterLayer as never);
       map.addLayer(clusterCountLayer as never);
       map.addLayer(dotLayer("price") as never);
-      map.addLayer(selectedLayer as never);
+      addHighlight(map);
       // Data may already have arrived while the style was loading — seed the
       // source immediately rather than waiting for the next change to `visible`,
       // which may never come.
@@ -163,7 +174,12 @@ export default function ExploreMap() {
 
     // Keep the canvas matched to the container (window resize, panel open,
     // devtools, orientation change).
-    const ro = new ResizeObserver(() => map.resize());
+    const ro = new ResizeObserver(() => {
+      map.resize();
+      // A resize (e.g. the list panel opening beside the map) changes what is
+      // in view, so refresh the list exactly as a pan does.
+      if (map.isStyleLoaded()) map.fire("moveend");
+    });
     ro.observe(containerRef.current);
 
     const onMoveEnd = () => {
@@ -274,13 +290,45 @@ export default function ExploreMap() {
     map.setPaintProperty(DOT_LAYER, "circle-color", colorExpression(color) as never);
   }, [color, ready]);
 
-  // Selection + hover highlight
+  // Selection + hover marker — from its own unclustered source, so the home
+  // shows even while it sits inside a cluster bubble.
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !ready) return;
-    const id = selected ?? hoveredId ?? "__none__";
-    map.setFilter(SELECTED_LAYER, ["==", ["get", "id"], id] as never);
-  }, [selected, hoveredId, ready]);
+    const mark = (id: string | null, kind: "hover" | "selected") => {
+      const f = id ? visible.find((v) => v.properties.id === id) : undefined;
+      return f ? [{ type: "Feature" as const, geometry: f.geometry, properties: { id, kind } }] : [];
+    };
+    const features = [...(hoveredId !== selected ? mark(hoveredId, "hover") : []), ...mark(selected, "selected")];
+    (map.getSource(HIGHLIGHT_SOURCE_ID) as GeoJSONSource | undefined)
+      ?.setData({ type: "FeatureCollection", features } as GeoJSON.FeatureCollection);
+  }, [selected, hoveredId, visible, ready]);
+
+  // Pulse the selected home's halo so it is easy to find on a busy map.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !ready || !selected) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let raf = 0;
+    const start = performance.now();
+    const tick = (now: number) => {
+      if (map.getLayer(HIGHLIGHT_HALO_LAYER)) {
+        const paint = highlightHaloPaint(((now - start) % 1600) / 1600);
+        map.setPaintProperty(HIGHLIGHT_HALO_LAYER, "circle-radius", paint["circle-radius"] as never);
+        map.setPaintProperty(HIGHLIGHT_HALO_LAYER, "circle-opacity", paint["circle-opacity"] as never);
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => {
+      cancelAnimationFrame(raf);
+      if (map.getLayer(HIGHLIGHT_HALO_LAYER)) {
+        const still = highlightHaloPaint();
+        map.setPaintProperty(HIGHLIGHT_HALO_LAYER, "circle-radius", still["circle-radius"] as never);
+        map.setPaintProperty(HIGHLIGHT_HALO_LAYER, "circle-opacity", still["circle-opacity"] as never);
+      }
+    };
+  }, [selected, ready]);
 
   // Basemap switch — restyle, then re-add our layers on top.
   const changeBasemap = useCallback((b: BasemapId) => {
@@ -301,8 +349,8 @@ export default function ExploreMap() {
         map.addLayer(clusterLayer as never);
         map.addLayer(clusterCountLayer as never);
         map.addLayer(dotLayer(color) as never);
-        map.addLayer(selectedLayer as never);
       }
+      addHighlight(map);
       setReady(true);
     });
   }, [color]);
@@ -346,6 +394,8 @@ export default function ExploreMap() {
         if (map.getSource(srcId)) map.removeSource(srcId);
       }
     }
+    // Keep the hover / selection marker above any infrastructure just drawn.
+    for (const id of [HIGHLIGHT_HALO_LAYER, HIGHLIGHT_RING_LAYER, HIGHLIGHT_PIN_LAYER]) if (map.getLayer(id)) map.moveLayer(id);
   }, [layers, infraCatalog, ready]);
 
   // ── Actions ──
@@ -354,6 +404,11 @@ export default function ExploreMap() {
   }, []);
 
   const onPickLocation = useCallback((r: GeoResult) => {
+    // A locality or area: frame all of its homes (never closer than street level).
+    if (r.bounds) {
+      mapRef.current?.fitBounds(r.bounds, { padding: 80, maxZoom: 15, duration: 900 });
+      return;
+    }
     if (r.flyTo) { flyTo(r.flyTo.lat, r.flyTo.lng, r.flyTo.zoom); return; }
     // No stored position — narrow the map by that corridor instead of guessing.
     if (r.corridorSlug) commitFilters({ ...filters, types: filters.types });
@@ -400,6 +455,9 @@ export default function ExploreMap() {
     return () => { alive = false; };
   }, []);
 
+  // On desktop the map sits beside the open list (not under it), so every home
+  // in the list is visible on the map.
+  const listOffset = !isMobile && listOpen ? LIST_PANEL_WIDTH : "0px";
   const nothingInView = loadedOnce && data.count === 0;
   const showEmptyAll = nothingInView && totalListings === 0;
   const showNoneHere = nothingInView && totalListings !== 0 && filtersActive;
@@ -407,13 +465,13 @@ export default function ExploreMap() {
 
   return (
     <div style={{ position: "relative", width: "100%", height: "100%", overflow: "hidden", background: "#0D0D12" }}>
-      <div ref={containerRef} style={{ position: "absolute", inset: 0 }} />
+      <div ref={containerRef} style={{ position: "absolute", inset: 0, left: listOffset }} />
 
       <LoadingBar active={loading} />
       {staleError && <StaleBanner />}
 
       {/* Top control bar */}
-      <div style={{ position: "absolute", top: 16, left: 16, right: 16, display: "flex", gap: 10, alignItems: "flex-start", zIndex: 16, pointerEvents: "none", flexWrap: "wrap" }}>
+      <div style={{ position: "absolute", top: 16, left: `calc(16px + ${listOffset})`, right: 16, display: "flex", gap: 10, alignItems: "flex-start", zIndex: 16, pointerEvents: "none", flexWrap: "wrap" }}>
         {!isMobile && <MapSearchBar onPick={onPickLocation} onLocate={locate} />}
 
         {!isMobile && (
@@ -444,7 +502,7 @@ export default function ExploreMap() {
 
       {/* Chips */}
       {!isMobile && (
-        <div style={{ position: "absolute", top: 74, left: 16, right: 16, zIndex: 15, pointerEvents: "none" }}>
+        <div style={{ position: "absolute", top: 74, left: `calc(16px + ${listOffset})`, right: 16, zIndex: 15, pointerEvents: "none" }}>
           <FilterChips filters={filters} onChange={commitFilters} />
         </div>
       )}
@@ -479,6 +537,7 @@ export default function ExploreMap() {
         sort={sort}
         onSort={setSort}
         hoveredId={hoveredId}
+        selectedId={selected}
         onHover={setHoveredId}
         onSelect={(f) => { selectFeature(f); if (isMobile) setListOpen(false); }}
         isMobile={isMobile}

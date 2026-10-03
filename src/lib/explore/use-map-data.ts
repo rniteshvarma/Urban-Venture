@@ -29,6 +29,14 @@ export interface PropertyFeature {
     scoreGrade: string | null;
     priceBand: number;
     thumb: string | null;
+    /** list-card facts */
+    priceMaxLakh: number | null;
+    developer: string | null;
+    locality: string | null;
+    bhk: string | null;
+    size: string | null;
+    possession: string | null;
+    rera: boolean;
   };
 }
 
