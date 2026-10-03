@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Check, X, Plus, Upload, MapPin, ArrowLeft, Loader2, AlertTriangle, CheckCircle2 } from "lucide-react";
-import { formatINRFull } from "@/lib/format";
+import { formatINR, formatINRFull, groupIndian } from "@/lib/format";
 import { UNIT_LABEL, areaUnitFor, listingArea, ratePerUnit, type AreaUnit } from "@/lib/listings/units";
 
 const PROPERTY_TYPES = ["Plots", "Land", "Apartment", "Villa", "Commercial"];
@@ -240,6 +240,7 @@ function Step3({ f, set, blur, fairValue }: { f: Listing; set: (p: Partial<Listi
   const area = listingArea(f);
   const per = UNIT_LABEL[area.unit];
   const rate = ratePerUnit(price, area.value);
+  const rupees = Math.round(price * 100000);
   // Ignore a range still in the previous unit while a type change refetches it.
   const fv = fairValue && fairValue.unit === area.unit ? fairValue : null;
   const p50 = fv?.p50 ?? null;
@@ -248,7 +249,18 @@ function Step3({ f, set, blur, fairValue }: { f: Listing; set: (p: Partial<Listi
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px,1fr))", gap: 16 }}>
-        <Field label="Total price (₹ Lakh)"><input type="number" value={f.maxBudgetLakhs || ""} onChange={(e) => { const v = e.target.value === "" ? 0 : Number(e.target.value); set({ minBudgetLakhs: v, maxBudgetLakhs: v }); }} onBlur={blur} style={inp} /></Field>
+        {/* Sellers type the full price in rupees; it's stored in lakhs like every other price. */}
+        <Field label="Property price (₹)">
+          <input
+            inputMode="numeric"
+            value={rupees > 0 ? groupIndian(rupees) : ""}
+            onChange={(e) => { const digits = e.target.value.replace(/\D/g, ""); const lakhs = digits ? Number(digits) / 100000 : 0; set({ minBudgetLakhs: lakhs, maxBudgetLakhs: lakhs }); }}
+            onBlur={blur}
+            placeholder="e.g. 85,00,000"
+            style={inp}
+          />
+          {rupees > 0 && <div style={{ fontSize: "0.75rem", color: "var(--color-text-lo)", marginTop: 4 }}>{formatINR(rupees)}</div>}
+        </Field>
         {rate && <div style={{ alignSelf: "end", fontSize: "0.8125rem", color: "var(--color-text-mid)" }}>Rate: <b className="uv-mono">{formatINRFull(rate)}/{per}</b></div>}
       </div>
 
