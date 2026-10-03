@@ -237,7 +237,7 @@ function ProjectsBrowser() {
             {visible < sorted.length && (
               <div style={{ display: "flex", justifyContent: "center", marginTop: 28 }}>
                 <button onClick={() => setVisible((v) => v + PAGE)} className="uv-btn uv-btn-ghost">
-                  Show more ({sorted.length - visible} remaining)
+                  Show more
                 </button>
               </div>
             )}
