@@ -9,6 +9,9 @@ import InfoChip from "./InfoChip";
 import { RISK, type RiskLevel } from "./enums";
 import { formatLakhRange, formatEMI, lakhToRupees } from "@/lib/format";
 
+/** "₹89.42 L – ₹1.45 Cr": the short lakh form keeps every card's price on one line. */
+const cardPrice = (minLakh: number, maxLakh: number) => formatLakhRange(minLakh, maxLakh).replace(/ Lakh\b/g, " L");
+
 /** Shape consumed from GET /api/projects. */
 export interface ProjectCardData {
   id: string;
@@ -126,8 +129,8 @@ export default function ProjectCard({ project: p, variant = "grid", className = 
           <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: "0.75rem", color: "var(--color-text-mid)" }}>
             <MapPin size={13} /> {place}
           </div>
-          <div style={{ fontFamily: "var(--font-mono)", fontWeight: 600, fontSize: "1.05rem", color: "var(--color-text-hi)" }}>
-            {formatLakhRange(p.minBudgetLakhs, p.maxBudgetLakhs)}
+          <div style={{ fontFamily: "var(--font-mono)", fontWeight: 600, fontSize: "1.05rem", color: "var(--color-text-hi)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+            {cardPrice(p.minBudgetLakhs, p.maxBudgetLakhs)}
           </div>
           {chips}
         </div>
@@ -135,10 +138,15 @@ export default function ProjectCard({ project: p, variant = "grid", className = 
     );
   }
 
-  const width = variant === "carousel" ? { minWidth: 288, width: 288, flexShrink: 0, scrollSnapAlign: "start" as const } : {};
+  // In the carousel row the card must leave its height to the row: a flex item
+  // only stretches to the tallest card when its own height is auto, and
+  // `height: 100%` (fine in a grid cell) silently turns that off.
+  const sizing = variant === "carousel"
+    ? { minWidth: 288, width: 288, flexShrink: 0, scrollSnapAlign: "start" as const }
+    : { height: "100%" };
 
   return (
-    <div className={`uv-card uv-card-hover ${className}`} style={{ display: "flex", flexDirection: "column", overflow: "hidden", height: "100%", ...width }}>
+    <div className={`uv-card uv-card-hover ${className}`} style={{ display: "flex", flexDirection: "column", overflow: "hidden", ...sizing }}>
       <div style={{ position: "relative", width: "100%", paddingTop: "68%", background: "var(--color-ink-soft)", flexShrink: 0 }}>
         {img ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -220,8 +228,8 @@ export default function ProjectCard({ project: p, variant = "grid", className = 
           </span>
         </div>
         <div>
-          <div style={{ fontFamily: "var(--font-mono)", fontWeight: 600, fontSize: "1.25rem", color: "var(--color-text-hi)" }}>
-            {formatLakhRange(p.minBudgetLakhs, p.maxBudgetLakhs)}
+          <div style={{ fontFamily: "var(--font-mono)", fontWeight: 600, fontSize: "1.25rem", color: "var(--color-text-hi)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+            {cardPrice(p.minBudgetLakhs, p.maxBudgetLakhs)}
           </div>
           <div style={{ fontFamily: "var(--font-mono)", fontSize: "0.75rem", color: "var(--color-text-lo)", marginTop: 2, minHeight: "1.1rem" }}>
             {emi}
