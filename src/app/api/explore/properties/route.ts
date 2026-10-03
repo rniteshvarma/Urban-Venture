@@ -64,6 +64,7 @@ export async function GET(req: Request) {
           approvalStatus: true, approvalVerified: true, imageUrls: true, sourceType: true,
           developer: true, corridor: true, possessionText: true, reraNumber: true,
           unitTypes: { select: { bedrooms: true, areaSqFt: true, areaSqYd: true } },
+          accessibility: { select: { score: true } },
         },
       }),
     ]);
@@ -115,6 +116,7 @@ export async function GET(req: Request) {
             // "RERA possession Dec 2027" → "Possession Dec 2027"
             possession: r.possessionText ? r.possessionText.replace(/^(RERA|Target) possession/i, "Possession") : null,
             rera: !!r.reraNumber,
+            access: r.accessibility?.score ?? null,
           },
         };
       });

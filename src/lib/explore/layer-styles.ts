@@ -1,6 +1,7 @@
 // All MapLibre style objects for the Explore Map, kept out of the component so
 // the paint specs are reviewable in one place.
 
+import { NEARBY_CATEGORIES, OSM_CATEGORIES, type OsmCategoryDef } from "@/lib/osm/categories";
 import type { StyleSpecification } from "maplibre-gl";
 import type { ColorMode } from "./color-modes";
 import { colorExpression } from "./color-modes";
@@ -108,6 +109,51 @@ export function dotLayer(mode: ColorMode) {
     },
   };
 }
+
+// ── Nearby places (OpenStreetMap) ────────────────────────────────────
+// Small category-coloured dots drawn under the property dots, so listings stay
+// on top and clickable. Shown only from street-ish zoom to keep the city view
+// clean. Data © OpenStreetMap contributors.
+export const NEARBY_SOURCE_ID = "osm-nearby";
+export const NEARBY_LAYER = "osm-nearby-dots";
+
+export function nearbyLayer() {
+  const colors = NEARBY_CATEGORIES.flatMap((c) => [c, (OSM_CATEGORIES[c] as OsmCategoryDef).nearby!.color]);
+  return {
+    id: NEARBY_LAYER,
+    type: "circle" as const,
+    source: NEARBY_SOURCE_ID,
+    minzoom: 11,
+    paint: {
+      "circle-color": ["match", ["get", "c"], ...colors, "#8A8A99"],
+      "circle-radius": ["interpolate", ["linear"], ["zoom"], 11, 3, 14, 5, 16, 7],
+      "circle-stroke-width": 1.5,
+      "circle-stroke-color": "#FFFFFF",
+      "circle-opacity": 0.95,
+    },
+  };
+}
+
+// ── 2 km / 5 km rings around the selected home ──────────────────────
+export const RING_SOURCE_ID = "selected-rings";
+export const RING_2KM_LAYER = "selected-ring-2km";
+export const RING_5KM_LAYER = "selected-ring-5km";
+
+export const ring2kmLayer = {
+  id: RING_2KM_LAYER,
+  type: "line" as const,
+  source: RING_SOURCE_ID,
+  filter: ["==", ["get", "km"], 2],
+  paint: { "line-color": "#0D0D12", "line-width": 2, "line-opacity": 0.75 },
+};
+
+export const ring5kmLayer = {
+  id: RING_5KM_LAYER,
+  type: "line" as const,
+  source: RING_SOURCE_ID,
+  filter: ["==", ["get", "km"], 5],
+  paint: { "line-color": "#0D0D12", "line-width": 1.5, "line-opacity": 0.6, "line-dasharray": [3, 2] },
+};
 
 // ── Hover / selection marker ─────────────────────────────────────────
 // Drawn from its own unclustered source, above clusters and dots, so the home a

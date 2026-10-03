@@ -14,7 +14,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 // maplibre-gl v6 ships named exports only — there is no default export.
 import {
-  Map as MapLibreMap, Popup, AttributionControl, setWorkerUrl,
+  Map as MapLibreMap, Popup, Marker, AttributionControl, setWorkerUrl,
   type GeoJSONSource, type MapLayerMouseEvent, type MapGeoJSONFeature,
 } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
@@ -41,6 +41,7 @@ import {
   HIGHLIGHT_SOURCE_ID, HIGHLIGHT_HALO_LAYER, HIGHLIGHT_RING_LAYER, HIGHLIGHT_PIN_LAYER,
   highlightHaloLayer, highlightRingLayer, highlightPinLayer, highlightHaloPaint,
   CLUSTER_LAYER, DOT_LAYER, infraLineLayer, infraPointLayer,
+  NEARBY_SOURCE_ID, NEARBY_LAYER, nearbyLayer, RING_SOURCE_ID, RING_2KM_LAYER, RING_5KM_LAYER, ring2kmLayer, ring5kmLayer,
   INFRA_CATEGORY_COLORS, BASEMAPS, type BasemapId,
 } from "@/lib/explore/layer-styles";
 
@@ -51,6 +52,8 @@ import LayersPanel, { type InfraLayer } from "./LayersPanel";
 import RequirementsPanel from "./RequirementsPanel";
 import PropertyDetailCard from "./PropertyDetailCard";
 import ListPanel, { LIST_PANEL_WIDTH, type SortKey } from "./ListPanel";
+import { OSM_ATTRIBUTION } from "@/lib/osm/categories";
+import { circleRing } from "@/lib/osm/geo";
 import ColorModeToggle from "./ColorModeToggle";
 import MapControls from "./MapControls";
 import { NoPropertiesAnywhere, NoneInViewport, NoFilterMatches, StaleBanner, LoadingBar } from "./EmptyStates";
@@ -66,6 +69,37 @@ function addHighlight(map: MapLibreMap) {
   if (!map.getLayer(HIGHLIGHT_RING_LAYER)) map.addLayer(highlightRingLayer as never);
   if (!map.getLayer(HIGHLIGHT_PIN_LAYER)) map.addLayer(highlightPinLayer as never);
 }
+
+/**
+ * Everything drawn on top of the basemap besides the property source:
+ * OpenStreetMap "Nearby" dots (under the property dots, so listings stay on
+ * top and clickable), the 2 / 5 km rings, then the hover / selection marker.
+ */
+function addOverlays(map: MapLibreMap) {
+  if (!map.getSource(NEARBY_SOURCE_ID)) map.addSource(NEARBY_SOURCE_ID, { type: "geojson", data: EMPTY_FC, attribution: OSM_ATTRIBUTION });
+  if (!map.getLayer(NEARBY_LAYER)) map.addLayer(nearbyLayer() as never, map.getLayer(CLUSTER_LAYER) ? CLUSTER_LAYER : undefined);
+  if (!map.getSource(RING_SOURCE_ID)) map.addSource(RING_SOURCE_ID, { type: "geojson", data: EMPTY_FC });
+  if (!map.getLayer(RING_5KM_LAYER)) map.addLayer(ring5kmLayer as never);
+  if (!map.getLayer(RING_2KM_LAYER)) map.addLayer(ring2kmLayer as never);
+  addHighlight(map);
+}
+
+const NEARBY_KEY = "uv_explore_nearby";
+/** What "Show nearby places on the map" turns on. */
+const DEFAULT_NEARBY = ["hospital", "transit", "school", "mall", "park"];
+const NEARBY_NAME: Record<string, (sub?: string | null) => string> = {
+  hospital: () => "Hospital",
+  transit: (sub) => (sub === "metro" ? "Metro station" : "Railway station"),
+  orr_exit: () => "ORR / expressway exit",
+  school: () => "School",
+  college: () => "College / university",
+  mall: () => "Mall",
+  job_hub: () => "IT park / industrial area",
+  park: () => "Park",
+  lake: () => "Lake",
+  bus_station: () => "Bus station",
+};
+type NearbyRow = { id: string; c: string; s: string | null; n: string | null; lat: number; lng: number };
 
 export default function ExploreMap() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -89,6 +123,11 @@ export default function ExploreMap() {
   const [listOpen, setListOpen] = useState(false);
   const [sort, setSort] = useState<SortKey>("score");
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [nearby, setNearby] = useState<string[]>([]);
+  const nearbyCache = useRef<Record<string, NearbyRow[]>>({});
+  const [nearbyRev, setNearbyRev] = useState(0);
+  const [tip, setTip] = useState<{ x: number; y: number; name: string; label: string } | null>(null);
+  const ringMarkers = useRef<Marker[]>([]);
   const [bounds, setBounds] = useState<Bounds | null>(null);
   const [showAdmin, setShowAdmin] = useState(true);
   const [showSeller, setShowSeller] = useState(true);
@@ -114,6 +153,8 @@ export default function ExploreMap() {
     try {
       const saved = localStorage.getItem(BASEMAP_KEY) as BasemapId | null;
       if (saved && BASEMAPS[saved]) setBasemap(saved);
+      const savedNearby = JSON.parse(localStorage.getItem(NEARBY_KEY) ?? "[]");
+      if (Array.isArray(savedNearby)) setNearby(savedNearby.filter((c) => typeof c === "string" && c in NEARBY_NAME));
     } catch { /* private mode */ }
   }, []);
 
@@ -154,7 +195,7 @@ export default function ExploreMap() {
       map.addLayer(clusterLayer as never);
       map.addLayer(clusterCountLayer as never);
       map.addLayer(dotLayer("price") as never);
-      addHighlight(map);
+      addOverlays(map);
       // Data may already have arrived while the style was loading — seed the
       // source immediately rather than waiting for the next change to `visible`,
       // which may never come.
@@ -237,6 +278,14 @@ export default function ExploreMap() {
         .setHTML(`<span style="font:600 12px Inter,system-ui;color:#0D0D12">${price}${area}</span>`)
         .addTo(map);
     });
+    // Nearby place: name it on hover.
+    map.on("mousemove", NEARBY_LAYER, (e: MapLayerMouseEvent) => {
+      const p = e.features?.[0]?.properties as { c?: string; n?: string; s?: string } | undefined;
+      if (!p?.c) return;
+      const kind = NEARBY_NAME[p.c]?.(p.s) ?? p.c;
+      setTip({ x: e.point.x, y: e.point.y, name: p.n || kind, label: p.n ? kind : "" });
+    });
+    map.on("mouseleave", NEARBY_LAYER, () => setTip(null));
     map.on("mouseenter", CLUSTER_LAYER, () => { map.getCanvas().style.cursor = "pointer"; });
     map.on("mouseleave", CLUSTER_LAYER, () => { map.getCanvas().style.cursor = ""; });
 
@@ -304,6 +353,65 @@ export default function ExploreMap() {
       ?.setData({ type: "FeatureCollection", features } as GeoJSON.FeatureCollection);
   }, [selected, hoveredId, visible, ready]);
 
+  // ── Nearby places: load a category the first time it is switched on ──
+  const commitNearby = useCallback((cats: string[]) => {
+    setNearby(cats);
+    try { localStorage.setItem(NEARBY_KEY, JSON.stringify(cats)); } catch { /* private mode */ }
+  }, []);
+
+  useEffect(() => {
+    const missing = nearby.filter((c) => !nearbyCache.current[c]);
+    if (!missing.length) return;
+    let alive = true;
+    fetch(`/api/explore/nearby?categories=${missing.join(",")}`)
+      .then((r) => (r.ok ? r.json() : { features: [] }))
+      .then((d: { features?: NearbyRow[] }) => {
+        for (const c of missing) nearbyCache.current[c] = [];
+        for (const f of d.features ?? []) (nearbyCache.current[f.c] ??= []).push(f);
+        if (alive) setNearbyRev((n) => n + 1);
+      })
+      .catch(() => { /* layer simply stays empty */ });
+    return () => { alive = false; };
+  }, [nearby]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !ready) return;
+    const features = nearby.flatMap((c) => (nearbyCache.current[c] ?? []).map((f) => ({
+      type: "Feature" as const,
+      geometry: { type: "Point" as const, coordinates: [f.lng, f.lat] },
+      properties: { c: f.c, n: f.n, s: f.s },
+    })));
+    (map.getSource(NEARBY_SOURCE_ID) as GeoJSONSource | undefined)
+      ?.setData({ type: "FeatureCollection", features } as GeoJSON.FeatureCollection);
+  }, [nearby, nearbyRev, ready]);
+
+  // ── 2 km / 5 km rings around the selected home ──
+  const selectedAt = useMemo(() => {
+    const f = selected ? visible.find((v) => v.properties.id === selected) : undefined;
+    return f ? f.geometry.coordinates.join(",") : null;
+  }, [selected, visible]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !ready) return;
+    ringMarkers.current.forEach((m) => m.remove());
+    ringMarkers.current = [];
+    const src = map.getSource(RING_SOURCE_ID) as GeoJSONSource | undefined;
+    if (!selectedAt) { src?.setData(EMPTY_FC as GeoJSON.FeatureCollection); return; }
+    const [lng, lat] = selectedAt.split(",").map(Number);
+    src?.setData({
+      type: "FeatureCollection",
+      features: [2, 5].map((km) => ({ type: "Feature", geometry: { type: "LineString", coordinates: circleRing(lat, lng, km) }, properties: { km } })),
+    } as GeoJSON.FeatureCollection);
+    for (const km of [2, 5]) {
+      const el = document.createElement("div");
+      el.textContent = `${km} km`;
+      el.style.cssText = "font:700 11px/1 var(--font-jakarta),sans-serif;color:#0D0D12;background:#fff;border-radius:999px;padding:3px 7px;box-shadow:0 1px 4px rgba(16,16,26,.25);pointer-events:none";
+      ringMarkers.current.push(new Marker({ element: el }).setLngLat([lng, lat + km / 110.574]).addTo(map));
+    }
+  }, [selectedAt, ready]);
+
   // Pulse the selected home's halo so it is easy to find on a busy map.
   useEffect(() => {
     const map = mapRef.current;
@@ -350,7 +458,7 @@ export default function ExploreMap() {
         map.addLayer(clusterCountLayer as never);
         map.addLayer(dotLayer(color) as never);
       }
-      addHighlight(map);
+      addOverlays(map);
       setReady(true);
     });
   }, [color]);
@@ -496,6 +604,8 @@ export default function ExploreMap() {
             showSeller={showSeller}
             onShowAdmin={setShowAdmin}
             onShowSeller={setShowSeller}
+            nearby={nearby}
+            onNearby={commitNearby}
           />
         </div>
       </div>
@@ -557,7 +667,21 @@ export default function ExploreMap() {
         <ColorModeToggle mode={color} onChange={commitColor} priceBreaks={data.priceBreaks} count={data.count} truncated={data.truncated} />
       )}
 
-      {selected && <PropertyDetailCard id={selected} onClose={() => commitSelected(null)} isMobile={isMobile} />}
+      {selected && (
+        <PropertyDetailCard
+          id={selected}
+          onClose={() => commitSelected(null)}
+          isMobile={isMobile}
+          onShowNearby={() => commitNearby([...new Set([...nearby, ...DEFAULT_NEARBY])])}
+        />
+      )}
+
+      {/* Nearby place tooltip (positions are relative to the map, which sits beside an open list). */}
+      {tip && (
+        <div style={{ position: "absolute", left: `calc(${listOffset} + ${tip.x + 12}px)`, top: tip.y - 12, zIndex: 30, pointerEvents: "none", background: "#0D0D12", color: "#fff", fontSize: "0.75rem", padding: "5px 9px", borderRadius: 8, whiteSpace: "nowrap", boxShadow: "0 4px 14px rgba(16,16,26,.25)" }}>
+          <b>{tip.name}</b>{tip.label && <span style={{ opacity: 0.7 }}> · {tip.label}</span>}
+        </div>
+      )}
 
       <FiltersPanel
         open={filtersOpen}

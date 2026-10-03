@@ -13,6 +13,7 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { X, BadgeCheck, ShieldCheck } from "lucide-react";
 import { formatLakh, formatLakhRange, formatINRFull } from "@/lib/format";
 import type { PropertyFeature } from "@/lib/explore/use-map-data";
+import { accessTone } from "@/components/accessibility/AccessibilityPanel";
 
 export type SortKey = "score" | "priceAsc" | "priceDesc" | "area" | "newest";
 
@@ -215,11 +216,19 @@ function PropertyCard({ f, hovered, selected, onHover, onSelect }: {
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.6875rem", color: "#8A8A99", minWidth: 0 }}>
           <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{meta || (p.rateValue ? `${formatINRFull(p.rateValue)}/${p.rateUnit}` : "")}</span>
-          {p.rera && (
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 3, marginLeft: "auto", flexShrink: 0, color: "#0B7A43", fontWeight: 700 }}>
-              <ShieldCheck size={12} /> RERA
-            </span>
-          )}
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 8, marginLeft: "auto", flexShrink: 0 }}>
+            {p.access != null && (
+              <span title="Accessibility: how well connected and well served this location is (separate from the rating)"
+                style={{ fontWeight: 700, color: accessTone(p.access).fg, background: accessTone(p.access).bg, borderRadius: 999, padding: "1px 7px" }}>
+                Access {p.access}
+              </span>
+            )}
+            {p.rera && (
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 3, color: "#0B7A43", fontWeight: 700 }}>
+                <ShieldCheck size={12} /> RERA
+              </span>
+            )}
+          </span>
         </div>
       </div>
     </div>

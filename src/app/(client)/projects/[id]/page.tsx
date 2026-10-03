@@ -20,8 +20,10 @@ import {
   Ruler,
   Award,
   Info,
+  Compass,
 } from "lucide-react";
 import { formatLakh, groupIndian } from "@/lib/format";
+import AccessibilityPanel, { type AccessibilityView } from "@/components/accessibility/AccessibilityPanel";
 
 interface UnitType {
   id: string;
@@ -98,6 +100,8 @@ interface ProjectDetails {
   inventoryScore: number | null;
   inventoryGrade: string | null;
   inventoryRating: { total: number; grade: string; components: RatingComponent[] } | null;
+  /** separate from the rating; null until the OpenStreetMap job has scored it */
+  accessibility: AccessibilityView | null;
 }
 
 const TS_RERA_SEARCH = "https://rerait.telangana.gov.in/SearchList/Search";
@@ -558,6 +562,22 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                 </div>
               )}
             </section>
+
+            {/* Accessibility — its own score, separate from the rating */}
+            {project.accessibility && (
+              <section className="card-premium space-y-4 !p-8">
+                <h2 className="section-header text-xl flex items-center gap-2"><Compass size={18} className="text-saffron-deep" /> Accessibility</h2>
+                <p className="text-sm text-text-secondary">How well connected and well served this location is, from mapped hospitals, stations, ORR exits, malls, colleges, parks and job hubs. Separate from the Property Tiger Rating.</p>
+                <div className="max-w-xl">
+                  <AccessibilityPanel a={project.accessibility} />
+                </div>
+                {project.latitude != null && project.longitude != null && (
+                  <Link href={`/explore?lat=${project.latitude.toFixed(4)}&lng=${project.longitude.toFixed(4)}&z=14&sel=${project.id}`} className="uv-btn uv-btn-ghost" style={{ fontSize: "0.8125rem", padding: "8px 14px" }}>
+                    See it on the map with 2 km / 5 km rings
+                  </Link>
+                )}
+              </section>
+            )}
 
             {/* Exit Opportunities */}
             {project.exitOpportunities.length > 0 && (

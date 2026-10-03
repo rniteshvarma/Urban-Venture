@@ -122,9 +122,10 @@ model Project {
   longitude      Float?
   approvals      String[]
 
-  unitTypes   ProjectUnitType[]
-  media       ProjectMedia[]
-  fieldAudits ProjectFieldAudit[]
+  unitTypes     ProjectUnitType[]
+  media         ProjectMedia[]
+  accessibility ProjectAccessibility?
+  fieldAudits   ProjectFieldAudit[]
 
   // ══ SELLER MODE (dashboard extension) ══════════════════════════════
   // Seller listings ARE Project records. These fields are additive; admin
@@ -2824,4 +2825,53 @@ model ConciergeMessage {
   createdAt         DateTime              @default(now())
 
   @@index([conversationId, createdAt])
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// OPENSTREETMAP — accessibility scoring and the Explore map's Nearby layers
+// Data © OpenStreetMap contributors (ODbL); credit it wherever it is shown.
+// ═══════════════════════════════════════════════════════════════════
+
+/// A place from OpenStreetMap. Each sync replaces a category's rows wholesale
+/// (lib/osm/sync.ts); a category whose fetch fails keeps its previous rows.
+model OsmFeature {
+  id          String   @id // "node/123", "way/456", "relation/789"
+  category    String // lib/osm/categories.ts
+  subcategory String? // e.g. "metro" | "rail" for stations
+  name        String?
+  lat         Float // the point itself, or an area's or line's centre
+  lng         Float
+  areaHa      Float? // areas only
+  /// Rings of [lng, lat] — kept only for power lines and lake outlines, which
+  /// are measured to their edge rather than their centre.
+  geometry    Json?
+  syncedAt    DateTime @default(now())
+
+  @@index([category])
+  @@index([lat, lng])
+}
+
+/// One OpenStreetMap import: when it ran and what each category returned.
+model OsmSyncRun {
+  id         String    @id @default(cuid())
+  startedAt  DateTime  @default(now())
+  finishedAt DateTime?
+  status     String // RUNNING | SUCCESS | PARTIAL | FAILED
+  counts     Json? // { category: rows }
+  errors     Json? // { category: message }
+}
+
+/// A listing's accessibility (lib/osm/accessibility.ts), shown as its own
+/// score — separate from the listing rating — with the facts behind it.
+model ProjectAccessibility {
+  projectId  String   @id
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  score      Int
+  confidence String // HIGH | MEDIUM | LOW
+  version    String
+  components Json
+  nearest    Json
+  within     Json
+  watchOuts  Json
+  computedAt DateTime @default(now())
 }

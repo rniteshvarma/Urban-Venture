@@ -1,6 +1,8 @@
 {
   "framework": "nextjs",
-  "regions": ["hnd1"],
+  "regions": [
+    "hnd1"
+  ],
   "buildCommand": "node scripts/copy-maplibre-worker.mjs && npx prisma db push && npx prisma generate && npx tsx scripts/reference/seed-corridors.ts && npx tsx scripts/inventory/seed-inventory.ts && next build",
   "crons": [
     {
@@ -26,6 +28,10 @@
     {
       "path": "/api/cron/whatsapp-maintenance",
       "schedule": "0 1 * * *"
+    },
+    {
+      "path": "/api/cron/osm-sync",
+      "schedule": "0 22 * * *"
     }
   ],
   "functions": {
@@ -39,6 +45,12 @@
       "regions": [
         "bom1"
       ],
+      "maxDuration": 300
+    },
+    "src/app/api/cron/osm-sync/route.ts": {
+      "maxDuration": 300
+    },
+    "src/app/api/admin/osm/sync/route.ts": {
       "maxDuration": 300
     }
   }

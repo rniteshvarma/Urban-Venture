@@ -11,6 +11,7 @@ import { X, Bookmark, Share2, Navigation, ExternalLink, ChevronLeft, ChevronRigh
 import { formatLakh, formatINRFull } from "@/lib/format";
 import EnquiryModal from "./EnquiryModal";
 import { areaLabel } from "@/lib/explore/query";
+import AccessibilityPanel, { type AccessibilityView } from "@/components/accessibility/AccessibilityPanel";
 
 interface Detail {
   id: string;
@@ -39,10 +40,12 @@ interface Detail {
   source: "ADMIN" | "SELLER";
   scoreGrade: string | null;
   corridor: { slug: string; name: string; score: number | null } | null;
+  /** separate from the rating; null until the OpenStreetMap job has scored it */
+  accessibility: AccessibilityView | null;
   url: string;
 }
 
-export default function PropertyDetailCard({ id, onClose, isMobile }: { id: string; onClose: () => void; isMobile: boolean }) {
+export default function PropertyDetailCard({ id, onClose, isMobile, onShowNearby }: { id: string; onClose: () => void; isMobile: boolean; onShowNearby?: () => void }) {
   const [d, setD] = useState<Detail | null>(null);
   const [img, setImg] = useState(0);
   const [saved, setSaved] = useState(false);
@@ -192,6 +195,14 @@ export default function PropertyDetailCard({ id, onClose, isMobile }: { id: stri
                 <Attr label="Ownership" value={d.attributes.ownershipType} />
                 <Attr label="Plots" value={d.attributes.plotsAvailable} />
                 {d.corridor && <Attr label="Corridor" value={`${d.corridor.name}${d.corridor.score != null ? ` · score ${d.corridor.score}` : ""}`} />}
+              </div>
+
+              <div style={{ padding: "14px 16px 16px", borderTop: "1px solid #EFEFF3" }}>
+                {d.accessibility ? (
+                  <AccessibilityPanel a={d.accessibility} onShowNearby={onShowNearby} />
+                ) : (
+                  <div style={{ fontSize: "0.75rem", color: "#8A8A99" }}>Accessibility hasn&rsquo;t been scored for this location yet.</div>
+                )}
               </div>
             </div>
 

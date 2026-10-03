@@ -22,6 +22,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
         approvalStatus: true, approvalNumber: true, approvalVerified: true,
         roadWidthFeet: true, facingOptions: true, ownershipType: true,
         availablePlots: true, totalPlots: true, imageUrls: true,
+        accessibility: { select: { score: true, confidence: true, components: true, nearest: true, within: true, watchOuts: true, computedAt: true } },
         // media is used only to top up the carousel with public images
         media: {
           where: { isPublic: true, isRejected: false },
@@ -78,6 +79,8 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
       source: p.listingSource,
       scoreGrade: inventoryOrSellerGrade(p),
       corridor: corridor ? { slug: corridor.slug, name: corridor.shortName, score: corridor.overallScore } : null,
+      // Separate from the listing rating; from OpenStreetMap places (© OpenStreetMap contributors).
+      accessibility: p.accessibility ?? null,
       url: `/projects/${p.id}`,
     });
   } catch (error) {

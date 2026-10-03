@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { Loader2, ExternalLink, Check, X, Undo2, MapPin, Radar, Brain, Activity } from "lucide-react";
 import InfraRefreshButton from "@/components/admin/InfraRefreshButton";
+import OsmSyncCard from "@/components/admin/OsmSyncCard";
 
 type Decision = "QUEUED" | "AUTO_APPLIED" | "APPROVED" | "REJECTED" | "REVERTED" | "IGNORED";
 
@@ -175,6 +176,8 @@ export default function InfraUpdatesPage() {
         </div>
         <InfraRefreshButton onDone={() => load()} />
       </div>
+
+      <OsmSyncCard />
 
       {overview && !overview.claude && (
         <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-900">

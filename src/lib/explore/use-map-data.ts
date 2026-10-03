@@ -37,6 +37,8 @@ export interface PropertyFeature {
     size: string | null;
     possession: string | null;
     rera: boolean;
+    /** accessibility score 0–100 (separate from the rating), null until scored */
+    access: number | null;
   };
 }
 

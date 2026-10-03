@@ -18,6 +18,8 @@ export async function GET(
           orderBy: { displayOrder: "asc" },
           select: { id: true, fileUrl: true, mediaType: true, altText: true, isPrimary: true },
         },
+        // Separate from the rating; from OpenStreetMap places (© OpenStreetMap contributors).
+        accessibility: { select: { score: true, confidence: true, components: true, nearest: true, within: true, watchOuts: true, computedAt: true } },
       },
     });
 

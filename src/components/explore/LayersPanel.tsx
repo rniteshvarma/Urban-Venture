@@ -14,6 +14,7 @@
 import { useEffect, useState } from "react";
 import { Layers, X, Info } from "lucide-react";
 import { INFRA_CATEGORY_COLORS, BASEMAPS, type BasemapId } from "@/lib/explore/layer-styles";
+import { NEARBY_CATEGORIES, OSM_CATEGORIES, OSM_ATTRIBUTION, type OsmCategoryDef } from "@/lib/osm/categories";
 
 export interface InfraLayer {
   id: string;
@@ -35,7 +36,7 @@ const CATEGORY_GROUPS: { label: string; categories: string[] }[] = [
 ];
 
 export default function LayersPanel({
-  open, onToggleOpen, enabled, onChange, basemap, onBasemap, showAdmin, showSeller, onShowAdmin, onShowSeller,
+  open, onToggleOpen, enabled, onChange, basemap, onBasemap, showAdmin, showSeller, onShowAdmin, onShowSeller, nearby, onNearby,
 }: {
   open: boolean;
   onToggleOpen: () => void;
@@ -47,6 +48,9 @@ export default function LayersPanel({
   showSeller: boolean;
   onShowAdmin: (v: boolean) => void;
   onShowSeller: (v: boolean) => void;
+  /** OpenStreetMap categories drawn as "Nearby" layers */
+  nearby: string[];
+  onNearby: (categories: string[]) => void;
 }) {
   const [layers, setLayers] = useState<InfraLayer[] | null>(null);
 
@@ -83,6 +87,24 @@ export default function LayersPanel({
         <SectionLabel>Properties</SectionLabel>
         <Row label="Our verified inventory" color="#2563EB" checked={showAdmin} onChange={() => onShowAdmin(!showAdmin)} />
         <Row label="Owner & agent listings" color="#FFB400" checked={showSeller} onChange={() => onShowSeller(!showSeller)} />
+
+        <SectionLabel>Nearby places</SectionLabel>
+        {NEARBY_CATEGORIES.map((c) => (
+          <Row
+            key={c}
+            label={OSM_CATEGORIES[c].label}
+            color={(OSM_CATEGORIES[c] as OsmCategoryDef).nearby!.color}
+            dot
+            checked={nearby.includes(c)}
+            onChange={() => onNearby(nearby.includes(c) ? nearby.filter((x) => x !== c) : [...nearby, c])}
+          />
+        ))}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginTop: 4 }}>
+          <span style={{ fontSize: "0.625rem", color: "#A0A0AE", lineHeight: 1.4 }}>Shown when zoomed in · {OSM_ATTRIBUTION}</span>
+          {nearby.length > 0 && (
+            <button type="button" onClick={() => onNearby([])} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "0.6875rem", fontWeight: 700, color: "#7A5200", flexShrink: 0 }}>Clear</button>
+          )}
+        </div>
 
         <SectionLabel>Infrastructure</SectionLabel>
         {layers == null && <div style={{ fontSize: "0.75rem", color: "#A0A0AE", padding: "6px 0" }}>Loading…</div>}
@@ -144,9 +166,11 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   return <div style={{ fontSize: "0.625rem", textTransform: "uppercase", letterSpacing: "0.06em", color: "#8A8A99", fontWeight: 700, margin: "12px 0 6px" }}>{children}</div>;
 }
 
-function Row({ label, color, checked, onChange, dashed, disabled, disabledReason, note }: {
+function Row({ label, color, checked, onChange, dashed, disabled, disabledReason, note, dot }: {
   label: string; color: string; checked: boolean; onChange: () => void;
   dashed?: boolean; disabled?: boolean; disabledReason?: string; note?: string;
+  /** point layers: a round swatch instead of a line */
+  dot?: boolean;
 }) {
   return (
     <label
@@ -154,8 +178,12 @@ function Row({ label, color, checked, onChange, dashed, disabled, disabledReason
       style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 0", cursor: disabled ? "not-allowed" : "pointer", opacity: disabled ? 0.45 : 1 }}
     >
       <input type="checkbox" checked={checked && !disabled} disabled={disabled} onChange={onChange} style={{ accentColor: "#FFB400", cursor: disabled ? "not-allowed" : "pointer" }} />
-      {/* Swatch mirrors how the layer actually draws: solid vs dashed. */}
-      <span style={{ width: 16, height: 0, borderTop: `3px ${dashed ? "dashed" : "solid"} ${color}`, opacity: dashed ? 0.6 : 1, flexShrink: 0 }} />
+      {/* Swatch mirrors how the layer actually draws: a dot, or a solid / dashed line. */}
+      {dot ? (
+        <span style={{ width: 10, height: 10, borderRadius: 999, background: color, border: "1.5px solid #fff", boxShadow: "0 0 0 1px #E4E4EA", margin: "0 3px", flexShrink: 0 }} />
+      ) : (
+        <span style={{ width: 16, height: 0, borderTop: `3px ${dashed ? "dashed" : "solid"} ${color}`, opacity: dashed ? 0.6 : 1, flexShrink: 0 }} />
+      )}
       <span style={{ flex: 1, fontSize: "0.75rem", color: "#2A2A35", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{label}</span>
       {dashed && <span title={note} style={{ fontSize: "0.5625rem", color: "#B87A00", fontWeight: 700, flexShrink: 0 }}>PENDING</span>}
       {(note || disabledReason) && <Info size={11} style={{ color: "#C4C4CE", flexShrink: 0 }} />}
