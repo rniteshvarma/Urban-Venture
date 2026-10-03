@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { Suspense, useState, useEffect, useMemo } from "react";
+import { useSearchParams } from "next/navigation";
 import { SlidersHorizontal, MapPin, Building, Activity, IndianRupee, Search, X } from "lucide-react";
 import { PageHero, ProjectCard, SkeletonCard, EmptyState, type ProjectCardData } from "@/components/ui";
 
@@ -35,23 +36,43 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
   );
 }
 
+const TYPES = ["Apartment", "Villa", "Plots", "Commercial"];
+
+// useSearchParams needs a Suspense boundary on a prerendered page; the browser
+// renders the list itself, so filters can start from the URL.
 export default function PublicProjectsPage() {
+  return (
+    <Suspense fallback={null}>
+      <ProjectsBrowser />
+    </Suspense>
+  );
+}
+
+function ProjectsBrowser() {
+  // Arriving from the homepage search (/projects?q=Kokapet&type=Villa) starts
+  // with those filters applied.
+  const params = useSearchParams();
+  const initialQuery = params.get("q")?.trim() ?? "";
+  const initialType = params.get("type");
+
   const [projects, setProjects] = useState<(ProjectCardData & { createdAt?: string })[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const [selectedCorridor, setSelectedCorridor] = useState("ALL");
+  const [selectedCorridor, setSelectedCorridor] = useState(() => params.get("corridor") || "ALL");
+  const [selectedLocality, setSelectedLocality] = useState(() => params.get("locality")?.trim() || "");
   const [selectedRisk, setSelectedRisk] = useState("ALL");
-  const [selectedType, setSelectedType] = useState("ALL");
+  const [selectedType, setSelectedType] = useState(() => (initialType && TYPES.includes(initialType) ? initialType : "ALL"));
   const [budgetRange, setBudgetRange] = useState("ALL");
   const [sort, setSort] = useState<SortKey>("relevance");
   const [corridors, setCorridors] = useState<Corridor[]>([]);
   const [showAllCorridors, setShowAllCorridors] = useState(false);
-  const [query, setQuery] = useState("");
-  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [query, setQuery] = useState(initialQuery);
+  const [debouncedQuery, setDebouncedQuery] = useState(initialQuery);
   const [visible, setVisible] = useState(PAGE);
 
   const clearAll = () => {
     setSelectedCorridor("ALL");
+    setSelectedLocality("");
     setSelectedRisk("ALL");
     setSelectedType("ALL");
     setBudgetRange("ALL");
@@ -76,6 +97,7 @@ export default function PublicProjectsPage() {
       try {
         let url = `/api/projects?status=ACTIVE`;
         if (selectedCorridor !== "ALL") url += `&corridor=${encodeURIComponent(selectedCorridor)}`;
+        if (selectedLocality) url += `&locality=${encodeURIComponent(selectedLocality)}`;
         if (selectedRisk !== "ALL") url += `&risk=${selectedRisk}`;
         if (selectedType !== "ALL") url += `&type=${selectedType}`;
         if (debouncedQuery) url += `&q=${encodeURIComponent(debouncedQuery)}`;
@@ -94,7 +116,7 @@ export default function PublicProjectsPage() {
       }
     }
     fetchProjects();
-  }, [selectedCorridor, selectedRisk, selectedType, budgetRange, debouncedQuery]);
+  }, [selectedCorridor, selectedLocality, selectedRisk, selectedType, budgetRange, debouncedQuery]);
 
   const sorted = useMemo(() => {
     const arr = [...projects];
@@ -106,6 +128,7 @@ export default function PublicProjectsPage() {
 
   // Applied filters as removable chips
   const applied: { label: string; clear: () => void }[] = [];
+  if (selectedLocality) applied.push({ label: selectedLocality, clear: () => setSelectedLocality("") });
   if (selectedCorridor !== "ALL") applied.push({ label: selectedCorridor, clear: () => setSelectedCorridor("ALL") });
   if (budgetRange !== "ALL") applied.push({ label: BUDGETS.find((b) => b.id === budgetRange)!.label, clear: () => setBudgetRange("ALL") });
   if (selectedRisk !== "ALL") applied.push({ label: `${selectedRisk} risk`, clear: () => setSelectedRisk("ALL") });
@@ -167,7 +190,7 @@ export default function PublicProjectsPage() {
                 {["ALL", "LOW", "MEDIUM", "HIGH"].map((r) => <Chip key={r} active={selectedRisk === r} onClick={() => setSelectedRisk(r)}>{r === "ALL" ? "All" : r}</Chip>)}
               </FilterRow>
               <FilterRow icon={<Building size={12} />} label="Type" inline>
-                {["ALL", "Apartment", "Villa", "Plots", "Commercial"].map((t) => <Chip key={t} active={selectedType === t} onClick={() => setSelectedType(t)}>{t === "ALL" ? "All" : t}</Chip>)}
+                {["ALL", ...TYPES].map((t) => <Chip key={t} active={selectedType === t} onClick={() => setSelectedType(t)}>{t === "ALL" ? "All" : t}</Chip>)}
               </FilterRow>
             </div>
           </div>

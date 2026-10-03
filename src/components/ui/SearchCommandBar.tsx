@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import LocationCombobox from "./LocationCombobox";
+import type { LocationSuggestion } from "@/lib/projects/location-search";
 import { useRouter } from "next/navigation";
 import * as Slider from "@radix-ui/react-slider";
 import { Bot, Building2, BarChart3, Calculator, ArrowRight, ChevronDown } from "lucide-react";
@@ -103,11 +105,21 @@ export default function SearchCommandBar({ corridors = [], quickChips = [], clas
 
   // Other tabs
   const [location, setLocation] = useState("");
+  const [picked, setPicked] = useState<LocationSuggestion | null>(null);
   const [propType, setPropType] = useState("");
   const [corridorSlug, setCorridorSlug] = useState(corridors[0]?.slug ?? "");
   const [calcAmount, setCalcAmount] = useState(25);
 
   const go = (path: string) => router.push(path);
+  const searchProjects = () => {
+    const params = new URLSearchParams();
+    const loc = location.trim();
+    // A picked suggestion filters exactly (a locality, or a whole area); typed text searches broadly.
+    if (loc && picked?.name === loc) params.set(picked.area ? "locality" : "corridor", loc);
+    else if (loc) params.set("q", loc);
+    if (propType) params.set("type", propType);
+    go(`/projects${params.toString() ? `?${params}` : ""}`);
+  };
 
   return (
     <div
@@ -277,7 +289,15 @@ export default function SearchCommandBar({ corridors = [], quickChips = [], clas
 
         {tab === "projects" && (
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
-            <input className="input-premium" placeholder="Location" value={location} onChange={(e) => setLocation(e.target.value)} style={{ flex: 1, minWidth: 160 }} />
+            <LocationCombobox
+              value={location}
+              onChange={(v) => {
+                setLocation(v);
+                if (picked && v !== picked.name) setPicked(null);
+              }}
+              onPick={setPicked}
+              onSubmit={searchProjects}
+            />
             <select className="input-premium" value={propType} onChange={(e) => setPropType(e.target.value)} style={{ minWidth: 150 }}>
               <option value="">All types</option>
               <option value="Plots">Plots</option>
@@ -287,12 +307,7 @@ export default function SearchCommandBar({ corridors = [], quickChips = [], clas
             <button
               type="button"
               className="uv-btn uv-btn-primary"
-              onClick={() => {
-                const params = new URLSearchParams();
-                if (location) params.set("q", location);
-                if (propType) params.set("type", propType);
-                go(`/projects${params.toString() ? `?${params}` : ""}`);
-              }}
+              onClick={searchProjects}
             >
               Search <ArrowRight size={16} />
             </button>

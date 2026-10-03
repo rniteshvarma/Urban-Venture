@@ -32,6 +32,8 @@ export async function GET(req: Request) {
     const propertyType = searchParams.get("type");
     const city = searchParams.get("city");
     const q = searchParams.get("q")?.trim();
+    // An exact locality picked from the search suggestions ("Narsingi").
+    const locality = searchParams.get("locality")?.trim();
     const limit = Math.min(Math.max(Number(searchParams.get("limit")) || 0, 0), 2000) || undefined;
     const status = searchParams.get("status") || "ACTIVE"; // default is ACTIVE for public
 
@@ -65,9 +67,14 @@ export async function GET(req: Request) {
           { developer: { contains: q, mode: "insensitive" } },
           { corridor: { contains: q, mode: "insensitive" } },
           { addressLine: { contains: q, mode: "insensitive" } },
+          // A locality picked from the search suggestions (stored exactly as listed).
+          { specifications: { path: ["locality"], equals: q } },
+          { specifications: { path: ["subLocality"], equals: q } },
         ],
       });
     }
+
+    if (locality) and.push({ specifications: { path: ["locality"], equals: locality } });
 
     // Budget filtering logic: check if the project budget range overlaps with the queried budget range
     if (minBudgetStr || maxBudgetStr) {
