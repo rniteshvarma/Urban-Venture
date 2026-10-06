@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { formatLakh, groupIndian } from "@/lib/format";
 import AccessibilityPanel, { type AccessibilityView } from "@/components/accessibility/AccessibilityPanel";
+import ImageLightbox from "@/components/projects/ImageLightbox";
 
 interface UnitType {
   id: string;
@@ -117,7 +118,10 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
   const { id } = use(params);
   const [project, setProject] = useState<ProjectDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeImage, setActiveImage] = useState(0);
+  // Which gallery image is open in the full-screen viewer (null = closed).
+  const [viewerIndex, setViewerIndex] = useState<number | null>(null);
+  // The hero's pixel width once loaded — small photos are shown whole, not stretched.
+  const [heroWidth, setHeroWidth] = useState<number | null>(null);
   const [heroBroken, setHeroBroken] = useState(false);
 
   // Lead capture form
@@ -229,7 +233,9 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
   const images = gallery.length ? gallery : (project.imageUrls ?? []).filter((u) => u && u !== "/placeholder-project.jpg");
   const masterPlans = media.filter((m) => m.mediaType === "MASTER_PLAN");
   const floorPlans = media.filter((m) => m.mediaType === "FLOOR_PLAN" || m.mediaType === "UNIT_PLAN");
-  const mainImage = heroBroken ? null : images[activeImage] ?? images[0] ?? null;
+  const mainImage = heroBroken ? null : images[0] ?? null;
+  // Below this width a full-bleed hero has to be stretched and looks soft.
+  const heroIsSmall = heroWidth != null && heroWidth < 1400;
   const units = project.unitTypes ?? [];
   const isPlots = project.propertyType.toLowerCase().includes("plot");
   const locality = spec.locality;
@@ -284,19 +290,33 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
       {/* Hero Banner */}
       <div className="relative h-[45vh] min-h-[400px] w-full overflow-hidden group bg-ink">
         {mainImage ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={mainImage}
-            alt={project.name}
-            className="w-full h-full object-cover img-hover-zoom"
-            onError={() => setHeroBroken(true)}
-          />
+          <button
+            type="button"
+            onClick={() => setViewerIndex(0)}
+            aria-label="Open photo gallery"
+            className="absolute inset-0 w-full h-full cursor-zoom-in"
+          >
+            {heroIsSmall && (
+              // Soft fill behind a small photo, so the photo itself stays sharp at its own size.
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={mainImage} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover scale-110 blur-2xl opacity-60" />
+            )}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={mainImage}
+              alt={project.name}
+              className={heroIsSmall ? "relative mx-auto h-full object-contain" : "w-full h-full object-cover img-hover-zoom"}
+              style={heroIsSmall ? { maxWidth: heroWidth! } : undefined}
+              onLoad={(e) => setHeroWidth(e.currentTarget.naturalWidth)}
+              onError={() => setHeroBroken(true)}
+            />
+          </button>
         ) : (
           <div className="w-full h-full" style={{ background: "linear-gradient(135deg, var(--color-ink) 0%, var(--color-ink-soft) 100%)" }} />
         )}
 
         {/* Gradient Overlays */}
-        <div className="absolute inset-0 bg-gradient-to-t from-ink/95 via-ink/60 to-transparent flex items-end">
+        <div className="absolute inset-0 bg-gradient-to-t from-ink/95 via-ink/60 to-transparent flex items-end pointer-events-none">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full pb-10 sm:pb-16 animate-fade-in-up">
             <div className="space-y-4 max-w-3xl">
               <div className="flex flex-wrap items-center gap-3">
@@ -333,6 +353,10 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
         </div>
       </div>
 
+      {viewerIndex != null && images.length > 0 && (
+        <ImageLightbox images={images} index={viewerIndex} alt={project.name} onIndex={setViewerIndex} onClose={() => setViewerIndex(null)} />
+      )}
+
       {/* Gallery strip */}
       {images.length > 1 && (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-5">
@@ -341,11 +365,11 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
               <button
                 key={src}
                 type="button"
-                onClick={() => { setActiveImage(i); setHeroBroken(false); }}
-                aria-label={`Show image ${i + 1}`}
+                onClick={() => setViewerIndex(i)}
+                aria-label={`Open image ${i + 1}`}
                 style={{
-                  flex: "0 0 auto", width: 112, height: 72, borderRadius: 8, overflow: "hidden", padding: 0, cursor: "pointer",
-                  border: i === activeImage ? "2px solid var(--color-saffron)" : "1px solid var(--color-line)",
+                  flex: "0 0 auto", width: 112, height: 72, borderRadius: 8, overflow: "hidden", padding: 0, cursor: "zoom-in",
+                  border: "1px solid var(--color-line)",
                   background: "var(--color-ink-soft)",
                 }}
               >
