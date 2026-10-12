@@ -8,6 +8,7 @@
 import { useEffect, useState } from "react";
 import { X, CheckCircle2 } from "lucide-react";
 import { formatLakh } from "@/lib/format";
+import ConsentNote from "@/components/legal/ConsentNote";
 
 export default function EnquiryModal({ projectId, projectName, onClose }: { projectId: string; projectName: string; onClose: () => void }) {
   const [name, setName] = useState("");
@@ -97,6 +98,7 @@ export default function EnquiryModal({ projectId, projectName, onClose }: { proj
             >
               {busy ? "Sending…" : "Send enquiry"}
             </button>
+            <ConsentNote className="mt-2" action="sending this enquiry" share="Your details go to the developer or seller of this property so they can reply." />
           </>
         )}
       </div>

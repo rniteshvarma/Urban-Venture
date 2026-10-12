@@ -9,6 +9,7 @@ import AuthShell from "@/components/client/auth/AuthShell";
 import GoogleButton from "@/components/client/auth/GoogleButton";
 import PasswordField, { passwordStrength } from "@/components/client/auth/PasswordField";
 import OtpBoxes from "@/components/client/auth/OtpBoxes";
+import ConsentNote from "@/components/legal/ConsentNote";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_RE = /^[6-9]\d{9}$/;
@@ -165,6 +166,7 @@ function SignupInner() {
           <button type="submit" disabled={loading} className="uv-btn uv-btn-primary" style={{ height: 48 }}>
             {loading ? "Creating…" : <>Create Account <ArrowRight size={16} /></>}
           </button>
+          <ConsentNote action="creating an account" />
           <button type="button" onClick={createThenSkip} disabled={loading} style={{ background: "none", border: "none", color: "var(--color-text-lo)", fontSize: "0.8125rem", cursor: "pointer" }}>
             Verify later
           </button>

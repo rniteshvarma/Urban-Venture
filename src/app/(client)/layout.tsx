@@ -238,7 +238,11 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
               <strong className="text-text-invert">Disclaimer:</strong> Recommendations are generated using AI-assisted calculations based on historical trends and published infrastructure plans. Past performance does not guarantee future results. Perform independent legal due diligence before investing.
             </p>
             <div className="flex flex-col items-start md:items-end gap-2">
-              <Link href="/legal/content-policy" className="text-xs text-text-invert-mid hover:text-text-invert transition-colors">Content policy</Link>
+              <div className="flex flex-wrap gap-x-4 gap-y-1">
+                <Link href="/legal/privacy" className="text-xs text-text-invert-mid hover:text-text-invert transition-colors">Privacy</Link>
+                <Link href="/legal/terms" className="text-xs text-text-invert-mid hover:text-text-invert transition-colors">Terms</Link>
+                <Link href="/legal/content-policy" className="text-xs text-text-invert-mid hover:text-text-invert transition-colors">Content policy</Link>
+              </div>
               <p className="text-xs text-text-invert-mid whitespace-nowrap">© {new Date().getFullYear()} Property Tiger</p>
             </div>
           </div>

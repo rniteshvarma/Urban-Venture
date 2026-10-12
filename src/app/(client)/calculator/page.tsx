@@ -26,6 +26,7 @@ import {
   Info
 } from "lucide-react";
 import { toast } from "@/lib/toast";
+import ConsentNote from "@/components/legal/ConsentNote";
 
 interface Corridor {
   id: string;
@@ -662,6 +663,7 @@ function CalculatorContent() {
             >
               Get Custom Investment Feasibility Report <ArrowRight className="w-3.5 h-3.5" />
             </button>
+            <ConsentNote className="sm:col-span-3" share="We use your details to send the report and follow up about it." />
           </form>
         )}
       </div>

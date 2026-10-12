@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Check, X, Plus, Upload, MapPin, ArrowLeft, Loader2, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { formatINR, formatINRFull, groupIndian } from "@/lib/format";
 import { UNIT_LABEL, areaUnitFor, listingArea, ratePerUnit, type AreaUnit } from "@/lib/listings/units";
+import ConsentNote from "@/components/legal/ConsentNote";
 
 const PROPERTY_TYPES = ["Plots", "Land", "Apartment", "Villa", "Commercial"];
 const APPROVALS = ["HMDA_APPROVED", "DTCP_APPROVED", "GHMC_APPROVED", "PANCHAYAT", "UNAPPROVED"];
@@ -329,6 +330,7 @@ function Step4({ f, id, media, reloadMedia, score, blockers, submit, submitting 
       <button onClick={submit} disabled={submitting} className="uv-btn uv-btn-primary" style={{ justifyContent: "center", fontSize: "0.9375rem", padding: "12px" }}>
         {submitting ? "Submitting…" : <><CheckCircle2 size={16} /> Submit for review</>}
       </button>
+      <ConsentNote className="mt-2" action="submitting this listing" share="You also confirm you own the property or are authorised to sell it, and that the details are accurate." />
     </div>
   );
 }

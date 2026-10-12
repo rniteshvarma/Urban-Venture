@@ -25,6 +25,7 @@ import {
 import { formatLakh, groupIndian } from "@/lib/format";
 import AccessibilityPanel, { type AccessibilityView } from "@/components/accessibility/AccessibilityPanel";
 import ImageLightbox from "@/components/projects/ImageLightbox";
+import ConsentNote from "@/components/legal/ConsentNote";
 
 interface UnitType {
   id: string;
@@ -788,9 +789,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                       {isSubmitting ? "Submitting..." : "Submit Inquiry"}
                     </button>
 
-                    <p className="text-[9px] text-center text-text-secondary">
-                      By submitting, you agree to our privacy policy and terms of service.
-                    </p>
+                    <ConsentNote className="text-center" share="We pass your details to this project's developer so they can respond." />
                   </form>
                 )}
               </div>
