@@ -16,8 +16,8 @@ import { createHash } from "node:crypto";
 import type { Prisma } from "@prisma/client";
 import prisma from "../prisma";
 import { govGet, needsGovTls } from "../http/gov-tls";
-import { normaliseOrgName, slugify } from "./names";
-import { htmlToCells, organisationIn, parseCertificate, parseOrderList, respondentFromOrderText, respondentFromTitle, respondentKey, type OrderKind } from "./rera";
+import { legalForm, normaliseOrgName, slugify } from "./names";
+import { htmlToCells, isOrganisation, organisationIn, parseCertificate, parseOrderList, respondentFromOrderText, respondentFromTitle, respondentKey, type OrderKind } from "./rera";
 import { developerStats, projectRecord, type ProjectInput, type ProjectRecord } from "./track-record";
 
 type Log = (line: string) => void;
@@ -125,7 +125,8 @@ export async function syncOrders(opts: { budgetMs?: number; pdfLimit?: number; l
         const id = createHash("sha1").update(r.documentUrl).digest("hex");
         // A list cell can hold several parties ("Mr. A; M/s B Developers; …") — keep the organisation.
         const listed = r.respondent ? organisationIn(r.respondent.split(/;/).map((x) => x.trim()).filter(Boolean)) : null;
-        const respondent = listed ?? (list.kind === "SUO_MOTU" ? respondentFromTitle(r.title) : null);
+        const fromTitle = list.kind === "SUO_MOTU" ? respondentFromTitle(r.title) : null;
+        const respondent = listed ?? (isOrganisation(fromTitle) ? fromTitle : null);
         const existing = await prisma.regulatoryOrder.findUnique({ where: { id }, select: { id: true, extractedFrom: true, respondent: true } });
         if (existing) {
           // Keep list-sourced rows in step with parser fixes; PDF-read rows are left alone.
@@ -215,10 +216,27 @@ export async function rebuildDevelopers(opts: { log?: Log; today?: Date } = {}) 
   }
   for (const k of ambiguous) keyOwner.delete(k); // never guess between two developers
 
+  // Legal forms each group's names state (listings + certificate promoter names).
+  const groupForms = new Map<string, Set<string>>();
+  for (const [g, ps] of groups) {
+    const forms = new Set<string>();
+    for (const p of ps) {
+      for (const n of [p.developer, certs.get(p.id)?.promoterName ?? ""]) {
+        const f = legalForm(n);
+        if (f) forms.add(f);
+      }
+    }
+    groupForms.set(g, forms);
+  }
   const ordersByGroup = new Map<string, typeof orders>();
   for (const o of orders) {
     const g = keyOwner.get(o.respondentKey!);
-    if (g) ordersByGroup.set(g, [...(ordersByGroup.get(g) ?? []), o]);
+    if (!g) continue;
+    // "X LLP" vs "X Pvt Ltd": same words, possibly a different entity — not a match.
+    const f = o.respondent ? legalForm(o.respondent) : null;
+    const forms = groupForms.get(g)!;
+    if (f && forms.size && !forms.has(f)) continue;
+    ordersByGroup.set(g, [...(ordersByGroup.get(g) ?? []), o]);
   }
 
   const usedSlugs = new Set<string>();

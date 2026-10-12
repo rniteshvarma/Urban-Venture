@@ -1,8 +1,8 @@
 // Edge cases for developer names, TG-RERA parsing and the delay tracker.
 import { describe, test } from "node:test";
 import assert from "node:assert/strict";
-import { normaliseOrgName, slugify } from "./names";
-import { cleanOrgName, parseCertificate, parseOrderList, respondentFromOrderText, respondentFromTitle } from "./rera";
+import { legalForm, normaliseOrgName, slugify } from "./names";
+import { cleanOrgName, isOrganisation, organisationIn, parseCertificate, parseOrderList, respondentFromOrderText, respondentFromTitle } from "./rera";
 import { developerStats, projectRecord, type ProjectInput } from "./track-record";
 
 const today = new Date("2026-10-12T00:00:00Z");
@@ -23,6 +23,9 @@ describe("names — edge cases", () => {
     assert.equal(normaliseOrgName("Vasavi Realtor LLP"), normaliseOrgName("Vasavi Realtors LLP"));
     // …but other words keep their meaning.
     assert.notEqual(normaliseOrgName("My Home Constructions"), normaliseOrgName("My Homes Constructions"));
+  });
+  test("legal forms are told apart for matching", () => {
+    assert.deepEqual([legalForm("Sterling Heights LLP"), legalForm("M/s Sterling heights Pvt. Ltd"), legalForm("M/s Elemental Realty"), legalForm("X L.L.P.")], ["llp", "company", null, "llp"]);
   });
   test("a developer's name is not trimmed into a different developer's", () => {
     assert.notEqual(normaliseOrgName("My Home Constructions"), normaliseOrgName("My Home Infra"));
@@ -121,5 +124,12 @@ describe("TG-RERA parsing — edge cases", () => {
       ["M/s. Vasavi Infracon LLP", "M/s. Vasavi Infracon LLP"],
       ["M/s Good Homes, Pvt Ltd", "M/s Good Homes, Pvt Ltd"],
     ]) assert.equal(cleanOrgName(raw), want, raw);
+  });
+  test("private individuals are never stored as the respondent", () => {
+    assert.equal(organisationIn(["Sri Guntupalli Srinivasrao", "(R/o Hyderabad)"]), null);
+    assert.equal(organisationIn(["S/o A Kaspa Reddy"]), null);
+    assert.equal(organisationIn(["Sri Venkateswara Constructions"]), "Sri Venkateswara Constructions");
+    assert.equal(isOrganisation("SRI VYSHNAVI ABODE LLP"), true);
+    assert.equal(isOrganisation("Sri Maddirala Rosi Reddy"), false);
   });
 });

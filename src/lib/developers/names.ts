@@ -48,3 +48,14 @@ export function firstOrganisation(block: string): string | null {
   const cut = line.replace(/,?\s*(rep(resented)?\.?\s*by|rep\.).*$/i, "").replace(/[,;.]+$/, "").trim();
   return cut.length >= 3 ? cut : null;
 }
+
+/**
+ * The legal form a name states: an LLP and a company with the same name can be
+ * different entities, so a match needs the forms to agree when both are stated.
+ */
+export function legalForm(raw: string): "llp" | "company" | null {
+  const s = raw.toLowerCase();
+  if (/\bl\.?l\.?p\b/.test(s)) return "llp";
+  if (/\b(pvt|private|ltd|limited)\b/.test(s)) return "company";
+  return null;
+}

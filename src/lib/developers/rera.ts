@@ -168,13 +168,21 @@ export function partiesFromOrderText(text: string): { label: string; lines: stri
 
 const ORG_WORD = /\bm\/s\b|\bpvt\b|private|limited|\bltd\b|\bllp\b|developers?|constructions?|infra|builders?|projects?|homes|estates?|realty|realtors|ventures|group|associates|properties/i;
 
-/** The first organisation (or, failing that, the first named party) in a block. */
+/**
+ * The first organisation in a block. Only organisations are kept: a party that
+ * is a private individual (a landowner, a proprietor named personally, a
+ * buyer) is never stored, so personal names stay out of our records.
+ */
 export function organisationIn(lines: string[]): string | null {
-  const cleaned = lines.map((l) => l.replace(/^\d+\.\s*/, "")).filter((l) => !/^\(|^r\/o|^office at|^flat no|^plot no|^door no/i.test(l));
-  const line = cleaned.find((l) => ORG_WORD.test(l)) ?? cleaned.find((l) => !/^(mr|ms|mrs|sri|smt|dr)\b/i.test(l));
+  const cleaned = lines.map((l) => l.replace(/^\d+\.\s*/, "")).filter((l) => !/^\(|^r\/o|^office at|^flat no|^plot no|^door no|^[sdw]\/o\b/i.test(l));
+  const line = cleaned.find((l) => ORG_WORD.test(l));
   if (!line) return null;
-  return cleanOrgName(line);
+  const name = cleanOrgName(line);
+  return name && ORG_WORD.test(name) ? name : null;
 }
+
+/** True when a stored name is an organisation (see organisationIn). */
+export const isOrganisation = (name: string | null | undefined) => !!name && ORG_WORD.test(name) && !/^[sdw]\/o\b/i.test(name.trim());
 
 /**
  * Just the name: "1) M/s X Pvt Ltd.– “Y Project”, rep by …" → "M/s X Pvt Ltd".

@@ -72,7 +72,7 @@ export default async function DevelopersPage({ searchParams }: { searchParams: P
         <form action="/developers" className="flex flex-col sm:flex-row gap-3 sm:items-center">
           <input name="q" defaultValue={q} placeholder="Search a developer…" className="input-premium flex-1" aria-label="Search developers" />
           {filter !== "all" && <input type="hidden" name="f" value={filter} />}
-          <div className="flex gap-2">{chip("all", "All")}{chip("delays", "With delays")}{chip("orders", "With RERA orders")}</div>
+          <div className="flex flex-wrap gap-2">{chip("all", "All")}{chip("delays", "With delays")}{chip("orders", "With RERA orders")}</div>
         </form>
 
         <div className="bg-white border border-luxury rounded overflow-x-auto">
