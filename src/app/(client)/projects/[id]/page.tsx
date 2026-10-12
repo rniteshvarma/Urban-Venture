@@ -66,6 +66,7 @@ interface Specifications {
 }
 
 interface ProjectDetails {
+  developerSlug?: string | null;
   id: string;
   name: string;
   developer: string;
@@ -341,7 +342,14 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
               <div className="flex flex-wrap items-center gap-4 text-sm text-gray-300">
                 <p className="flex items-center gap-1.5">
                   <Building size={16} className="text-saffron" />
-                  Developed by <strong className="text-surface font-semibold">{project.developer}</strong>
+                  Developed by{" "}
+                  {project.developerSlug ? (
+                    <Link href={`/developers/${project.developerSlug}`} className="pointer-events-auto text-surface font-semibold underline decoration-saffron/60 underline-offset-2 hover:text-saffron">
+                      {project.developer}
+                    </Link>
+                  ) : (
+                    <strong className="text-surface font-semibold">{project.developer}</strong>
+                  )}
                 </p>
                 <span className="hidden sm:inline text-gray-500">•</span>
                 <p className="flex items-center gap-1.5">

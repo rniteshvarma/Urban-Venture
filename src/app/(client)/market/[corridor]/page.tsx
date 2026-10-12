@@ -384,6 +384,51 @@ export default function CorridorDetailPage() {
               </div>
             </div>
 
+            {market && (
+              <div className="bg-white border border-luxury rounded p-5 space-y-3">
+                <div>
+                  <h3 className="text-xs font-bold text-text-primary uppercase tracking-wider">Rental yield</h3>
+                  <p className="text-[11px] text-text-secondary mt-1 max-w-2xl leading-relaxed">
+                    Measured from public rental listings of apartments around {profile.shortName || profile.name}{" "}(fully furnished flats left out, since their
+                    rent pays for furniture), against this corridor&apos;s apartment price. Gross — before maintenance, vacancy and tax.
+                  </p>
+                </div>
+                {market.rental ? (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="stat-card">
+                      <div className="stat-label">Gross rental yield</div>
+                      <div className="stat-value mt-1">
+                        {market.rental.grossYield != null ? `${market.rental.grossYield}%` : "—"} <span className="text-xs font-normal text-text-secondary">a year</span>
+                      </div>
+                      <p className="text-[10px] text-text-secondary mt-1 leading-relaxed">
+                        {market.rental.grossYieldRange ? `Middle half ${market.rental.grossYieldRange[0]}–${market.rental.grossYieldRange[1]}% · ` : ""}
+                        Hyderabad average {market.city.rentalYield.value}% (<a href={market.city.rentalYield.url} target="_blank" rel="noreferrer" className="underline">{market.city.rentalYield.source}</a>)
+                      </p>
+                    </div>
+                    <div className="stat-card">
+                      <div className="stat-label">Typical rent</div>
+                      <div className="stat-value mt-1">₹{market.rental.rentSqftMedian} <span className="text-xs font-normal text-text-secondary">/sq.ft a month</span></div>
+                      <p className="text-[10px] text-text-secondary mt-1 leading-relaxed">
+                        {market.rental.byBhk.map((b) => `${b.bhk} BHK ${inr(b.medianRent)}`).join(" · ") || `Middle half ₹${market.rental.rentSqftP25}–₹${market.rental.rentSqftP75}/sq.ft`}
+                      </p>
+                    </div>
+                    <div className="stat-card">
+                      <div className="stat-label">Based on</div>
+                      <div className="stat-value mt-1">{market.rental.listings} <span className="text-xs font-normal text-text-secondary">rental listings</span></div>
+                      <p className="text-[10px] text-text-secondary mt-1 leading-relaxed">
+                        Within {market.rental.radiusKm} km · {market.rental.letOut} marked as let out · {market.rental.confidence.toLowerCase()} confidence. New-launch prices sit above older resale flats, so yields on resale can be a little higher.
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-xs text-text-secondary">
+                    Not enough apartment rental listings around here to measure rent{market.primaryAsset === "plot" ? " — this is mainly a plotted-land area, and plots earn no rent" : ""}.
+                    Hyderabad&apos;s average gross yield is {market.city.rentalYield.value}% ({market.city.rentalYield.source}, {market.city.rentalYield.period}).
+                  </p>
+                )}
+              </div>
+            )}
+
             {market?.guidance && (
               <div className="bg-white border border-luxury rounded p-5 space-y-3">
                 <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-2">

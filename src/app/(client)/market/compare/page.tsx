@@ -353,6 +353,15 @@ function ComparePageContent() {
                       {comparisons.length === 2 && <td className="px-4 py-3 text-text-secondary">—</td>}
                     </tr>
                     <tr className="border-b border-slate-100">
+                      <td className="px-4 py-3 font-semibold text-text-secondary bg-slate-50/50 w-44">Gross rental yield (flats)</td>
+                      {comparisons.map((c, idx) => (
+                        <td key={idx} className="px-4 py-3 text-text-primary">
+                          {c.market?.rental?.grossYield != null ? `${c.market.rental.grossYield}% · ₹${c.market.rental.rentSqftMedian}/sq.ft/mo (${c.market.rental.listings} listings)` : "Not enough rental listings"}
+                        </td>
+                      ))}
+                      {comparisons.length === 2 && <td className="px-4 py-3 text-text-secondary">—</td>}
+                    </tr>
+                    <tr className="border-b border-slate-100">
                       <td className="px-4 py-3 font-semibold text-text-secondary bg-slate-50/50 w-44">Govt guidance value (land / flats)</td>
                       {comparisons.map((c, idx) => (
                         <td key={idx} className="px-4 py-3 text-text-primary">

@@ -17,6 +17,7 @@ interface NavChild {
 const MARKET_MENU: NavChild[] = [
   { label: "Corridor Intelligence", href: "/market" },
   { label: "Approvals Database", href: "/market/approvals" },
+  { label: "Developer Track Records", href: "/developers" },
   { label: "Compare Corridors", href: "/market/compare" },
   { label: "2026–35 Forecast", href: "/market/forecast" },
   { label: "Legal Guide", href: "/market/legal" },
@@ -216,6 +217,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
               <h4 className="text-xs font-semibold uppercase tracking-wider text-text-invert mb-5">Market Data</h4>
               <ul className="space-y-1 text-sm text-text-invert-mid [&_a]:inline-block [&_a]:py-1.5">
                 <li><Link href="/market/approvals" className="hover:text-text-invert transition-colors">Approvals</Link></li>
+                <li><Link href="/developers" className="hover:text-text-invert transition-colors">Developer Track Records</Link></li>
                 <li><Link href="/market/compare" className="hover:text-text-invert transition-colors">Compare Corridors</Link></li>
                 <li><Link href="/market/forecast" className="hover:text-text-invert transition-colors">2026–35 Forecast</Link></li>
                 <li><Link href="/market/legal" className="hover:text-text-invert transition-colors">Legal Guide</Link></li>

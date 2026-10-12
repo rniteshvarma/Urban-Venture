@@ -20,6 +20,7 @@ import { LAND_EVIDENCE, type SourcedFigure } from "./anchors";
 import { measureRates, quantile, unitRate, type Asset, type AssetRates, type ListingForRates } from "./rates";
 import { anchorsFrom, forecastCorridor, gainPct, FORECAST_VERSION, type CorridorForecast } from "./forecast";
 import { loadCorridorGuidance, resolveCityFigures, type CityFigures, type CorridorGuidance } from "./observations";
+import { measureRent, type CorridorRent, type RentalListing } from "../rentals/rentals";
 
 /** Radius for the project counts (and for assigning RERA records to a corridor). */
 export const COUNT_RADIUS_KM = 8;
@@ -44,7 +45,12 @@ export interface MarketContext {
   city: CityFigures;
   /** Official guidance values, rolled up per corridor */
   guidance: Map<string, CorridorGuidance>;
+  /** Rental listings seen in the last RENT_WINDOW_DAYS (internal) */
+  rentals: RentalListing[];
 }
+
+/** Rental listings older than this no longer count towards a corridor's rent. */
+export const RENT_WINDOW_DAYS = 180;
 
 export interface CorridorMarketStats {
   version: string;
@@ -57,6 +63,8 @@ export interface CorridorMarketStats {
   landEvidence: SourcedFigure[];
   /** Telangana Registration Dept guidance (minimum) values for the corridor's villages */
   guidance: CorridorGuidance | null;
+  /** Rents measured from public rental listings, and the gross yield on our apartment price */
+  rental: CorridorRent | null;
   city: { plotMedianSqYd: number | null; aptAvgSqFt: SourcedFigure; rentalYield: SourcedFigure };
 }
 
@@ -85,8 +93,16 @@ export async function loadMarketContext(): Promise<MarketContext> {
     .filter((r) => r.length)
     .map((r) => quantile(r, 0.5))
     .sort((a, b) => a - b);
-  const [city, guidance] = await Promise.all([resolveCityFigures(), loadCorridorGuidance()]);
-  return { listings, cityPlotMedian: plotRates.length >= 10 ? Math.round(quantile(plotRates, 0.5)) : null, cityAptAvg: city.avgPriceSqFt.value, city, guidance };
+  const [city, guidance, rentRows] = await Promise.all([
+    resolveCityFigures(),
+    loadCorridorGuidance(),
+    prisma.rentalListing.findMany({ where: { lastSeenAt: { gte: new Date(Date.now() - RENT_WINDOW_DAYS * 86_400_000) } } }).catch(() => []),
+  ]);
+  const rentals: RentalListing[] = rentRows.map((r) => ({
+    id: r.id, rent: r.rent, sizeSqft: r.sizeSqft, bhk: r.bhk, lat: r.latitude, lng: r.longitude,
+    furnishing: (r.furnishing as RentalListing["furnishing"]) ?? null, letOut: r.letOut, updatedAt: r.sourceUpdatedAt?.toISOString() ?? null,
+  }));
+  return { listings, cityPlotMedian: plotRates.length >= 10 ? Math.round(quantile(plotRates, 0.5)) : null, cityAptAvg: city.avgPriceSqFt.value, city, guidance, rentals };
 }
 
 export function corridorCentre(c: { centroidLat: number | null; centroidLng: number | null; shortName: string | null; name: string }) {
@@ -134,6 +150,7 @@ export function buildCorridorMarket(slug: string, centre: { lat: number; lng: nu
     },
     landEvidence: LAND_EVIDENCE[slug] ?? [],
     guidance: ctx.guidance.get(slug) ?? null,
+    rental: centre ? measureRent(centre, ctx.rentals, rates.apartment?.median ?? null) : null,
     city: { plotMedianSqYd: ctx.cityPlotMedian, aptAvgSqFt: ctx.city.avgPriceSqFt, rentalYield: ctx.city.rentalYield },
   };
 }
@@ -154,9 +171,9 @@ export function profileFields(m: CorridorMarketStats) {
     price2024SqYd: null,
     appreciationSince2020: null,
     historicalCAGR: null,
-    // Plots earn no rent; apartments use the city figure (shown with its source on the page).
-    rentalYieldMin: null,
-    rentalYieldMax: null,
+    // Measured gross yield on apartments (middle half of rents); plots earn no rent.
+    rentalYieldMin: m.rental?.grossYieldRange?.[0] ?? null,
+    rentalYieldMax: m.rental?.grossYieldRange?.[1] ?? null,
     projectedCAGRMin: f.scenarios.conservative.cagr10,
     projectedCAGRMax: f.scenarios.optimistic.cagr10,
     forecast3yrMin: gainPct(f, "conservative", 3),

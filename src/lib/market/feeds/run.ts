@@ -15,14 +15,28 @@ import { upsertObservation } from "../observations";
 import { fetchVillageRates, openRegistrationSession, REGISTRATION_SOURCE_NAME, REGISTRATION_SOURCE_URL, type RegistrationVillage } from "./registration";
 import { fetchLocality, magicbricksUrl, MAGICBRICKS_SOURCE_NAME, type PortalAsset } from "./magicbricks";
 import { extractCandidates } from "./news";
+import { parseNoBrokerRentPage } from "../../rentals/rentals";
+
+const rentPageUrl = (locality: string, page: number) =>
+  `https://www.nobroker.in/flats-for-rent-in-${locality}_hyderabad${page > 1 ? `?pageNo=${page}` : ""}`;
+
+async function fetchRentPage(locality: string, page: number) {
+  const res = await fetch(rentPageUrl(locality, page), {
+    headers: { "User-Agent": "Mozilla/5.0 (compatible; PropertyTigerResearch/1.0; monthly rent statistics)" },
+    signal: AbortSignal.timeout(40_000),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return parseNoBrokerRentPage(await res.text());
+}
 
 type Log = (line: string) => void;
 const DAY = 86_400_000;
-export const DUE_DAYS = { registration: 25, magicbricks: 80 } as const;
+export const DUE_DAYS = { registration: 25, magicbricks: 80, rentals: 25 } as const;
+const RENT_PAGES = 3;
 const NEWS_LOOKBACK_DAYS = 120;
 
 interface SourcesFile {
-  corridors: Record<string, { registrationVillages: RegistrationVillage[]; magicbricksLocalities: string[] }>;
+  corridors: Record<string, { registrationVillages: RegistrationVillage[]; magicbricksLocalities: string[]; nobrokerRentLocalities?: string[] }>;
 }
 export const MARKET_SOURCES = (sourcesJson as SourcesFile).corridors;
 
@@ -36,12 +50,14 @@ async function lastObserved(source: string, scope: string): Promise<Map<string, 
   return new Map(rows.map((r) => [r.scopeKey, r._max.observedAt!]));
 }
 
-export async function runMarketFeeds(opts: { budgetMs?: number; force?: boolean; only?: ("registration" | "magicbricks" | "news")[]; log?: Log } = {}) {
+type FeedName = "registration" | "magicbricks" | "news" | "rentals";
+
+export async function runMarketFeeds(opts: { budgetMs?: number; force?: boolean; only?: FeedName[]; log?: Log } = {}) {
   const log = opts.log ?? (() => {});
   const started = Date.now();
   const overBudget = () => opts.budgetMs != null && Date.now() - started > opts.budgetMs;
-  const run = (name: "registration" | "magicbricks" | "news") => !opts.only || opts.only.includes(name);
-  const summary = { registration: { done: 0, failed: 0, deferred: 0 }, magicbricks: { done: 0, failed: 0, deferred: 0 }, news: { candidates: 0 }, errors: [] as string[] };
+  const run = (name: FeedName) => !opts.only || opts.only.includes(name);
+  const summary = { registration: { done: 0, failed: 0, deferred: 0 }, magicbricks: { done: 0, failed: 0, deferred: 0 }, rentals: { done: 0, failed: 0, deferred: 0, listings: 0 }, news: { candidates: 0 }, errors: [] as string[] };
 
   // ── Official guidance values ──
   if (run("registration")) {
@@ -98,6 +114,40 @@ export async function runMarketFeeds(opts: { budgetMs?: number; force?: boolean;
       } catch (e) {
         summary.magicbricks.failed++;
         summary.errors.push(`magicbricks ${loc}: ${e instanceof Error ? e.message : String(e)}`);
+      }
+    }
+  }
+
+  // ── Rental listings (internal; only our derived rent and yield are shown) ──
+  if (run("rentals")) {
+    const seen = new Map((await prisma.rentalListing.groupBy({ by: ["sourcePage"], _max: { lastSeenAt: true } })).map((r) => [r.sourcePage, r._max.lastSeenAt!]));
+    const pages = [...new Set(Object.values(MARKET_SOURCES).flatMap((s) => s.nobrokerRentLocalities ?? []))];
+    const due = pages.filter((p) => opts.force || !seen.has(p) || Date.now() - seen.get(p)!.getTime() > DUE_DAYS.rentals * DAY);
+    for (const page of due) {
+      if (overBudget()) { summary.rentals.deferred++; continue; }
+      try {
+        const ids = new Set<string>();
+        for (let n = 1; n <= RENT_PAGES; n++) {
+          const listings = await fetchRentPage(page, n);
+          await new Promise((r) => setTimeout(r, 1500));
+          const fresh = listings.filter((l) => !ids.has(l.id));
+          if (!fresh.length) break;
+          for (const l of fresh) {
+            ids.add(l.id);
+            const data = {
+              source: "NOBROKER", sourcePage: page, rent: Math.round(l.rent), sizeSqft: Math.round(l.sizeSqft), bhk: l.bhk,
+              latitude: l.lat, longitude: l.lng, furnishing: l.furnishing, letOut: l.letOut,
+              sourceUpdatedAt: l.updatedAt ? new Date(l.updatedAt) : null, lastSeenAt: new Date(),
+            };
+            await prisma.rentalListing.upsert({ where: { id: l.id }, create: { id: l.id, ...data }, update: data });
+          }
+        }
+        summary.rentals.done++;
+        summary.rentals.listings += ids.size;
+        log(`[market] rents ${page}: ${ids.size} listings`);
+      } catch (e) {
+        summary.rentals.failed++;
+        summary.errors.push(`rentals ${page}: ${e instanceof Error ? e.message : String(e)}`);
       }
     }
   }

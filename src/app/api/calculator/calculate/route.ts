@@ -47,7 +47,14 @@ export async function POST(req: Request) {
         cagrMax = corridorMetrics.projectedCAGRMax ?? cagrMax;
         // Plots earn no rent; built property uses the city's published yield.
         const primary = (corridorMetrics.marketStats as { primaryAsset?: string } | null)?.primaryAsset;
-        if (primary === "plot" && customRentMin === undefined && customRentMax === undefined) { rentMin = 0; rentMax = 0; }
+        if (customRentMin === undefined && customRentMax === undefined) {
+          if (primary === "plot") { rentMin = 0; rentMax = 0; }
+          // Measured gross yield on flats here (middle half of rents), when we have enough rental listings.
+          else if (corridorMetrics.rentalYieldMin != null && corridorMetrics.rentalYieldMax != null) {
+            rentMin = corridorMetrics.rentalYieldMin;
+            rentMax = corridorMetrics.rentalYieldMax;
+          }
+        }
 
         // Query upcoming infra projects to boost CAGR and list tailwinds
         try {
@@ -90,7 +97,7 @@ export async function POST(req: Request) {
     let takeaways = [
       `Investing ${inr(initialAmount)} in ${corridorName} grows to between ${inr(summary.finalRealEstateMin)} and ${inr(summary.finalRealEstateMax)} over ${years} years in our conservative-to-optimistic scenarios${summary.finalRealEstateMin > summary.finalFD ? ", ahead of a fixed deposit even in the conservative case" : summary.finalRealEstateMax > summary.finalFD ? " — the conservative case trails a fixed deposit, so the outcome depends on the area delivering" : ", which trails a fixed deposit"}.`,
       rentMax > 0
-        ? `Rental yield is taken as ${rentMin === rentMax ? `${rentMin}%` : `${rentMin}–${rentMax}%`} a year (Hyderabad average, ANAROCK Q2 2026).`
+        ? `Rental yield is taken as ${rentMin === rentMax ? `${rentMin}%` : `${rentMin}–${rentMax}%`} a year (${rentMin === CITY.rentalYield.value && rentMax === CITY.rentalYield.value ? "Hyderabad average, ANAROCK Q2 2026" : "gross yield measured from rental listings in this corridor"}).`
         : `Plots earn no rent, so the return depends entirely on price growth and on how easily you can resell.`,
       `Key infrastructure projects in the ${corridorName} corridor serve as major growth multipliers, though buyers should ensure RERA compliance to mitigate construction delay risks.`
     ];

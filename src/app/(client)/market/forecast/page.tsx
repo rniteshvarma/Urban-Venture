@@ -164,6 +164,11 @@ export default function ForecastHubPage() {
                 Not enough {assetWord} listings near {selected?.shortName ?? "this corridor"} to measure a price yet — we&apos;d rather show nothing than a guess.
               </p>
             )}
+            {asset === "apartment" && m?.rental?.grossYield != null && (
+              <p className="text-[11px] text-text-secondary leading-relaxed border-t border-gray-100 pt-2">
+                <strong className="text-text-primary">Rental yield:</strong> about {m.rental.grossYield}% gross (rent ₹{m.rental.rentSqftMedian}/sq.ft a month, from {m.rental.listings} rental listings) — on top of any price growth.
+              </p>
+            )}
             {(() => {
               const g = m?.guidance?.[asset === "plot" ? "land" : "apartment"];
               if (!g) return null;

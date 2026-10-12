@@ -59,11 +59,12 @@ export function detectPeriod(text: string, publishedAt: Date): string {
   if (m) return `${m[1].toUpperCase()} ${m[2] ?? pubYear}`;
   m = text.match(/\bFY\s?'?(20)?(\d\d)(?:\s*[-–]\s*(\d\d))?\b/i);
   if (m) return m[3] ? `FY20${m[2]}-${m[3]}` : `FY20${m[2]}`;
-  m = text.match(MONTH_RE);
-  if (m) {
-    const mi = MONTHS.findIndex((x) => x.slice(0, 3).toLowerCase() === m![1].slice(0, 3).toLowerCase());
+  for (const mm of text.matchAll(new RegExp(MONTH_RE.source, "gi"))) {
+    const mi = MONTHS.findIndex((x) => x.slice(0, 3).toLowerCase() === mm[1].slice(0, 3).toLowerCase());
+    // "may" is usually the verb: only a month when a year follows or "in / during / of …" comes before.
+    if (mi === 4 && !mm[2] && !/\b(in|during|of|for|till|until|since|by|last|this)\s*$/i.test(text.slice(0, mm.index))) continue;
     // A month later than publication without a year belongs to the year before.
-    const year = m[2] ? Number(m[2]) : mi > publishedAt.getUTCMonth() ? pubYear - 1 : pubYear;
+    const year = mm[2] ? Number(mm[2]) : mi > publishedAt.getUTCMonth() ? pubYear - 1 : pubYear;
     return `${MONTHS[mi]} ${year}`;
   }
   return `as reported, ${MONTHS[publishedAt.getUTCMonth()].slice(0, 3)} ${pubYear}`;
@@ -86,8 +87,18 @@ export function extractCandidates(a: NewsArticleInput): FigureCandidate[] {
 
   const period = detectPeriod(text, a.publishedAt);
   const out: FigureCandidate[] = [];
+  // A number belongs to the city mentioned nearest to it; if that isn't Hyderabad, it isn't ours.
+  const cityAt = [...text.matchAll(/\b(Hyderabad|Mumbai|MMR|Pune|Bengaluru|Bangalore|Chennai|Kolkata|NCR|Delhi|Ahmedabad|Noida|Gurugram)\b/gi)].map((m) => ({ city: m[1].toLowerCase(), at: m.index! }));
+  const nearestCityIsHyderabad = (index: number) => {
+    const n = cityAt.reduce<{ city: string; d: number } | null>((best, c) => {
+      const dist = Math.abs(c.at - index);
+      return !best || dist < best.d ? { city: c.city, d: dist } : best;
+    }, null);
+    return n?.city === "hyderabad";
+  };
   const add = (metric: CityMetric, value: number, index: number) => {
-    if (!Number.isFinite(value) || value <= 0 || out.some((c) => c.metric === metric)) return;
+    if (!Number.isFinite(value) || (metric !== "city_price_growth_yoy" && value <= 0) || value === 0 || out.some((c) => c.metric === metric)) return;
+    if (!nearestCityIsHyderabad(index)) return;
     out.push({ metric, value, unit: CITY_METRIC_LABEL[metric].unit, period, firm, snippet: sentenceAround(text, index) });
   };
   const registration = /regist/i.test(text);
@@ -101,14 +112,17 @@ export function extractCandidates(a: NewsArticleInput): FigureCandidate[] {
     else if (/launch/i.test(near)) add("city_launch_units", n, m.index!);
   }
   for (const m of text.matchAll(/(?:Rs\.?|₹|INR)\s?([\d,]+(?:\.\d+)?)\s*(?:crore|cr)\b/gi)) {
+    // Stamp duty / revenue / fee collections are not the value of property registered.
+    if (/stamp duty|revenue|collection|\bfees?\b|\bduty\b/i.test(text.slice(Math.max(0, m.index! - 45), m.index!))) continue;
     if (registration) add("city_registrations_value_cr", num(m[1]), m.index!);
   }
   for (const m of text.matchAll(/(?:Rs\.?|₹|INR)\s?([\d,]{4,7})\s*(?:per|\/|a)\s*sq(?:uare)?\.?\s*f(?:ee)?t/gi)) {
     const n = num(m[1]);
     if (n >= 2000 && n <= 50000) add("city_avg_price_sqft", n, m.index!);
   }
-  for (const m of text.matchAll(/prices?\b[^.;]{0,40}?\b(?:up|rise|rose|rising|increase[ds]?|grew|jump(?:ed)?|appreciat\w+)\s*(?:by\s*)?(\d{1,2}(?:\.\d)?)\s*(?:%|per ?cent)/gi)) {
-    add("city_price_growth_yoy", Number(m[1]), m.index!);
+  for (const m of text.matchAll(/prices?\b[^.;]{0,40}?\b(up|rise|rose|rising|increase[ds]?|grew|jump(?:ed)?|appreciat\w+|fall|fell|falling|drop(?:ped)?|decline[ds]?|dip(?:ped)?|down|slip(?:ped)?)\s*(?:by\s*)?(\d{1,2}(?:\.\d)?)\s*(?:%|per ?cent)/gi)) {
+    const falling = /^(fall|fell|falling|drop|decline|dip|down|slip)/i.test(m[1]);
+    add("city_price_growth_yoy", (falling ? -1 : 1) * Number(m[2]), m.index!);
   }
   return out;
 }

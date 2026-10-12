@@ -74,6 +74,8 @@ model Project {
   id                String             @id @default(cuid())
   name              String
   developer         String
+  /// Grouped developer (src/lib/developers) — set by the track-record job
+  developerSlug     String?
   corridor          String // e.g., "Shadnagar", "Pharma City", "Sangareddy"
   city              String             @default("Hyderabad")
   minBudgetLakhs    Float
@@ -199,6 +201,7 @@ model Project {
   // the viewport query is an indexed lat/lng range scan rather than
   // ST_MakeEnvelope. Revisit if PostGIS is ever installed.
   @@index([listingStatus, latitude, longitude])
+  @@index([developerSlug])
 }
 
 enum RiskLevel {
@@ -2913,4 +2916,88 @@ model MarketObservation {
   @@index([source, metric])
   @@index([corridorSlug])
   @@index([status])
+}
+
+/// A developer (promoter), grouped from our listings by normalised name, with
+/// its computed track record (src/lib/developers/track-record.ts).
+model Developer {
+  slug        String   @id
+  name        String
+  /// Other spellings seen in listings
+  aliases     String[]
+  /// Promoter names on TG-RERA certificates of its projects
+  legalNames  String[]
+  /// Normalised names used for EXACT matching of TG-RERA orders
+  matchKeys   String[]
+  established Int?
+  stats       Json?
+  computedAt  DateTime @default(now())
+}
+
+/// Data from a project's public TG-RERA certificate page.
+model ReraCertificate {
+  reraNumber         String    @id
+  projectId          String?
+  url                String
+  projectStatus      String?
+  approvedDate       DateTime?
+  proposedCompletion DateTime?
+  revisedCompletion  DateTime?
+  litigation         Boolean?
+  criminalCase       Boolean?
+  promoterName       String?
+  /// [{ name, completion }] per tower / block
+  buildings          Json?
+  unitsTotal         Int?
+  unitsBooked        Int?
+  fetchedAt          DateTime  @default(now())
+
+  @@index([projectId])
+}
+
+/// A TG-RERA order (complaint, adjudication, suo motu, revocation, appellate)
+/// and the developer it names. Only organisation / promoter names are kept —
+/// complainants' names are never stored.
+model RegulatoryOrder {
+  /// sha1 of the document URL
+  id            String    @id
+  kind          String
+  title         String
+  orderDate     DateTime?
+  caseNumber    String?
+  respondent    String?
+  respondentKey String?
+  projectName   String?
+  documentUrl   String
+  /// LIST (from the order list) | PDF (read from the order) | NONE
+  extractedFrom String
+  developerSlug String?
+  fetchedAt     DateTime  @default(now())
+
+  @@index([respondentKey])
+  @@index([developerSlug])
+}
+
+/// Rental listings used to measure rents (src/lib/rentals). INTERNAL — never
+/// sent to a public API or committed to the repo; only our derived statistics
+/// (median rent per sq.ft, rent by BHK, gross yield, listing count) are shown.
+model RentalListing {
+  /// "<source>:<listing id>"
+  id              String    @id
+  source          String
+  /// Locality page it was found on (for refresh scheduling only)
+  sourcePage      String
+  rent            Int
+  sizeSqft        Int
+  bhk             Int?
+  latitude        Float
+  longitude       Float
+  furnishing      String?
+  letOut          Boolean
+  sourceUpdatedAt DateTime?
+  firstSeenAt     DateTime  @default(now())
+  lastSeenAt      DateTime  @default(now())
+
+  @@index([sourcePage])
+  @@index([lastSeenAt])
 }

@@ -251,6 +251,9 @@ async function main() {
         floorPlans: r.floorPlans,
         landmarks: r.landmarks,
         litigation: r.litigation,
+        // Kept apart so the delay tracker can compare the developer's promise with the RERA date.
+        possessionRera: r.possessionRera,
+        possessionTarget: r.possessionTarget,
         sources: r.sources,
         dataFlags: r.flags,
       },

@@ -1,5 +1,5 @@
 {
-  "note": "Corridor \u2192 official TG Registration & Stamps villages (unit-rate lookup, public) and MagicBricks locality slugs (INTERNAL cross-check only \u2014 never shown publicly). Village codes from registration.telangana.gov.in/UnitRateMV, checked 2026-10-12.",
+  "note": "Corridor \u2192 official TG Registration & Stamps villages (unit-rate lookup, public) and MagicBricks locality slugs (INTERNAL cross-check only \u2014 never shown publicly). Village codes from registration.telangana.gov.in/UnitRateMV, checked 2026-10-12. NoBroker rent locality slugs are used only to compute our own derived rent/yield statistics \u2014 listings and their rents are never republished (owner's decision, 2026-10-12).",
   "corridors": {
     "kokapet-neopolis": {
       "registrationVillages": [
@@ -49,6 +49,13 @@
         "Narsingi",
         "Puppalaguda",
         "Manchirevula"
+      ],
+      "nobrokerRentLocalities": [
+        "kokapet",
+        "narsingi",
+        "puppalaguda",
+        "manikonda",
+        "gandipet"
       ]
     },
     "adibatla": {
@@ -82,7 +89,8 @@
         "Adibatla",
         "Kongara-Kalan",
         "Ibrahimpatnam"
-      ]
+      ],
+      "nobrokerRentLocalities": []
     },
     "kadthal-fcda": {
       "registrationVillages": [
@@ -114,7 +122,8 @@
       "magicbricksLocalities": [
         "Kadthal",
         "Kandukur"
-      ]
+      ],
+      "nobrokerRentLocalities": []
     },
     "tukkuguda-shamshabad": {
       "registrationVillages": [
@@ -154,6 +163,9 @@
       "magicbricksLocalities": [
         "Tukkuguda",
         "Shamshabad"
+      ],
+      "nobrokerRentLocalities": [
+        "shamshabad"
       ]
     },
     "maheshwaram-pharma-city": {
@@ -194,6 +206,9 @@
       "magicbricksLocalities": [
         "Maheshwaram",
         "Kandukur"
+      ],
+      "nobrokerRentLocalities": [
+        "maheshwaram"
       ]
     },
     "shadnagar": {
@@ -226,6 +241,9 @@
       "magicbricksLocalities": [
         "Shadnagar",
         "Kothur"
+      ],
+      "nobrokerRentLocalities": [
+        "shadnagar"
       ]
     },
     "shankarpally-mokila": {
@@ -267,6 +285,10 @@
         "Shankarpally",
         "Mokila",
         "Kondakal"
+      ],
+      "nobrokerRentLocalities": [
+        "kollur",
+        "tellapur"
       ]
     },
     "sangareddy-industrial": {
@@ -324,6 +346,10 @@
         "Sangareddy",
         "Patancheru",
         "Isnapur"
+      ],
+      "nobrokerRentLocalities": [
+        "patancheru",
+        "isnapur"
       ]
     },
     "kompally-bachupally": {
@@ -357,6 +383,12 @@
         "Kompally",
         "Bachupally",
         "Nizampet"
+      ],
+      "nobrokerRentLocalities": [
+        "kompally",
+        "bachupally",
+        "nizampet",
+        "pragathi_nagar"
       ]
     },
     "medchal-dundigal": {
@@ -397,6 +429,10 @@
       "magicbricksLocalities": [
         "Medchal",
         "Dundigal"
+      ],
+      "nobrokerRentLocalities": [
+        "medchal",
+        "dundigal"
       ]
     },
     "ghatkesar-peerzadiguda": {
@@ -454,6 +490,12 @@
         "Ghatkesar",
         "Peerzadiguda",
         "Pocharam"
+      ],
+      "nobrokerRentLocalities": [
+        "ghatkesar",
+        "peerzadiguda",
+        "pocharam",
+        "boduppal"
       ]
     },
     "bibinagar-bhongir": {
@@ -494,7 +536,8 @@
       "magicbricksLocalities": [
         "Bibinagar",
         "Bhuvanagiri"
-      ]
+      ],
+      "nobrokerRentLocalities": []
     }
   }
 }

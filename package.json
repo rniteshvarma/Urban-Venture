@@ -9,7 +9,7 @@
     "build": "prisma db push && prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
-    "test:geo": "tsx --test src/lib/geo/*.test.ts scripts/etl/lib/*.test.ts src/lib/landiq/*.test.ts src/lib/news/*.test.ts src/lib/extraction/*.test.ts src/lib/listings/*.test.ts src/lib/reports/*.test.ts src/lib/infra-intel/*.test.ts src/lib/whatsapp/*.test.ts src/lib/concierge/*.test.ts src/lib/inventory/*.test.ts src/lib/osm/*.test.ts src/lib/market/*.test.ts src/lib/market/feeds/*.test.ts",
+    "test:geo": "tsx --test src/lib/geo/*.test.ts scripts/etl/lib/*.test.ts src/lib/landiq/*.test.ts src/lib/news/*.test.ts src/lib/extraction/*.test.ts src/lib/listings/*.test.ts src/lib/reports/*.test.ts src/lib/infra-intel/*.test.ts src/lib/whatsapp/*.test.ts src/lib/concierge/*.test.ts src/lib/inventory/*.test.ts src/lib/osm/*.test.ts src/lib/market/*.test.ts src/lib/market/feeds/*.test.ts src/lib/developers/*.test.ts src/lib/rentals/*.test.ts",
     "etl:lgd": "tsx scripts/etl/load-lgd.ts",
     "etl:boundaries": "tsx scripts/etl/load-boundaries.ts",
     "eval:resolver": "tsx scripts/eval/run-resolver-eval.ts",
@@ -34,7 +34,9 @@
     "seed:market": "tsx scripts/seed-market-data.ts",
     "seed:appreciation": "tsx scripts/seed-appreciation.ts",
     "market:recompute": "tsx --env-file-if-exists=.env.local scripts/market/recompute.ts",
-    "market:feeds": "tsx --env-file-if-exists=.env.local scripts/market/feeds.ts"
+    "market:feeds": "tsx --env-file-if-exists=.env.local scripts/market/feeds.ts",
+    "developers:sync": "tsx --env-file-if-exists=.env.local scripts/developers/sync.ts",
+    "developers:seed": "tsx --env-file-if-exists=.env.local scripts/developers/seed.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.102.0",
@@ -68,6 +70,7 @@
     "recharts": "^3.8.1",
     "resend": "^6.12.4",
     "tailwind-merge": "^3.6.0",
+    "unpdf": "^1.8.1",
     "zod": "^4.4.3"
   },
   "devDependencies": {
