@@ -2880,3 +2880,37 @@ model ProjectAccessibility {
   watchOuts  Json
   computedAt DateTime @default(now())
 }
+
+/// One sourced market figure (src/lib/market/feeds). Every number the market
+/// screens show beyond our own listings comes from a row here, with its source.
+///   source      TG_REGISTRATION (official guidance values) · MAGICBRICKS · NEWS
+///   visibility  PUBLIC, or INTERNAL — never sent to a public API (MagicBricks
+///               is a calibration cross-check only, by the owner's decision)
+///   status      APPROVED, or PENDING / REJECTED for figures read from news,
+///               which an admin checks against the article before they count
+model MarketObservation {
+  id           String    @id @default(cuid())
+  /// Idempotency key: source|metric|scope|scopeKey|period
+  key          String    @unique
+  source       String
+  metric       String
+  scope        String // CITY | CORRIDOR | VILLAGE | LOCALITY
+  scopeKey     String
+  corridorSlug String?
+  value        Float
+  unit         String
+  period       String
+  periodEnd    DateTime?
+  visibility   String    @default("PUBLIC")
+  status       String    @default("APPROVED")
+  sourceName   String
+  sourceUrl    String?
+  meta         Json?
+  observedAt   DateTime  @default(now())
+  reviewedAt   DateTime?
+  reviewedBy   String?
+
+  @@index([source, metric])
+  @@index([corridorSlug])
+  @@index([status])
+}

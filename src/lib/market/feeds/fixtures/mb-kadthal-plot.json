@@ -1,0 +1,88 @@
+{
+ "locName": "Kadthal",
+ "dispQtr": "Q3 2026",
+ "activePropType": "10000",
+ "graphData": {
+  "quarterValues": [
+   "Jul-Sep'25",
+   "Oct-Dec'25",
+   "Jan-Mar'26",
+   "Apr-Jun'26",
+   "Jul-Sep'26"
+  ],
+  "averageRangeValues": [
+   13815,
+   13995,
+   13787,
+   13668,
+   15021
+  ],
+  "lowerRangeValues": [
+   10290,
+   10507,
+   10441,
+   10169,
+   10978
+  ],
+  "upperRangeValues": [
+   17341,
+   17482,
+   17133,
+   17167,
+   19064
+  ],
+  "pu": "/Sq-Yrd",
+  "lastUpdateValue": "Oct-2026",
+  "localityData": {
+   "nRt": 40
+  }
+ },
+ "tabsData": {
+  "10002": [
+   {
+    "id": 10002,
+    "desc": "Multistorey Apartment",
+    "present": false,
+    "pu": null,
+    "comparativeData": null
+   }
+  ],
+  "10001": [
+   {
+    "id": 10001,
+    "desc": "Residential House",
+    "present": false,
+    "pu": null,
+    "comparativeData": null
+   }
+  ],
+  "10000": [
+   {
+    "id": 10000,
+    "desc": "Residential Plot",
+    "present": true,
+    "pu": "/Sq-Yrd",
+    "comparativeData": {
+     "avg": "15021",
+     "avgqoq": "10%",
+     "minqoq": "8%",
+     "maxqoq": "11%",
+     "minprice": "10978",
+     "maxprice": "19064",
+     "avgup": true,
+     "minup": true,
+     "maxup": true
+    }
+   }
+  ],
+  "10003": [
+   {
+    "id": 10003,
+    "desc": "Builder Floor Apartment",
+    "present": false,
+    "pu": null,
+    "comparativeData": null
+   }
+  ]
+ }
+}

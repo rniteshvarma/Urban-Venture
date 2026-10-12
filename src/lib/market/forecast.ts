@@ -42,6 +42,8 @@ export interface ForecastInput {
   priceConfidence: PriceConfidence | null;
   /** Corridor price ÷ city reference price for the same asset; < 0.6 counts as early-stage */
   relativePrice: number | null;
+  /** City growth anchors; defaults to ANCHOR_RATES (anchors.ts), or newer approved figures */
+  anchors?: Record<Scenario, number>;
 }
 
 export interface ScenarioSeries {
@@ -74,7 +76,11 @@ export function infraPremium(infraScore: number | null): number {
   return r1(clamp((infraScore - 12.5) / 12.5, [-1, 1]) * INFRA_MAX);
 }
 
+/** Anchors from resolved city figures (approved news can replace the base rate). */
+export const anchorsFrom = (city: { priceGrowthYoY: { value: number } }): Record<Scenario, number> => ({ ...ANCHOR_RATES, base: city.priceGrowthYoY.value });
+
 export function forecastCorridor(input: ForecastInput): CorridorForecast {
+  const anchors = input.anchors ?? ANCHOR_RATES;
   const land = input.asset === "plot" ? LAND_PREMIUM : { conservative: 0, base: 0, optimistic: 0 };
   const infra = infraPremium(input.infraScore);
   const widenedBecause =
@@ -90,7 +96,7 @@ export function forecastCorridor(input: ForecastInput): CorridorForecast {
     for (let t = 1; t <= HORIZON; t++) {
       const fade = Math.pow(0.5, (t - 1) / INFRA_HALF_LIFE_YEARS);
       const widen = s === "optimistic" ? spread : s === "conservative" ? -spread : 0;
-      const rate = clamp(ANCHOR_RATES[s] + land[s] + infra * fade + widen, RATE_CAP);
+      const rate = clamp(anchors[s] + land[s] + infra * fade + widen, RATE_CAP);
       index.push(index[t - 1] * (1 + rate / 100));
     }
     const cagr = (n: number) => r1((Math.pow(index[n] / 100, 1 / n) - 1) * 100);
@@ -102,7 +108,7 @@ export function forecastCorridor(input: ForecastInput): CorridorForecast {
     asset: input.asset,
     baseYear: BASE_YEAR,
     scenarios,
-    inputs: { anchors: { ...ANCHOR_RATES }, landPremium: { ...land }, infraPremium: infra, widened: spread > 0, widenedBecause },
+    inputs: { anchors: { ...anchors }, landPremium: { ...land }, infraPremium: infra, widened: spread > 0, widenedBecause },
   };
 }
 

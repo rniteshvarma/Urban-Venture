@@ -49,7 +49,7 @@ export const CITY_LONG_RUN_CAGR = Math.round((Math.pow(CITY.priceQ2_2026SqFt.val
 /** Sourced land-price evidence for areas where plotted listings don't exist. */
 export const LAND_EVIDENCE: Record<string, SourcedFigure[]> = {
   "kokapet-neopolis": [
-    { value: 137.36, unit: "₹ Cr per acre (average)", period: "Nov–Dec 2025", source: "HMDA Neopolis land auction, 27 acres", url: HMDA_NEOPOLIS_2025, published: "2025-12-05", note: "Bulk land for high-rise development (₹118–151 Cr/acre); 2023's auction averaged about ₹73 Cr/acre" },
+    { value: 137.36, unit: "Cr per acre (average)", period: "Nov–Dec 2025", source: "HMDA Neopolis land auction, 27 acres", url: HMDA_NEOPOLIS_2025, published: "2025-12-05", note: "Bulk land for high-rise development (₹118–151 Cr/acre); 2023's auction averaged about ₹73 Cr/acre" },
   ],
 };
 

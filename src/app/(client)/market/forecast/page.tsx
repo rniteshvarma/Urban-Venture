@@ -164,6 +164,17 @@ export default function ForecastHubPage() {
                 Not enough {assetWord} listings near {selected?.shortName ?? "this corridor"} to measure a price yet — we&apos;d rather show nothing than a guess.
               </p>
             )}
+            {(() => {
+              const g = m?.guidance?.[asset === "plot" ? "land" : "apartment"];
+              if (!g) return null;
+              return (
+                <p className="text-[11px] text-text-secondary leading-relaxed border-t border-gray-100 pt-2">
+                  <strong className="text-text-primary">Government guidance value:</strong> {inr(g.median)}{unitLabel} (middle of {g.villages.length} village{g.villages.length === 1 ? "" : "s"}, up to {inr(g.max)} on main roads) — the official minimum used for stamp duty
+                  {rates ? `; listings here are ${(rates.median / g.median).toFixed(1)}× it` : ""}.{" "}
+                  <a href={m!.guidance!.source.url} target="_blank" rel="noreferrer" className="underline">Source</a>
+                </p>
+              );
+            })()}
             {asset === "plot" && m?.landEvidence.map((e) => (
               <p key={e.url} className="text-[11px] text-text-secondary leading-relaxed border-t border-gray-100 pt-2">
                 <strong className="text-text-primary">{e.source}:</strong> ₹{e.value} {e.unit} ({e.period}). {e.note}{" "}

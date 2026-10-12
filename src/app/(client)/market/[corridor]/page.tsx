@@ -384,6 +384,58 @@ export default function CorridorDetailPage() {
               </div>
             </div>
 
+            {market?.guidance && (
+              <div className="bg-white border border-luxury rounded p-5 space-y-3">
+                <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-2">
+                  <div>
+                    <h3 className="text-xs font-bold text-text-primary uppercase tracking-wider">Government guidance value</h3>
+                    <p className="text-[11px] text-text-secondary mt-1 max-w-2xl leading-relaxed">
+                      The official minimum value the Registration Department uses for stamp duty
+                      {market.guidance.effective ? `, effective ${new Date(market.guidance.effective).toLocaleDateString("en-IN", { dateStyle: "medium" })}` : ""}.
+                      Market prices are usually well above it; a big gap is normal, especially on the city&apos;s edges.
+                    </p>
+                  </div>
+                  <a href={market.guidance.source.url} target="_blank" rel="noreferrer" className="text-[11px] underline inline-flex items-center gap-1 text-text-secondary">{market.guidance.source.name} <ExternalLink size={10} /></a>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {([["land", "Land", "/sq.yd", market.rates.plot?.median], ["apartment", "Apartments", "/sq.ft", market.rates.apartment?.median]] as const).map(([k, label, unit, ours]) => {
+                    const g = market.guidance![k];
+                    if (!g) return null;
+                    return (
+                      <div key={k} className="stat-card">
+                        <div className="stat-label">{label} — guidance value</div>
+                        <div className="stat-value mt-1">{inr(g.median)} <span className="text-xs font-normal text-text-secondary">{unit}</span></div>
+                        <p className="text-[10px] text-text-secondary mt-1 leading-relaxed">
+                          Middle of {g.villages.length} village{g.villages.length === 1 ? "" : "s"} · up to {inr(g.max)}{unit} on main roads
+                          {ours ? ` · our listings are ${(ours / g.median).toFixed(1)}× this` : ""}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+                <details className="text-[11px] text-text-secondary">
+                  <summary className="cursor-pointer">Village-wise values</summary>
+                  <table className="w-full mt-2 text-left">
+                    <thead><tr className="text-[10px] uppercase"><th className="py-1">Village (mandal)</th><th className="py-1 text-right">Land ₹/sq.yd</th><th className="py-1 text-right">Flats ₹/sq.ft</th></tr></thead>
+                    <tbody>
+                      {[...new Set([...(market.guidance.land?.villages ?? []), ...(market.guidance.apartment?.villages ?? [])].map((v) => v.village))].map((code) => {
+                        const l = market.guidance!.land?.villages.find((v) => v.village === code);
+                        const a = market.guidance!.apartment?.villages.find((v) => v.village === code);
+                        const v = l ?? a!;
+                        return (
+                          <tr key={code} className="border-t border-slate-100">
+                            <td className="py-1">{v.villageName} <span className="text-text-secondary">({v.mandalName})</span></td>
+                            <td className="py-1 text-right font-mono">{l ? `${inr(l.general)}${l.max > l.general ? ` – ${inr(l.max)}` : ""}` : "—"}</td>
+                            <td className="py-1 text-right font-mono">{a ? `${inr(a.general)}${a.max > a.general ? ` – ${inr(a.max)}` : ""}` : "—"}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </details>
+              </div>
+            )}
+
             {market?.landEvidence.map((e) => (
               <div key={e.url} className="bg-white border border-luxury rounded p-4 text-xs text-text-secondary leading-relaxed">
                 <strong className="text-text-primary">{e.source}:</strong> ₹{e.value} {e.unit} ({e.period}). {e.note}{" "}

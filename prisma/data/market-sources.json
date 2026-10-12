@@ -1,0 +1,500 @@
+{
+  "note": "Corridor \u2192 official TG Registration & Stamps villages (unit-rate lookup, public) and MagicBricks locality slugs (INTERNAL cross-check only \u2014 never shown publicly). Village codes from registration.telangana.gov.in/UnitRateMV, checked 2026-10-12.",
+  "corridors": {
+    "kokapet-neopolis": {
+      "registrationVillages": [
+        {
+          "district": "15_1",
+          "districtName": "RANGAREDDY",
+          "mandal": "07",
+          "mandalName": "GANDIPET",
+          "village": "1516004",
+          "villageName": "KOKAPET"
+        },
+        {
+          "district": "15_1",
+          "districtName": "RANGAREDDY",
+          "mandal": "07",
+          "mandalName": "GANDIPET",
+          "village": "1516006",
+          "villageName": "NARSINGI"
+        },
+        {
+          "district": "15_1",
+          "districtName": "RANGAREDDY",
+          "mandal": "07",
+          "mandalName": "GANDIPET",
+          "village": "1516007",
+          "villageName": "PUPPALGUDA"
+        },
+        {
+          "district": "15_1",
+          "districtName": "RANGAREDDY",
+          "mandal": "07",
+          "mandalName": "GANDIPET",
+          "village": "1516015",
+          "villageName": "MANCHIREVULA"
+        },
+        {
+          "district": "15_1",
+          "districtName": "RANGAREDDY",
+          "mandal": "07",
+          "mandalName": "GANDIPET",
+          "village": "1516014",
+          "villageName": "NEKNAMPUR"
+        }
+      ],
+      "magicbricksLocalities": [
+        "Kokapet",
+        "Narsingi",
+        "Puppalaguda",
+        "Manchirevula"
+      ]
+    },
+    "adibatla": {
+      "registrationVillages": [
+        {
+          "district": "15_1",
+          "districtName": "RANGAREDDY",
+          "mandal": "09",
+          "mandalName": "IBRAHIMPATNAM",
+          "village": "1534002",
+          "villageName": "ADIBATLA"
+        },
+        {
+          "district": "15_1",
+          "districtName": "RANGAREDDY",
+          "mandal": "09",
+          "mandalName": "IBRAHIMPATNAM",
+          "village": "1534001",
+          "villageName": "KONGARA KALAN"
+        },
+        {
+          "district": "15_1",
+          "districtName": "RANGAREDDY",
+          "mandal": "09",
+          "mandalName": "IBRAHIMPATNAM",
+          "village": "1534019",
+          "villageName": "MANGALPALLE"
+        }
+      ],
+      "magicbricksLocalities": [
+        "Adibatla",
+        "Kongara-Kalan",
+        "Ibrahimpatnam"
+      ]
+    },
+    "kadthal-fcda": {
+      "registrationVillages": [
+        {
+          "district": "15_1",
+          "districtName": "RANGAREDDY",
+          "mandal": "10",
+          "mandalName": "KADTHAL",
+          "village": "1416003",
+          "villageName": "KADTHAL"
+        },
+        {
+          "district": "15_1",
+          "districtName": "RANGAREDDY",
+          "mandal": "11",
+          "mandalName": "KANDUKUR",
+          "village": "1537030",
+          "villageName": "MUCHERLA"
+        },
+        {
+          "district": "15_1",
+          "districtName": "RANGAREDDY",
+          "mandal": "11",
+          "mandalName": "KANDUKUR",
+          "village": "1537028",
+          "villageName": "MEERKHANPET"
+        }
+      ],
+      "magicbricksLocalities": [
+        "Kadthal",
+        "Kandukur"
+      ]
+    },
+    "tukkuguda-shamshabad": {
+      "registrationVillages": [
+        {
+          "district": "15_1",
+          "districtName": "RANGAREDDY",
+          "mandal": "16",
+          "mandalName": "MAHESHWARAM",
+          "village": "1533018",
+          "villageName": "RAVIRYAL"
+        },
+        {
+          "district": "15_1",
+          "districtName": "RANGAREDDY",
+          "mandal": "16",
+          "mandalName": "MAHESHWARAM",
+          "village": "1533022",
+          "villageName": "SREENAGAR"
+        },
+        {
+          "district": "15_1",
+          "districtName": "RANGAREDDY",
+          "mandal": "16",
+          "mandalName": "MAHESHWARAM",
+          "village": "1533016",
+          "villageName": "MANKHAL"
+        },
+        {
+          "district": "15_1",
+          "districtName": "RANGAREDDY",
+          "mandal": "23",
+          "mandalName": "SHAMSHABAD",
+          "village": "1532020",
+          "villageName": "SHAMSHABAD (P)"
+        }
+      ],
+      "magicbricksLocalities": [
+        "Tukkuguda",
+        "Shamshabad"
+      ]
+    },
+    "maheshwaram-pharma-city": {
+      "registrationVillages": [
+        {
+          "district": "15_1",
+          "districtName": "RANGAREDDY",
+          "mandal": "16",
+          "mandalName": "MAHESHWARAM",
+          "village": "1533026",
+          "villageName": "MAHESWARAM"
+        },
+        {
+          "district": "15_1",
+          "districtName": "RANGAREDDY",
+          "mandal": "11",
+          "mandalName": "KANDUKUR",
+          "village": "1537018",
+          "villageName": "KANDUKUR"
+        },
+        {
+          "district": "15_1",
+          "districtName": "RANGAREDDY",
+          "mandal": "27",
+          "mandalName": "YACHARAM",
+          "village": "1536004",
+          "villageName": "YACHARAM"
+        },
+        {
+          "district": "15_1",
+          "districtName": "RANGAREDDY",
+          "mandal": "27",
+          "mandalName": "YACHARAM",
+          "village": "1536009",
+          "villageName": "KURMIDDA"
+        }
+      ],
+      "magicbricksLocalities": [
+        "Maheshwaram",
+        "Kandukur"
+      ]
+    },
+    "shadnagar": {
+      "registrationVillages": [
+        {
+          "district": "15_1",
+          "districtName": "RANGAREDDY",
+          "mandal": "06",
+          "mandalName": "FAROOQNAGAR",
+          "village": "1412004",
+          "villageName": "FAROOQNAGAR (U.A)"
+        },
+        {
+          "district": "15_1",
+          "districtName": "RANGAREDDY",
+          "mandal": "14",
+          "mandalName": "KOTHUR",
+          "village": "1413006",
+          "villageName": "KOTHUR"
+        },
+        {
+          "district": "15_1",
+          "districtName": "RANGAREDDY",
+          "mandal": "19",
+          "mandalName": "NANDIGAMA",
+          "village": "1413010",
+          "villageName": "NANDIGAMA"
+        }
+      ],
+      "magicbricksLocalities": [
+        "Shadnagar",
+        "Kothur"
+      ]
+    },
+    "shankarpally-mokila": {
+      "registrationVillages": [
+        {
+          "district": "15_1",
+          "districtName": "RANGAREDDY",
+          "mandal": "24",
+          "mandalName": "SHANKARPALLE",
+          "village": "1504004",
+          "villageName": "SHANKARPALLE"
+        },
+        {
+          "district": "15_1",
+          "districtName": "RANGAREDDY",
+          "mandal": "24",
+          "mandalName": "SHANKARPALLE",
+          "village": "1504007",
+          "villageName": "MOKILA"
+        },
+        {
+          "district": "15_1",
+          "districtName": "RANGAREDDY",
+          "mandal": "24",
+          "mandalName": "SHANKARPALLE",
+          "village": "1504006",
+          "villageName": "KONDAKAL"
+        },
+        {
+          "district": "15_1",
+          "districtName": "RANGAREDDY",
+          "mandal": "24",
+          "mandalName": "SHANKARPALLE",
+          "village": "1504009",
+          "villageName": "JANWADA"
+        }
+      ],
+      "magicbricksLocalities": [
+        "Shankarpally",
+        "Mokila",
+        "Kondakal"
+      ]
+    },
+    "sangareddy-industrial": {
+      "registrationVillages": [
+        {
+          "district": "17_2",
+          "districtName": "SANGAREDDY",
+          "mandal": "23",
+          "mandalName": "SANGAREDDY",
+          "village": "1736005",
+          "villageName": "SANGAREDDY"
+        },
+        {
+          "district": "17_2",
+          "districtName": "SANGAREDDY",
+          "mandal": "18",
+          "mandalName": "PATANCHERU",
+          "village": "1737022",
+          "villageName": "PATANCHERU[P]"
+        },
+        {
+          "district": "17_2",
+          "districtName": "SANGAREDDY",
+          "mandal": "18",
+          "mandalName": "PATANCHERU",
+          "village": "1737013",
+          "villageName": "ISNAPUR"
+        },
+        {
+          "district": "17_2",
+          "districtName": "SANGAREDDY",
+          "mandal": "18",
+          "mandalName": "PATANCHERU",
+          "village": "1737001",
+          "villageName": "RUDRARAM"
+        },
+        {
+          "district": "17_2",
+          "districtName": "SANGAREDDY",
+          "mandal": "18",
+          "mandalName": "PATANCHERU",
+          "village": "1737014",
+          "villageName": "PASHAMYLARAM"
+        },
+        {
+          "district": "17_2",
+          "districtName": "SANGAREDDY",
+          "mandal": "08",
+          "mandalName": "KANDI",
+          "village": "1736016",
+          "villageName": "KANDI"
+        }
+      ],
+      "magicbricksLocalities": [
+        "Sangareddy",
+        "Patancheru",
+        "Isnapur"
+      ]
+    },
+    "kompally-bachupally": {
+      "registrationVillages": [
+        {
+          "district": "15_2",
+          "districtName": "MEDCHAL-MALKAJGIRI",
+          "mandal": "04",
+          "mandalName": "DUNDIGAL GANDIMAISAMMA",
+          "village": "1507017",
+          "villageName": "KOMPALLE"
+        },
+        {
+          "district": "15_2",
+          "districtName": "MEDCHAL-MALKAJGIRI",
+          "mandal": "02",
+          "mandalName": "BACHUPALLY",
+          "village": "1507010",
+          "villageName": "BACHPALLE"
+        },
+        {
+          "district": "15_2",
+          "districtName": "MEDCHAL-MALKAJGIRI",
+          "mandal": "02",
+          "mandalName": "BACHUPALLY",
+          "village": "1507011",
+          "villageName": "NIZAMPET"
+        }
+      ],
+      "magicbricksLocalities": [
+        "Kompally",
+        "Bachupally",
+        "Nizampet"
+      ]
+    },
+    "medchal-dundigal": {
+      "registrationVillages": [
+        {
+          "district": "15_2",
+          "districtName": "MEDCHAL-MALKAJGIRI",
+          "mandal": "10",
+          "mandalName": "MEDCHAL",
+          "village": "1508020",
+          "villageName": "MEDCHAL"
+        },
+        {
+          "district": "15_2",
+          "districtName": "MEDCHAL-MALKAJGIRI",
+          "mandal": "10",
+          "mandalName": "MEDCHAL",
+          "village": "1508019",
+          "villageName": "GOUDAVELLE"
+        },
+        {
+          "district": "15_2",
+          "districtName": "MEDCHAL-MALKAJGIRI",
+          "mandal": "10",
+          "mandalName": "MEDCHAL",
+          "village": "1508012",
+          "villageName": "ATEVELLE"
+        },
+        {
+          "district": "15_2",
+          "districtName": "MEDCHAL-MALKAJGIRI",
+          "mandal": "04",
+          "mandalName": "DUNDIGAL GANDIMAISAMMA",
+          "village": "1507003",
+          "villageName": "DUNDIGAL"
+        }
+      ],
+      "magicbricksLocalities": [
+        "Medchal",
+        "Dundigal"
+      ]
+    },
+    "ghatkesar-peerzadiguda": {
+      "registrationVillages": [
+        {
+          "district": "15_2",
+          "districtName": "MEDCHAL-MALKAJGIRI",
+          "mandal": "05",
+          "mandalName": "GHATKESAR",
+          "village": "1512011",
+          "villageName": "GHATKESAR (P)"
+        },
+        {
+          "district": "15_2",
+          "districtName": "MEDCHAL-MALKAJGIRI",
+          "mandal": "05",
+          "mandalName": "GHATKESAR",
+          "village": "1512004",
+          "villageName": "POCHARAM"
+        },
+        {
+          "district": "15_2",
+          "districtName": "MEDCHAL-MALKAJGIRI",
+          "mandal": "05",
+          "mandalName": "GHATKESAR",
+          "village": "1512014",
+          "villageName": "NAREPALLE"
+        },
+        {
+          "district": "15_2",
+          "districtName": "MEDCHAL-MALKAJGIRI",
+          "mandal": "05",
+          "mandalName": "GHATKESAR",
+          "village": "1512018",
+          "villageName": "KORREMUL"
+        },
+        {
+          "district": "15_2",
+          "districtName": "MEDCHAL-MALKAJGIRI",
+          "mandal": "11",
+          "mandalName": "MEDIPALLY",
+          "village": "1512024",
+          "villageName": "PERZADIGUDA"
+        },
+        {
+          "district": "15_2",
+          "districtName": "MEDCHAL-MALKAJGIRI",
+          "mandal": "11",
+          "mandalName": "MEDIPALLY",
+          "village": "1512003",
+          "villageName": "CHANGICHERLA"
+        }
+      ],
+      "magicbricksLocalities": [
+        "Ghatkesar",
+        "Peerzadiguda",
+        "Pocharam"
+      ]
+    },
+    "bibinagar-bhongir": {
+      "registrationVillages": [
+        {
+          "district": "23_3",
+          "districtName": "YADADRI BHUVANAGIRI",
+          "mandal": "06",
+          "mandalName": "BIBINAGAR",
+          "village": "2317009",
+          "villageName": "BIBINAGAR"
+        },
+        {
+          "district": "23_3",
+          "districtName": "YADADRI BHUVANAGIRI",
+          "mandal": "06",
+          "mandalName": "BIBINAGAR",
+          "village": "2317005",
+          "villageName": "KONDAMADUGU"
+        },
+        {
+          "district": "23_3",
+          "districtName": "YADADRI BHUVANAGIRI",
+          "mandal": "05",
+          "mandalName": "BHONGIR",
+          "village": "2316021",
+          "villageName": "BHUVANAGIRI"
+        },
+        {
+          "district": "23_3",
+          "districtName": "YADADRI BHUVANAGIRI",
+          "mandal": "05",
+          "mandalName": "BHONGIR",
+          "village": "2316007",
+          "villageName": "RAYAGIRI"
+        }
+      ],
+      "magicbricksLocalities": [
+        "Bibinagar",
+        "Bhuvanagiri"
+      ]
+    }
+  }
+}

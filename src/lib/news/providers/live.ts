@@ -96,6 +96,14 @@ export function feedsForCity(city: Pick<NewsCity, 'slug' | 'name' | 'stateCode' 
       requireCityMention: true,
     },
   ];
+  // Research-firm market figures (registrations, average prices, sales) —
+  // what the market-data review queue reads (src/lib/market/feeds/news.ts).
+  specs.push({
+    label: `${place} market reports`,
+    kind: 'gnews',
+    target: `${place} ("Knight Frank" OR Anarock OR PropEquity OR JLL OR CBRE) (registrations OR "housing sales" OR "per sq ft" OR prices)`,
+    requireCityMention: true,
+  });
   // The city's own watch-list (HMDA, Kokapet, Pharma City …), four terms per query.
   for (const group of chunk(city.queryTerms, 4).slice(0, 4)) {
     specs.push({ label: `${place} watch-list`, kind: 'gnews', target: group.map(quote).join(' OR ') });

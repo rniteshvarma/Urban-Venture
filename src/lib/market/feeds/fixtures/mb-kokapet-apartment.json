@@ -1,0 +1,88 @@
+{
+ "locName": "Kokapet",
+ "dispQtr": "Q3 2026",
+ "activePropType": "10002",
+ "graphData": {
+  "quarterValues": [
+   "Jul-Sep'25",
+   "Oct-Dec'25",
+   "Jan-Mar'26",
+   "Apr-Jun'26",
+   "Jul-Sep'26"
+  ],
+  "averageRangeValues": [
+   10540,
+   10518,
+   10754,
+   11019,
+   11160
+  ],
+  "lowerRangeValues": [
+   8426,
+   8344,
+   8478,
+   8731,
+   8756
+  ],
+  "upperRangeValues": [
+   12653,
+   12692,
+   13029,
+   13308,
+   13564
+  ],
+  "pu": "/Sq-ft",
+  "lastUpdateValue": "Oct-2026",
+  "localityData": {
+   "nRt": 151
+  }
+ },
+ "tabsData": {
+  "10002": [
+   {
+    "id": 10002,
+    "desc": "Multistorey Apartment",
+    "present": true,
+    "pu": "/Sq-ft",
+    "comparativeData": {
+     "avg": "11160",
+     "avgqoq": "1%",
+     "minqoq": "0.3%",
+     "maxqoq": "2%",
+     "minprice": "8756",
+     "maxprice": "13564",
+     "avgup": true,
+     "minup": true,
+     "maxup": true
+    }
+   }
+  ],
+  "10001": [
+   {
+    "id": 10001,
+    "desc": "Residential House",
+    "present": false,
+    "pu": null,
+    "comparativeData": null
+   }
+  ],
+  "10000": [
+   {
+    "id": 10000,
+    "desc": "Residential Plot",
+    "present": false,
+    "pu": null,
+    "comparativeData": null
+   }
+  ],
+  "10003": [
+   {
+    "id": 10003,
+    "desc": "Builder Floor Apartment",
+    "present": false,
+    "pu": null,
+    "comparativeData": null
+   }
+  ]
+ }
+}

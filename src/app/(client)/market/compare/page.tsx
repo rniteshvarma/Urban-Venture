@@ -353,6 +353,17 @@ function ComparePageContent() {
                       {comparisons.length === 2 && <td className="px-4 py-3 text-text-secondary">—</td>}
                     </tr>
                     <tr className="border-b border-slate-100">
+                      <td className="px-4 py-3 font-semibold text-text-secondary bg-slate-50/50 w-44">Govt guidance value (land / flats)</td>
+                      {comparisons.map((c, idx) => (
+                        <td key={idx} className="px-4 py-3 text-text-primary">
+                          {c.market?.guidance
+                            ? `${c.market.guidance.land ? `₹${Math.round(c.market.guidance.land.median).toLocaleString("en-IN")}/sq.yd` : "—"} / ${c.market.guidance.apartment ? `₹${Math.round(c.market.guidance.apartment.median).toLocaleString("en-IN")}/sq.ft` : "—"}`
+                            : "—"}
+                        </td>
+                      ))}
+                      {comparisons.length === 2 && <td className="px-4 py-3 text-text-secondary">—</td>}
+                    </tr>
+                    <tr className="border-b border-slate-100">
                       <td className="px-4 py-3 font-semibold text-text-secondary bg-slate-50/50 w-44">Growth a year (10y, cons.–opt.)</td>
                       {comparisons.map((c, idx) => (
                         <td key={idx} className="px-4 py-3 font-bold text-success bg-success-light/30">{c.projectedCAGRMin != null ? `${c.projectedCAGRMin}% – ${c.projectedCAGRMax}%` : "—"}</td>

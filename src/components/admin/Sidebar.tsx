@@ -32,7 +32,8 @@ import {
   Plug,
   Home,
   Inbox,
-  Store
+  Store,
+  Database
 } from "lucide-react";
 
 export default function Sidebar() {
@@ -164,6 +165,11 @@ export default function Sidebar() {
       name: "Infra Updates",
       path: "/admin/infrastructure/updates",
       icon: <Radar size={16} />,
+    },
+    {
+      name: "Market Data",
+      path: "/admin/infrastructure/market",
+      icon: <Database size={16} />,
     },
     {
       name: "Infra Projects",

@@ -32,6 +32,10 @@
     {
       "path": "/api/cron/osm-sync",
       "schedule": "0 22 * * *"
+    },
+    {
+      "path": "/api/cron/market-feeds",
+      "schedule": "30 23 * * *"
     }
   ],
   "functions": {
@@ -52,6 +56,21 @@
     },
     "src/app/api/admin/osm/sync/route.ts": {
       "maxDuration": 300
+    },
+    "src/app/api/cron/market-feeds/route.ts": {
+      "regions": [
+        "bom1"
+      ],
+      "maxDuration": 300
+    },
+    "src/app/api/admin/market/feeds/route.ts": {
+      "regions": [
+        "bom1"
+      ],
+      "maxDuration": 300
+    },
+    "src/app/api/admin/market/observations/[id]/route.ts": {
+      "maxDuration": 120
     }
   }
 }

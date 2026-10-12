@@ -16,9 +16,10 @@ import type { Prisma } from "@prisma/client";
 import prisma from "../prisma";
 import { lookupPlace } from "../infra-intel/geo";
 import { haversineKm } from "../osm/geo";
-import { CITY, LAND_EVIDENCE, type SourcedFigure } from "./anchors";
+import { LAND_EVIDENCE, type SourcedFigure } from "./anchors";
 import { measureRates, quantile, unitRate, type Asset, type AssetRates, type ListingForRates } from "./rates";
-import { forecastCorridor, gainPct, FORECAST_VERSION, type CorridorForecast } from "./forecast";
+import { anchorsFrom, forecastCorridor, gainPct, FORECAST_VERSION, type CorridorForecast } from "./forecast";
+import { loadCorridorGuidance, resolveCityFigures, type CityFigures, type CorridorGuidance } from "./observations";
 
 /** Radius for the project counts (and for assigning RERA records to a corridor). */
 export const COUNT_RADIUS_KM = 8;
@@ -39,6 +40,10 @@ export interface MarketContext {
   /** City-wide reference prices the "early-stage" check compares against */
   cityPlotMedian: number | null;
   cityAptAvg: number;
+  /** anchors.ts with newer approved figures swapped in */
+  city: CityFigures;
+  /** Official guidance values, rolled up per corridor */
+  guidance: Map<string, CorridorGuidance>;
 }
 
 export interface CorridorMarketStats {
@@ -50,6 +55,8 @@ export interface CorridorMarketStats {
   forecast: Record<Asset, CorridorForecast>;
   counts: { totalProjects: number; reraProjects: number; activeProjects: number; readyProjects: number; radiusKm: number };
   landEvidence: SourcedFigure[];
+  /** Telangana Registration Dept guidance (minimum) values for the corridor's villages */
+  guidance: CorridorGuidance | null;
   city: { plotMedianSqYd: number | null; aptAvgSqFt: SourcedFigure; rentalYield: SourcedFigure };
 }
 
@@ -78,7 +85,8 @@ export async function loadMarketContext(): Promise<MarketContext> {
     .filter((r) => r.length)
     .map((r) => quantile(r, 0.5))
     .sort((a, b) => a - b);
-  return { listings, cityPlotMedian: plotRates.length >= 10 ? Math.round(quantile(plotRates, 0.5)) : null, cityAptAvg: CITY.avgPriceSqFt.value };
+  const [city, guidance] = await Promise.all([resolveCityFigures(), loadCorridorGuidance()]);
+  return { listings, cityPlotMedian: plotRates.length >= 10 ? Math.round(quantile(plotRates, 0.5)) : null, cityAptAvg: city.avgPriceSqFt.value, city, guidance };
 }
 
 export function corridorCentre(c: { centroidLat: number | null; centroidLng: number | null; shortName: string | null; name: string }) {
@@ -101,10 +109,12 @@ export function buildCorridorMarket(slug: string, centre: { lat: number; lng: nu
     plot: forecastCorridor({
       asset: "plot", infraScore, priceConfidence: rates.plot?.confidence ?? null,
       relativePrice: rates.plot && ctx.cityPlotMedian ? rates.plot.median / ctx.cityPlotMedian : null,
+      anchors: anchorsFrom(ctx.city),
     }),
     apartment: forecastCorridor({
       asset: "apartment", infraScore, priceConfidence: rates.apartment?.confidence ?? null,
       relativePrice: rates.apartment ? rates.apartment.median / ctx.cityAptAvg : null,
+      anchors: anchorsFrom(ctx.city),
     }),
   };
   return {
@@ -123,7 +133,8 @@ export function buildCorridorMarket(slug: string, centre: { lat: number; lng: nu
       radiusKm: COUNT_RADIUS_KM,
     },
     landEvidence: LAND_EVIDENCE[slug] ?? [],
-    city: { plotMedianSqYd: ctx.cityPlotMedian, aptAvgSqFt: CITY.avgPriceSqFt, rentalYield: CITY.rentalYield },
+    guidance: ctx.guidance.get(slug) ?? null,
+    city: { plotMedianSqYd: ctx.cityPlotMedian, aptAvgSqFt: ctx.city.avgPriceSqFt, rentalYield: ctx.city.rentalYield },
   };
 }
 
