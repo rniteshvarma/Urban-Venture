@@ -4,6 +4,7 @@ import React, { Suspense, useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { SlidersHorizontal, MapPin, Building, Activity, IndianRupee, Search, X } from "lucide-react";
 import { PageHero, ProjectCard, SkeletonCard, EmptyState, type ProjectCardData } from "@/components/ui";
+import SaveSearchButton from "@/components/projects/SaveSearchButton";
 
 type SortKey = "relevance" | "price_asc" | "price_desc" | "newest";
 type Corridor = { name: string; count: number };
@@ -36,7 +37,15 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
   );
 }
 
-const TYPES = ["Apartment", "Villa", "Plots", "Commercial"];
+const TYPES = ["Apartment", "Villa", "Plots", "Commercial", "Land"];
+/** Budget chip → the lakh range the feed and saved searches filter on. */
+const BUDGET_RANGE: Record<string, { minBudget: number | null; maxBudget: number | null }> = {
+  ALL: { minBudget: null, maxBudget: null },
+  "<30L": { minBudget: null, maxBudget: 30 },
+  "30-60L": { minBudget: 30, maxBudget: 60 },
+  "60-120L": { minBudget: 60, maxBudget: 120 },
+  ">120L": { minBudget: 120, maxBudget: null },
+};
 
 // useSearchParams needs a Suspense boundary on a prerendered page; the browser
 // renders the list itself, so filters can start from the URL.
@@ -142,7 +151,7 @@ function ProjectsBrowser() {
       <PageHero
         eyebrow={<><Building size={12} /> Investment Grade Properties</>}
         title="Hyderabad Projects, Rated"
-        subtitle="Apartments, villas and plotted layouts from Hyderabad's developers — with TS-RERA numbers, unit-wise pricing, locations and a Property Tiger rating for every project."
+        subtitle="Apartments, villas, plotted layouts and commercial projects from Hyderabad's developers — with TS-RERA numbers, unit-wise pricing and a Property Tiger rating — plus verified land listings, clearly marked as not RERA."
         size="md"
       />
 
@@ -206,6 +215,19 @@ function ProjectsBrowser() {
               {a.label} <X size={12} />
             </button>
           ))}
+          {applied.length > 0 && (
+            <SaveSearchButton
+              key={applied.map((a) => a.label).join("|")}
+              filters={{
+                corridor: selectedCorridor !== "ALL" ? selectedCorridor : null,
+                locality: selectedLocality || null,
+                risk: selectedRisk !== "ALL" ? selectedRisk : null,
+                type: selectedType !== "ALL" ? selectedType : null,
+                q: debouncedQuery || null,
+                ...BUDGET_RANGE[budgetRange],
+              }}
+            />
+          )}
           <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ fontSize: "0.75rem", color: "var(--color-text-lo)" }}>Sort</span>
             <select value={sort} onChange={(e) => setSort(e.target.value as SortKey)} className="input-premium" style={{ padding: "8px 12px", fontSize: "0.8125rem", width: "auto" }}>

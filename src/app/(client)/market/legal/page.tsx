@@ -15,6 +15,7 @@ import {
   Loader2,
   XCircle
 } from "lucide-react";
+import ChecklistTabs from "@/components/projects/ChecklistTabs";
 
 /** "kadthal-fcda" → "Kadthal FCDA", "shankarpally-mokila" → "Shankarpally Mokila". */
 const ACRONYMS = new Set(["fcda", "orr", "rrr", "it", "sez", "nh", "hmda", "gcc"]);
@@ -179,6 +180,7 @@ export default function LegalHubPage() {
 
         {/* Right Side: Risks Explorer */}
         <div className="lg:col-span-2 space-y-6 stagger-2 animate-fade-in-up">
+          <ChecklistTabs />
           
           {/* Filters Row */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 card-premium !py-4">

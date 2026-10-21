@@ -81,7 +81,11 @@ export async function loadMarketContext(): Promise<MarketContext> {
       unitTypes: { select: { unitCategory: true, areaSqFt: true, areaSqYd: true, priceLakh: true } },
     },
   });
-  const listings: MarketListing[] = rows.map((r) => {
+  // Individual land listings aren't developer projects: they stay out of the
+  // project counts, RERA approvals and delivery records (their units are LAND,
+  // so they never reach the plot or apartment prices either).
+  const projectRows = rows.filter((r) => (r.specifications as { listingKind?: string } | null)?.listingKind !== "LAND_LISTING");
+  const listings: MarketListing[] = projectRows.map((r) => {
     const spec = (r.specifications ?? {}) as { constructionStatus?: string };
     return {
       id: r.id, name: r.name, developer: r.developer, lat: r.latitude!, lng: r.longitude!,

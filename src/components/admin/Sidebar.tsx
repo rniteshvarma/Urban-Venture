@@ -5,7 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
-  Activity, 
+  Activity,
+  CalendarCheck, 
   LayoutDashboard, 
   Users, 
   Kanban, 
@@ -148,6 +149,11 @@ export default function Sidebar() {
       name: "Enquiries",
       path: "/admin/enquiries",
       icon: <Inbox size={17} />,
+    },
+    {
+      name: "Site visits",
+      path: "/admin/site-visits",
+      icon: <CalendarCheck size={17} />,
     },
     {
       name: "Purchases",

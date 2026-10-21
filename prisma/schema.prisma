@@ -57,6 +57,7 @@ model User {
 
   @@index([googleId])
   @@index([phone])
+  savedSearches SavedSearch[]
 }
 
 enum Role {
@@ -202,6 +203,7 @@ model Project {
   // ST_MakeEnvelope. Revisit if PostGIS is ever installed.
   @@index([listingStatus, latitude, longitude])
   @@index([developerSlug])
+  siteVisits SiteVisit[]
 }
 
 enum RiskLevel {
@@ -1269,6 +1271,8 @@ model SavedProject {
   project   Project  @relation(fields: [projectId], references: [id])
   note      String?
   savedAt   DateTime @default(now())
+  /// Starting price (lakh) when the buyer was last told about it; the alert job compares against it.
+  lastAlertedMinLakh Float?
 
   @@unique([userId, projectId])
   @@index([userId])
@@ -2127,6 +2131,7 @@ enum UnitCategory {
   COMMERCIAL
   OFFICE
   OTHER
+  LAND // an individual land / plot listing (kept out of developer plot prices)
 }
 
 enum AreaUnit {
@@ -3032,4 +3037,54 @@ model AppError {
 
   @@index([at])
   @@index([scope, at])
+}
+
+// ── Buyer features (src/lib/buyer) ──────────────────────────────────────────
+// A buyer's saved /projects search. The daily alert job emails new listings
+// that match it (and price changes on the buyer's saved projects).
+model SavedSearch {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name            String
+  filters         Json // { q, type, corridor, locality, budget }
+  alertEmail      Boolean   @default(true)
+  unsubscribeKey  String    @unique @default(cuid())
+  lastAlertedAt   DateTime?
+  lastCheckedAt   DateTime  @default(now())
+  createdAt       DateTime  @default(now())
+
+  @@index([userId])
+}
+
+// A requested site visit. Creates a Lead (source "site_visit") so the CRM's
+// roadmap and automations pick it up; our team confirms the slot.
+model SiteVisit {
+  id            String          @id @default(cuid())
+  projectId     String
+  project       Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  leadId        String?
+  userId        String?
+  name          String
+  phone         String
+  email         String?
+  preferredDate DateTime
+  slot          String // "MORNING" | "AFTERNOON" | "EVENING"
+  note          String?
+  status        SiteVisitStatus @default(REQUESTED)
+  confirmedFor  DateTime?
+  adminNote     String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@index([status, preferredDate])
+  @@index([projectId])
+}
+
+enum SiteVisitStatus {
+  REQUESTED
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
 }

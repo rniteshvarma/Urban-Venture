@@ -219,6 +219,27 @@ export default function CorridorDetailPage() {
               </div>
             </div>
 
+            {/* What's measured here and what isn't */}
+            {market && (() => {
+              const d = market.narrative?.delivery;
+              const items: { label: string; ok: boolean; note: string }[] = [
+                { label: "Plot prices", ok: !!market.rates.plot, note: market.rates.plot ? `${market.rates.plot.projects} projects` : "too few listings" },
+                { label: "Flat prices", ok: !!market.rates.apartment, note: market.rates.apartment ? `${market.rates.apartment.projects} projects` : "too few listings" },
+                { label: "Rental yield", ok: market.rental?.grossYield != null, note: market.rental?.grossYield != null ? `${market.rental.listings} rentals` : "not measured" },
+                { label: "Guidance values", ok: !!market.guidance, note: market.guidance ? "official" : "not mapped" },
+                { label: "RERA delivery dates", ok: !!d?.withDeadline, note: d?.withDeadline ? `${d.withDeadline} projects` : "none read yet" },
+              ];
+              return (
+                <div className="flex flex-wrap gap-2" aria-label="Data coverage">
+                  {items.map((it) => (
+                    <span key={it.label} title={it.note} className={`text-[10px] font-semibold px-2.5 py-1 rounded-full border ${it.ok ? "border-white/25 text-white bg-white/10" : "border-white/15 text-slate-400 bg-transparent line-through decoration-white/30"}`}>
+                      {it.ok ? "✓" : "—"} {it.label} <span className="font-normal opacity-80">· {it.note}</span>
+                    </span>
+                  ))}
+                </div>
+              );
+            })()}
+
             {/* Gold-bordered Quote block (Admin/AI commentary) */}
             {profile.adminNote && (
               <div className="border-l-4 bg-black/20 backdrop-blur-sm px-4 py-3 rounded-r text-xs text-slate-200 italic max-w-2xl leading-relaxed" style={{ borderColor: "var(--color-saffron)" }}>

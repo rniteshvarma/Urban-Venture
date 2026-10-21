@@ -18,6 +18,7 @@ import path from "node:path";
 import type { Prisma } from "@prisma/client";
 import prisma from "../../src/lib/prisma";
 import { rateProject, horizonFor, median, haversineKm, type InventoryType } from "../../src/lib/inventory/rating";
+import type { InventoryRecord } from "../../src/lib/inventory/record";
 import { zoneFor } from "../../src/lib/inventory/zones";
 
 const DRY = process.argv.includes("--dry-run");
@@ -47,67 +48,21 @@ const DUMMIES: [string, string][] = [
   ["Adibatla Tech Valley", "TCS Builders"],
 ];
 
-interface Unit {
-  label: string;
-  category: "APARTMENT" | "VILLA" | "PLOT";
-  bedrooms: number | null;
-  carpetSqFt: number | null;
-  builtUpSqFt: number | null;
-  plotSqYd: number | null;
-  priceLakh: number | null;
-  ratePerSqFt?: number | null;
-  ratePerSqYd?: number | null;
-  priceNote?: string | null;
-}
+export type { InventoryRecord } from "../../src/lib/inventory/record";
 
-export interface InventoryRecord {
-  key: string;
-  name: string;
-  developer: string;
-  developerEstablished: number | null;
-  propertyType: InventoryType;
-  locality: string;
-  subLocality: string | null;
-  address: string | null;
-  lat: number | null;
-  lng: number | null;
-  coordPrecision: "exact" | "approximate" | null;
-  reraNumbers: string[];
-  reraUrl: string | null;
-  landAcres: number | null;
-  towers: number | null;
-  floors: string | null;
-  plots: number | null;
-  totalUnits: number | null;
-  possessionRera: string | null;
-  possessionTarget: string | null;
-  status: "READY" | "UNDER_CONSTRUCTION";
-  priceMinLakh: number;
-  priceMaxLakh: number;
-  units: Unit[];
-  amenities: string[];
-  images: string[];
-  masterPlans: string[];
-  floorPlans: string[];
-  paymentPlans: string[];
-  landmarks: { name: string; km: number }[];
-  litigation: string | null;
-  approvals: string[];
-  sources: { name: string; url: string; accessed: string }[];
-  flags: string[];
-  description: string;
-}
-
-const LISTING_TYPE = { Apartment: "APARTMENT", Villa: "VILLA", Plots: "OPEN_PLOT" } as const;
+const LISTING_TYPE = { Apartment: "APARTMENT", Villa: "VILLA", Plots: "OPEN_PLOT", Commercial: "COMMERCIAL_SPACE", Land: "FARM_LAND" } as const;
 const PERSONAS: Record<InventoryType, Prisma.ProjectCreateInput["targetPersonas"]> = {
   Apartment: ["PROFESSIONAL_FIRST_HOME", "FIRST_TIME_BUYER", "RENTAL_INCOME_SEEKER", "NRI_INVESTOR"],
   Villa: ["FAMILY_UPGRADER", "HNI_PORTFOLIO_BUILDER", "NRI_INVESTOR"],
   Plots: ["SELF_BUILD_HOMEOWNER", "LAND_BANKER", "LAND_SPECULATOR"],
+  Commercial: ["COMMERCIAL_INVESTOR", "RENTAL_INCOME_SEEKER", "HNI_PORTFOLIO_BUILDER"],
+  Land: ["LAND_BANKER", "FARMLAND_LIFESTYLE", "LAND_SPECULATOR"],
 };
+const isLandListing = (r: InventoryRecord) => r.listingKind === "LAND_LISTING";
 
 /** Per-project rate metric used for the price-vs-locality comparison. */
 function projectRate(r: InventoryRecord): number | null {
-  const rates = r.units.map((u) => (r.propertyType === "Plots" ? u.ratePerSqYd : u.ratePerSqFt)).filter((x): x is number => !!x);
+  const rates = r.units.map((u) => (r.propertyType === "Plots" || r.propertyType === "Land" ? u.ratePerSqYd : u.ratePerSqFt)).filter((x): x is number => !!x);
   return median(rates);
 }
 
@@ -116,6 +71,7 @@ function sourceHost(url: string): string {
 }
 
 function possessionText(r: InventoryRecord): string | null {
+  if (r.listingKind === "LAND_LISTING") return null;
   if (r.status === "READY") return "Ready to move";
   const d = r.possessionRera ?? r.possessionTarget;
   if (!d) return null;
@@ -134,7 +90,7 @@ async function main() {
   for (const r of records) {
     const rate = projectRate(r);
     if (!rate) continue;
-    const k = `${zoneOf.get(r.key)}|${r.propertyType}`;
+    const k = `${zoneOf.get(r.key)}|${r.propertyType}|${r.listingKind ?? "PROJECT"}`;
     peers.set(k, [...(peers.get(k) ?? []), rate]);
   }
 
@@ -190,7 +146,8 @@ async function main() {
   for (const r of records) {
     const zone = zoneOf.get(r.key)!;
     const possession = r.possessionRera ?? r.possessionTarget;
-    const rating = rateProject({
+    // Land listings aren't RERA projects: no Tiger Rating, and treated as high risk until the buyer checks title.
+    const rating = isLandListing(r) ? null : rateProject({
       propertyType: r.propertyType,
       reraRegistered: r.reraNumbers.length > 0,
       litigation: r.litigation === "Yes" ? "Yes" : r.litigation === "No" ? "No" : null,
@@ -200,10 +157,11 @@ async function main() {
       possession: r.status === "READY" ? now.toISOString() : possession,
       landAcres: r.landAcres, towers: r.towers,
       medianRate: projectRate(r),
-      peerMedianRate: (() => { const p = peers.get(`${zone}|${r.propertyType}`) ?? []; return p.length >= 3 ? median(p) : null; })(),
+      peerMedianRate: (() => { const p = peers.get(`${zone}|${r.propertyType}|${r.listingKind ?? "PROJECT"}`) ?? []; return p.length >= 3 ? median(p) : null; })(),
       now,
     });
-    grades[rating.grade] = (grades[rating.grade] ?? 0) + 1;
+    const grade = rating?.grade ?? "land listing";
+    grades[grade] = (grades[grade] ?? 0) + 1;
     const [minH, maxH] = horizonFor(r.propertyType, r.status === "READY" ? null : possession, now);
 
     const data = {
@@ -215,7 +173,7 @@ async function main() {
       maxBudgetLakhs: r.priceMaxLakh,
       minHorizonYears: minH,
       maxHorizonYears: maxH,
-      riskLevel: rating.riskLevel,
+      riskLevel: rating?.riskLevel ?? ("HIGH" as const),
       propertyType: r.propertyType,
       infraHighlights: r.landmarks.slice(0, 8).map((l) => `${l.name} — ${l.km} km`),
       exitOpportunities: [] as string[],
@@ -242,6 +200,9 @@ async function main() {
       paymentPlan: r.paymentPlans.length ? r.paymentPlans : undefined,
       specifications: {
         inventoryKey: r.key,
+        listingKind: r.listingKind ?? "PROJECT",
+        postedAt: r.postedAt ?? null,
+        sourceVerification: r.sourceVerification ?? null,
         locality: r.locality,
         subLocality: r.subLocality,
         developerEstablished: r.developerEstablished,
@@ -260,23 +221,24 @@ async function main() {
       listingSource: "ADMIN" as const,
       listingStatus: "APPROVED" as const,
       approvedAt: now,
-      listingTypes: [LISTING_TYPE[r.propertyType]],
+      listingTypes: [isLandListing(r) && r.propertyType === "Plots" ? "OPEN_PLOT" : LISTING_TYPE[r.propertyType]],
       purposes: ["BOTH" as const],
       targetPersonas: PERSONAS[r.propertyType],
-      totalPlots: r.propertyType === "Plots" ? r.plots ?? r.totalUnits : null,
+      totalPlots: r.propertyType === "Plots" && !isLandListing(r) ? r.plots ?? r.totalUnits : null,
       plotSizesSqYd: r.propertyType === "Plots" ? [...new Set(r.units.map((u) => u.plotSqYd).filter((x): x is number => !!x))].sort((a, b) => a - b) : [],
       reraVerified: false,
-      listingScore: rating.total,
-      scoreBreakdown: rating as unknown as Prisma.InputJsonValue,
-      scoredAt: now,
+      listingScore: rating?.total ?? null,
+      scoreBreakdown: rating ? (rating as unknown as Prisma.InputJsonValue) : undefined,
+      scoredAt: rating ? now : null,
     };
 
     const units = r.units.map((u, i) => ({
       label: u.label,
       unitCategory: u.category,
       bedrooms: u.bedrooms != null ? Math.round(u.bedrooms) : null,
-      areaValue: u.plotSqYd ?? u.builtUpSqFt ?? u.carpetSqFt,
-      areaUnit: u.plotSqYd ? ("SQYD" as const) : ("SQFT" as const),
+      // Farm land is quoted in acres; plots and homes in sq.yd / sq.ft.
+      areaValue: u.category === "LAND" && r.propertyType === "Land" && u.acres ? u.acres : u.plotSqYd ?? u.builtUpSqFt ?? u.carpetSqFt,
+      areaUnit: u.category === "LAND" && r.propertyType === "Land" && u.acres ? ("ACRE" as const) : u.plotSqYd ? ("SQYD" as const) : ("SQFT" as const),
       areaSqFt: u.plotSqYd ? u.plotSqYd * 9 : u.builtUpSqFt ?? u.carpetSqFt,
       areaSqYd: u.plotSqYd,
       carpetAreaSqFt: u.carpetSqFt,

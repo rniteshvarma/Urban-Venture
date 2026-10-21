@@ -13,6 +13,7 @@ import SignOutButton from "@/components/client/auth/SignOutButton";
 import { SkeletonCard, InfoChip, Wordmark } from "@/components/ui";
 import { formatLakhRange, formatINRFull, formatPct, formatDate } from "@/lib/format";
 import SellingMode from "@/components/seller/SellingMode";
+import SavedSearchesBlock from "@/components/client/SavedSearchesBlock";
 
 type DashMode = "buying" | "selling";
 
@@ -142,6 +143,7 @@ export default function DashboardPage() {
               <>
                 <NextActionBlock a={data.nextAction} />
                 <SavedBlock data={data} tab={tab} setTab={setTab} />
+                <SavedSearchesBlock />
                 {data.saved.corridors.length > 0 && <CorridorGrowthBlock corridors={data.saved.corridors} />}
                 <AdvisorBlock advisor={data.advisor} name={data.user.firstName} />
               </>

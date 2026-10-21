@@ -34,6 +34,8 @@ export interface ProjectCardData {
   possessionText?: string | null;
   inventoryGrade?: "A" | "B" | "C" | "D" | null;
   inventoryScore?: number | null;
+  /** "LAND_LISTING" for individual land / plot sales (not RERA projects) */
+  listingKind?: string | null;
 }
 
 interface ProjectCardProps {
@@ -96,9 +98,13 @@ export default function ProjectCard({ project: p, variant = "grid", className = 
       >
         {risk.label}
       </span>
-      <InfoChip variant="ghost">
-        {p.possessionText ?? `${p.minHorizonYears}–${p.maxHorizonYears} yr hold`}
-      </InfoChip>
+      {p.listingKind === "LAND_LISTING" ? (
+        <span className="uv-chip uv-chip-alert" title="An individual sale listed on a land marketplace — not a RERA-registered project">Land listing · not RERA</span>
+      ) : (
+        <InfoChip variant="ghost">
+          {p.possessionText ?? `${p.minHorizonYears}–${p.maxHorizonYears} yr hold`}
+        </InfoChip>
+      )}
     </div>
   );
 

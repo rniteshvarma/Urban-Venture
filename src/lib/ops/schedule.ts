@@ -20,6 +20,7 @@ export const JOBS: JobSpec[] = [
   { job: "whatsapp-maintenance", label: "WhatsApp maintenance", everyHours: 24 },
   { job: "renew-gmail-watch", label: "Gmail inbound watch", everyHours: 24 },
   { job: "ops-check", label: "Health check & alerts", everyHours: 24 },
+  { job: "saved-search-alerts", label: "Buyer alerts (saved searches, price changes)", everyHours: 24 },
 ];
 
 export type JobHealth = "OK" | "FAILED" | "STALE" | "NEVER_RAN" | "RUNNING";

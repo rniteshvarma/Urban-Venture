@@ -7,32 +7,25 @@
  * the priority region is everything inside the Regional Ring Road plus a
  * 20 km band outside it.
  *
- * The RRR polygon below is an APPROXIMATION traced through the towns the
- * notified alignment passes (north arc: Sangareddy–Narsapur–Toopran–Gajwel–
- * Bhongir–Choutuppal; south arc: Choutuppal–Amangal–Shadnagar–Chevella–
- * Sangareddy). Good to a few km — enough for zoning, not for parcel work.
+ * The RRR ring comes from prisma/data/rrr-alignment.json: the northern part
+ * as mapped in OpenStreetMap (from the environmental-clearance filing), the
+ * southern part as straight segments through the towns its reported
+ * alignment passes (Choutuppal–Maal–Amangal–Shadnagar–Chevella–Shankarpally–
+ * Sangareddy) — good to a few km, enough for zoning, not for parcel work.
  * Coordinates in the gazetteer are approximate town/locality centres.
  */
+
+import rrr from "../../../prisma/data/rrr-alignment.json";
 
 export type FocusZone = 'INSIDE_RRR' | 'RRR_BUFFER' | 'TELANGANA' | 'OUTSIDE';
 
 export const RRR_BUFFER_KM = 20;
 export const HYDERABAD_CENTRE = { lat: 17.385, lng: 78.4867 };
 
-/** [lat, lng] ring, clockwise from Sangareddy. */
+/** [lat, lng] ring: the northern part east→west, then the southern part back. */
 export const RRR_POLYGON: [number, number][] = [
-  [17.6246, 78.087], // Sangareddy
-  [17.7389, 78.2847], // Narsapur
-  [17.844, 78.479], // Toopran
-  [17.845, 78.682], // Gajwel
-  [17.829, 78.762], // Jagdevpur
-  [17.5116, 78.8889], // Bhongir
-  [17.251, 78.898], // Choutuppal
-  [17.05, 78.8], // Shivannaguda / Maal
-  [16.849, 78.53], // Amangal
-  [17.071, 78.205], // Shadnagar
-  [17.311, 78.137], // Chevella
-  [17.455, 78.13], // Shankarpally
+  ...(rrr.north.points as [number, number][]),
+  ...(rrr.south.points as [number, number][]).slice(1, -1).reverse(),
 ];
 
 /** Rough Telangana bounding box — used to drop out-of-state items. */

@@ -26,6 +26,12 @@ import { formatLakh, groupIndian } from "@/lib/format";
 import AccessibilityPanel, { type AccessibilityView } from "@/components/accessibility/AccessibilityPanel";
 import ImageLightbox from "@/components/projects/ImageLightbox";
 import ConsentNote from "@/components/legal/ConsentNote";
+import LayoutApproval from "@/components/projects/LayoutApproval";
+import CostPanel from "@/components/projects/CostPanel";
+import DueDiligence from "@/components/projects/DueDiligence";
+import SiteVisitForm from "@/components/projects/SiteVisitForm";
+import CompareButton from "@/components/projects/CompareButton";
+import { kindOf } from "@/lib/buyer/costs";
 
 interface UnitType {
   id: string;
@@ -63,6 +69,10 @@ interface Specifications {
   coordPrecision?: "exact" | "approximate" | null;
   sources?: { name: string; url: string; accessed: string }[];
   constructionStatus?: string;
+  /** "LAND_LISTING": an individual land / plot sale from a land marketplace, not a RERA project */
+  listingKind?: string;
+  postedAt?: string | null;
+  sourceVerification?: string | null;
 }
 
 interface ProjectDetails {
@@ -94,6 +104,7 @@ interface ProjectDetails {
   towerCount: number | null;
   floorsPerTower: string | null;
   amenities: string[];
+  approvals?: string[];
   addressLine: string | null;
   latitude: number | null;
   longitude: number | null;
@@ -246,6 +257,9 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
   const rating = project.inventoryRating;
   const sources = spec.sources ?? [];
   const accessed = sources[0]?.accessed;
+  const isLand = spec.listingKind === "LAND_LISTING";
+  const sourceName = sources[0]?.name ?? "the source";
+  const postedOn = spec.postedAt ? new Date(spec.postedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : null;
 
   const facts: { label: string; value: string }[] = [];
   if (project.totalLandAcres) facts.push({ label: "Land area", value: `${project.totalLandAcres} acres` });
@@ -257,9 +271,9 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
   if (spec.developerEstablished) facts.push({ label: "Developer since", value: String(spec.developerEstablished) });
 
   const sizeOf = (u: UnitType) =>
-    u.areaSqYd ? `${groupIndian(u.areaSqYd)} sq.yd` : u.builtUpSqFt ? `${groupIndian(u.builtUpSqFt)} sq.ft` : u.carpetAreaSqFt ? `${groupIndian(u.carpetAreaSqFt)} sq.ft (carpet)` : "—";
+    u.unitCategory === "LAND" && u.areaSqYd && u.areaSqYd >= 2420 ? `${Number((u.areaSqYd / 4840).toFixed(2))} acres` : u.areaSqYd ? `${groupIndian(u.areaSqYd)} sq.yd` : u.builtUpSqFt ? `${groupIndian(u.builtUpSqFt)} sq.ft` : u.carpetAreaSqFt ? `${groupIndian(u.carpetAreaSqFt)} sq.ft (carpet)` : "—";
   const rateOf = (u: UnitType) =>
-    u.ratePerSqYd ? `₹${groupIndian(u.ratePerSqYd)}/sq.yd` : u.ratePerSqFt ? `₹${groupIndian(u.ratePerSqFt)}/sq.ft` : "—";
+    u.unitCategory === "LAND" && u.areaSqYd && u.areaSqYd >= 2420 && u.ratePerSqYd ? `₹${groupIndian(Math.round((u.ratePerSqYd * 4840) / 100_000))} L/acre` : u.ratePerSqYd ? `₹${groupIndian(u.ratePerSqYd)}/sq.yd` : u.ratePerSqFt ? `₹${groupIndian(u.ratePerSqFt)}/sq.ft` : "—";
 
   const osm = hasPin
     ? `https://www.openstreetmap.org/export/embed.html?bbox=${project.longitude! - 0.012},${project.latitude! - 0.008},${project.longitude! + 0.012},${project.latitude! + 0.008}&layer=mapnik&marker=${project.latitude},${project.longitude}`
@@ -313,6 +327,9 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
               onError={() => setHeroBroken(true)}
             />
           </button>
+        ) : isLand && osm ? (
+          // Land listings carry no seller photos; the map shows where the land is.
+          <iframe src={osm} title={`Map of ${project.name}`} className="absolute inset-0 w-full h-full pointer-events-none" style={{ border: 0 }} loading="lazy" />
         ) : (
           <div className="w-full h-full" style={{ background: "linear-gradient(135deg, var(--color-ink) 0%, var(--color-ink-soft) 100%)" }} />
         )}
@@ -323,8 +340,13 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
             <div className="space-y-4 max-w-3xl">
               <div className="flex flex-wrap items-center gap-3">
                 <span className="text-[10px] font-bold text-ink bg-saffron px-3 py-1 rounded-full uppercase tracking-widest shadow-sm">
-                  {project.possessionText ?? project.status.replace("_", " ")}
+                  {isLand ? "For sale" : project.possessionText ?? project.status.replace("_", " ")}
                 </span>
+                {isLand && (
+                  <span className="text-[10px] font-bold text-white bg-alert/80 border border-white/25 px-3 py-1 rounded-full uppercase tracking-widest backdrop-blur-sm" title="An individual sale listed on a land marketplace — not a RERA-registered project">
+                    Land listing · not RERA
+                  </span>
+                )}
                 <span className="text-[10px] font-bold text-saffron bg-saffron/15 border border-saffron/30 px-3 py-1 rounded-full uppercase tracking-widest flex items-center gap-1 backdrop-blur-sm">
                   <MapPin size={10} /> {locality ?? project.corridor}
                 </span>
@@ -340,6 +362,12 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
               </h1>
 
               <div className="flex flex-wrap items-center gap-4 text-sm text-gray-300">
+                {isLand ? (
+                  <p className="flex items-center gap-1.5">
+                    <Building size={16} className="text-saffron" />
+                    Listed by an individual seller on <strong className="text-surface font-semibold">{sourceName}</strong>
+                  </p>
+                ) : (
                 <p className="flex items-center gap-1.5">
                   <Building size={16} className="text-saffron" />
                   Developed by{" "}
@@ -351,6 +379,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                     <strong className="text-surface font-semibold">{project.developer}</strong>
                   )}
                 </p>
+                )}
                 <span className="hidden sm:inline text-gray-500">•</span>
                 <p className="flex items-center gap-1.5">
                   <Landmark size={16} className="text-saffron" />
@@ -397,6 +426,21 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
           {/* Left Columns (Project Info) */}
           <div className="lg:col-span-2 space-y-8 stagger-1 animate-fade-in-up">
 
+            {isLand && (
+              <section className="rounded-xl border border-alert/30 bg-alert-wash/40 p-5 text-xs leading-relaxed text-text-primary space-y-1.5">
+                <p className="font-bold text-sm">Individual land listing — not a RERA-registered project</p>
+                <p>
+                  Listed on <a href={sources[0]?.url} target="_blank" rel="noreferrer" className="underline">{sourceName}</a>
+                  {postedOn ? ` on ${postedOn}` : ""}{spec.sourceVerification ? ` · ${spec.sourceVerification}` : ""}.
+                  {spec.coordPrecision === "approximate" ? " The map location is approximate." : ""} The price is the seller&apos;s asking price.
+                </p>
+                <p>
+                  We don&apos;t share the seller&apos;s details. Enquire here and our team will check the listing and put you in touch. Before paying anything, check the title,
+                  land records and conversion status — <Link href="/market/legal" className="underline font-semibold">see the buyer checks</Link>.
+                </p>
+              </section>
+            )}
+
             {/* Overview Attributes */}
             <section className="card-premium grid grid-cols-2 sm:grid-cols-4 gap-6 !p-8">
               <div className="space-y-1">
@@ -407,9 +451,9 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
               </div>
               <div className="space-y-1 border-l border-gray-100 pl-4 sm:pl-6">
                 <span className="text-[10px] text-text-secondary uppercase tracking-wider font-bold flex items-center gap-1.5">
-                  <Clock size={12} className="text-saffron-deep" /> {project.possessionText ? "Possession" : "Target Horizon"}
+                  <Clock size={12} className="text-saffron-deep" /> {isLand ? "Listed" : project.possessionText ? "Possession" : "Target Horizon"}
                 </span>
-                <span className="text-base font-bold text-text-primary block">{project.possessionText ?? `${project.minHorizonYears} - ${project.maxHorizonYears} Yrs`}</span>
+                <span className="text-base font-bold text-text-primary block">{isLand ? postedOn ?? "—" : project.possessionText ?? `${project.minHorizonYears} - ${project.maxHorizonYears} Yrs`}</span>
               </div>
               <div className="space-y-1 border-l border-gray-100 pl-4 sm:pl-6">
                 <span className="text-[10px] text-text-secondary uppercase tracking-wider font-bold flex items-center gap-1.5">
@@ -641,6 +685,16 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
               </section>
             )}
 
+            <CostPanel
+              kind={kindOf(project.propertyType, spec.listingKind)}
+              underConstruction={spec.constructionStatus === "UNDER_CONSTRUCTION"}
+              units={units.filter((u) => u.priceLakh).map((u) => ({ label: `${u.label}${sizeOf(u) !== "—" ? ` · ${sizeOf(u)}` : ""}`, priceLakh: u.priceLakh!, carpetSqFt: u.carpetAreaSqFt }))}
+            />
+
+            <DueDiligence kind={kindOf(project.propertyType, spec.listingKind)} isLandListing={isLand} />
+
+            {isPlots && <LayoutApproval reraNumbers={reraNumbers} approvals={project.approvals ?? []} isLandListing={isLand} />}
+
             {/* RERA + sources */}
             {(reraNumbers.length > 0 || sources.length > 0) && (
               <section className="card-premium space-y-4 !p-8">
@@ -669,7 +723,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                         </li>
                       ))}
                     </ul>
-                    <div>Images are the developer’s marketing material. Verify prices, approvals and availability with the developer before booking.</div>
+                    <div>{isLand ? "Facts are as the seller listed them; our team checks a listing before connecting you." : "Images are the developer’s marketing material. Verify prices, approvals and availability with the developer before booking."}</div>
                   </div>
                 )}
               </section>
@@ -797,10 +851,14 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                       {isSubmitting ? "Submitting..." : "Submit Inquiry"}
                     </button>
 
-                    <ConsentNote className="text-center" share="We pass your details to this project's developer so they can respond." />
+                    <ConsentNote className="text-center" share={isLand ? "Our team checks the listing first; we pass your details to the seller only with your go-ahead." : "We pass your details to this project's developer so they can respond."} />
                   </form>
                 )}
               </div>
+            </div>
+            <div className="mt-6 space-y-3">
+              <SiteVisitForm projectId={project.id} projectName={project.name} />
+              <CompareButton projectId={project.id} className="justify-center" />
             </div>
           </div>
 

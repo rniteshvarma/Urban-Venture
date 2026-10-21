@@ -8,7 +8,8 @@
 //
 // Pure functions; unit-tested in rating.test.ts.
 
-export type InventoryType = "Apartment" | "Villa" | "Plots";
+import type { InventoryType } from "./record";
+export type { InventoryType };
 
 export interface RatingInput {
   propertyType: InventoryType;
@@ -143,7 +144,7 @@ export function rateProject(i: RatingInput): Rating {
 export function horizonFor(type: InventoryType, possession: string | null, now = new Date()): [number, number] {
   const m = monthsUntil(possession, now);
   const toPossession = m == null || m <= 0 ? 0 : Math.ceil(m / 12);
-  if (type === "Plots") return [Math.max(3, toPossession + 3), Math.max(7, toPossession + 7)];
+  if (type === "Plots" || type === "Land") return [Math.max(3, toPossession + 3), Math.max(7, toPossession + 7)];
   return [Math.max(2, toPossession + 1), Math.max(5, toPossession + 5)];
 }
 

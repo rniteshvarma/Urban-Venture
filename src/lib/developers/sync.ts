@@ -190,9 +190,11 @@ export async function rebuildDevelopers(opts: { log?: Log; today?: Date } = {}) 
   const certs = new Map((await prisma.reraCertificate.findMany()).map((c) => [c.projectId ?? c.reraNumber, c]));
   const orders = await prisma.regulatoryOrder.findMany({ where: { respondentKey: { not: null } } });
 
-  // Group listings by normalised developer name.
+  // Group listings by normalised developer name. Individual land listings
+  // (sold by owners or agents, not developers) have no track record to show.
   const groups = new Map<string, typeof projects>();
   for (const p of projects) {
+    if ((p.specifications as { listingKind?: string } | null)?.listingKind === "LAND_LISTING") continue;
     const key = normaliseOrgName(p.developer);
     if (!key) continue;
     groups.set(key, [...(groups.get(key) ?? []), p]);
