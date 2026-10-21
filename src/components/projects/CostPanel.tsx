@@ -59,6 +59,12 @@ export default function CostPanel({ units, kind, underConstruction }: { units: C
             <span className="font-mono font-bold text-text-primary text-sm">{formatLakh(c.totalLakh)}</span>
           </div>
         </div>
+        {kind === "land" ? (
+          <div className="rounded-lg bg-slate-50 border border-slate-100 p-4 text-text-secondary leading-relaxed space-y-2">
+            <p>Home loans don&apos;t cover farm land; some banks offer separate land-purchase loans with their own terms.</p>
+            <p>In a gram panchayat the split is {DUTY.stampPct}% stamp duty and {DUTY.gramPanchayatRegistrationPct}% registration, with no transfer duty — the same 7.5% in total.</p>
+          </div>
+        ) : (
         <div className="space-y-3">
           <div className="flex flex-wrap gap-3 items-center text-text-secondary">
             <label className="flex items-center gap-1">Down payment <input type="number" min={0} max={100} value={downPct} onChange={(e) => setDownPct(Math.min(100, Math.max(0, Number(e.target.value) || 0)))} className={input} />%</label>
@@ -72,9 +78,10 @@ export default function CostPanel({ units, kind, underConstruction }: { units: C
           </div>
           <p className="text-[10px] text-text-secondary leading-relaxed">
             The loan rate is an example — set your bank&apos;s. Duties are charged on the higher of the price and the government guidance value, and
-            some developers add parking, club and maintenance charges.
+            some developers add parking, club and maintenance charges.{kind === "plot" ? ` In a gram panchayat the split is ${DUTY.stampPct}% stamp duty and ${DUTY.gramPanchayatRegistrationPct}% registration, with no transfer duty — the same total.` : ""}
           </p>
         </div>
+        )}
       </div>
       <p className="text-[10px] text-text-secondary">Sources: {DUTY.source}; {GST.source}.</p>
     </section>

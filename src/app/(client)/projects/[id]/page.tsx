@@ -432,7 +432,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                 <p>
                   Listed on <a href={sources[0]?.url} target="_blank" rel="noreferrer" className="underline">{sourceName}</a>
                   {postedOn ? ` on ${postedOn}` : ""}{spec.sourceVerification ? ` · ${spec.sourceVerification}` : ""}.
-                  {spec.coordPrecision === "approximate" ? " The map location is approximate." : ""} The price is the seller&apos;s asking price.
+                  {spec.coordPrecision === "approximate" ? " The map location is approximate." : ""}{" "}The price is the seller&apos;s asking price.
                 </p>
                 <p>
                   We don&apos;t share the seller&apos;s details. Enquire here and our team will check the listing and put you in touch. Before paying anything, check the title,
@@ -534,7 +534,9 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                   </table>
                 </div>
                 <p className="text-[11px] text-text-secondary">
-                  Base prices as listed{accessed ? ` on ${new Date(accessed).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}` : ""}; registration, GST and other charges extra. Confirm the current price sheet with the developer.
+                  {isLand
+                    ? `The seller's asking price${accessed ? ` as listed on ${new Date(accessed).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}` : ""}; stamp duty and registration extra.`
+                    : <>Base prices as listed{accessed ? ` on ${new Date(accessed).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}` : ""}; registration, GST and other charges extra. Confirm the current price sheet with the developer.</>}
                 </p>
               </section>
             )}
@@ -760,7 +762,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                   <IndianRupee size={80} />
                 </div>
                 <span className="text-[10px] font-bold uppercase tracking-widest text-saffron block mb-2 relative z-10">
-                  {units.length > 0 ? "Base Price Range" : "Investment Bracket"}
+                  {isLand ? "Asking price" : units.length > 0 ? "Base Price Range" : "Investment Bracket"}
                 </span>
                 <h3 className="font-display text-3xl font-bold relative z-10">
                   {formatPrice(project.minBudgetLakhs, project.maxBudgetLakhs)}

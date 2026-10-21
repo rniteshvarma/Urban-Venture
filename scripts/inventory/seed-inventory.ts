@@ -85,7 +85,9 @@ async function main() {
   console.log(`${records.length} inventory records${DRY ? " (dry run)" : ""}`);
 
   // ── peer medians: same type, same zone (≥3 projects) ──
-  const zoneOf = new Map(records.map((r) => [r.key, zoneFor(r.locality, r.lat, r.lng) ?? r.locality]));
+  // Land listings sit in villages whose names can clash with city localities
+  // (Kondapur village vs HITEC City's Kondapur), so their zone comes from the pin.
+  const zoneOf = new Map(records.map((r) => [r.key, zoneFor(isLandListing(r) ? null : r.locality, r.lat, r.lng) ?? r.locality]));
   const peers = new Map<string, number[]>();
   for (const r of records) {
     const rate = projectRate(r);

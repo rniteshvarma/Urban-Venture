@@ -10,7 +10,7 @@ import { jsonLd, PUBLIC_PROJECT, siteUrl } from "@/lib/site";
 const load = (id: string) =>
   prisma.project.findFirst({
     where: { id, ...PUBLIC_PROJECT },
-    select: { id: true, name: true, developer: true, developerSlug: true, corridor: true, city: true, propertyType: true, description: true, addressLine: true, reraNumber: true, minBudgetLakhs: true, maxBudgetLakhs: true, imageUrls: true, latitude: true, longitude: true },
+    select: { id: true, name: true, developer: true, developerSlug: true, specifications: true, corridor: true, city: true, propertyType: true, description: true, addressLine: true, reraNumber: true, minBudgetLakhs: true, maxBudgetLakhs: true, imageUrls: true, latitude: true, longitude: true },
   });
 
 const lakhs = (n: number) => (n >= 100 ? `₹${(n / 100).toFixed(2).replace(/\.?0+$/, "")} Cr` : `₹${Math.round(n)} L`);
@@ -20,8 +20,11 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const p = await load(id).catch(() => null);
   if (!p) return { title: "Project | Property Tiger" };
   const price = p.minBudgetLakhs > 0 ? ` · ${lakhs(p.minBudgetLakhs)}${p.maxBudgetLakhs > p.minBudgetLakhs ? `–${lakhs(p.maxBudgetLakhs)}` : ""}` : "";
-  const title = `${p.name} by ${p.developer}, ${p.corridor} | Property Tiger`;
-  const description = `${p.propertyType} in ${p.corridor}, ${p.city}${price}${p.reraNumber ? ` · TG-RERA ${p.reraNumber}` : ""}. Prices, units, delivery record and nearby infrastructure.`;
+  const isLand = (p.specifications as { listingKind?: string } | null)?.listingKind === "LAND_LISTING";
+  const title = isLand ? `${p.name} for sale | Property Tiger` : `${p.name} by ${p.developer}, ${p.corridor} | Property Tiger`;
+  const description = isLand
+    ? `${p.name}${price}. Individual land listing (not RERA) — location, asking price and the checks to make before buying.`
+    : `${p.propertyType} in ${p.corridor}, ${p.city}${price}${p.reraNumber ? ` · TG-RERA ${p.reraNumber}` : ""}. Prices, units, delivery record and nearby infrastructure.`;
   return {
     title,
     description,

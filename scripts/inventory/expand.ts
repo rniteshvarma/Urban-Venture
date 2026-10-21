@@ -3,7 +3,7 @@
  * prisma/data/hyderabad-inventory.json. Pages are fetched separately (politely,
  * honouring robots.txt) into a folder; this script only reads them.
  *
- *   npx tsx scripts/inventory/expand.ts --pages <dir> [--write] [--h247-clean <file>]
+ *   npx tsx scripts/inventory/expand.ts --pages <dir> [--write] [--h247-clean <file>] [--dump-h247-images <file>]
  *
  *   <dir>/rf-pages/{id}.html         RoofandFloor project pages
  *   <dir>/rf-urls.txt                their URLs
@@ -25,8 +25,8 @@
  *  - Duplicates (same RERA number, or same name + developer) are dropped.
  *  - Existing RoofandFloor records keep their data; only broken floor-plan
  *    links and missing amenities are repaired from the fresh page.
- *  - Homes247 images are used only when listed in --h247-clean (checked by eye
- *    for watermarks); otherwise the record has none.
+ *  - Homes247 watermarks its images, floor plans and master plans, so none
+ *    are used unless listed in --h247-clean; by default the record has none.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -164,6 +164,7 @@ for (const url of urlsIn(path.join(PAGES, "rf-urls.txt"))) {
   candidates.push(res.record);
 }
 
+const h247Images: Record<string, string[]> = {};
 const h247Clean: Record<string, string[]> = arg("--h247-clean") ? JSON.parse(fs.readFileSync(arg("--h247-clean")!, "utf8")) : {};
 for (const url of urlsIn(path.join(PAGES, "h247", "cand-urls.txt"))) {
   const id = url.split("-").pop()!;
@@ -188,7 +189,13 @@ for (const url of urlsIn(path.join(PAGES, "h247", "cand-urls.txt"))) {
     tally("homes247", "rejected: pin more than 3 km from TG-RERA's location");
     continue;
   }
-  r.images = (h247Clean[r.key] ?? []).filter((u) => r.images.includes(u));
+  h247Images[r.key] = [...r.images];
+  // Homes247 watermarks its images (checked by eye, 2026-10-21), so none are
+  // used — not even floor or master plans — unless listed as clean.
+  const clean = new Set(h247Clean[r.key] ?? []);
+  r.images = r.images.filter((u) => clean.has(u));
+  r.floorPlans = r.floorPlans.filter((u) => clean.has(u));
+  r.masterPlans = r.masterPlans.filter((u) => clean.has(u));
   if (!r.images.length) r.flags = [...new Set([...r.flags, "NO_CLEAN_IMAGES"])];
   r.reraUrl = null;
   candidates.push(r);
@@ -216,6 +223,11 @@ const accepted: InventoryRecord[] = [];
 const src = (r: InventoryRecord) => r.key.split(":")[0];
 
 for (const r of candidates) {
+  // Re-runs: a listing already in the dataset is kept as it is.
+  if (byKey.has(r.key)) {
+    tally(src(r), "already listed");
+    continue;
+  }
   checkPin(r);
   const p = areaPoint(r);
   if (!p) {
@@ -253,7 +265,7 @@ for (const r of candidates) {
 
 // Zone medians per type, over existing + accepted, for the price check.
 const all = [...existing, ...accepted];
-const zoneKey = (r: InventoryRecord) => `${zoneFor(r.locality, r.lat, r.lng) ?? r.locality}|${r.propertyType}|${r.listingKind ?? "PROJECT"}`;
+const zoneKey = (r: InventoryRecord) => `${zoneFor(r.listingKind === "LAND_LISTING" ? null : r.locality, r.lat, r.lng) ?? r.locality}|${r.propertyType}|${r.listingKind ?? "PROJECT"}`;
 const rates = new Map<string, number[]>();
 for (const r of all) {
   const xs = r.units.map((u) => u.ratePerSqFt ?? u.ratePerSqYd).filter((x): x is number => !!x).sort((a, b) => a - b);
@@ -284,6 +296,11 @@ const kept = existing.filter((r) => {
   return true;
 });
 
+if (arg("--dump-h247-images")) {
+  // Images of the Homes247 records that were accepted, for a by-eye watermark check.
+  const keys = new Set(final.map((r) => r.key));
+  fs.writeFileSync(arg("--dump-h247-images")!, JSON.stringify(Object.fromEntries(Object.entries(h247Images).filter(([k]) => keys.has(k))), null, 1));
+}
 console.log(JSON.stringify(report, null, 1));
 console.log(`floor-plan links repaired on ${repaired} existing records`);
 console.log(`existing ${existing.length} → kept ${kept.length}; added ${final.length}; total ${kept.length + final.length}`);
