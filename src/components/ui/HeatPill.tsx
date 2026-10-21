@@ -17,6 +17,7 @@ export default function HeatPill({ rating, score, size = "md", className = "" }:
   return (
     <span
       className={className}
+      title="Heat label from our corridor score (infrastructure, RERA projects, developer activity, growth outlook)"
       style={{
         display: "inline-flex",
         alignItems: "center",

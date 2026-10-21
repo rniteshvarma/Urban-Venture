@@ -47,3 +47,4 @@ next-env.d.ts
 
 # Runtime file uploads (local dev fallback; production uses Vercel Blob)
 /public/uploads/
+src/lib/cache/

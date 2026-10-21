@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
   if (denied) return denied;
   try {
     const summary = await runMarketFeeds({ budgetMs: 200_000 });
-    await computeAllCorridorScores({ skipAI: true });
+    await computeAllCorridorScores();
     return NextResponse.json(summary);
   } catch (error) {
     console.error("GET /api/cron/market-feeds", error);

@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
   if (!auth.ok) return auth.res;
   try {
     const summary = await runMarketFeeds({ budgetMs: 200_000, force: req.nextUrl.searchParams.get("force") === "1" });
-    await computeAllCorridorScores({ skipAI: true });
+    await computeAllCorridorScores();
     return NextResponse.json(summary);
   } catch (error) {
     console.error("POST /api/admin/market/feeds", error);

@@ -29,11 +29,13 @@ export const HEAT: Record<HeatRating, Tone> = {
 };
 
 // ── Investment cycle (filter chips) ─────────────────────────
-export const CYCLE: Record<InvCycle, { label: string; emoji?: string }> = {
-  ACT_NOW:         { label: "Act Now", emoji: "🔥" },
-  MID_CYCLE:       { label: "Mid-Cycle" },
-  WATCH_AND_BUY:   { label: "Watch & Buy" },
-  PATIENT_CAPITAL: { label: "Patient Capital" },
+// Timing stage from the nearby infrastructure pipeline (src/lib/market/narrative.ts cycleFor):
+// what stage the projects are at, not advice on when to buy.
+export const CYCLE: Record<InvCycle, { label: string; emoji?: string; explain: string }> = {
+  ACT_NOW:         { label: "Infra starting soon", explain: "Nearby infrastructure is approved and due within about 3 years, not yet under construction." },
+  MID_CYCLE:       { label: "Infra under way",     explain: "Nearby infrastructure is under construction, partly open or complete." },
+  WATCH_AND_BUY:   { label: "Infra 3–6 yrs out",   explain: "The nearest major project is approved or announced, 3–6 years from completion." },
+  PATIENT_CAPITAL: { label: "Long horizon",        explain: "No nearby infrastructure under way, or completion further out." },
 };
 
 // ── Investor sentiment ──────────────────────────────────────

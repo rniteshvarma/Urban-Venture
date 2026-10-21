@@ -574,9 +574,7 @@ function CalculatorContent() {
                     </div>
                     <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1 border-t border-slate-50">
                       <span>Est. Completion: <span className="font-semibold text-slate-700">{project.estimatedCompletion || "N/A"}</span></span>
-                      <span className="flex items-center gap-1">
-                        Impact: <span className="font-bold text-emerald-600">+{project.reImpactScore ? (project.reImpactScore * 0.15).toFixed(1) : "0.5"}% CAGR</span>
-                      </span>
+                      <span className="capitalize">{String(project.status ?? "").replace(/_/g, " ").toLowerCase()}</span>
                     </div>
                   </div>
                 ))}
@@ -588,7 +586,7 @@ function CalculatorContent() {
           {takeaways.length > 0 && (
             <div className="bg-blue-50/20 border border-blue-200/50 p-5 rounded-2xl space-y-3 animate-fade-in shadow-sm">
               <h4 className="text-xs font-bold uppercase tracking-wider text-[#FFB400] flex items-center gap-1.5">
-                <Sparkles className="w-4 h-4 animate-pulse" /> AI Advisory Insights Takeaways
+                <Sparkles className="w-4 h-4" /> What the numbers say
               </h4>
               <ul className="list-disc pl-4 space-y-2 text-[11px] text-slate-700 leading-relaxed font-medium">
                 {takeaways.map((takeaway, idx) => (

@@ -14,7 +14,7 @@ async function main() {
   const s = await runMarketFeeds({ force: process.argv.includes("--force"), only, log: console.log });
   console.log("[market] feeds:", JSON.stringify({ registration: s.registration, magicbricks: s.magicbricks, rentals: s.rentals, news: s.news }));
   if (s.errors.length) console.log("[market] errors:\n  " + s.errors.join("\n  "));
-  await computeAllCorridorScores({ skipAI: true });
+  await computeAllCorridorScores();
 }
 
 main()

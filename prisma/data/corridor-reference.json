@@ -8,7 +8,7 @@
       "direction": "SOUTHEAST",
       "zone": "SE Beyond ORR",
       "district": "Ranga Reddy",
-      "description": "A major IT and aerospace manufacturing hub centered around the TCS Adibatla campus and Tata Aerospace SEZ. Excellent connectivity via ORR Exit 12.",
+      "description": "South-east of the city beyond the ORR, around Adibatla, where TCS and Tata's aerospace units operate. Close to the ORR at Bongloor.",
       "heatRating": "VERY_HOT",
       "investmentCycle": "ACT_NOW",
       "ghmc2025": false,
@@ -49,20 +49,10 @@
       "demandScore": null,
       "appreciationScore": null,
       "sentiment": null,
-      "keyDrivers": [
-        "Tata Aerospace & TCS Job Growth",
-        "ORR Exit 12 Connectivity",
-        "RRR Southern alignment proximity"
-      ],
-      "keyRisks": [
-        "Local drinking water infrastructure lag",
-        "Pockets of unapproved layout layouts"
-      ],
-      "bestFor": [
-        "Mid-term plot buyers",
-        "IT professionals looking for value housing"
-      ],
-      "historicalAnalog": "Similar to Kompally in 2012",
+      "keyDrivers": [],
+      "keyRisks": [],
+      "bestFor": [],
+      "historicalAnalog": null,
       "adminNote": "Adibatla has consolidated its position as an aerospace hub. Look for DTCP approved layouts within 3km of ORR exit.",
       "subAreas": [
         "Adibatla village",
@@ -82,7 +72,7 @@
       "direction": "EAST",
       "zone": "East Beyond ORR",
       "district": "Yadadri Bhuvanagiri",
-      "description": "A growing educational and medical corridor along the Warangal Highway, highlighted by AIIMS Bibinagar and the historical tourist hub of Bhongir Fort.",
+      "description": "East along the Hyderabad–Warangal highway (NH-163), around AIIMS Bibinagar and Bhongir town.",
       "heatRating": "EMERGING",
       "investmentCycle": "PATIENT_CAPITAL",
       "ghmc2025": false,
@@ -123,20 +113,10 @@
       "demandScore": null,
       "appreciationScore": null,
       "sentiment": null,
-      "keyDrivers": [
-        "AIIMS Bibinagar Medical Hub Expansion",
-        "Warangal Highway development & RRR connection",
-        "Yadadri Spiritual Tourism spillover"
-      ],
-      "keyRisks": [
-        "Delayed RRR East arc construction timelines",
-        "Speculative layouts without proper layout markings"
-      ],
-      "bestFor": [
-        "Patient long-term land bankers",
-        "Retirement home developers"
-      ],
-      "historicalAnalog": "Similar to Ghatkesar in 2008",
+      "keyDrivers": [],
+      "keyRisks": [],
+      "bestFor": [],
+      "historicalAnalog": null,
       "adminNote": "This corridor is a classic long-term holding play. Ensure RERA registration is active before committing funds.",
       "subAreas": [
         "Bibinagar Town",
@@ -156,7 +136,7 @@
       "direction": "EAST",
       "zone": "East Outer Ring Road",
       "district": "Medchal-Malkajgiri",
-      "description": "The primary technology node of East Hyderabad, anchored by the Raheja Mindspace IT Park and Infosys Pocharam campus. Strong residential support.",
+      "description": "East Hyderabad along the Warangal highway, near the Infosys campus and IT SEZ at Pocharam.",
       "heatRating": "WARM",
       "investmentCycle": "WATCH_AND_BUY",
       "ghmc2025": true,
@@ -197,20 +177,10 @@
       "demandScore": null,
       "appreciationScore": null,
       "sentiment": null,
-      "keyDrivers": [
-        "Raheja Mindspace IT growth",
-        "Warangal Highway NH-163 6-Laning",
-        "Metro Phase 2 Uppal-Ghatkesar extension proposal"
-      ],
-      "keyRisks": [
-        "IT expansion slower than Western corridor",
-        "Groundwater shortage during peak summer"
-      ],
-      "bestFor": [
-        "Salaried professionals in Pocharam IT campus",
-        "Steady long-term plot buyers"
-      ],
-      "historicalAnalog": "Similar to Miyapur in 2008",
+      "keyDrivers": [],
+      "keyRisks": [],
+      "bestFor": [],
+      "historicalAnalog": null,
       "adminNote": "Ghatkesar offers a highly stable residential market. Look for projects with proper GHMC/HMDA permissions near the highway.",
       "subAreas": [
         "Ghatkesar Town",
@@ -230,7 +200,7 @@
       "direction": "SOUTH",
       "zone": "Srisailam Highway Beyond ORR",
       "district": "Ranga Reddy",
-      "description": "The core gateway corridor leading into the newly announced FCDA Future City and Mucherla. Highly speculative land market with high appreciation tailwinds.",
+      "description": "South along the Srisailam highway, at the edge of the Bharat Future City area around Mucherla (Future City Development Authority, set up in 2025).",
       "heatRating": "FIRE",
       "investmentCycle": "ACT_NOW",
       "ghmc2025": false,
@@ -271,20 +241,10 @@
       "demandScore": null,
       "appreciationScore": null,
       "sentiment": null,
-      "keyDrivers": [
-        "Future City Mega AI & Sports Hubs",
-        "Metro Phase 2 Mucherla Extension",
-        "Srisailam Highway 4-Laning"
-      ],
-      "keyRisks": [
-        "Highly speculative price bubbles",
-        "Government land acquisition buffers for RRR/Future City"
-      ],
-      "bestFor": [
-        "Patient capital spec investors",
-        "Agricultural land buyers seeking conversion"
-      ],
-      "historicalAnalog": "Similar to Kokapet in 2006",
+      "keyDrivers": [],
+      "keyRisks": [],
+      "bestFor": [],
+      "historicalAnalog": null,
       "adminNote": "Kadthal is currently the epicentre of spec interest due to the Future City alignment. Buy only HMDA approved layout plots.",
       "subAreas": [
         "Kadthal Town",
@@ -304,7 +264,7 @@
       "direction": "WEST",
       "zone": "West Outer Ring Road",
       "district": "Ranga Reddy",
-      "description": "The crown jewel of Hyderabad real estate. High-rise commercial and ultra-luxury residential zone commanding the highest land rates in South India.",
+      "description": "West Hyderabad next to the Financial District and the ORR, where HMDA auctioned the Neopolis layout. Mostly high-rise apartments.",
       "heatRating": "FIRE",
       "investmentCycle": "ACT_NOW",
       "ghmc2025": true,
@@ -345,20 +305,10 @@
       "demandScore": null,
       "appreciationScore": null,
       "sentiment": null,
-      "keyDrivers": [
-        "Neopolis IT SEZ Commercial High-Rises",
-        "Direct ORR Trumpet Interchange",
-        "Concentration of HNIs and elite developers"
-      ],
-      "keyRisks": [
-        "Extreme entry ticket size",
-        "Infrastructure strain due to unprecedented vertical density"
-      ],
-      "bestFor": [
-        "Institutional investors",
-        "Ultra-high-net-worth buyers (UHNIs)"
-      ],
-      "historicalAnalog": "Similar to BKC Mumbai or Gurugram Cyber City",
+      "keyDrivers": [],
+      "keyRisks": [],
+      "bestFor": [],
+      "historicalAnalog": null,
       "adminNote": "Kokapet Neopolis represents the peak of commercial real estate. Ideal for liquid portfolios looking for trophy assets.",
       "subAreas": [
         "Neopolis Phase 1",
@@ -378,7 +328,7 @@
       "direction": "NORTH",
       "zone": "North Outer Ring Road",
       "district": "Medchal-Malkajgiri",
-      "description": "An established, high-density residential zone featuring premium apartments and gated communities. Serves as a prime alternative to the expensive Western IT hubs.",
+      "description": "North Hyderabad along NH-44 (Kompally) and towards Bachupally — a mature residential belt of apartments and gated communities.",
       "heatRating": "WARM",
       "investmentCycle": "WATCH_AND_BUY",
       "ghmc2025": true,
@@ -419,20 +369,10 @@
       "demandScore": null,
       "appreciationScore": null,
       "sentiment": null,
-      "keyDrivers": [
-        "NH-44 Commercialization",
-        "Gundlapochampally MMTS Hub",
-        "Excellent school and hospital cluster"
-      ],
-      "keyRisks": [
-        "Traffic bottleneck at Suchitra junction",
-        "Saturated plot options forcing apartment shifts"
-      ],
-      "bestFor": [
-        "Families looking for ready apartments",
-        "Conservative, low-risk investors"
-      ],
-      "historicalAnalog": "Similar to Kukatpally in 2005",
+      "keyDrivers": [],
+      "keyRisks": [],
+      "bestFor": [],
+      "historicalAnalog": null,
       "adminNote": "Kompally has transitioned from an investment frontier to a saturated end-user market. Focus on resale value and construction quality.",
       "subAreas": [
         "Kompally Junction",
@@ -452,7 +392,7 @@
       "direction": "SOUTH",
       "zone": "South Beyond ORR",
       "district": "Ranga Reddy",
-      "description": "An active industrial-residential zone driven by Maheshwaram Electronic SEZ (Wipro, HCL) and its direct adjacency to the Pharma City development.",
+      "description": "South of the airport around Maheshwaram, near the E-City electronics cluster, with the Pharma City / Future City lands to the east.",
       "heatRating": "VERY_HOT",
       "investmentCycle": "ACT_NOW",
       "ghmc2025": false,
@@ -493,20 +433,10 @@
       "demandScore": null,
       "appreciationScore": null,
       "sentiment": null,
-      "keyDrivers": [
-        "Wipro & HCL SEZ Expansions",
-        "Direct connectivity to Srisailam & Bangalore Highways",
-        "Pharma City Phase 1 infrastructure rollout"
-      ],
-      "keyRisks": [
-        "Delayed environmental approvals for pharma chemical zones",
-        "Water table contamination fears in micro pockets"
-      ],
-      "bestFor": [
-        "Medium-term plot investors",
-        "Small commercial builders"
-      ],
-      "historicalAnalog": "Similar to Gachibowli in 2006",
+      "keyDrivers": [],
+      "keyRisks": [],
+      "bestFor": [],
+      "historicalAnalog": null,
       "adminNote": "Maheshwaram bridges the IT corridor and the industrial zones. It remains one of our highly recommended sectors for mid-term holdings.",
       "subAreas": [
         "Maheshwaram Town",
@@ -526,7 +456,7 @@
       "direction": "NORTH",
       "zone": "North Beyond ORR",
       "district": "Medchal-Malkajgiri",
-      "description": "A major logistics, warehousing, and manufacturing corridor along NH-44. Highly active in commercial leasing with emerging residential pockets.",
+      "description": "North along NH-44 around Medchal and Dundigal — industrial estates, warehousing and growing residential layouts.",
       "heatRating": "HOT",
       "investmentCycle": "MID_CYCLE",
       "ghmc2025": true,
@@ -567,20 +497,10 @@
       "demandScore": null,
       "appreciationScore": null,
       "sentiment": null,
-      "keyDrivers": [
-        "NH-44 Logistics Hub Status",
-        "RRR Northern Arc connection",
-        "Affordable land parcels for industrial development"
-      ],
-      "keyRisks": [
-        "Dominated by commercial layouts, residential density is scattered",
-        "Pockets affected by heavy vehicle traffic congestion"
-      ],
-      "bestFor": [
-        "Warehousing developers",
-        "HNI portfolio seeking lease rentals"
-      ],
-      "historicalAnalog": "Similar to Jeedimetla in 2000",
+      "keyDrivers": [],
+      "keyRisks": [],
+      "bestFor": [],
+      "historicalAnalog": null,
       "adminNote": "Medchal remains a critical logistics node. The expansion of RRR North will trigger significant demand for warehousing land here.",
       "subAreas": [
         "Medchal Town",
@@ -600,7 +520,7 @@
       "direction": "NORTHWEST",
       "zone": "North-West Beyond RRR",
       "district": "Sangareddy",
-      "description": "An industrial and educational powerhouse. Home to IIT Hyderabad, heavy industrial clusters (TSIIC), and the northern intersection of the RRR.",
+      "description": "North-west along NH-65 around Sangareddy and Kandi, home to IIT Hyderabad and older industrial estates. The RRR northern part passes here.",
       "heatRating": "HOT",
       "investmentCycle": "MID_CYCLE",
       "ghmc2025": false,
@@ -641,20 +561,10 @@
       "demandScore": null,
       "appreciationScore": null,
       "sentiment": null,
-      "keyDrivers": [
-        "IIT Hyderabad Hub expansion",
-        "RRR Northern Arc construction start",
-        "TSIIC Industrial Growth"
-      ],
-      "keyRisks": [
-        "Industrial pollution in adjacent zones",
-        "Heavy traffic congestions on NH-65 Mumbai highway"
-      ],
-      "bestFor": [
-        "Rental income seekers",
-        "Long-term industrial plot buyers"
-      ],
-      "historicalAnalog": "Similar to Patancheru in 2005",
+      "keyDrivers": [],
+      "keyRisks": [],
+      "bestFor": [],
+      "historicalAnalog": null,
       "adminNote": "Sangareddy represents a solid, fundamentals-driven market. Good rental potential due to IIT and industrial employees.",
       "subAreas": [
         "Sangareddy Town",
@@ -674,7 +584,7 @@
       "direction": "SOUTH",
       "zone": "South Beyond RRR",
       "district": "Ranga Reddy",
-      "description": "An established plotting hub along the Hyderabad-Bangalore NH-44 highway. Features excellent road logistics, industrial estates, and tourist triggers.",
+      "description": "South-west along the Hyderabad–Bengaluru highway (NH-44) around Shadnagar town and its industrial estates; a long-established plotting market.",
       "heatRating": "HOT",
       "investmentCycle": "MID_CYCLE",
       "ghmc2025": false,
@@ -715,20 +625,10 @@
       "demandScore": null,
       "appreciationScore": null,
       "sentiment": null,
-      "keyDrivers": [
-        "NH-44 Hyderabad-Bangalore Industrial Corridor",
-        "Upcoming RRR Intersection",
-        "Symbiosis University & NRSC proximity"
-      ],
-      "keyRisks": [
-        "Distance from core IT hubs (50km)",
-        "Oversupply of local layouts slowing resale velocity"
-      ],
-      "bestFor": [
-        "Budget-conscious land bankers",
-        "Long-term retirement planners"
-      ],
-      "historicalAnalog": "Similar to Medchal in 2008",
+      "keyDrivers": [],
+      "keyRisks": [],
+      "bestFor": [],
+      "historicalAnalog": null,
       "adminNote": "Shadnagar has high liquidity but deep inventory. Focus strictly on layouts with physical occupancy and amenities.",
       "subAreas": [
         "Shadnagar Municipality",
@@ -748,7 +648,7 @@
       "direction": "WEST",
       "zone": "West Beyond ORR",
       "district": "Ranga Reddy",
-      "description": "Known as the 'Green Zone' of the West, this corridor is Hyderabad's premium residential villa sanctuary, popular among IT executives seeking clean surroundings.",
+      "description": "West beyond the ORR around Mokila and Shankarpally — mostly villa and plotted layouts, at lower density than the IT core.",
       "heatRating": "VERY_HOT",
       "investmentCycle": "ACT_NOW",
       "ghmc2025": false,
@@ -789,20 +689,10 @@
       "demandScore": null,
       "appreciationScore": null,
       "sentiment": null,
-      "keyDrivers": [
-        "Proximity to Financial District (Gachibowli)",
-        "Upcoming 100ft road expansion",
-        "High-profile international schools"
-      ],
-      "keyRisks": [
-        "High land costs limiting entry for small investors",
-        "Local water supply dependent on tankers"
-      ],
-      "bestFor": [
-        "HNI villa builders",
-        "End-users looking for residential sanctuary"
-      ],
-      "historicalAnalog": "Similar to Jubilee Hills in late 90s",
+      "keyDrivers": [],
+      "keyRisks": [],
+      "bestFor": [],
+      "historicalAnalog": null,
       "adminNote": "Mokila has seen steady demand. Shankarpally's integration with the upcoming Western growth corridor keeps it high in security.",
       "subAreas": [
         "Mokila Junction",
@@ -822,7 +712,7 @@
       "direction": "SOUTH",
       "zone": "South Outer Ring Road",
       "district": "Ranga Reddy",
-      "description": "High-growth corridor directly linked to RGIA Airport and Fab City. Dominated by premium villa projects and luxury plotting community layouts.",
+      "description": "South around Shamshabad and Tukkuguda, next to Rajiv Gandhi International Airport and the Fab City / hardware park area.",
       "heatRating": "FIRE",
       "investmentCycle": "ACT_NOW",
       "ghmc2025": true,
@@ -863,20 +753,10 @@
       "demandScore": null,
       "appreciationScore": null,
       "sentiment": null,
-      "keyDrivers": [
-        "RGIA Expansion to 40M passengers",
-        "Future City Metro link project",
-        "Pharma City north entrance gateway"
-      ],
-      "keyRisks": [
-        "High entry prices compared to 2022",
-        "Airport height clearance zones (Air Funnels)"
-      ],
-      "bestFor": [
-        "High-budget villa investors",
-        "Long-term commercial builders"
-      ],
-      "historicalAnalog": "Similar to Gachibowli in 2008",
+      "keyDrivers": [],
+      "keyRisks": [],
+      "bestFor": [],
+      "historicalAnalog": null,
       "adminNote": "Tukkuguda has shown top-tier appreciation. The upcoming Metro connectivity makes it a secure, premium asset class.",
       "subAreas": [
         "Tukkuguda Junction",
@@ -889,944 +769,104 @@
       "updatedAt": "2026-08-16T04:38:32.079Z"
     }
   ],
-  "infraProject": [
-    {
-      "id": "cmsvbechi000c7m8oqmqvtzc9",
-      "name": "Regional Ring Road (RRR) - Northern Arc",
-      "shortName": "RRR Northern Arc",
-      "category": "ROAD_HIGHWAY",
-      "subCategory": "Expressway",
-      "description": "A 158 km semi-ring road connecting Sangareddy, Toopran, Gajwel, Bhongir, and Choutuppal. Expected to revolutionize logistics and industrial corridors.",
-      "status": "LAND_ACQUISITION",
-      "completionPct": 40,
-      "estimatedCompletion": "FY 2028-29",
-      "totalLengthKm": 158.4,
-      "totalInvestmentCr": 12500,
-      "fundingModel": "HAM (50% NHAI, 50% State)",
-      "expectedJobs": 15000,
-      "sourceGO": "G.O.Ms.No.292 MA&UD dt.14-06-2024",
-      "sourceTender": "NHAI RFP Ref. 5422/Northern-Arc-Phase1",
-      "sourceAuthority": "NHAI",
-      "sourceUrl": "https://nhai.gov.in",
-      "lastVerifiedDate": "2026-04-10T00:00:00.000Z",
-      "lastVerifiedSource": "NHAI Project Implementation Unit, Hyderabad",
-      "routeDescription": "Sangareddy → Toopran → Gajwel → Bhongir → Choutuppal",
-      "affectedCorridorSlugs": [
-        "sangareddy-industrial",
-        "medchal-dundigal",
-        "bibinagar-bhongir"
-      ],
-      "impactRadiusKm": 15,
-      "latitude": null,
-      "longitude": null,
-      "coordinates": null,
-      "reImpactScore": 9,
-      "reImpactNarrative": "Expected 35-50% price correction within 5km radius of upcoming junctions over next 3 years.",
-      "historicalAnalog": "Similar to ORR Phase 1 impact on Gachibowli-Kompally",
-      "isPublished": true,
-      "createdAt": "2026-08-16T04:38:32.118Z",
-      "updatedAt": "2026-08-16T04:38:32.118Z",
-      "affectedCorridors": [],
-      "impactRadius": 10,
-      "tags": [],
-      "focusZone": null,
-      "computedImpact": null,
-      "impactOverridden": false,
-      "autoCreated": false,
-      "lastSignalAt": null
-    },
-    {
-      "id": "cmsvbechr000g7m8oyu5r1lkn",
-      "name": "Regional Ring Road (RRR) - Southern Arc",
-      "shortName": "RRR Southern Arc",
-      "category": "ROAD_HIGHWAY",
-      "subCategory": "Expressway",
-      "description": "The southern half of the RRR project spanning 190 km, connecting Choutuppal, Ibrahimpatnam, Kandukur, Amangal, Chevella, and Sangareddy.",
-      "status": "APPROVED",
-      "completionPct": 15,
-      "estimatedCompletion": "FY 2030-31",
-      "totalLengthKm": 189.7,
-      "totalInvestmentCr": 15000,
-      "fundingModel": "PPP / HAM",
-      "expectedJobs": 18000,
-      "sourceGO": "G.O.Ms.No.128 MA&UD dt.02-09-2025",
-      "sourceTender": "NHAI Pre-Feasibility Study 2025",
-      "sourceAuthority": "NHAI",
-      "sourceUrl": "https://nhai.gov.in",
-      "lastVerifiedDate": "2026-05-15T00:00:00.000Z",
-      "lastVerifiedSource": "Telangana Roads & Buildings Department",
-      "routeDescription": "Choutuppal → Ibrahimpatnam → Kandukur → Amangal → Chevella → Sangareddy",
-      "affectedCorridorSlugs": [
-        "adibatla",
-        "tukkuguda-shamshabad",
-        "kadthal-fcda",
-        "maheshwaram-pharma-city",
-        "shadnagar"
-      ],
-      "impactRadiusKm": 18,
-      "latitude": null,
-      "longitude": null,
-      "coordinates": null,
-      "reImpactScore": 8,
-      "reImpactNarrative": "Unlocks high-value agri-plotting pockets, linking Future City directly with South-West zones.",
-      "historicalAnalog": "Similar to ORR Phase 2 impact on Gachibowli-Patancheru",
-      "isPublished": true,
-      "createdAt": "2026-08-16T04:38:32.127Z",
-      "updatedAt": "2026-08-16T04:38:32.127Z",
-      "affectedCorridors": [],
-      "impactRadius": 10,
-      "tags": [],
-      "focusZone": null,
-      "computedImpact": null,
-      "impactOverridden": false,
-      "autoCreated": false,
-      "lastSignalAt": null
-    },
-    {
-      "id": "cmsvbechw000k7m8ode5q2n8j",
-      "name": "Hyderabad Metro Phase 2A (Rayadurg to Shamshabad)",
-      "shortName": "Metro Phase 2A",
-      "category": "METRO_RAIL",
-      "subCategory": "Mass Rapid Transit (MRT)",
-      "description": "31 km metro expansion connecting the IT Corridor of Gachibowli/Rayadurg to Rajiv Gandhi International Airport (RGIA) Shamshabad.",
-      "status": "UNDER_CONSTRUCTION",
-      "completionPct": 35,
-      "estimatedCompletion": "Q4 2027",
-      "totalLengthKm": 31,
-      "totalInvestmentCr": 6250,
-      "fundingModel": "State Funded + JICA Loan",
-      "expectedJobs": 5000,
-      "sourceGO": "G.O.Ms.No.68 MA&UD dt.12-03-2024",
-      "sourceTender": "HMRL Contract Package II-A/Rayadurg-Airport",
-      "sourceAuthority": "HMRL",
-      "sourceUrl": "https://ltmetro.com",
-      "lastVerifiedDate": "2026-03-12T00:00:00.000Z",
-      "lastVerifiedSource": "Hyderabad Metro Rail Limited (HMRL)",
-      "routeDescription": "Rayadurg → Gachibowli → Narsingi → Rajendranagar → Shamshabad RGIA",
-      "affectedCorridorSlugs": [
-        "tukkuguda-shamshabad",
-        "kokapet-neopolis"
-      ],
-      "impactRadiusKm": 5,
-      "latitude": null,
-      "longitude": null,
-      "coordinates": null,
-      "reImpactScore": 9,
-      "reImpactNarrative": "Will establish Shamshabad as an immediate extension of the Western IT core, boosting residential rents by 25%.",
-      "historicalAnalog": "Similar to Metro Phase 1 corridor 3 (Ameerpet to Hitec City)",
-      "isPublished": true,
-      "createdAt": "2026-08-16T04:38:32.132Z",
-      "updatedAt": "2026-08-16T04:38:32.132Z",
-      "affectedCorridors": [],
-      "impactRadius": 10,
-      "tags": [],
-      "focusZone": null,
-      "computedImpact": null,
-      "impactOverridden": false,
-      "autoCreated": false,
-      "lastSignalAt": null
-    },
-    {
-      "id": "cmsvbeci1000o7m8ofl9pjcgf",
-      "name": "Hyderabad Metro Phase 2B (Nagole to RGIA)",
-      "shortName": "Metro Phase 2B",
-      "category": "METRO_RAIL",
-      "subCategory": "Mass Rapid Transit (MRT)",
-      "description": "Extension of Metro services connecting Eastern limits of Nagole through LB Nagar, Chandrayangutta, Mailardevpally to RGIA Shamshabad.",
-      "status": "APPROVED",
-      "completionPct": 10,
-      "estimatedCompletion": "FY 2029-30",
-      "totalLengthKm": 29,
-      "totalInvestmentCr": 5800,
-      "fundingModel": "PPP / EPC",
-      "expectedJobs": 4000,
-      "sourceGO": "G.O.Ms.No.145 MA&UD dt.10-11-2025",
-      "sourceTender": "HMRL Detail Project Report (DPR) approved",
-      "sourceAuthority": "HMRL",
-      "sourceUrl": "https://ltmetro.com",
-      "lastVerifiedDate": "2026-04-18T00:00:00.000Z",
-      "lastVerifiedSource": "HMRL planning department",
-      "routeDescription": "Nagole → LB Nagar → Chandrayangutta → Mailardevpally → RGIA Shamshabad",
-      "affectedCorridorSlugs": [
-        "tukkuguda-shamshabad",
-        "ghatkesar-peerzadiguda"
-      ],
-      "impactRadiusKm": 5,
-      "latitude": null,
-      "longitude": null,
-      "coordinates": null,
-      "reImpactScore": 8,
-      "reImpactNarrative": "Directly links Eastern and Southern transit corridors, reducing travel time to airport by 45 mins.",
-      "historicalAnalog": "Similar to LB Nagar terminal integration in Phase 1",
-      "isPublished": true,
-      "createdAt": "2026-08-16T04:38:32.137Z",
-      "updatedAt": "2026-08-16T04:38:32.137Z",
-      "affectedCorridors": [],
-      "impactRadius": 10,
-      "tags": [],
-      "focusZone": null,
-      "computedImpact": null,
-      "impactOverridden": false,
-      "autoCreated": false,
-      "lastSignalAt": null
-    },
-    {
-      "id": "cmsvbeci6000s7m8oj1nm9pto",
-      "name": "Pharma City Phase 1 Infrastructure",
-      "shortName": "Pharma City Phase 1",
-      "category": "PHARMA_BIOTECH",
-      "subCategory": "Industrial Megaproject",
-      "description": "Development of Phase 1 infrastructure, roads, sewage treatment plants, and power grids across 12,000 acres of Asia's largest pharma SEZ.",
-      "status": "UNDER_CONSTRUCTION",
-      "completionPct": 60,
-      "estimatedCompletion": "FY 2026-27",
-      "totalLengthKm": null,
-      "totalInvestmentCr": 8000,
-      "fundingModel": "TSIIC Equity + Central Grant",
-      "expectedJobs": 150000,
-      "sourceGO": "G.O.Ms.No.342 Industries & Commerce dt.18-08-2020",
-      "sourceTender": "TSIIC Infra package V/Pharma-WaterGrid",
-      "sourceAuthority": "TSIIC",
-      "sourceUrl": "https://tsiic.telangana.gov.in",
-      "lastVerifiedDate": "2026-05-01T00:00:00.000Z",
-      "lastVerifiedSource": "Telangana State Industrial Infrastructure Corporation",
-      "routeDescription": "Mucherla → Kandukur → Yacharam industrial zone",
-      "affectedCorridorSlugs": [
-        "kadthal-fcda",
-        "maheshwaram-pharma-city"
-      ],
-      "impactRadiusKm": 12,
-      "latitude": null,
-      "longitude": null,
-      "coordinates": null,
-      "reImpactScore": 10,
-      "reImpactNarrative": "Employment driver for over 1.5 lakh workers, creating huge demand for affordable rental housing and plot units.",
-      "historicalAnalog": "Similar to TCS Adibatla campus launch impact on Bongloor (2014)",
-      "isPublished": true,
-      "createdAt": "2026-08-16T04:38:32.142Z",
-      "updatedAt": "2026-08-16T04:38:32.142Z",
-      "affectedCorridors": [],
-      "impactRadius": 10,
-      "tags": [],
-      "focusZone": null,
-      "computedImpact": null,
-      "impactOverridden": false,
-      "autoCreated": false,
-      "lastSignalAt": null
-    },
-    {
-      "id": "cmsvbecia000w7m8osha1tklw",
-      "name": "ORR Exit 12 / Adibatla Aerospace Link",
-      "shortName": "Adibatla Aerospace Link",
-      "category": "ROAD_HIGHWAY",
-      "subCategory": "Service Road & Arterial Expansion",
-      "description": "Expansion of service roads, underpasses, and arterial link road connecting ORR Exit 12 directly to Adibatla TCS Gate 1.",
-      "status": "COMPLETE",
-      "completionPct": 100,
-      "estimatedCompletion": "Completed Q1 2026",
-      "totalLengthKm": 8.5,
-      "totalInvestmentCr": 450,
-      "fundingModel": "GHMC + HMDA Joint Venture",
-      "expectedJobs": 1000,
-      "sourceGO": "G.O.Ms.No.89 MA&UD dt.05-04-2024",
-      "sourceTender": "HMDA Contract Ref. 119/Road-Expansion",
-      "sourceAuthority": "HMDA",
-      "sourceUrl": "https://hmda.gov.in",
-      "lastVerifiedDate": "2026-06-01T00:00:00.000Z",
-      "lastVerifiedSource": "HMDA Engineering Wing",
-      "routeDescription": "ORR Exit 12 → Kongara Kalan → Adibatla IT SEZ",
-      "affectedCorridorSlugs": [
-        "adibatla"
-      ],
-      "impactRadiusKm": 4,
-      "latitude": null,
-      "longitude": null,
-      "coordinates": null,
-      "reImpactScore": 7,
-      "reImpactNarrative": "Eliminated daily traffic bottlenecks, establishing seamless transit for IT employees.",
-      "historicalAnalog": "Similar to Narsingi Junction flyover launch",
-      "isPublished": true,
-      "createdAt": "2026-08-16T04:38:32.146Z",
-      "updatedAt": "2026-08-16T04:38:32.146Z",
-      "affectedCorridors": [],
-      "impactRadius": 10,
-      "tags": [],
-      "focusZone": null,
-      "computedImpact": null,
-      "impactOverridden": false,
-      "autoCreated": false,
-      "lastSignalAt": null
-    },
-    {
-      "id": "cmsvbecif00107m8ojh28sluo",
-      "name": "Musi Riverfront Development Project",
-      "shortName": "Musi Riverfront",
-      "category": "TOWNSHIP",
-      "subCategory": "Urban Renewal & Ecological Park",
-      "description": "An urban renewal project developing green lungs, tourism hubs, and pedestrian bridges across 55 km of Musi River banks.",
-      "status": "APPROVED",
-      "completionPct": 10,
-      "estimatedCompletion": "FY 2030",
-      "totalLengthKm": 55,
-      "totalInvestmentCr": 10000,
-      "fundingModel": "Special Purpose Vehicle (SPV) / Consortium",
-      "expectedJobs": 25000,
-      "sourceGO": "G.O.Ms.No.190 MA&UD dt.22-01-2026",
-      "sourceTender": "Musi Riverfront SPV global RFP",
-      "sourceAuthority": "GOT",
-      "sourceUrl": "https://telangana.gov.in",
-      "lastVerifiedDate": "2026-04-22T00:00:00.000Z",
-      "lastVerifiedSource": "Musi Riverfront Development Corporation Ltd (MRDCL)",
-      "routeDescription": "Gandipet → Bapu Ghat → Nagole → Ghatkesar limits",
-      "affectedCorridorSlugs": [
-        "ghatkesar-peerzadiguda",
-        "kokapet-neopolis"
-      ],
-      "impactRadiusKm": 3,
-      "latitude": null,
-      "longitude": null,
-      "coordinates": null,
-      "reImpactScore": 8,
-      "reImpactNarrative": "Aesthetics-driven appreciation. High-end apartments along the river corridor expected to see premium pricing.",
-      "historicalAnalog": "Similar to Sabarmati Riverfront development in Ahmedabad",
-      "isPublished": true,
-      "createdAt": "2026-08-16T04:38:32.151Z",
-      "updatedAt": "2026-08-16T04:38:32.151Z",
-      "affectedCorridors": [],
-      "impactRadius": 10,
-      "tags": [],
-      "focusZone": null,
-      "computedImpact": null,
-      "impactOverridden": false,
-      "autoCreated": false,
-      "lastSignalAt": null
-    },
-    {
-      "id": "cmsvbecik00147m8obo300uqv",
-      "name": "Vande Bharat / MMTS Phase 2 Hubs",
-      "shortName": "MMTS Phase 2",
-      "category": "METRO_RAIL",
-      "subCategory": "Suburban Rail",
-      "description": "Expansion of Hyderabad MMTS services connecting Sanathnagar-Moula Ali, Medchal, and Shankarpally lines to central transport interfaces.",
-      "status": "PARTIALLY_COMPLETE",
-      "completionPct": 80,
-      "estimatedCompletion": "Q4 2026",
-      "totalLengthKm": 84,
-      "totalInvestmentCr": 1150,
-      "fundingModel": "Railways (67%) + State (33%)",
-      "expectedJobs": 2000,
-      "sourceGO": "South Central Railway Notification SCR-MMTS-2023",
-      "sourceTender": "SCR Tender Ref. 182-B-Phase2",
-      "sourceAuthority": "NHAI",
-      "sourceUrl": "https://scr.indianrailways.gov.in",
-      "lastVerifiedDate": "2026-05-10T00:00:00.000Z",
-      "lastVerifiedSource": "South Central Railway (SCR)",
-      "routeDescription": "Sanathnagar → Moula Ali → Ghatkesar, Medchal → Gundlapochampally",
-      "affectedCorridorSlugs": [
-        "kompally-bachupally",
-        "medchal-dundigal",
-        "ghatkesar-peerzadiguda"
-      ],
-      "impactRadiusKm": 6,
-      "latitude": null,
-      "longitude": null,
-      "coordinates": null,
-      "reImpactScore": 7,
-      "reImpactNarrative": "Provides low-cost, mass rapid transit connectivity to northern and eastern suburbs, stabilizing residential demand.",
-      "historicalAnalog": "Similar to MMTS Phase 1 impact on Lingampally-Chandnagar corridor",
-      "isPublished": true,
-      "createdAt": "2026-08-16T04:38:32.156Z",
-      "updatedAt": "2026-08-16T04:38:32.156Z",
-      "affectedCorridors": [],
-      "impactRadius": 10,
-      "tags": [],
-      "focusZone": null,
-      "computedImpact": null,
-      "impactOverridden": false,
-      "autoCreated": false,
-      "lastSignalAt": null
-    },
-    {
-      "id": "cmsvbecip00187m8og2i88p22",
-      "name": "Neopolis Infrastructure Development",
-      "shortName": "Neopolis Infrastructure",
-      "category": "IT_TECH_PARK",
-      "subCategory": "Commercial Layout Infrastructure",
-      "description": "Road networks, drainage systems, substation setup, and underground fiber laying for the 80-acre Kokapet Neopolis layout.",
-      "status": "COMPLETE",
-      "completionPct": 100,
-      "estimatedCompletion": "Completed Q4 2025",
-      "totalLengthKm": null,
-      "totalInvestmentCr": 2500,
-      "fundingModel": "HMDA Auction Capital",
-      "expectedJobs": 120000,
-      "sourceGO": "G.O.Ms.No.56 MA&UD dt.12-02-2022",
-      "sourceTender": "HMDA Neopolis Infrastructure Package III",
-      "sourceAuthority": "HMDA",
-      "sourceUrl": "https://hmda.gov.in",
-      "lastVerifiedDate": "2026-02-20T00:00:00.000Z",
-      "lastVerifiedSource": "HMDA Development Office, Kokapet",
-      "routeDescription": "Kokapet Neopolis Layout",
-      "affectedCorridorSlugs": [
-        "kokapet-neopolis"
-      ],
-      "impactRadiusKm": 3,
-      "latitude": null,
-      "longitude": null,
-      "coordinates": null,
-      "reImpactScore": 9,
-      "reImpactNarrative": "Solidified Kokapet as a premier commercial address, driving land prices up to ₹1.5L+ per sq yd.",
-      "historicalAnalog": "Similar to Mindspace IT Park development in Madhapur (2004)",
-      "isPublished": true,
-      "createdAt": "2026-08-16T04:38:32.161Z",
-      "updatedAt": "2026-08-16T04:38:32.161Z",
-      "affectedCorridors": [],
-      "impactRadius": 10,
-      "tags": [],
-      "focusZone": null,
-      "computedImpact": null,
-      "impactOverridden": false,
-      "autoCreated": false,
-      "lastSignalAt": null
-    },
-    {
-      "id": "cmsvbeciu001c7m8o70mffw90",
-      "name": "Bhu Bharati Digitization Project",
-      "shortName": "Bhu Bharati",
-      "category": "GOVT_APPROVAL",
-      "subCategory": "Land Registry Tech Upgrade",
-      "description": "A pilot digital cadastre land mapping system using high-resolution drone mapping and blockchain to secure land records.",
-      "status": "UNDER_CONSTRUCTION",
-      "completionPct": 55,
-      "estimatedCompletion": "FY 2027",
-      "totalLengthKm": null,
-      "totalInvestmentCr": 850,
-      "fundingModel": "State Budgetary Allocation",
-      "expectedJobs": 3000,
-      "sourceGO": "TG Land Registry Act Amendment 2024",
-      "sourceTender": "Bhu Bharati Pilot Phase II",
-      "sourceAuthority": "GOT",
-      "sourceUrl": "https://dharani.telangana.gov.in",
-      "lastVerifiedDate": "2026-05-18T00:00:00.000Z",
-      "lastVerifiedSource": "Telangana Revenue Department",
-      "routeDescription": "Statewide pilot focusing on Ranga Reddy and Sangareddy districts",
-      "affectedCorridorSlugs": [
-        "kadthal-fcda",
-        "shadnagar",
-        "sangareddy-industrial"
-      ],
-      "impactRadiusKm": 30,
-      "latitude": null,
-      "longitude": null,
-      "coordinates": null,
-      "reImpactScore": 8,
-      "reImpactNarrative": "Significantly reduces land litigation risks and layout forgery, building high investor confidence in rural corridors.",
-      "historicalAnalog": "Similar to Dharani Portal transition in 2020",
-      "isPublished": true,
-      "createdAt": "2026-08-16T04:38:32.166Z",
-      "updatedAt": "2026-08-16T04:38:32.166Z",
-      "affectedCorridors": [],
-      "impactRadius": 10,
-      "tags": [],
-      "focusZone": null,
-      "computedImpact": null,
-      "impactOverridden": false,
-      "autoCreated": false,
-      "lastSignalAt": null
-    }
-  ],
-  "infraMilestone": [
-    {
-      "id": "cmsvbechn000d7m8oxwmx85nd",
-      "projectId": "cmsvbechi000c7m8oqmqvtzc9",
-      "title": "Detailed Project Report Approved",
-      "date": "2025-01-14T18:30:00.000Z",
-      "status": "COMPLETED",
-      "description": "Government approved technical feasibility and project alignment.",
-      "sourceUrl": "https://nhai.gov.in"
-    },
-    {
-      "id": "cmsvbecho000e7m8oxvzxp3li",
-      "projectId": "cmsvbechi000c7m8oqmqvtzc9",
-      "title": "Tenders Float & Bid Allocation",
-      "date": "2025-06-19T18:30:00.000Z",
-      "status": "COMPLETED",
-      "description": "Major construction agencies appointed.",
-      "sourceUrl": "https://nhai.gov.in"
-    },
-    {
-      "id": "cmsvbechp000f7m8oocs3uaci",
-      "projectId": "cmsvbechi000c7m8oqmqvtzc9",
-      "title": "Initial Physical Infrastructure Commenced",
-      "date": "2026-02-09T18:30:00.000Z",
-      "status": "IN_PROGRESS",
-      "description": "Earthworks and ground preparation initiated.",
-      "sourceUrl": "https://nhai.gov.in"
-    },
-    {
-      "id": "cmsvbecht000h7m8o9vy1v9id",
-      "projectId": "cmsvbechr000g7m8oyu5r1lkn",
-      "title": "Detailed Project Report Approved",
-      "date": "2025-01-14T18:30:00.000Z",
-      "status": "COMPLETED",
-      "description": "Government approved technical feasibility and project alignment.",
-      "sourceUrl": "https://nhai.gov.in"
-    },
-    {
-      "id": "cmsvbechu000i7m8oc9ppaqqa",
-      "projectId": "cmsvbechr000g7m8oyu5r1lkn",
-      "title": "Tenders Float & Bid Allocation",
-      "date": "2025-06-19T18:30:00.000Z",
-      "status": "COMPLETED",
-      "description": "Major construction agencies appointed.",
-      "sourceUrl": "https://nhai.gov.in"
-    },
-    {
-      "id": "cmsvbechu000j7m8oa3iyxegt",
-      "projectId": "cmsvbechr000g7m8oyu5r1lkn",
-      "title": "Initial Physical Infrastructure Commenced",
-      "date": "2026-02-09T18:30:00.000Z",
-      "status": "IN_PROGRESS",
-      "description": "Earthworks and ground preparation initiated.",
-      "sourceUrl": "https://nhai.gov.in"
-    },
-    {
-      "id": "cmsvbechy000l7m8og9bg9g4v",
-      "projectId": "cmsvbechw000k7m8ode5q2n8j",
-      "title": "Detailed Project Report Approved",
-      "date": "2025-01-14T18:30:00.000Z",
-      "status": "COMPLETED",
-      "description": "Government approved technical feasibility and project alignment.",
-      "sourceUrl": "https://ltmetro.com"
-    },
-    {
-      "id": "cmsvbechz000m7m8o3ka49180",
-      "projectId": "cmsvbechw000k7m8ode5q2n8j",
-      "title": "Tenders Float & Bid Allocation",
-      "date": "2025-06-19T18:30:00.000Z",
-      "status": "COMPLETED",
-      "description": "Major construction agencies appointed.",
-      "sourceUrl": "https://ltmetro.com"
-    },
-    {
-      "id": "cmsvbechz000n7m8o4hjyxz4q",
-      "projectId": "cmsvbechw000k7m8ode5q2n8j",
-      "title": "Initial Physical Infrastructure Commenced",
-      "date": "2026-02-09T18:30:00.000Z",
-      "status": "IN_PROGRESS",
-      "description": "Earthworks and ground preparation initiated.",
-      "sourceUrl": "https://ltmetro.com"
-    },
-    {
-      "id": "cmsvbeci3000p7m8ojqs2kfvk",
-      "projectId": "cmsvbeci1000o7m8ofl9pjcgf",
-      "title": "Detailed Project Report Approved",
-      "date": "2025-01-14T18:30:00.000Z",
-      "status": "COMPLETED",
-      "description": "Government approved technical feasibility and project alignment.",
-      "sourceUrl": "https://ltmetro.com"
-    },
-    {
-      "id": "cmsvbeci3000q7m8ox0s1t9kx",
-      "projectId": "cmsvbeci1000o7m8ofl9pjcgf",
-      "title": "Tenders Float & Bid Allocation",
-      "date": "2025-06-19T18:30:00.000Z",
-      "status": "COMPLETED",
-      "description": "Major construction agencies appointed.",
-      "sourceUrl": "https://ltmetro.com"
-    },
-    {
-      "id": "cmsvbeci4000r7m8obfsy11a5",
-      "projectId": "cmsvbeci1000o7m8ofl9pjcgf",
-      "title": "Initial Physical Infrastructure Commenced",
-      "date": "2026-02-09T18:30:00.000Z",
-      "status": "IN_PROGRESS",
-      "description": "Earthworks and ground preparation initiated.",
-      "sourceUrl": "https://ltmetro.com"
-    },
-    {
-      "id": "cmsvbeci7000t7m8osl6wx80u",
-      "projectId": "cmsvbeci6000s7m8oj1nm9pto",
-      "title": "Detailed Project Report Approved",
-      "date": "2025-01-14T18:30:00.000Z",
-      "status": "COMPLETED",
-      "description": "Government approved technical feasibility and project alignment.",
-      "sourceUrl": "https://tsiic.telangana.gov.in"
-    },
-    {
-      "id": "cmsvbeci8000u7m8o8blbgkzh",
-      "projectId": "cmsvbeci6000s7m8oj1nm9pto",
-      "title": "Tenders Float & Bid Allocation",
-      "date": "2025-06-19T18:30:00.000Z",
-      "status": "COMPLETED",
-      "description": "Major construction agencies appointed.",
-      "sourceUrl": "https://tsiic.telangana.gov.in"
-    },
-    {
-      "id": "cmsvbeci8000v7m8oxq0yethe",
-      "projectId": "cmsvbeci6000s7m8oj1nm9pto",
-      "title": "Initial Physical Infrastructure Commenced",
-      "date": "2026-02-09T18:30:00.000Z",
-      "status": "COMPLETED",
-      "description": "Earthworks and ground preparation initiated.",
-      "sourceUrl": "https://tsiic.telangana.gov.in"
-    },
-    {
-      "id": "cmsvbecic000x7m8okuvktaad",
-      "projectId": "cmsvbecia000w7m8osha1tklw",
-      "title": "Detailed Project Report Approved",
-      "date": "2025-01-14T18:30:00.000Z",
-      "status": "COMPLETED",
-      "description": "Government approved technical feasibility and project alignment.",
-      "sourceUrl": "https://hmda.gov.in"
-    },
-    {
-      "id": "cmsvbecic000y7m8og5n81ry3",
-      "projectId": "cmsvbecia000w7m8osha1tklw",
-      "title": "Tenders Float & Bid Allocation",
-      "date": "2025-06-19T18:30:00.000Z",
-      "status": "COMPLETED",
-      "description": "Major construction agencies appointed.",
-      "sourceUrl": "https://hmda.gov.in"
-    },
-    {
-      "id": "cmsvbecid000z7m8okezapcxn",
-      "projectId": "cmsvbecia000w7m8osha1tklw",
-      "title": "Initial Physical Infrastructure Commenced",
-      "date": "2026-02-09T18:30:00.000Z",
-      "status": "COMPLETED",
-      "description": "Earthworks and ground preparation initiated.",
-      "sourceUrl": "https://hmda.gov.in"
-    },
-    {
-      "id": "cmsvbecih00117m8om08yyzk2",
-      "projectId": "cmsvbecif00107m8ojh28sluo",
-      "title": "Detailed Project Report Approved",
-      "date": "2025-01-14T18:30:00.000Z",
-      "status": "COMPLETED",
-      "description": "Government approved technical feasibility and project alignment.",
-      "sourceUrl": "https://telangana.gov.in"
-    },
-    {
-      "id": "cmsvbecii00127m8o574qpyhi",
-      "projectId": "cmsvbecif00107m8ojh28sluo",
-      "title": "Tenders Float & Bid Allocation",
-      "date": "2025-06-19T18:30:00.000Z",
-      "status": "COMPLETED",
-      "description": "Major construction agencies appointed.",
-      "sourceUrl": "https://telangana.gov.in"
-    },
-    {
-      "id": "cmsvbecii00137m8ocyfoy6sk",
-      "projectId": "cmsvbecif00107m8ojh28sluo",
-      "title": "Initial Physical Infrastructure Commenced",
-      "date": "2026-02-09T18:30:00.000Z",
-      "status": "IN_PROGRESS",
-      "description": "Earthworks and ground preparation initiated.",
-      "sourceUrl": "https://telangana.gov.in"
-    },
-    {
-      "id": "cmsvbecin00157m8ohfp4ski4",
-      "projectId": "cmsvbecik00147m8obo300uqv",
-      "title": "Detailed Project Report Approved",
-      "date": "2025-01-14T18:30:00.000Z",
-      "status": "COMPLETED",
-      "description": "Government approved technical feasibility and project alignment.",
-      "sourceUrl": "https://scr.indianrailways.gov.in"
-    },
-    {
-      "id": "cmsvbecin00167m8olsz4r67a",
-      "projectId": "cmsvbecik00147m8obo300uqv",
-      "title": "Tenders Float & Bid Allocation",
-      "date": "2025-06-19T18:30:00.000Z",
-      "status": "COMPLETED",
-      "description": "Major construction agencies appointed.",
-      "sourceUrl": "https://scr.indianrailways.gov.in"
-    },
-    {
-      "id": "cmsvbecio00177m8oiwt3ltut",
-      "projectId": "cmsvbecik00147m8obo300uqv",
-      "title": "Initial Physical Infrastructure Commenced",
-      "date": "2026-02-09T18:30:00.000Z",
-      "status": "COMPLETED",
-      "description": "Earthworks and ground preparation initiated.",
-      "sourceUrl": "https://scr.indianrailways.gov.in"
-    },
-    {
-      "id": "cmsvbecis00197m8owibx2tbc",
-      "projectId": "cmsvbecip00187m8og2i88p22",
-      "title": "Detailed Project Report Approved",
-      "date": "2025-01-14T18:30:00.000Z",
-      "status": "COMPLETED",
-      "description": "Government approved technical feasibility and project alignment.",
-      "sourceUrl": "https://hmda.gov.in"
-    },
-    {
-      "id": "cmsvbecis001a7m8okwi15t9z",
-      "projectId": "cmsvbecip00187m8og2i88p22",
-      "title": "Tenders Float & Bid Allocation",
-      "date": "2025-06-19T18:30:00.000Z",
-      "status": "COMPLETED",
-      "description": "Major construction agencies appointed.",
-      "sourceUrl": "https://hmda.gov.in"
-    },
-    {
-      "id": "cmsvbecis001b7m8o6v5u3u0y",
-      "projectId": "cmsvbecip00187m8og2i88p22",
-      "title": "Initial Physical Infrastructure Commenced",
-      "date": "2026-02-09T18:30:00.000Z",
-      "status": "COMPLETED",
-      "description": "Earthworks and ground preparation initiated.",
-      "sourceUrl": "https://hmda.gov.in"
-    },
-    {
-      "id": "cmsvbecix001d7m8oaeflywun",
-      "projectId": "cmsvbeciu001c7m8o70mffw90",
-      "title": "Detailed Project Report Approved",
-      "date": "2025-01-14T18:30:00.000Z",
-      "status": "COMPLETED",
-      "description": "Government approved technical feasibility and project alignment.",
-      "sourceUrl": "https://dharani.telangana.gov.in"
-    },
-    {
-      "id": "cmsvbecix001e7m8oo8t4eu9i",
-      "projectId": "cmsvbeciu001c7m8o70mffw90",
-      "title": "Tenders Float & Bid Allocation",
-      "date": "2025-06-19T18:30:00.000Z",
-      "status": "COMPLETED",
-      "description": "Major construction agencies appointed.",
-      "sourceUrl": "https://dharani.telangana.gov.in"
-    },
-    {
-      "id": "cmsvbeciy001f7m8okpuk2djo",
-      "projectId": "cmsvbeciu001c7m8o70mffw90",
-      "title": "Initial Physical Infrastructure Commenced",
-      "date": "2026-02-09T18:30:00.000Z",
-      "status": "COMPLETED",
-      "description": "Earthworks and ground preparation initiated.",
-      "sourceUrl": "https://dharani.telangana.gov.in"
-    }
-  ],
+  "infraProject": [],
+  "infraMilestone": [],
   "appreciationHistory": [],
   "demandTrend": [],
   "approvalRecord": [],
   "legalRisk": [
     {
       "id": "cmsvbeciy001g7m8o7kb696g0",
-      "title": "Section 22-A Prohibited Properties Register",
+      "title": "Prohibited land (Section 22-A list)",
       "severity": "RED",
       "category": "LAND_RECORDS",
-      "description": "Land classification which locks registration of properties listed under government custody, Waqf board lands, ceiling lands, or forest reserves. Highly prevalent in outskirts where survey boundary disputes are pending.",
-      "affectedZones": [
-        "shadnagar",
-        "kadthal-fcda",
-        "medchal-dundigal"
-      ],
+      "description": "Section 22-A of the Registration Act bars registration of listed prohibited properties — government, assigned, endowment, Wakf and ceiling-surplus land. A plot on that list can't be legally sold to you.",
+      "affectedZones": [],
       "checkUrl": "https://bhubharati.telangana.gov.in",
-      "checkMethod": "Query search under 'Prohibited Properties' category on the TG Dharani portal using the specific Survey Number and Village code.",
-      "govReference": "Telangana Registration Act Section 22-A Registry",
+      "checkMethod": "Search the survey number and village in the prohibited-properties list on the Bhu Bharati portal (which replaced Dharani in 2025), and ask the Sub-Registrar's office before paying an advance.",
+      "govReference": "Registration Act, 1908 — Section 22-A (as applied in Telangana)",
       "isActive": true,
       "createdAt": "2026-08-16T04:38:32.170Z"
     },
     {
       "id": "cmsvbecj0001h7m8o4pjyh0bd",
-      "title": "FTL / Buffer Zone Infringement (Lake Encroachment)",
+      "title": "Lake FTL and buffer zones",
       "severity": "RED",
       "category": "RESTRICTIONS",
-      "description": "Layouts overlapping with lake Full Tank Level (FTL) boundaries or active buffer zones (typically 30 meters from lakes). HYDRAA and local municipality authorities are executing demolition drives on structures in these zones.",
-      "affectedZones": [
-        "shankarpally-mokila",
-        "kompally-bachupally",
-        "kokapet-neopolis"
-      ],
-      "checkUrl": "https://hmda.gov.in",
-      "checkMethod": "Cross-reference layout coordinates with HMDA Lake Maps and Irrigation Department FTL boundary shapefiles.",
-      "govReference": "G.O.Ms.No.168 MA&UD (FTL & Buffer Zone Rules)",
+      "description": "Building is not allowed inside a lake's Full Tank Level (FTL) or its buffer zone. HYDRAA, set up in 2024, has demolished structures built in these zones.",
+      "affectedZones": [],
+      "checkUrl": "https://www.hmda.gov.in",
+      "checkMethod": "Ask for the irrigation department's FTL/buffer certificate for the survey number and compare the layout plan with HMDA's lake boundary maps.",
+      "govReference": "G.O.Ms. No. 168 MA&UD (2012) — lake buffer rules",
       "isActive": true,
       "createdAt": "2026-08-16T04:38:32.172Z"
     },
     {
       "id": "cmsvbecj0001i7m8orzun5qsi",
-      "title": "Unapproved Layouts without NALA Conversion",
+      "title": "Farm land sold as plots without conversion (NALA)",
       "severity": "ORANGE",
       "category": "AGRICULTURAL",
-      "description": "Agricultural land subdivided and sold as plot units without official Non-Agricultural Land Assessment (NALA) tax conversion. Registration of sub-units is blocked or penalised heavily in municipal records.",
-      "affectedZones": [
-        "shadnagar",
-        "bibinagar-bhongir",
-        "sangareddy-industrial"
-      ],
-      "checkUrl": "https://dharani.telangana.gov.in",
-      "checkMethod": "Check the layout's land mutation history on Dharani portal to confirm the NALA tax paid status and mutation to non-agricultural status.",
-      "govReference": "Telangana Agricultural Land (Conversion for Non-Agricultural Purposes) Act",
+      "description": "Agricultural land must be converted to non-agricultural use before it is divided into plots. Plots carved out of unconverted farm land face registration and building-permission problems.",
+      "affectedZones": [],
+      "checkUrl": "https://bhubharati.telangana.gov.in",
+      "checkMethod": "Ask for the NALA conversion order and check the land's classification in its Bhu Bharati record; a layout should also carry an HMDA or DTCP layout permission (LP) number.",
+      "govReference": "Telangana Agricultural Land (Conversion for Non-Agricultural Purposes) Act, 2006",
       "isActive": true,
       "createdAt": "2026-08-16T04:38:32.172Z"
     },
     {
       "id": "cmsvbecj1001j7m8ocu9bdtmt",
-      "title": "Dharani Portal Pending Mutation Issues",
+      "title": "Pending mutation, succession or partition",
       "severity": "ORANGE",
       "category": "LAND_RECORDS",
-      "description": "Succession, mutation, partition discrepancies on the Dharani land registry database. Buying properties with pending partition claims can block registry transfers for years.",
-      "affectedZones": [
-        "kadthal-fcda",
-        "maheshwaram-pharma-city",
-        "adibatla"
-      ],
-      "checkUrl": "https://dharani.telangana.gov.in",
-      "checkMethod": "Request the seller to provide a digital Dharani Land Status Report (LSR) and check for any 'Pending Mutation Application' or third party claim status.",
-      "govReference": "Telangana Rights in Land and Pattadar Passbooks Act, 2020",
+      "description": "If the seller's title has a pending mutation, an unresolved succession or a partition claim, your registration can be stuck or challenged.",
+      "affectedZones": [],
+      "checkUrl": "https://bhubharati.telangana.gov.in",
+      "checkMethod": "Check the record of rights for the survey number on Bhu Bharati, and get an Encumbrance Certificate for at least 30 years from the Registration department.",
+      "govReference": "Telangana Bhu Bharati (Record of Rights in Land) Act, 2025",
       "isActive": true,
       "createdAt": "2026-08-16T04:38:32.173Z"
     },
     {
       "id": "cmsvbecj2001k7m8o73nrryx8",
-      "title": "RERA Registration Exemption Misuse",
+      "title": "Projects that should be RERA-registered but aren't",
       "severity": "YELLOW",
       "category": "RERA",
-      "description": "Small-scale developers split layout plots into chunks of less than 500 sq meters or 8 apartments to escape RERA registration. These projects often fail on basic infrastructure commitments.",
-      "affectedZones": [
-        "kompally-bachupally",
-        "ghatkesar-peerzadiguda",
-        "adibatla"
-      ],
+      "description": "Projects over 500 sq.m of land or more than 8 units must register with TG-RERA before advertising or selling. Splitting a project into small phases to avoid registration removes your RERA protections.",
+      "affectedZones": [],
       "checkUrl": "https://rera.telangana.gov.in",
-      "checkMethod": "Search the project details on the TG-RERA official portal. If not found, verify if the project is part of a larger phase split.",
-      "govReference": "Real Estate (Regulation and Development) Act Section 3",
+      "checkMethod": "Search the project and promoter on the TG-RERA portal. If it isn't there, ask the developer why, and check the total land and unit count against the layout plan.",
+      "govReference": "Real Estate (Regulation and Development) Act, 2016 — Section 3",
       "isActive": true,
       "createdAt": "2026-08-16T04:38:32.174Z"
     },
     {
       "id": "cmsvbecj3001l7m8o7yk02o62",
-      "title": "DTCP vs HMDA Jurisdiction Conflict",
+      "title": "Which authority approved the layout (HMDA or DTCP)",
       "severity": "YELLOW",
       "category": "APPROVALS",
-      "description": "Overlapping planning authorities in outlying transition zones where DTCP layouts are sold as HMDA layouts. HMDA approval is mandatory for higher building floors and ORR connectivity benefits.",
-      "affectedZones": [
-        "medchal-dundigal",
-        "ghatkesar-peerzadiguda",
-        "bibinagar-bhongir"
-      ],
-      "checkUrl": "https://hmda.gov.in",
-      "checkMethod": "Verify the Master Plan boundaries and check if the layout LP number is registered on the HMDA or DTCP portal.",
-      "govReference": "Telangana Metropolitan Development Authority Act",
+      "description": "Layouts inside the Hyderabad Metropolitan Region are approved by HMDA; outside it, by DTCP. An LP number from the wrong authority, or none, is a red flag.",
+      "affectedZones": [],
+      "checkUrl": "https://www.hmda.gov.in",
+      "checkMethod": "Note the layout permission (LP) number and verify it with the authority named on it (HMDA or DTCP).",
+      "govReference": "HMDA Act, 2008; Telangana Town Planning Act",
       "isActive": true,
       "createdAt": "2026-08-16T04:38:32.175Z"
     },
     {
       "id": "cmsvbecj4001m7m8org50n9ke",
-      "title": "Undivided Share of Land (UDS) Over-Allotment",
+      "title": "Undivided share of land (UDS) in apartments",
       "severity": "ORANGE",
       "category": "ENCUMBRANCE",
-      "description": "High-rise builders allocating aggregate UDS to flat owners which exceeds the actual physical land site area. Highly problematic during building reconstruction or redevelopment phases.",
-      "affectedZones": [
-        "kokapet-neopolis",
-        "kompally-bachupally"
-      ],
+      "description": "Each flat comes with an undivided share of the land. If the shares sold add up to more than the land, owners lose out at redevelopment or in a dispute.",
+      "affectedZones": [],
       "checkUrl": "https://rera.telangana.gov.in",
-      "checkMethod": "Review the builder's RERA filing and calculate: Aggregate UDS of all units combined should equal exactly the project land area.",
-      "govReference": "TG-RERA Developer Disclosures & Registered Sale Agreements",
+      "checkMethod": "Check the UDS in your sale agreement and the project's TG-RERA filing: the shares of all units together should equal the project's land area.",
+      "govReference": "TG-RERA project disclosures; registered sale deed",
       "isActive": true,
       "createdAt": "2026-08-16T04:38:32.176Z"
     }
   ],
   "marketPulse": [],
-  "corridorInfraLinks": [
-    {
-      "corridorId": "cmsvbecg900007m8opm6j4e2h",
-      "infraProjectId": "cmsvbechr000g7m8oyu5r1lkn"
-    },
-    {
-      "corridorId": "cmsvbecg900007m8opm6j4e2h",
-      "infraProjectId": "cmsvbecia000w7m8osha1tklw"
-    },
-    {
-      "corridorId": "cmsvbecgf00017m8ojb689d75",
-      "infraProjectId": "cmsvbechr000g7m8oyu5r1lkn"
-    },
-    {
-      "corridorId": "cmsvbecgf00017m8ojb689d75",
-      "infraProjectId": "cmsvbechw000k7m8ode5q2n8j"
-    },
-    {
-      "corridorId": "cmsvbecgf00017m8ojb689d75",
-      "infraProjectId": "cmsvbeci1000o7m8ofl9pjcgf"
-    },
-    {
-      "corridorId": "cmsvbecgi00027m8ol17nflor",
-      "infraProjectId": "cmsvbechr000g7m8oyu5r1lkn"
-    },
-    {
-      "corridorId": "cmsvbecgi00027m8ol17nflor",
-      "infraProjectId": "cmsvbeci6000s7m8oj1nm9pto"
-    },
-    {
-      "corridorId": "cmsvbecgi00027m8ol17nflor",
-      "infraProjectId": "cmsvbeciu001c7m8o70mffw90"
-    },
-    {
-      "corridorId": "cmsvbecgk00037m8owun0obto",
-      "infraProjectId": "cmsvbechr000g7m8oyu5r1lkn"
-    },
-    {
-      "corridorId": "cmsvbecgk00037m8owun0obto",
-      "infraProjectId": "cmsvbeci6000s7m8oj1nm9pto"
-    },
-    {
-      "corridorId": "cmsvbecgn00047m8objjf8oma",
-      "infraProjectId": "cmsvbechr000g7m8oyu5r1lkn"
-    },
-    {
-      "corridorId": "cmsvbecgn00047m8objjf8oma",
-      "infraProjectId": "cmsvbeciu001c7m8o70mffw90"
-    },
-    {
-      "corridorId": "cmsvbecgr00067m8ogxhqyisi",
-      "infraProjectId": "cmsvbechi000c7m8oqmqvtzc9"
-    },
-    {
-      "corridorId": "cmsvbecgr00067m8ogxhqyisi",
-      "infraProjectId": "cmsvbeciu001c7m8o70mffw90"
-    },
-    {
-      "corridorId": "cmsvbecgu00077m8ou404eu6v",
-      "infraProjectId": "cmsvbecik00147m8obo300uqv"
-    },
-    {
-      "corridorId": "cmsvbecgx00087m8o4dh8x62k",
-      "infraProjectId": "cmsvbechi000c7m8oqmqvtzc9"
-    },
-    {
-      "corridorId": "cmsvbecgx00087m8o4dh8x62k",
-      "infraProjectId": "cmsvbecik00147m8obo300uqv"
-    },
-    {
-      "corridorId": "cmsvbech000097m8o3to0lrsu",
-      "infraProjectId": "cmsvbeci1000o7m8ofl9pjcgf"
-    },
-    {
-      "corridorId": "cmsvbech000097m8o3to0lrsu",
-      "infraProjectId": "cmsvbecif00107m8ojh28sluo"
-    },
-    {
-      "corridorId": "cmsvbech000097m8o3to0lrsu",
-      "infraProjectId": "cmsvbecik00147m8obo300uqv"
-    },
-    {
-      "corridorId": "cmsvbech2000a7m8o7tmvaj70",
-      "infraProjectId": "cmsvbechi000c7m8oqmqvtzc9"
-    },
-    {
-      "corridorId": "cmsvbech4000b7m8olocnftwl",
-      "infraProjectId": "cmsvbechw000k7m8ode5q2n8j"
-    },
-    {
-      "corridorId": "cmsvbech4000b7m8olocnftwl",
-      "infraProjectId": "cmsvbecif00107m8ojh28sluo"
-    },
-    {
-      "corridorId": "cmsvbech4000b7m8olocnftwl",
-      "infraProjectId": "cmsvbecip00187m8og2i88p22"
-    }
-  ]
+  "corridorInfraLinks": []
 }

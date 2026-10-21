@@ -1,7 +1,7 @@
 /**
  * Render a research report (Search.aiResponse) into an email summary (HTML) and
  * a full PDF attachment. Shape mirrors getInvestmentRecommendations() in
- * lib/anthropic.ts; all fields are read defensively since aiResponse is Json.
+ * lib/research/recommend.ts; all fields are read defensively since aiResponse is Json.
  */
 
 import { jsPDF } from 'jspdf';
@@ -48,7 +48,7 @@ export function renderReportSummaryHtml(report: ReportData): string {
     parts.push('<ul style="margin:0;padding-left:18px;">');
     for (const c of corridors.slice(0, 4)) {
       const score = typeof c.matchScore === 'number' ? ` — ${c.matchScore}/100` : '';
-      const appr = c.appreciationMin != null && c.appreciationMax != null ? ` · ${c.appreciationMin}–${c.appreciationMax}% appr.` : '';
+      const appr = c.appreciationMin != null && c.appreciationMax != null ? ` · ${c.appreciationMin}–${c.appreciationMax}% a year (scenarios)` : '';
       parts.push(`<li style="font-size:14px;line-height:1.6;color:#334155;"><strong>${esc(c.name ?? 'Corridor')}</strong>${score}${appr}</li>`);
     }
     parts.push('</ul>');
@@ -105,7 +105,7 @@ export function renderReportPdf(report: ReportData, meta: ReportMeta): Buffer {
     const bits: string[] = [];
     if (typeof c.matchScore === 'number') bits.push(`Match ${c.matchScore}/100`);
     if (c.riskLevel) bits.push(`Risk ${c.riskLevel}`);
-    if (c.appreciationMin != null && c.appreciationMax != null) bits.push(`Appreciation ${c.appreciationMin}–${c.appreciationMax}%`);
+    if (c.appreciationMin != null && c.appreciationMax != null) bits.push(`Growth ${c.appreciationMin}–${c.appreciationMax}% a year (scenarios)`);
     if (bits.length) line(bits.join('  ·  '), 10, { color: [100, 116, 139] });
     for (const r of c.reasons ?? []) line(`• ${r}`, 10);
     if (c.bestFor) line(`Best for: ${c.bestFor}`, 10, { color: [100, 116, 139], gap: 10 });

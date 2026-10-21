@@ -183,7 +183,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
             <div className="col-span-2">
               <Wordmark className="text-2xl font-extrabold text-text-invert" style={{ fontFamily: "var(--font-jakarta)" }} />
               <p className="mt-4 text-sm leading-relaxed text-text-invert-mid" style={{ maxWidth: 360 }}>
-                Not a listing site. A research platform. AI-powered investment research for Hyderabad land and property, built on verified government infrastructure data.
+                Not a listing site. A research platform for Hyderabad land and property, built on measured prices and public records.
               </p>
               {/* Weekly brief — the brief is tied to an account, so capture routes into sign-up (pre-filled). */}
               <form
@@ -237,7 +237,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
           <div className="mt-14 pt-8 flex flex-col md:flex-row justify-between items-start gap-6" style={{ borderTop: "1px solid var(--color-ink-line)" }}>
             <p className="text-xs leading-relaxed text-text-invert-mid" style={{ maxWidth: 640 }}>
-              <strong className="text-text-invert">Disclaimer:</strong> Recommendations are generated using AI-assisted calculations based on historical trends and published infrastructure plans. Past performance does not guarantee future results. Perform independent legal due diligence before investing.
+              <strong className="text-text-invert">Disclaimer:</strong> Figures are computed from our listings, public records and published market reports; growth figures are scenarios, not predictions. Past performance does not guarantee future results. Do your own legal due diligence before investing.
             </p>
             <div className="flex flex-col items-start md:items-end gap-2">
               <div className="flex flex-wrap gap-x-4 gap-y-1">

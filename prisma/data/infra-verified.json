@@ -1,0 +1,227 @@
+{
+  "_about": "Infrastructure projects checked against published sources on verifiedAt. Loaded by scripts/reference/sync-infra.ts in every build. Only facts a cited source states are filled in; unknown fields stay null. Replaces the 10 projects of the 2026-08-16 synthetic seed batch, whose government-order numbers, tender references, investment, job and impact figures could not be traced to any source.",
+  "verifiedAt": "2026-10-21",
+  "projects": [
+    {
+      "id": "infra-rrr-north",
+      "name": "Regional Ring Road (RRR) — Northern part",
+      "shortName": "RRR North",
+      "category": "ROAD_HIGHWAY",
+      "subCategory": "National highway (NH-161AA), 6 lanes",
+      "description": "161.5 km northern half of Hyderabad's Regional Ring Road, Sangareddy–Choutuppal via the north, sanctioned by MoRTH under Bharatmala Pariyojana Phase I (5 March 2021) and executed by NHAI. Land acquisition was reported complete in October 2026; earlier tender rounds were cancelled and fresh tenders were to be floated. Construction has not started.",
+      "status": "APPROVED",
+      "estimatedCompletion": null,
+      "totalLengthKm": 161.5,
+      "totalInvestmentCr": null,
+      "fundingModel": "NHAI; land acquisition cost shared 50:50 with the State",
+      "sourceAuthority": "NHAI / Telangana R&B",
+      "sourceUrl": "https://www.telanganatribune.com/rrr-update-north-section-land-acquisition-complete-south-stretch-awaits-centres-nod/",
+      "routeDescription": "Sangareddy → Narsapur → Toopran → Gajwel → Bhongir → Choutuppal",
+      "affectedCorridorSlugs": ["sangareddy-industrial", "medchal-dundigal", "bibinagar-bhongir"],
+      "impactRadiusKm": 15,
+      "milestones": [
+        { "title": "Sanctioned under Bharatmala Pariyojana Phase I", "date": "2021-03-05", "status": "COMPLETED", "sourceUrl": "https://telanganatoday.com/telanganas-rrr-progress-hinges-on-bids-pending-southern-part-clearance" },
+        { "title": "NHAI invited bids (five packages, Hybrid Annuity)", "date": "2025-11-11", "status": "COMPLETED", "sourceUrl": "https://telanganatoday.com/telanganas-rrr-progress-hinges-on-bids-pending-southern-part-clearance" },
+        { "title": "Land acquisition reported complete; fresh tenders to be floated", "date": "2026-10-09", "status": "COMPLETED", "sourceUrl": "https://www.telanganatribune.com/rrr-update-north-section-land-acquisition-complete-south-stretch-awaits-centres-nod/" },
+        { "title": "Construction contract award", "date": null, "status": "UPCOMING", "sourceUrl": null }
+      ]
+    },
+    {
+      "id": "infra-rrr-south",
+      "name": "Regional Ring Road (RRR) — Southern part",
+      "shortName": "RRR South",
+      "category": "ROAD_HIGHWAY",
+      "subCategory": "Proposed greenfield highway, 6 lanes",
+      "description": "Proposed 201 km southern half of the Regional Ring Road, Choutuppal–Amangal–Sangareddy. The State Cabinet approved the alignment on 23 June 2025 and submitted it to MoRTH on 25 February 2026; as of October 2026 the Centre had not decided on the alignment and the stretch was not under any central scheme. No land acquisition or construction yet.",
+      "status": "ANNOUNCED",
+      "estimatedCompletion": null,
+      "totalLengthKm": 201,
+      "totalInvestmentCr": null,
+      "fundingModel": null,
+      "sourceAuthority": "Telangana R&B / MoRTH",
+      "sourceUrl": "https://www.telanganatribune.com/rrr-update-north-section-land-acquisition-complete-south-stretch-awaits-centres-nod/",
+      "routeDescription": "Choutuppal → Amangal → Sangareddy, around the south-west (village-level alignment not published)",
+      "affectedCorridorSlugs": ["kadthal-fcda", "maheshwaram-pharma-city", "shadnagar", "shankarpally-mokila", "adibatla"],
+      "impactRadiusKm": 15,
+      "milestones": [
+        { "title": "State Cabinet approved the southern alignment", "date": "2025-06-23", "status": "COMPLETED", "sourceUrl": "https://telanganatoday.com/telanganas-rrr-progress-hinges-on-bids-pending-southern-part-clearance" },
+        { "title": "Revised alignment submitted to MoRTH", "date": "2026-02-25", "status": "COMPLETED", "sourceUrl": "https://telanganatoday.com/telanganas-rrr-progress-hinges-on-bids-pending-southern-part-clearance" },
+        { "title": "Central approval of the alignment", "date": null, "status": "UPCOMING", "sourceUrl": null }
+      ]
+    },
+    {
+      "id": "infra-metro-2a-airport",
+      "name": "Hyderabad Metro Phase II-A — Nagole to RGIA (Airport corridor)",
+      "shortName": "Metro: Nagole–Airport",
+      "category": "METRO_RAIL",
+      "subCategory": "Corridor IV",
+      "description": "36.8 km Nagole–LB Nagar–Chandrayangutta–Shamshabad airport line, one of five Phase II-A corridors (76.4 km, ₹24,269 Cr) proposed by the State to MoHUA as a 50:50 joint venture. The Centre gave in-principle approval to Phase II in May 2026; final sanction and construction were still pending.",
+      "status": "APPROVED",
+      "estimatedCompletion": null,
+      "totalLengthKm": 36.8,
+      "totalInvestmentCr": null,
+      "fundingModel": "Proposed 50:50 Government of India / Telangana JV",
+      "sourceAuthority": "HMRL",
+      "sourceUrl": "https://hmrl.co.in/phase-ii/",
+      "routeDescription": "Nagole → LB Nagar → Chandrayangutta → Shamshabad RGIA",
+      "affectedCorridorSlugs": ["tukkuguda-shamshabad"],
+      "impactRadiusKm": 8,
+      "milestones": [
+        { "title": "Phase II-A proposal submitted to MoHUA", "date": "2024-11-04", "status": "COMPLETED", "sourceUrl": "https://hmrl.co.in/phase-ii/" },
+        { "title": "Centre's in-principle approval for Phase II", "date": "2026-05-21", "status": "COMPLETED", "sourceUrl": "https://newsmeter.in/regional/telangana/centre-in-principle-approves-162-km-phase-ii-expansion-of-hyderabad-metro-rail-768494" },
+        { "title": "Final sanction of the DPR", "date": null, "status": "UPCOMING", "sourceUrl": null }
+      ]
+    },
+    {
+      "id": "infra-metro-2a-neopolis",
+      "name": "Hyderabad Metro Phase II-A — Raidurg to Kokapet Neopolis",
+      "shortName": "Metro: Raidurg–Neopolis",
+      "category": "METRO_RAIL",
+      "subCategory": "Corridor V",
+      "description": "11.6 km extension from Raidurg to Kokapet Neopolis, part of the Phase II-A proposal (76.4 km, ₹24,269 Cr) submitted to MoHUA. In-principle approval from the Centre in May 2026; final sanction and construction pending.",
+      "status": "APPROVED",
+      "estimatedCompletion": null,
+      "totalLengthKm": 11.6,
+      "totalInvestmentCr": null,
+      "fundingModel": "Proposed 50:50 Government of India / Telangana JV",
+      "sourceAuthority": "HMRL",
+      "sourceUrl": "https://hmrl.co.in/phase-ii/",
+      "routeDescription": "Raidurg → Financial District → Narsingi → Kokapet Neopolis",
+      "affectedCorridorSlugs": ["kokapet-neopolis"],
+      "impactRadiusKm": 6,
+      "milestones": [
+        { "title": "Phase II-A proposal submitted to MoHUA", "date": "2024-11-04", "status": "COMPLETED", "sourceUrl": "https://hmrl.co.in/phase-ii/" },
+        { "title": "Centre's in-principle approval for Phase II", "date": "2026-05-21", "status": "COMPLETED", "sourceUrl": "https://newsmeter.in/regional/telangana/centre-in-principle-approves-162-km-phase-ii-expansion-of-hyderabad-metro-rail-768494" },
+        { "title": "Final sanction of the DPR", "date": null, "status": "UPCOMING", "sourceUrl": null }
+      ]
+    },
+    {
+      "id": "infra-metro-2b-future-city",
+      "name": "Hyderabad Metro Phase II-B — RGIA to Bharat Future City",
+      "shortName": "Metro: Airport–Future City",
+      "category": "METRO_RAIL",
+      "subCategory": "Corridor IX",
+      "description": "Proposed 39.6 km line from Shamshabad airport to Bharat Future City (Skills University), one of three Phase II-B corridors (86.1 km, ₹19,579 Cr) whose proposal was submitted on 21 June 2025. Not yet sanctioned.",
+      "status": "ANNOUNCED",
+      "estimatedCompletion": null,
+      "totalLengthKm": 39.6,
+      "totalInvestmentCr": null,
+      "fundingModel": null,
+      "sourceAuthority": "HMRL",
+      "sourceUrl": "https://hmrl.co.in/phase-ii/",
+      "routeDescription": "Shamshabad RGIA → Tukkuguda → Bharat Future City (Skills University)",
+      "affectedCorridorSlugs": ["tukkuguda-shamshabad", "kadthal-fcda", "maheshwaram-pharma-city"],
+      "impactRadiusKm": 8,
+      "milestones": [
+        { "title": "Phase II-B proposal submitted", "date": "2025-06-21", "status": "COMPLETED", "sourceUrl": "https://hmrl.co.in/phase-ii/" }
+      ]
+    },
+    {
+      "id": "infra-metro-2b-medchal",
+      "name": "Hyderabad Metro Phase II-B — JBS to Medchal",
+      "shortName": "Metro: JBS–Medchal",
+      "category": "METRO_RAIL",
+      "subCategory": "Corridor X",
+      "description": "Proposed 24.5 km line from JBS along NH-44 to Medchal, part of the Phase II-B proposal (86.1 km, ₹19,579 Cr) submitted on 21 June 2025. Not yet sanctioned.",
+      "status": "ANNOUNCED",
+      "estimatedCompletion": null,
+      "totalLengthKm": 24.5,
+      "totalInvestmentCr": null,
+      "fundingModel": null,
+      "sourceAuthority": "HMRL",
+      "sourceUrl": "https://hmrl.co.in/phase-ii/",
+      "routeDescription": "JBS → Bowenpally → Kompally → Medchal",
+      "affectedCorridorSlugs": ["kompally-bachupally", "medchal-dundigal"],
+      "impactRadiusKm": 8,
+      "milestones": [
+        { "title": "Phase II-B proposal submitted", "date": "2025-06-21", "status": "COMPLETED", "sourceUrl": "https://hmrl.co.in/phase-ii/" }
+      ]
+    },
+    {
+      "id": "infra-mmts-phase-2",
+      "name": "MMTS Phase II suburban rail",
+      "shortName": "MMTS Phase II",
+      "category": "METRO_RAIL",
+      "subCategory": "Suburban rail",
+      "description": "MMTS Phase II services on Secunderabad–Bolarum–Medchal (28 km) and Falaknuma–Umdanagar (12 km) were inaugurated on 8 April 2023. Other Phase II sections are not covered here.",
+      "status": "PARTIALLY_COMPLETE",
+      "estimatedCompletion": null,
+      "totalLengthKm": 40,
+      "totalInvestmentCr": null,
+      "fundingModel": null,
+      "sourceAuthority": "South Central Railway",
+      "sourceUrl": "https://en.wikipedia.org/wiki/Hyderabad_Multi-Modal_Transport_System",
+      "routeDescription": "Secunderabad → Bolarum → Medchal; Falaknuma → Umdanagar",
+      "affectedCorridorSlugs": ["kompally-bachupally", "medchal-dundigal", "tukkuguda-shamshabad"],
+      "impactRadiusKm": 5,
+      "milestones": [
+        { "title": "Secunderabad–Medchal and Falaknuma–Umdanagar services inaugurated", "date": "2023-04-08", "status": "COMPLETED", "sourceUrl": "https://en.wikipedia.org/wiki/Hyderabad_Multi-Modal_Transport_System" }
+      ]
+    },
+    {
+      "id": "infra-future-city-radial-road",
+      "name": "Ratan Tata Greenfield Radial Road (ORR Raviryal – Amangal)",
+      "shortName": "Future City Radial Road",
+      "category": "ROAD_HIGHWAY",
+      "subCategory": "100 m access-controlled expressway",
+      "description": "41.5 km greenfield road from the ORR Raviryal (TATA) interchange to Amangal through Bharat Future City, in two stretches (19.2 km to Meerkhanpet, then 22.3 km). Foundation stone for the first stretch was laid on 28 September 2025; works were reported under way in 2026.",
+      "status": "UNDER_CONSTRUCTION",
+      "estimatedCompletion": null,
+      "totalLengthKm": 41.5,
+      "totalInvestmentCr": null,
+      "fundingModel": null,
+      "sourceAuthority": "HMDA / Future City Development Authority",
+      "sourceUrl": "https://www.deccanchronicle.com/southern-states/telangana/bharat-future-city-to-get-415-km-radial-road-link-1900769",
+      "routeDescription": "ORR Raviryal interchange → Meerkhanpet → Amangal",
+      "affectedCorridorSlugs": ["adibatla", "kadthal-fcda", "maheshwaram-pharma-city"],
+      "impactRadiusKm": 8,
+      "milestones": [
+        { "title": "Foundation stone laid for the first 19.2 km stretch", "date": "2025-09-28", "status": "COMPLETED", "sourceUrl": "https://x.com/Hyderabad1st/status/1972112273234636915" },
+        { "title": "Works under way on both stretches (reported August 2026)", "date": null, "status": "IN_PROGRESS", "sourceUrl": "https://hyderabadmail.com/ratan-tata-greenfield-road-construction-bharat-future-city-hyderabad/" }
+      ]
+    },
+    {
+      "id": "infra-pharma-city",
+      "name": "Hyderabad Pharma City land (Mucherla) — within Bharat Future City",
+      "shortName": "Pharma City / Future City land",
+      "category": "PHARMA_BIOTECH",
+      "subCategory": "NIMZ (2019)",
+      "description": "About 19,000 acres acquired near Mucherla (Kandukur, Yacharam and Kadthal mandals) for Hyderabad Pharma City, granted NIMZ status in December 2019. The present government has folded the area into Bharat Future City (Future City Development Authority, set up March 2025) and talks of pharma villages / a life-sciences park instead; no construction programme has been confirmed.",
+      "status": "ANNOUNCED",
+      "estimatedCompletion": null,
+      "totalLengthKm": null,
+      "totalInvestmentCr": null,
+      "fundingModel": null,
+      "sourceAuthority": "Telangana Industries / FCDA",
+      "sourceUrl": "https://en.wikipedia.org/wiki/Hyderabad_Pharma_City",
+      "routeDescription": "Mucherla, Ranga Reddy district",
+      "affectedCorridorSlugs": ["kadthal-fcda", "maheshwaram-pharma-city"],
+      "impactRadiusKm": 12,
+      "milestones": [
+        { "title": "NIMZ status granted by the Government of India (December 2019)", "date": null, "status": "COMPLETED", "sourceUrl": "https://en.wikipedia.org/wiki/Hyderabad_Pharma_City" }
+      ]
+    },
+    {
+      "id": "infra-musi-riverfront-1",
+      "name": "Musi Riverfront Development — Phase 1",
+      "shortName": "Musi Riverfront Ph 1",
+      "category": "UTILITY",
+      "subCategory": "River rejuvenation, sewage interception, riverfront",
+      "description": "Phase 1 covers about 21 km west of the city — Himayat Sagar to Gandhi Sarovar (9.2 km) and Osman Sagar to Gandhi Sarovar (11.8 km) — estimated at ₹5,812 Cr excluding land. The DPR was unveiled in March 2026 and the first ₹375 Cr was released in May 2026; land acquisition notices have been served. Construction contracts not yet reported.",
+      "status": "APPROVED",
+      "estimatedCompletion": null,
+      "totalLengthKm": 21,
+      "totalInvestmentCr": 5812,
+      "fundingModel": "State funds; ADB loan reported (preliminary)",
+      "sourceAuthority": "Musi Riverfront Development Corporation",
+      "sourceUrl": "https://newsmeter.in/regional/telangana/musi-riverfront-development-project-telangana-releases-first-installment-of-rs-375-crore-767780",
+      "routeDescription": "Himayat Sagar / Osman Sagar → Gandhi Sarovar (Gandipet)",
+      "affectedCorridorSlugs": ["kokapet-neopolis"],
+      "impactRadiusKm": 6,
+      "milestones": [
+        { "title": "Phase 1 DPR unveiled (March 2026)", "date": null, "status": "COMPLETED", "sourceUrl": "https://newsmeter.in/regional/telangana/musi-riverfront-development-project-telangana-releases-first-installment-of-rs-375-crore-767780" },
+        { "title": "First ₹375 Cr released", "date": "2026-05-08", "status": "COMPLETED", "sourceUrl": "https://newsmeter.in/regional/telangana/musi-riverfront-development-project-telangana-releases-first-installment-of-rs-375-crore-767780" }
+      ]
+    }
+  ]
+}

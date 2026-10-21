@@ -110,8 +110,8 @@ export default function LegalHubPage() {
               <li className="flex gap-3">
                 <CheckCircle className="text-success mt-0.5 shrink-0" size={16} />
                 <div>
-                  <strong className="text-text-primary">Verify Dharani Mutation Status</strong>
-                  <p className="mt-0.5 leading-relaxed text-[11px]">Request the Patta Passbook and run survey number mutations to verify title clarity.</p>
+                  <strong className="text-text-primary">Check the land record on Bhu Bharati</strong>
+                  <p className="mt-0.5 leading-relaxed text-[11px]">Ask for the pattadar passbook and check the survey number&apos;s record of rights and any pending mutation on Bhu Bharati (which replaced Dharani in 2025).</p>
                 </div>
               </li>
               <li className="flex gap-3">
@@ -125,7 +125,7 @@ export default function LegalHubPage() {
                 <CheckCircle className="text-success mt-0.5 shrink-0" size={16} />
                 <div>
                   <strong className="text-text-primary">Validate DTCP/HMDA Layout LP</strong>
-                  <p className="mt-0.5 leading-relaxed text-[11px]">Layout numbers should match official master plan layouts and have physical markers.</p>
+                  <p className="mt-0.5 leading-relaxed text-[11px]">Verify the layout permission (LP) number with the authority that issued it (HMDA or DTCP).</p>
                 </div>
               </li>
               <li className="flex gap-3 bg-warning-light/30 border border-warning/30 p-2 rounded">
@@ -139,7 +139,7 @@ export default function LegalHubPage() {
                 <CheckCircle className="text-success mt-0.5 shrink-0" size={16} />
                 <div>
                   <strong className="text-text-primary">TG-RERA Registration Status</strong>
-                  <p className="mt-0.5 leading-relaxed text-[11px]">Every gated community or layout exceeding 500 sq meters must have active RERA status.</p>
+                  <p className="mt-0.5 leading-relaxed text-[11px]">Projects over 500 sq.m of land or more than 8 units must be registered with TG-RERA.</p>
                 </div>
               </li>
             </ul>
@@ -150,12 +150,12 @@ export default function LegalHubPage() {
             <h3 className="font-display text-base text-text-primary">Official Registration Links</h3>
             <div className="grid grid-cols-1 gap-2 text-xs">
               <a
-                href="https://dharani.telangana.gov.in"
+                href="https://bhubharati.telangana.gov.in"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="card-interactive flex items-center justify-between p-3 font-bold text-navy-ink"
               >
-                <span>Dharani Land Portal</span> <ExternalLink size={12} />
+                <span>Bhu Bharati land records</span> <ExternalLink size={12} />
               </a>
               <a
                 href="https://rera.telangana.gov.in"
@@ -186,7 +186,7 @@ export default function LegalHubPage() {
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none" size={15} />
               <input
                 type="text"
-                placeholder="Search survey risks, corridors..."
+                placeholder="Search checks…"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="input-premium w-full"
@@ -229,7 +229,7 @@ export default function LegalHubPage() {
                     <div className="flex items-start justify-between gap-4">
                       <div>
                         <span className={`px-2 py-0.5 rounded text-[8px] font-mono font-bold border uppercase tracking-wider ${badgeColor}`}>
-                          {risk.severity} Severity
+                          {risk.severity === "RED" ? "Deal-breaker if found" : risk.severity === "ORANGE" ? "Serious" : "Check"}
                         </span>
                         <h4 className="font-display text-lg text-text-primary mt-1">{risk.title}</h4>
                       </div>
@@ -284,7 +284,7 @@ export default function LegalHubPage() {
 
       {/* Disclaimer block */}
       <div className="bg-surface-dim border-t border-gray-200 py-6 text-center text-[10px] text-text-secondary font-mono">
-        <p>Property Tiger Legal Advisory. Compiled from Dharani, RERA Telangana, and HMDA layout notifications.</p>
+        <p>General guidance, not legal advice. Have a lawyer check the title documents of the specific property before you pay.</p>
       </div>
     </div>
   );

@@ -58,6 +58,6 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       reviewedBy: auth.userId,
     },
   });
-  if (body.status === "APPROVED" || row.status === "APPROVED") await computeAllCorridorScores({ skipAI: true });
+  if (body.status === "APPROVED" || row.status === "APPROVED") await computeAllCorridorScores();
   return NextResponse.json({ row: updated });
 }

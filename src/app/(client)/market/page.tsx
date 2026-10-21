@@ -47,6 +47,16 @@ const ZONE_DESCRIPTIONS: Record<string, string> = {
   "kokapet-neopolis": "West Neopolis Commercial Hub · Gold Standard Area"
 };
 
+/** Dated public milestones (no forecasts or labels). */
+const GROWTH_MILESTONES = [
+  { when: "1998", title: "HITEC City opens in Madhapur", body: "The Cyber Towers campus starts West Hyderabad's IT cluster — Madhapur, Kondapur and later Gachibowli." },
+  { when: "2008", title: "New airport at Shamshabad", body: "Rajiv Gandhi International Airport opens south of the city, pulling growth towards Shamshabad and the Bengaluru highway." },
+  { when: "2008–2010s", title: "Outer Ring Road", body: "The 158 km ORR is built in stages, opening up the land just outside it — Kokapet, Kompally, Adibatla and others." },
+  { when: "2017", title: "Metro Phase 1", body: "Hyderabad Metro's first lines open; the network reaches about 67 km." },
+  { when: "2023", title: "Neopolis auction", body: "HMDA auctions Kokapet Neopolis layout plots at record prices, marking the Financial District's westward spread." },
+  { when: "2025–", title: "Future City and the Regional Ring Road", body: "The Future City Development Authority is set up south of the city (March 2025). The Regional Ring Road's northern part has its land acquired; the southern alignment awaits central approval (October 2026)." },
+];
+
 export default function MarketHubPage() {
   const [corridors, setCorridors] = useState<any[]>([]);
   const [infraProjects, setInfraProjects] = useState<any[]>([]);
@@ -397,61 +407,27 @@ export default function MarketHubPage() {
         </div>
       </section>
 
-      {/* 50-Year Growth Timeline - Hyderabad Specific */}
+      {/* Hyderabad growth milestones — dated public events only */}
       <section className="bg-surface border-y border-slate-200 py-12 md:py-16 px-6 w-full">
         <div className="max-w-7xl mx-auto space-y-8">
           <div className="section-header">
             <h3 className="text-2xl font-display text-text-primary flex items-center gap-2">
               <Calendar className="text-navy-ink" size={20} />
-              50-Year Hyderabad Urban Expansion Timeline
+              How Hyderabad grew outward
             </h3>
-            <p className="text-text-secondary text-xs mt-1">Trace the geographical shift of investment value anchors from core cities to high-growth outer corridors.</p>
+            <p className="text-text-secondary text-xs mt-1">The public projects that moved the city&apos;s centre of gravity, in order. Current status of each corridor&apos;s infrastructure is on its page.</p>
           </div>
 
           <div className="relative border-l-2 border-[#E2E8F0] ml-4 pl-8 space-y-8 py-2">
-            <div className="relative">
-              <span className="absolute -left-11 top-1 bg-ink text-white rounded-full w-6 h-6 flex items-center justify-center text-[10px] font-mono font-bold">1</span>
-              <div className="space-y-1.5">
-                <span className="text-navy-ink font-mono text-sm font-bold">1990 - 2000: The Hitec City Inflection</span>
-                <p className="text-xs text-[#475569] max-w-3xl">
-                  Madhapur, Kondapur, and Gachibowli transition from dry rocky scrublands to global IT SEZ clusters. Focus shifts entirely to West Hyderabad.
-                </p>
-                <div className="text-[10px] font-mono text-navy-ink font-bold">Zone Status: Madhapur (🔥 FIRE), Kondapur (🔥 VERY HOT)</div>
+            {GROWTH_MILESTONES.map((m, i) => (
+              <div key={m.when} className="relative">
+                <span className={`absolute -left-11 top-1 ${i === GROWTH_MILESTONES.length - 1 ? "bg-saffron text-ink" : "bg-ink text-white"} rounded-full w-6 h-6 flex items-center justify-center text-[10px] font-mono font-bold`}>{i + 1}</span>
+                <div className="space-y-1.5">
+                  <span className="text-navy-ink font-mono text-sm font-bold">{m.when}: {m.title}</span>
+                  <p className="text-xs text-[#475569] max-w-3xl">{m.body}</p>
+                </div>
               </div>
-            </div>
-
-            <div className="relative">
-              <span className="absolute -left-11 top-1 bg-saffron text-ink rounded-full w-6 h-6 flex items-center justify-center text-[10px] font-mono font-bold">2</span>
-              <div className="space-y-1.5">
-                <span className="text-navy-ink font-mono text-sm font-bold">2000 - 2015: ORR & Financial District Era</span>
-                <p className="text-xs text-[#475569] max-w-3xl">
-                  The Outer Ring Road (ORR) is commissioned. Gachibowli solidifies its status as a financial hub. Suburbs like Kompally and Adibatla emerge.
-                </p>
-                <div className="text-[10px] font-mono text-navy-ink font-bold">Zone Status: Gachibowli (COMPLETE), Kompally (MID-CYCLE)</div>
-              </div>
-            </div>
-
-            <div className="relative">
-              <span className="absolute -left-11 top-1 bg-saffron text-ink rounded-full w-6 h-6 flex items-center justify-center text-[10px] font-mono font-bold">3</span>
-              <div className="space-y-1.5">
-                <span className="text-navy-ink font-mono text-sm font-bold">2015 - 2025: Vertical Rise & Neopolis Boom</span>
-                <p className="text-xs text-[#475569] max-w-3xl">
-                  Land auctions in Kokapet Neopolis reach record-breaking levels. High-rise residential complexes dominate Gachibowli boundaries.
-                </p>
-                <div className="text-[10px] font-mono text-navy-ink font-bold">Zone Status: Kokapet Neopolis (🔥 FIRE), Mokila (🔥 VERY HOT)</div>
-              </div>
-            </div>
-
-            <div className="relative">
-              <span className="absolute -left-11 top-1 bg-ink text-white rounded-full w-6 h-6 flex items-center justify-center text-[10px] font-mono font-bold">4</span>
-              <div className="space-y-1.5">
-                <span className="text-navy-ink font-mono text-sm font-bold">2025 - 2035+: Mucherla FCDA Future City & RRR Expansion</span>
-                <p className="text-xs text-[#475569] max-w-3xl">
-                  Telangana Government triggers the Regional Ring Road (RRR) and Mucherla AI sports hub master plans, shifting focus to Southeast and South growth corridors.
-                </p>
-                <div className="text-[10px] font-mono text-navy-ink font-bold">Zone Status: Kadthal FCDA (🔥 FIRE), Maheshwaram (🔥 VERY HOT)</div>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>

@@ -8,10 +8,10 @@ import { Bot } from "lucide-react";
 import { toast } from "@/lib/toast";
 
 const RESEARCH_STEPS = [
-  "Analysing 15 Hyderabad corridors…",
-  "Cross-referencing 12 government infrastructure projects…",
-  "Checking HMDA & RERA approval records…",
-  "Modelling 5-year appreciation scenarios…",
+  "Pricing an entry plot and flat in each corridor…",
+  "Checking infrastructure timelines against your horizon…",
+  "Reading TG-RERA delivery records…",
+  "Applying growth scenarios…",
 ];
 
 export default function ResearchPage() {
@@ -77,9 +77,9 @@ export default function ResearchPage() {
       {!reportData && (
         <div className="no-print">
           <PageHero
-            eyebrow={<><Bot size={12} /> AI Advisory Engine</>}
-            title="AI Investment Advisory"
-            subtitle="Three inputs — budget, horizon, city. We generate a tailored research report covering Hyderabad's growth corridors, risk indexes, and projected appreciation."
+            eyebrow={<><Bot size={12} /> Corridor research</>}
+            title="Where your budget fits"
+            subtitle="Three inputs — budget, horizon, city. We match them against measured entry prices, infrastructure timelines and delivery records across Hyderabad's corridors."
           />
         </div>
       )}

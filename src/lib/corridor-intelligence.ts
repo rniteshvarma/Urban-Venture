@@ -1,147 +1,60 @@
+/**
+ * Corridor intelligence: the corridor score and everything said about a
+ * corridor — labels, drivers, risks, who it suits — recomputed from measured
+ * data (src/lib/market/narrative.ts). Nothing here is typed in by hand or
+ * written by a model without a source.
+ */
 import prisma from "./prisma";
-import Anthropic from "@anthropic-ai/sdk";
 import { Sentiment } from "@prisma/client";
 import { corridorInfraFromDb, loadScoringProjects, snapshotCorridor } from "./infra-intel/rescore";
-import { buildCorridorMarket, corridorCentre, loadMarketContext, syncReraApprovals, writeCorridorMarket, type CorridorMarketStats, type MarketContext } from "./market/compute";
+import { yearsToCompletion } from "./infra-intel/scoring";
+import { buildCorridorMarket, corridorCentre, loadMarketContext, syncReraApprovals, writeCorridorMarket, COUNT_RADIUS_KM, type CorridorMarketStats, type MarketContext } from "./market/compute";
 import { marketScores } from "./market/scores";
+import { buildNarrative, NARRATIVE_VERSION, type DeliveryRecord } from "./market/narrative";
+import { haversineKm } from "./osm/geo";
+import type { DeveloperRecordJson } from "./developers/sync";
+import type { ProjectRecord } from "./developers/track-record";
 
-// Static fallback drivers / risks when the AI commentary isn't available
-function getFallbackAIAnalysis(corridor: string) {
-  const driversMap: Record<string, string[]> = {
-    "adibatla": [
-      "Tata Aerospace & TCS jobs expansion driving local housing demand.",
-      "Direct connectivity to Outer Ring Road (ORR) via Exit 12.",
-      "Proximity to RRR Southern Corridor alignment."
-    ],
-    "tukkuguda-shamshabad": [
-      "Immediate adjacency to Rajiv Gandhi International Airport expansion plans.",
-      "Upcoming Metro Phase 2 Airport connectivity.",
-      "High concentration of luxury villa projects and premium layouts."
-    ],
-    "kadthal-fcda": [
-      "Gateway position to the newly planned FCDA Future City Mucherla.",
-      "Proximity to proposed Metro extension and Srisailam Highway 4-laning.",
-      "High developer acquisition and plotting layout launches."
-    ],
-    "maheshwaram-pharma-city": [
-      "Direct exposure to the massive Hyderabad Pharma City Green SEZ project.",
-      "Maheshwaram Electronic Hardware Park and Wipro SEZ employee base.",
-      "Strategic link connecting Srisailam Highway and Bangalore Highway."
-    ],
-    "shadnagar": [
-      "Strategic proximity to the upcoming Regional Ring Road (RRR) Southern Corridor.",
-      "High affordability with residential plotting rates."
-    ],
-    "shankarpally-mokila": [
-      "Premium eco-sanctuary and green zone status in West Hyderabad.",
-      "Proximity to Financial District (Gachibowli) via 4-lane roads.",
-      "Presence of elite international schools and villa layouts."
-    ],
-    "sangareddy-industrial": [
-      "Strong demand anchors from IIT Hyderabad and TSIIC industrial parks.",
-      "RRR Northern Arc intersection junction hub.",
-      "Excellent rental yield potential from students and staff."
-    ],
-    "kompally-bachupally": [
-      "Established residential corridor in North Hyderabad with robust lifestyle retail.",
-      "Stable rental demand driven by IT professionals and families.",
-      "Flyover and highway widening projects easing traffic bottlenecks."
-    ],
-    "medchal-dundigal": [
-      "Major logistics and warehousing hub status along NH-44.",
-      "Upcoming RRR Northern Arc connectivity catalyst.",
-      "Affordable industrial and commercial leasing demand."
-    ],
-    "ghatkesar-peerzadiguda": [
-      "Anchored by Raheja Mindspace IT Park and Infosys Pocharam campus.",
-      "Warangal Highway NH-163 widening and metro transit proposals.",
-      "Highly stable middle-income residential demand."
-    ],
-    "bibinagar-bhongir": [
-      "Growth corridor anchored by AIIMS Bibinagar Medical Hub expansion.",
-      "Warangal Highway development and RRR Northern connection.",
-      "Budget-friendly long-term land banking options."
-    ],
-    "kokapet-neopolis": [
-      "Premium location in West Hyderabad close to the Financial District.",
-      "High-density Neopolis commercial and residential high-rise bidding.",
-      "Excellent connectivity via Outer Ring Road (ORR) Exit 1."
-    ]
-  };
+/** Per-project TG-RERA delivery records and each developer's order count, from the Developer table. */
+export interface DeliveryContext {
+  byProject: Map<string, ProjectRecord>;
+  ordersByProject: Map<string, { developer: string; orders: number }>;
+}
 
-  const risksMap: Record<string, string[]> = {
-    "adibatla": [
-      "Local water supply infrastructure lag.",
-      "Slow retail utility growth."
-    ],
-    "tukkuguda-shamshabad": [
-      "High entry ticket sizes.",
-      "Airport height restriction zone (Air Funnel) limitations."
-    ],
-    "kadthal-fcda": [
-      "Speculative pricing bubbles.",
-      "Delayed government implementation of Mucherla projects."
-    ],
-    "maheshwaram-pharma-city": [
-      "Environmental clearance delays in immediate pharma zone boundaries.",
-      "Water table contamination concerns in micro pockets."
-    ],
-    "shadnagar": [
-      "Longer gestation period (5-7 years) for commercial and utility infra development.",
-      "Speculative pricing bubbles in localized outer layouts."
-    ],
-    "shankarpally-mokila": [
-      "High land costs limiting entry for small retail investors.",
-      "Local water supply dependent on tankers."
-    ],
-    "sangareddy-industrial": [
-      "Industrial pollution in adjacent zones.",
-      "Heavy traffic congestions on NH-65 Mumbai highway."
-    ],
-    "kompally-bachupally": [
-      "Traffic bottleneck at Suchitra junction.",
-      "Saturated plot options forcing apartment shifts."
-    ],
-    "medchal-dundigal": [
-      "Scattered residential density.",
-      "Heavy commercial vehicle traffic congestion."
-    ],
-    "ghatkesar-peerzadiguda": [
-      "IT expansion slower than Western corridor.",
-      "Groundwater shortage during peak summer."
-    ],
-    "bibinagar-bhongir": [
-      "Delayed RRR East arc construction timelines.",
-      "Speculative unapproved layout setups."
-    ],
-    "kokapet-neopolis": [
-      "Very high entry ticket size limiting retail investor participation.",
-      "Potential high-density infrastructure congestion over the next decade."
-    ]
-  };
+export async function loadDeliveryContext(): Promise<DeliveryContext> {
+  const devs = await prisma.developer.findMany({ select: { slug: true, stats: true } }).catch(() => []);
+  const byProject = new Map<string, ProjectRecord>();
+  const ordersByProject = new Map<string, { developer: string; orders: number }>();
+  for (const d of devs) {
+    const r = d.stats as unknown as DeveloperRecordJson | null;
+    if (!r?.projects) continue;
+    for (const p of r.projects) {
+      byProject.set(p.id, p);
+      ordersByProject.set(p.id, { developer: d.slug, orders: r.orders?.length ?? 0 });
+    }
+  }
+  return { byProject, ordersByProject };
+}
 
-  const defaultDrivers = [
-    `Strong connectivity improvements via key highway projects.`,
-    `Rapid developer layouts acquisition in the region.`
-  ];
-
-  const defaultRisks = [
-    `Delayed infrastructure completion timelines.`,
-    `Water supply and public utility grid connectivity bottlenecks.`
-  ];
-
-  const keyDrivers = driversMap[corridor.toLowerCase()] || defaultDrivers;
-  const keyRisks = risksMap[corridor.toLowerCase()] || defaultRisks;
-
-  let bestFor = ["NRI_INVESTOR", "LAND_SPECULATOR"];
-  if (corridor.toLowerCase() === "kokapet-neopolis") bestFor = ["NRI_INVESTOR", "HNI_PORTFOLIO_BUILDER"];
-  else if (corridor.toLowerCase() === "kompally-bachupally") bestFor = ["FIRST_TIME_BUYER", "PROFESSIONAL_FIRST_HOME"];
-
-  return {
-    keyDrivers,
-    keyRisks,
-    bestFor,
-  };
+/** Delivery record of the listings within COUNT_RADIUS_KM of a corridor centre. */
+export function deliveryNear(centre: { lat: number; lng: number } | null, ctx: MarketContext, dc: DeliveryContext): DeliveryRecord {
+  const out: DeliveryRecord = { projects: 0, withDeadline: 0, overdue: 0, extended: 0, orders: 0 };
+  if (!centre) return out;
+  const devs = new Map<string, number>();
+  for (const l of ctx.listings) {
+    if (haversineKm(centre.lat, centre.lng, l.lat, l.lng) > COUNT_RADIUS_KM) continue;
+    out.projects++;
+    const r = dc.byProject.get(l.id);
+    if (r?.reraDeadline) {
+      out.withDeadline++;
+      if (r.flags.includes("OVERDUE")) out.overdue++;
+    }
+    if (r?.flags.includes("EXTENDED")) out.extended++;
+    const o = dc.ordersByProject.get(l.id);
+    if (o) devs.set(o.developer, o.orders);
+  }
+  out.orders = [...devs.values()].reduce((s, n) => s + n, 0);
+  return out;
 }
 
 const inr = (n: number) => `₹${Math.round(n).toLocaleString("en-IN")}`;
@@ -158,7 +71,7 @@ export function marketSummary(label: string, m: CorridorMarketStats): string {
 
 export async function computeCorridorScore(
   corridor: string,
-  opts: { ctx?: MarketContext; scoringProjects?: Awaited<ReturnType<typeof loadScoringProjects>>; skipAI?: boolean } = {},
+  opts: { ctx?: MarketContext; scoringProjects?: Awaited<ReturnType<typeof loadScoringProjects>>; delivery?: DeliveryContext } = {},
 ) {
   console.log(`Calculating Corridor Intelligence Score for: ${corridor}`);
 
@@ -176,7 +89,6 @@ export async function computeCorridorScore(
   }
   const infraResult = await corridorInfraFromDb(corridor, opts.scoringProjects);
   const infraScore = infraResult.infraScore;
-  const infraProjects = infraResult.drivers.map((d) => ({ name: d.name, status: d.status, reImpactScore: Math.round(d.contribution * 10) }));
 
   // 2–4. RERA projects, developer activity and growth outlook — measured
   // from our listings and the published city anchors (src/lib/market/).
@@ -191,75 +103,34 @@ export async function computeCorridorScore(
     activeProjects: market.counts.activeProjects,
     baseCagr5: primary.scenarios.base.cagr5,
   });
-  const measured = marketSummary(corridorLabel, market);
+  const adminNote = marketSummary(corridorLabel, market);
 
-  // 6. CALL CLAUDE FOR KEY DRIVERS AND COMMENTARY (with fallback)
-  let keyDrivers: string[] = [];
-  let keyRisks: string[] = [];
-  let bestFor: string[] = [];
-  let adminNote = "";
-
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (opts.skipAI || !apiKey || apiKey === "mock-anthropic-key-for-local-testing" || apiKey.trim() === "") {
-    console.log("Using local mock AI commentary (API key not configured/mocked)");
-    const fallback = getFallbackAIAnalysis(corridor);
-    keyDrivers = fallback.keyDrivers;
-    keyRisks = fallback.keyRisks;
-    bestFor = fallback.bestFor;
-    adminNote = measured;
-  } else {
-    try {
-      const anthropic = new Anthropic({ apiKey });
-      const systemPrompt = "You are a senior real estate analyst specializing in Hyderabad markets. Always respond ONLY with a clean JSON object. Do not include markdown formatting or explanations.";
-      
-      const userPrompt = `
-        Corridor: ${corridor}
-        Infrastructure projects nearby: ${JSON.stringify(infraProjects.map(p => ({ name: p.name, status: p.status, score: p.reImpactScore })))}
-        Measured market data: ${JSON.stringify({ rates: market.rates, counts: market.counts, baseCaseGrowthPerYear: primary.scenarios.base.cagr5 })}
-        Use only these figures for any numbers you mention; do not invent prices, growth rates or search/demand statistics.
-        Overall calculated intelligence score: ${overallScore}/100
-        Sentiment: ${investorSentiment}
-
-        Generate key drivers, risks, suitability, and an investor commentary for this corridor.
-        Respond ONLY in valid JSON:
-        {
-          "keyDrivers": ["driver1", "driver2", "driver3"],
-          "keyRisks": ["risk1", "risk2"],
-          "bestFor": ["PERSONA_NAME1", "PERSONA_NAME2"],
-          "adminNote": "2-sentence market commentary for investors"
-        }
-
-        Note: bestFor values MUST be selected from: "FIRST_TIME_BUYER", "NRI_INVESTOR", "LAND_SPECULATOR", "RETIREMENT_PLANNER", "HNI_PORTFOLIO_BUILDER", "PROFESSIONAL_FIRST_HOME".
-      `;
-
-      const response = await anthropic.messages.create({
-        model: "claude-3-5-sonnet-20241022",
-        max_tokens: 1000,
-        system: systemPrompt,
-        messages: [{ role: "user", content: userPrompt }],
-      });
-
-      const content = response.content[0].type === "text" ? response.content[0].text : "";
-      const jsonStart = content.indexOf("{");
-      const jsonEnd = content.lastIndexOf("}");
-      if (jsonStart !== -1 && jsonEnd !== -1) {
-        const parsed = JSON.parse(content.substring(jsonStart, jsonEnd + 1));
-        keyDrivers = parsed.keyDrivers || [];
-        keyRisks = parsed.keyRisks || [];
-        bestFor = parsed.bestFor || [];
-        adminNote = parsed.adminNote || "";
-      } else {
-        throw new Error("Could not parse JSON from Claude response");
-      }
-    } catch (e) {
-      console.error("Failed to generate AI commentary from Claude, falling back", e);
-      const fallback = getFallbackAIAnalysis(corridor);
-      keyDrivers = fallback.keyDrivers;
-      keyRisks = fallback.keyRisks;
-      bestFor = fallback.bestFor;
-      adminNote = measured;
-    }
-  }
+  // 5. What we say about the corridor — labels, drivers, risks, who it suits —
+  // from the figures above, the infrastructure tracker and TG-RERA records.
+  const infraRows = await prisma.infraProject.findMany({
+    where: { id: { in: infraResult.drivers.map((d) => d.projectId) } },
+    select: { id: true, estimatedCompletion: true, sourceUrl: true },
+  });
+  const infraById = new Map(infraRows.map((r) => [r.id, r]));
+  const narrative = buildNarrative({
+    label: corridorLabel,
+    market,
+    overallScore,
+    infra: infraResult.drivers.map((d) => {
+      const row = infraById.get(d.projectId);
+      return {
+        // Without a location or route the scorer assumes a listed project is close;
+        // that assumed distance isn't a measurement, so it isn't shown.
+        name: d.name, status: d.status, distanceKm: d.distanceAssumed ? null : d.distanceKm, stale: d.stale,
+        estimatedCompletion: row?.estimatedCompletion ?? null, sourceUrl: row?.sourceUrl ?? null,
+        yearsToGo: yearsToCompletion(row?.estimatedCompletion, d.status),
+      };
+    }),
+    delivery: deliveryNear(centre, ctx, opts.delivery ?? (await loadDeliveryContext())),
+  });
+  const keyDrivers = narrative.drivers.map((f) => f.text);
+  const keyRisks = narrative.risks.map((f) => f.text);
+  const bestFor = narrative.bestFor as string[];
 
   // Update or Create CorridorIntelligence record
   const result = await prisma.corridorIntelligence.upsert({
@@ -309,17 +180,21 @@ export async function computeCorridorScore(
       demandScore,
       appreciationScore,
       sentiment: investorSentiment as Sentiment,
+      heatRating: narrative.heatRating,
+      investmentCycle: narrative.investmentCycle,
+      riskLevel: narrative.riskLevel,
       keyDrivers,
       keyRisks,
       bestFor,
-      adminNote
+      adminNote,
+      marketStats: { ...market, narrative: { version: NARRATIVE_VERSION, ...narrative } } as unknown as object,
     }
   });
 
   return result;
 }
 
-export async function computeAllCorridorScores(opts: { skipAI?: boolean } = {}) {
+export async function computeAllCorridorScores() {
   // Get all unique corridors from CorridorProfile
   const corridors = await prisma.corridorProfile.findMany({
     select: {
@@ -330,10 +205,11 @@ export async function computeAllCorridorScores(opts: { skipAI?: boolean } = {}) 
   console.log(`Starting scoring recomputation for ${corridors.length} corridors...`);
   const ctx = await loadMarketContext();
   const scoringProjects = await loadScoringProjects();
+  const delivery = await loadDeliveryContext();
   const results = [];
   for (const c of corridors) {
     try {
-      const res = await computeCorridorScore(c.slug, { ctx, scoringProjects, skipAI: opts.skipAI });
+      const res = await computeCorridorScore(c.slug, { ctx, scoringProjects, delivery });
       results.push(res);
     } catch (e) {
       console.error(`Failed to compute score for ${c.slug}:`, e);

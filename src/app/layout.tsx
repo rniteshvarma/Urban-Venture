@@ -33,8 +33,8 @@ const instrumentSerif = Instrument_Serif({
 });
 
 export const metadata: Metadata = {
-  title: "Property Tiger | AI Investment Advisory",
-  description: "AI-Powered Real Estate Investment Research Portal for Hyderabad's fastest-growing corridors.",
+  title: "Property Tiger | Hyderabad property research",
+  description: "Hyderabad property research: measured prices, developer track records and infrastructure status, corridor by corridor.",
 };
 
 export default function RootLayout({

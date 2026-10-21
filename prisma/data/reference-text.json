@@ -1,0 +1,68 @@
+{
+  "_about": "Corridor descriptions and buyer due-diligence checks, rewritten 2026-10-21 to state only verifiable facts. Applied to existing rows by scripts/reference/sync-infra.ts.",
+  "corridorDescriptions": {
+    "adibatla": "South-east of the city beyond the ORR, around Adibatla, where TCS and Tata's aerospace units operate. Close to the ORR at Bongloor.",
+    "bibinagar-bhongir": "East along the Hyderabad–Warangal highway (NH-163), around AIIMS Bibinagar and Bhongir town.",
+    "ghatkesar-peerzadiguda": "East Hyderabad along the Warangal highway, near the Infosys campus and IT SEZ at Pocharam.",
+    "kadthal-fcda": "South along the Srisailam highway, at the edge of the Bharat Future City area around Mucherla (Future City Development Authority, set up in 2025).",
+    "kokapet-neopolis": "West Hyderabad next to the Financial District and the ORR, where HMDA auctioned the Neopolis layout. Mostly high-rise apartments.",
+    "kompally-bachupally": "North Hyderabad along NH-44 (Kompally) and towards Bachupally — a mature residential belt of apartments and gated communities.",
+    "maheshwaram-pharma-city": "South of the airport around Maheshwaram, near the E-City electronics cluster, with the Pharma City / Future City lands to the east.",
+    "medchal-dundigal": "North along NH-44 around Medchal and Dundigal — industrial estates, warehousing and growing residential layouts.",
+    "sangareddy-industrial": "North-west along NH-65 around Sangareddy and Kandi, home to IIT Hyderabad and older industrial estates. The RRR northern part passes here.",
+    "shadnagar": "South-west along the Hyderabad–Bengaluru highway (NH-44) around Shadnagar town and its industrial estates; a long-established plotting market.",
+    "shankarpally-mokila": "West beyond the ORR around Mokila and Shankarpally — mostly villa and plotted layouts, at lower density than the IT core.",
+    "tukkuguda-shamshabad": "South around Shamshabad and Tukkuguda, next to Rajiv Gandhi International Airport and the Fab City / hardware park area."
+  },
+  "legalRisks": {
+    "cmsvbeciy001g7m8o7kb696g0": {
+      "title": "Prohibited land (Section 22-A list)",
+      "description": "Section 22-A of the Registration Act bars registration of listed prohibited properties — government, assigned, endowment, Wakf and ceiling-surplus land. A plot on that list can't be legally sold to you.",
+      "checkMethod": "Search the survey number and village in the prohibited-properties list on the Bhu Bharati portal (which replaced Dharani in 2025), and ask the Sub-Registrar's office before paying an advance.",
+      "checkUrl": "https://bhubharati.telangana.gov.in",
+      "govReference": "Registration Act, 1908 — Section 22-A (as applied in Telangana)"
+    },
+    "cmsvbecj0001h7m8o4pjyh0bd": {
+      "title": "Lake FTL and buffer zones",
+      "description": "Building is not allowed inside a lake's Full Tank Level (FTL) or its buffer zone. HYDRAA, set up in 2024, has demolished structures built in these zones.",
+      "checkMethod": "Ask for the irrigation department's FTL/buffer certificate for the survey number and compare the layout plan with HMDA's lake boundary maps.",
+      "checkUrl": "https://www.hmda.gov.in",
+      "govReference": "G.O.Ms. No. 168 MA&UD (2012) — lake buffer rules"
+    },
+    "cmsvbecj0001i7m8orzun5qsi": {
+      "title": "Farm land sold as plots without conversion (NALA)",
+      "description": "Agricultural land must be converted to non-agricultural use before it is divided into plots. Plots carved out of unconverted farm land face registration and building-permission problems.",
+      "checkMethod": "Ask for the NALA conversion order and check the land's classification in its Bhu Bharati record; a layout should also carry an HMDA or DTCP layout permission (LP) number.",
+      "checkUrl": "https://bhubharati.telangana.gov.in",
+      "govReference": "Telangana Agricultural Land (Conversion for Non-Agricultural Purposes) Act, 2006"
+    },
+    "cmsvbecj1001j7m8ocu9bdtmt": {
+      "title": "Pending mutation, succession or partition",
+      "description": "If the seller's title has a pending mutation, an unresolved succession or a partition claim, your registration can be stuck or challenged.",
+      "checkMethod": "Check the record of rights for the survey number on Bhu Bharati, and get an Encumbrance Certificate for at least 30 years from the Registration department.",
+      "checkUrl": "https://bhubharati.telangana.gov.in",
+      "govReference": "Telangana Bhu Bharati (Record of Rights in Land) Act, 2025"
+    },
+    "cmsvbecj2001k7m8o73nrryx8": {
+      "title": "Projects that should be RERA-registered but aren't",
+      "description": "Projects over 500 sq.m of land or more than 8 units must register with TG-RERA before advertising or selling. Splitting a project into small phases to avoid registration removes your RERA protections.",
+      "checkMethod": "Search the project and promoter on the TG-RERA portal. If it isn't there, ask the developer why, and check the total land and unit count against the layout plan.",
+      "checkUrl": "https://rera.telangana.gov.in",
+      "govReference": "Real Estate (Regulation and Development) Act, 2016 — Section 3"
+    },
+    "cmsvbecj3001l7m8o7yk02o62": {
+      "title": "Which authority approved the layout (HMDA or DTCP)",
+      "description": "Layouts inside the Hyderabad Metropolitan Region are approved by HMDA; outside it, by DTCP. An LP number from the wrong authority, or none, is a red flag.",
+      "checkMethod": "Note the layout permission (LP) number and verify it with the authority named on it (HMDA or DTCP).",
+      "checkUrl": "https://www.hmda.gov.in",
+      "govReference": "HMDA Act, 2008; Telangana Town Planning Act"
+    },
+    "cmsvbecj4001m7m8org50n9ke": {
+      "title": "Undivided share of land (UDS) in apartments",
+      "description": "Each flat comes with an undivided share of the land. If the shares sold add up to more than the land, owners lose out at redevelopment or in a dispute.",
+      "checkMethod": "Check the UDS in your sale agreement and the project's TG-RERA filing: the shares of all units together should equal the project's land area.",
+      "checkUrl": "https://rera.telangana.gov.in",
+      "govReference": "TG-RERA project disclosures; registered sale deed"
+    }
+  }
+}

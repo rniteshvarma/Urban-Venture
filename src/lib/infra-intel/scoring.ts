@@ -92,6 +92,8 @@ export interface Contribution {
   name: string;
   status: string;
   distanceKm: number | null;
+  /** True when the project has no location or route, so distanceKm is an assumption, not a measurement */
+  distanceAssumed: boolean;
   contribution: number;
   momentum: number;
   stale: boolean;
@@ -130,6 +132,7 @@ export function projectContribution(p: ProjectForScoring, distanceKm: number, no
     name: p.name,
     status: p.status,
     distanceKm: Math.round(distanceKm * 10) / 10,
+    distanceAssumed: !(p.route && p.route.length > 1) && (p.latitude == null || p.longitude == null),
     contribution: Math.round(distanceFactor * stage * timeDiscount * impact * momentum * staleness * 1000) / 1000,
     momentum: p.statusUpgrades90d,
     stale,

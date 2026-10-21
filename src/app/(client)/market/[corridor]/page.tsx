@@ -10,11 +10,9 @@ import {
   Hammer, 
   FileCheck, 
   ArrowLeft,
-  Calendar,
   ExternalLink,
   ChevronRight,
   Loader2,
-  RefreshCw,
   Info,
   Layers,
   Award,
@@ -37,9 +35,9 @@ import {
   Legend
 } from "recharts";
 import { formatDate } from "@/lib/format";
-import { toast } from "@/lib/toast";
 import type { CorridorMarketStats } from "@/lib/market/compute";
 import { SCORE_LABELS } from "@/lib/market/scores";
+import { CYCLE, HEAT, type HeatRating, type InvCycle } from "@/components/ui/enums";
 
 /** One contributor to a corridor's infra score (see /api/market/corridors/[slug]/infra). */
 interface InfraDriver {
@@ -47,21 +45,11 @@ interface InfraDriver {
   name: string;
   status: string;
   distanceKm: number | null;
+  distanceAssumed?: boolean;
   contribution: number;
   momentum: number;
   stale: boolean;
 }
-
-const ZONE_DESCRIPTIONS: Record<string, string> = {
-  "Shadnagar": "South Hyderabad · Ranga Reddy District",
-  "Pharma City": "South-East Hyderabad · NIMZ Industrial Zone",
-  "Kokapet": "West Hyderabad · Financial District Extension",
-  "Kompally": "North Hyderabad · NH-44 Residential Belt",
-  "Adibatla": "South Hyderabad · Aerospace SEZ Hub",
-  "Shamshabad": "South Hyderabad · Airport Corridor",
-  "Yadadri": "East Hyderabad · Temple Tourism Corridor",
-  "Sangareddy": "West Hyderabad · Industrial Expressway Hub",
-};
 
 export default function CorridorDetailPage() {
   const params = useParams();
@@ -70,7 +58,6 @@ export default function CorridorDetailPage() {
 
   const [activeTab, setActiveTab] = useState("pricing");
   const [loading, setLoading] = useState(true);
-  const [regenerating, setRegenerating] = useState(false);
 
   // Data States
   const [profile, setProfile] = useState<any>(null);
@@ -139,12 +126,8 @@ export default function CorridorDetailPage() {
       const legalRes = await fetch(`/api/market/legal`);
       if (legalRes.ok) {
         const legalData = await legalRes.json();
-        if (legalData.success && legalData.risks) {
-          const filteredRisks = legalData.risks.filter((r: any) => 
-            r.affectedZones.map((z: string) => z.toLowerCase()).includes(rawCorridor.toLowerCase())
-          );
-          setCorridorLegalRisks(filteredRisks);
-        }
+        // These checks apply to any purchase; they aren't specific to one corridor.
+        if (legalData.success && legalData.risks) setCorridorLegalRisks(legalData.risks);
       }
 
     } catch (err) {
@@ -153,32 +136,6 @@ export default function CorridorDetailPage() {
       setLoading(false);
     }
   }
-
-  const handleRegenerateAnalysis = async () => {
-    setRegenerating(true);
-    try {
-      const slugEncoded = encodeURIComponent(rawCorridor);
-      const res = await fetch(`/api/market/corridors/${slugEncoded}/analysis`, {
-        method: "POST"
-      });
-
-      if (res.ok) {
-        // Fetch new analysis
-        const getRes = await fetch(`/api/market/corridors/${slugEncoded}/analysis`);
-        if (getRes.ok) {
-          const aiData = await getRes.json();
-          setAiAnalysis(aiData);
-        }
-      } else {
-        const err = await res.json();
-        toast.show(err.error || "Regeneration rate limit hit.");
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setRegenerating(false);
-    }
-  };
 
   if (loading) {
     return (
@@ -238,7 +195,7 @@ export default function CorridorDetailPage() {
               </h1>
               <p className="text-xs text-slate-200 mt-1.5 font-medium flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-                {ZONE_DESCRIPTIONS[profile.corridor] || "Hyderabad Growth Corridor"}
+                {[profile.zone, profile.district && `${profile.district} district`].filter(Boolean).join(" · ") || "Hyderabad growth corridor"}
               </p>
             </div>
 
@@ -300,7 +257,7 @@ export default function CorridorDetailPage() {
               profile.investorSentiment === "CAUTIOUS" ? "bg-red-50 text-[#D93B30] border-red-200" :
               "bg-amber-50 text-[#9A6A1E] border-amber-200"
             }`}>
-              {profile.investorSentiment ?? "No"} sentiment
+              {profile.investorSentiment ? `${profile.investorSentiment.toLowerCase()} on our score` : "Not scored"}
             </span>
           </div>
         </div>
@@ -314,9 +271,8 @@ export default function CorridorDetailPage() {
             { id: "demand", label: "Developer Activity", icon: <TrendingDown size={14} /> },
             { id: "infra", label: "Infrastructure Timeline", icon: <Hammer size={14} /> },
             { id: "approvals", label: "RERA Projects", icon: <FileCheck size={14} /> },
-            { id: "ai", label: "AI Investment Analysis", icon: <Brain size={14} /> },
-            { id: "50yr", label: "50yr Context", icon: <Calendar size={14} /> },
-            { id: "legal", label: "Legal Checklist", icon: <ShieldCheck size={14} /> },
+            { id: "ai", label: "Analyst Report", icon: <Brain size={14} /> },
+            { id: "legal", label: "Buyer Checks", icon: <ShieldCheck size={14} /> },
           ].map(tab => (
             <button
               key={tab.id}
@@ -651,7 +607,7 @@ export default function CorridorDetailPage() {
                           <div className="font-semibold text-text-primary truncate">{d.name}</div>
                           <div className="text-[11px] text-text-secondary">
                             {String(d.status).replace(/_/g, " ").toLowerCase()}
-                            {d.distanceKm !== null ? ` · ${d.distanceKm} km away` : ""}
+                            {d.distanceKm !== null && !d.distanceAssumed ? ` · ${d.distanceKm} km away` : ""}
                             {d.momentum > 0 ? " · progressed recently" : ""}
                             {d.stale ? " · awaiting fresh confirmation" : ""}
                           </div>
@@ -698,42 +654,32 @@ export default function CorridorDetailPage() {
                           <h4 className="text-base font-bold text-text-primary tracking-tight">{proj.name}</h4>
                         </div>
 
-                        {/* Impact representation */}
-                        <div className="flex items-center gap-2 bg-slate-50 border border-luxury px-3 py-1.5 rounded">
-                          <span className="text-[10px] text-text-secondary font-bold uppercase tracking-wider">RE Impact</span>
-                          <span className="font-mono font-black text-amber-600 text-xs">{proj.reImpactScore}/10</span>
-                          <div className="flex gap-0.5 ml-1">
-                            {Array.from({ length: 10 }).map((_, idx) => (
-                              <span 
-                                key={idx} 
-                                className={`w-1 h-3 rounded-full ${idx < proj.reImpactScore ? "bg-amber-500" : "bg-slate-200"}`} 
-                              />
-                            ))}
-                          </div>
-                        </div>
                       </div>
 
-                      {/* Project detail grid */}
+                      {proj.description && <p className="text-xs text-text-secondary leading-relaxed max-w-3xl">{proj.description}</p>}
+
+                      {/* Project detail grid — only facts a cited source states */}
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs bg-slate-50 p-4 border border-luxury rounded">
                         <div>
-                          <span className="text-[10px] text-text-secondary font-bold uppercase">Estimated Completion</span>
-                          <span className="text-text-primary font-bold block mt-0.5">{proj.estimatedCompletion || "TBD"}</span>
+                          <span className="text-[10px] text-text-secondary font-bold uppercase">Completion</span>
+                          <span className="text-text-primary font-bold block mt-0.5">{proj.estimatedCompletion || (isComplete ? "Done" : "No official date")}</span>
                         </div>
                         <div>
-                          <span className="text-[10px] text-text-secondary font-bold uppercase">Total Investment</span>
+                          <span className="text-[10px] text-text-secondary font-bold uppercase">Length / cost</span>
                           <span className="text-text-primary font-bold block mt-0.5">
-                            {proj.totalInvestmentCr ? `₹${proj.totalInvestmentCr.toLocaleString()} Cr` : "—"}
+                            {[proj.totalLengthKm ? `${proj.totalLengthKm} km` : null, proj.totalInvestmentCr ? `₹${proj.totalInvestmentCr.toLocaleString("en-IN")} Cr` : null].filter(Boolean).join(" · ") || "—"}
                           </span>
                         </div>
-                        <div>
-                          <span className="text-[10px] text-text-secondary font-bold uppercase">Expected Job Creation</span>
-                          <span className="text-text-primary font-bold block mt-0.5">
-                            {proj.expectedJobs ? `${proj.expectedJobs.toLocaleString()}+` : "—"}
+                        <div className="col-span-2">
+                          <span className="text-[10px] text-text-secondary font-bold uppercase">Source</span>
+                          <span className="block mt-0.5">
+                            {proj.sourceUrl ? (
+                              <a href={proj.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-text-primary font-bold hover:underline inline-flex items-center gap-1 break-all">
+                                {proj.sourceAuthority || new URL(proj.sourceUrl).hostname} <ExternalLink size={10} />
+                              </a>
+                            ) : <span className="text-text-secondary">—</span>}
+                            {proj.lastVerifiedDate && <span className="text-[10px] text-text-secondary block">Checked {formatDate(proj.lastVerifiedDate)}{proj.lastVerifiedSource ? ` · ${proj.lastVerifiedSource}` : ""}</span>}
                           </span>
-                        </div>
-                        <div>
-                          <span className="text-[10px] text-text-secondary font-bold uppercase">Government Order</span>
-                          <span className="text-text-secondary font-mono text-[10px] block mt-0.5 truncate" title={proj.sourceGO}>{proj.sourceGO || "—"}</span>
                         </div>
                       </div>
 
@@ -763,19 +709,6 @@ export default function CorridorDetailPage() {
                         </div>
                       )}
 
-                      {/* Official link */}
-                      {proj.sourceUrl && (
-                        <div className="pt-2 flex items-center justify-start">
-                          <a
-                            href={proj.sourceUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-[10px] font-bold text-primary hover:text-blue-700 hover:underline"
-                          >
-                            View Official Source G.O. <ExternalLink size={10} />
-                          </a>
-                        </div>
-                      )}
                     </div>
                   );
                 })}
@@ -891,185 +824,107 @@ export default function CorridorDetailPage() {
           </div>
         )}
 
-        {/* Tab 5: AI Analysis report */}
+        {/* Tab 5: Analyst report — assembled from measured data, every point sourced */}
         {activeTab === "ai" && (
-          <div className="space-y-10 animate-fade-in">
-            {/* Header info */}
-            <div className="flex items-center justify-between border-b border-luxury pb-4">
-              <div>
-                <h3 className="text-sm font-bold text-text-primary uppercase tracking-wider flex items-center gap-2">
-                  <Brain className="text-primary" size={16} /> AI Investment Research Report
-                </h3>
-                <p className="text-text-secondary text-[10px] mt-0.5">
-                  Generated: {formatDate(aiAnalysis?.generatedAt)}
-                </p>
-              </div>
-              <button
-                onClick={handleRegenerateAnalysis}
-                disabled={regenerating}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 border border-luxury hover:bg-slate-50 text-text-secondary hover:text-text-primary rounded text-[10px] font-bold cursor-pointer transition-all disabled:opacity-50 bg-white shadow-sm"
-              >
-                <RefreshCw size={11} className={regenerating ? "animate-spin text-primary" : "text-text-secondary"} />
-                <span>Regenerate Analysis</span>
-              </button>
-            </div>
-
-            {/* Analysis Detail grid */}
-            {!aiAnalysis ? (
-              <div className="bg-white border border-luxury rounded p-12 text-center text-text-secondary text-xs italic shadow-sm">
-                AI report not seeded yet. Click Regenerate to fetch.
-              </div>
-            ) : (
-              <div className="space-y-8 max-w-4xl text-text-primary">
-                {/* Headline Banner */}
-                <h4 className="text-lg md:text-xl font-bold text-text-primary font-serif leading-relaxed border-l-2 border-primary pl-4 py-1">
-                  {aiAnalysis.headline}
-                </h4>
-
-                {/* Grid blocks */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
-                  {/* Thesis */}
-                  <div className="space-y-2">
-                    <span className="font-bold text-text-primary text-xs uppercase tracking-wider flex items-center gap-1.5 border-b border-luxury pb-1.5">
-                      🎯 Investment Thesis
-                    </span>
-                    <p className="text-xs leading-relaxed text-text-secondary font-medium">{aiAnalysis.investmentThesis}</p>
-                  </div>
-
-                  {/* Catalysts */}
-                  <div className="space-y-2">
-                    <span className="font-bold text-text-primary text-xs uppercase tracking-wider flex items-center gap-1.5 border-b border-luxury pb-1.5">
-                      ⚡ Near-Term Catalysts
-                    </span>
-                    <ul className="list-disc list-inside text-xs text-text-secondary space-y-1">
-                      {aiAnalysis.nearTermCatalysts?.map((c: string, idx: number) => (
-                        <li key={idx} className="leading-relaxed">{c}</li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  {/* Drivers */}
-                  <div className="space-y-2">
-                    <span className="font-bold text-text-primary text-xs uppercase tracking-wider flex items-center gap-1.5 border-b border-luxury pb-1.5">
-                      🚀 Long-Term Drivers
-                    </span>
-                    <ul className="list-disc list-inside text-xs text-text-secondary space-y-1">
-                      {aiAnalysis.longTermDrivers?.map((d: string, idx: number) => (
-                        <li key={idx} className="leading-relaxed">{d}</li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  {/* Risks */}
-                  <div className="space-y-2">
-                    <span className="font-bold text-red-600 text-xs uppercase tracking-wider flex items-center gap-1.5 border-b border-luxury pb-1.5">
-                      ⚠️ Key Market Risks
-                    </span>
-                    <ul className="list-disc list-inside text-xs text-text-secondary space-y-1">
-                      {aiAnalysis.risks?.map((r: string, idx: number) => (
-                        <li key={idx} className="leading-relaxed">{r}</li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  {/* Windows & Exit */}
-                  <div className="space-y-2">
-                    <span className="font-bold text-text-primary text-xs uppercase tracking-wider flex items-center gap-1.5 border-b border-luxury pb-1.5">
-                      🚪 Exit Strategy & Entry Window
-                    </span>
-                    <p className="text-xs text-text-secondary leading-relaxed font-medium">
-                      <strong>Best Entry Window:</strong> {aiAnalysis.bestEntryWindow}
-                    </p>
-                    <p className="text-xs text-text-secondary leading-relaxed mt-2 font-medium">
-                      <strong>Proposed Exit Strategy:</strong> {aiAnalysis.exitStrategy}
-                    </p>
-                  </div>
-
-                  {/* Price Outlook projections */}
-                  <div className="space-y-2">
-                    <span className="font-bold text-text-primary text-xs uppercase tracking-wider flex items-center gap-1.5 border-b border-luxury pb-1.5">
-                      📈 Projected 5-Year CAGR Price Outlook
-                    </span>
-                    <div className="bg-slate-50 border border-luxury rounded p-3 space-y-2">
-                      <div className="flex items-center justify-between text-xs font-semibold">
-                        <span className="text-text-secondary">Conservative case</span>
-                        <span className="text-text-primary font-mono">{aiAnalysis.priceOutlook?.conservative || "8-10%"}</span>
-                      </div>
-                      <div className="flex items-center justify-between text-xs font-semibold border-t border-luxury pt-2">
-                        <span className="text-text-secondary">Base case estimate</span>
-                        <span className="text-amber-700 font-mono font-bold">{aiAnalysis.priceOutlook?.base || "12-14%"}</span>
-                      </div>
-                      <div className="flex items-center justify-between text-xs font-semibold border-t border-luxury pt-2">
-                        <span className="text-text-secondary">Optimistic tailwind case</span>
-                        <span className="text-emerald-700 font-mono font-bold">{aiAnalysis.priceOutlook?.optimistic || "16-18%"}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Tab 8: 50-Year Growth Context */}
-        {activeTab === "50yr" && (
           <div className="space-y-8 animate-fade-in max-w-4xl text-text-primary">
-            <div>
-              <h3 className="text-lg font-display text-[#0F172A] flex items-center gap-2">
-                <Calendar size={18} className="text-[#10233F]" />
-                50-Year Urban Expansion & Historical Analogue
+            <div className="border-b border-luxury pb-4">
+              <h3 className="text-sm font-bold text-text-primary uppercase tracking-wider flex items-center gap-2">
+                <Brain className="text-primary" size={16} /> Analyst report
               </h3>
-              <p className="text-text-secondary text-xs mt-1">
-                Where does the {profile.name} fit in Hyderabad's radial growth narrative?
+              <p className="text-text-secondary text-[11px] mt-1">
+                Built from our listings, the infrastructure tracker, TG-RERA records and measured rents
+                {aiAnalysis?.generatedAt ? ` · figures as of ${formatDate(aiAnalysis.generatedAt)}` : ""}. Nothing here is written by hand or by AI.
               </p>
             </div>
 
-            <div className="bg-white border border-[#E2E8F0] rounded-lg p-6 space-y-6 shadow-sm">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {!aiAnalysis?.available ? (
+              <div className="bg-white border border-luxury rounded p-12 text-center text-text-secondary text-xs shadow-sm">
+                {aiAnalysis?.reason ?? "The report isn't available yet."}
+              </div>
+            ) : (
+              <>
                 <div className="space-y-2">
-                  <span className="font-mono text-[10px] font-bold text-[#10233F] uppercase tracking-wider block">Historical Analogue</span>
-                  <div className="text-xl font-display text-[#0F172A]">
-                    {profile.historicalAnalog || "N/A"}
-                  </div>
-                  <p className="text-xs text-[#475569] leading-relaxed">
-                    This analogue indicates that {profile.shortName}'s current price action, infrastructure layout activity, and investor inquiry velocity closely mirror another established corridor during its high-appreciation trigger phase.
-                  </p>
+                  <h4 className="text-lg md:text-xl font-bold text-text-primary leading-snug border-l-2 border-primary pl-4 py-1">{aiAnalysis.headline}</h4>
+                  <p className="text-xs leading-relaxed text-text-secondary">{aiAnalysis.summary}</p>
                 </div>
 
-                <div className="space-y-2 bg-[#F8FAFC]/40 p-4 rounded-md border border-[#E2E8F0]">
-                  <span className="font-mono text-[10px] font-bold text-[#10233F] uppercase tracking-wider block">Geographical Corridor Zone</span>
-                  <div className="text-lg font-display text-[#0F172A]">{profile.zone}</div>
-                  <p className="text-xs text-[#475569] leading-relaxed">
-                    Centred in the <strong>{profile.direction}</strong> region of Hyderabad under the district administration of <strong>{profile.district}</strong>.
-                  </p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {[
+                    { k: "Heat", v: HEAT[aiAnalysis.heat.rating as HeatRating]?.label ?? aiAnalysis.heat.rating, why: aiAnalysis.heat.basis },
+                    { k: "Timing stage", v: CYCLE[aiAnalysis.cycle.stage as InvCycle]?.label ?? aiAnalysis.cycle.stage, why: aiAnalysis.cycle.basis },
+                    { k: "Risk", v: aiAnalysis.risk.level === "LOW" ? "Low" : aiAnalysis.risk.level === "HIGH" ? "High" : "Medium", why: aiAnalysis.risk.basis },
+                  ].map((x) => (
+                    <div key={x.k} className="bg-white border border-luxury rounded p-4 space-y-1 shadow-sm">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-text-secondary">{x.k}</span>
+                      <div className="text-sm font-bold text-text-primary">{x.v}</div>
+                      <p className="text-[11px] text-text-secondary leading-relaxed">{x.why}</p>
+                    </div>
+                  ))}
                 </div>
-              </div>
 
-              <div className="border-t border-[#E2E8F0] pt-6 space-y-4">
-                <h4 className="text-xs font-mono font-bold text-[#0F172A] uppercase tracking-widest">Growth Era Allocation</h4>
-                <div className="relative border-l-2 border-[#E2E8F0] ml-2 pl-6 space-y-6 py-1">
-                  <div className="relative">
-                    <span className="absolute -left-9 top-0.5 bg-[#E2E8F0] text-[#0F172A] rounded-full w-5 h-5 flex items-center justify-center text-[9px] font-mono font-bold">1</span>
-                    <span className="text-xs font-bold text-text-secondary">1990 - 2000: Madhapur Inflection Era (Trigger completed)</span>
-                  </div>
-                  <div className="relative">
-                    <span className="absolute -left-9 top-0.5 bg-[#E2E8F0] text-[#0F172A] rounded-full w-5 h-5 flex items-center justify-center text-[9px] font-mono font-bold">2</span>
-                    <span className="text-xs font-bold text-text-secondary">2000 - 2015: ORR & Gachibowli Expansion Era (Matured)</span>
-                  </div>
-                  <div className="relative">
-                    <span className="absolute -left-9 top-0.5 bg-[#E2E8F0] text-[#0F172A] rounded-full w-5 h-5 flex items-center justify-center text-[9px] font-mono font-bold">3</span>
-                    <span className="text-xs font-bold text-text-secondary">2015 - 2025: Kokapet Neopolis High-Rise Era (Established Node)</span>
-                  </div>
-                  <div className="relative">
-                    <span className="absolute -left-9 top-0.5 bg-[#FFB400] text-white rounded-full w-5 h-5 flex items-center justify-center text-[9px] font-mono font-bold">4</span>
-                    <span className="text-xs font-bold text-[#0F172A]">2025 - 2035+: Mucherla FCDA Future City & RRR Expansion (Active Phase)</span>
-                    <p className="text-[11px] text-[#475569] mt-1 leading-relaxed max-w-xl">
-                      {profile.shortName} is a direct beneficiary of the active Growth Era 4, fueled by the Regional Ring Road (RRR) alignments and FCDA planning approvals.
-                    </p>
-                  </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {[
+                    { title: "What's working for it", items: aiAnalysis.drivers as { text: string; source: string; url?: string | null }[], empty: "Nothing stands out in our data yet." },
+                    { title: "What to watch", items: aiAnalysis.risks as { text: string; source: string; url?: string | null }[], empty: "No delivery, regulatory or data-coverage flags in our data." },
+                  ].map((col) => (
+                    <div key={col.title} className="space-y-2">
+                      <span className="font-bold text-text-primary text-xs uppercase tracking-wider block border-b border-luxury pb-1.5">{col.title}</span>
+                      {col.items.length === 0 ? (
+                        <p className="text-xs text-text-secondary italic">{col.empty}</p>
+                      ) : (
+                        <ul className="space-y-2.5">
+                          {col.items.map((f, i) => (
+                            <li key={i} className="text-xs leading-relaxed">
+                              <span className="text-text-primary">{f.text}</span>
+                              <span className="block text-[10px] text-text-secondary mt-0.5">
+                                {f.url ? <a href={f.url} target={f.url.startsWith("/") ? undefined : "_blank"} rel="noopener noreferrer" className="hover:underline inline-flex items-center gap-0.5">{f.source} <ExternalLink size={9} /></a> : f.source}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  ))}
                 </div>
-              </div>
-            </div>
+
+                {aiAnalysis.bestFor?.length > 0 && (
+                  <p className="text-xs text-text-secondary">
+                    <strong className="text-text-primary">Suits:</strong> {(aiAnalysis.bestFor as string[]).map((b) => b.toLowerCase().replace(/_/g, " ")).join(", ")} — from price level, rental yield and the mix of ready and under-construction projects.
+                  </p>
+                )}
+
+                <div className="space-y-2">
+                  <span className="font-bold text-text-primary text-xs uppercase tracking-wider block border-b border-luxury pb-1.5">5-year price outlook (scenario model)</span>
+                  <div className="bg-slate-50 border border-luxury rounded p-3 space-y-2">
+                    {([["Conservative", "conservative"], ["Base", "base"], ["Optimistic", "optimistic"]] as const).map(([label, k]) => (
+                      <div key={k} className="flex items-center justify-between gap-4 text-xs font-semibold border-t first:border-t-0 border-luxury pt-2 first:pt-0">
+                        <span className="text-text-secondary">{label}</span>
+                        <span className="text-text-primary font-mono text-right">{aiAnalysis.priceOutlook[k]}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-text-secondary">Scenarios, not predictions — see <Link href="/market/forecast" className="underline">how the forecast works</Link>.</p>
+                </div>
+
+                {aiAnalysis.gaps?.length > 0 && (
+                  <div className="bg-amber-50/60 border border-amber-200 rounded p-4 space-y-1.5">
+                    <span className="font-bold text-text-primary text-xs uppercase tracking-wider block">What we can&apos;t tell you yet</span>
+                    <ul className="list-disc list-inside text-xs text-text-secondary space-y-1">
+                      {(aiAnalysis.gaps as string[]).map((g) => <li key={g}>{g}</li>)}
+                    </ul>
+                  </div>
+                )}
+
+                <div className="text-[10px] text-text-secondary space-y-1">
+                  <span className="font-bold uppercase tracking-wider">Sources</span>
+                  <ul className="space-y-0.5">
+                    {(aiAnalysis.sources as { name: string; url: string | null }[]).map((src) => (
+                      <li key={src.name}>{src.url ? <a href={src.url} target={src.url.startsWith("/") ? undefined : "_blank"} rel="noopener noreferrer" className="hover:underline">{src.name}</a> : src.name}</li>
+                    ))}
+                  </ul>
+                </div>
+              </>
+            )}
           </div>
         )}
 
@@ -1079,16 +934,16 @@ export default function CorridorDetailPage() {
             <div>
               <h3 className="text-lg font-display text-[#0F172A] flex items-center gap-2">
                 <ShieldCheck size={18} className="text-[#10233F]" />
-                Legal Audit & Due Diligence Checklist
+                Buyer checks before you pay an advance
               </h3>
               <p className="text-[#475569] text-xs mt-1">
-                Verified warning vectors and legal requirements for {profile.name} compiled from Dharani, Bhu Bharati, and RERA registries.
+                Common title and approval problems in and around Hyderabad, and how to check each one yourself. They apply to any purchase here; we haven&apos;t checked a specific property for you.
               </p>
             </div>
 
             {corridorLegalRisks.length === 0 ? (
               <div className="bg-white border border-[#E2E8F0] rounded-lg p-12 text-center text-text-secondary text-xs italic shadow-sm">
-                No active critical legal warnings listed for this specific sector. Ensure standard RERA and LP number validation.
+                Checks couldn&apos;t be loaded. At minimum, verify the TG-RERA registration, the layout permission (LP) number and a 30-year Encumbrance Certificate.
               </div>
             ) : (
               <div className="space-y-6">
@@ -1112,11 +967,11 @@ export default function CorridorDetailPage() {
                             isOrange ? "bg-amber-50 text-[#10233F] border-amber-200" :
                             "bg-emerald-50 text-[#10233F] border-emerald-200"
                           }`}>
-                            {risk.severity} SEVERITY RISK
+                            {risk.severity === "RED" ? "Deal-breaker if found" : risk.severity === "ORANGE" ? "Serious" : "Check"}
                           </span>
                           <h4 className="font-display text-base text-[#0F172A] mt-1.5">{risk.title}</h4>
                         </div>
-                        <span className="text-[10px] font-mono font-bold text-[#10233F] bg-[#FFB400]/15 px-2 py-0.5 rounded animate-pulse">
+                        <span className="text-[10px] font-mono font-bold text-[#10233F] bg-[#FFB400]/15 px-2 py-0.5 rounded">
                           {risk.category.replace(/_/g, " ")}
                         </span>
                       </div>
@@ -1132,7 +987,7 @@ export default function CorridorDetailPage() {
                         </div>
                         {risk.govReference && (
                           <div className="flex items-center gap-1.5 pt-1.5 border-t border-[#E2E8F0]/60">
-                            <span className="text-[10px] font-mono text-[#10233F] font-bold">GOV REF:</span>
+                            <span className="text-[10px] font-mono text-[#10233F] font-bold">LAW:</span>
                             <span className="font-mono text-[11px] text-text-secondary">{risk.govReference}</span>
                           </div>
                         )}
@@ -1144,7 +999,7 @@ export default function CorridorDetailPage() {
                               rel="noopener noreferrer"
                               className="inline-flex items-center gap-1 font-mono text-[10px] text-[#10233F] hover:text-[#10233F] font-bold"
                             >
-                              Open Verification Portal <ExternalLink size={10} />
+                              Open the official portal <ExternalLink size={10} />
                             </a>
                           </div>
                         )}

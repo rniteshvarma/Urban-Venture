@@ -25,7 +25,7 @@ async function main() {
   };
   if (Object.values(removed).some((n) => n > 0)) console.log("[market] removed synthetic seed rows:", removed);
 
-  const results = await computeAllCorridorScores({ skipAI: true });
+  const results = await computeAllCorridorScores();
   const rows = await prisma.corridorProfile.findMany({
     select: { slug: true, overallScore: true, plotPriceMidSqYd: true, aptPriceMinSqFt: true, aptPriceMaxSqFt: true, projectedCAGRMin: true, projectedCAGRMax: true, priceIndex2031: true, marketStats: true },
     orderBy: { overallScore: "desc" },

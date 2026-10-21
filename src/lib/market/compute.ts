@@ -21,6 +21,7 @@ import { measureRates, quantile, unitRate, type Asset, type AssetRates, type Lis
 import { anchorsFrom, forecastCorridor, gainPct, FORECAST_VERSION, type CorridorForecast } from "./forecast";
 import { loadCorridorGuidance, resolveCityFigures, type CityFigures, type CorridorGuidance } from "./observations";
 import { measureRent, type CorridorRent, type RentalListing } from "../rentals/rentals";
+import type { CorridorNarrative } from "./narrative";
 
 /** Radius for the project counts (and for assigning RERA records to a corridor). */
 export const COUNT_RADIUS_KM = 8;
@@ -66,6 +67,8 @@ export interface CorridorMarketStats {
   /** Rents measured from public rental listings, and the gross yield on our apartment price */
   rental: CorridorRent | null;
   city: { plotMedianSqYd: number | null; aptAvgSqFt: SourcedFigure; rentalYield: SourcedFigure };
+  /** Labels, drivers and risks derived from the above (narrative.ts); added by corridor-intelligence */
+  narrative?: CorridorNarrative & { version: string };
 }
 
 const ACTIVE_STATUSES = new Set(["UNDER_CONSTRUCTION", "NEW_LAUNCH", "PRE_LAUNCH"]);

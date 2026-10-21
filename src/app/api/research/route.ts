@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import prisma from "@/lib/prisma";
-import { getInvestmentRecommendations } from "@/lib/anthropic";
+import { buildResearchReport } from "@/lib/research/report";
 
 // In-memory rate limiting cache
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
@@ -103,7 +103,7 @@ export async function POST(req: Request) {
           budget: existingSearch.budget,
           horizon: existingSearch.horizon,
           city: existingSearch.city,
-          notes: "Lead captured after generating AI investment report.",
+          notes: "Lead captured after generating a research report.",
           status: "NEW",
           source: "portal",
         }
@@ -128,8 +128,8 @@ export async function POST(req: Request) {
     }
 
     // Flow B: Initial report generation
-    // Call AI recommendations helper
-    const aiResponse = await getInvestmentRecommendations(budget, horizon, city);
+    // Corridors that fit the brief, from measured data (src/lib/research)
+    const aiResponse = await buildResearchReport(budget, horizon, city);
 
     let userId: string | null = null;
     let leadId: string | null = null;

@@ -34,9 +34,9 @@ import { formatDate, formatCount } from "@/lib/format";
 
 // Homepage positioning copy — swappable (spec Part 1).
 const HERO = {
-  badge: "Trusted by Hyderabad investors",
+  badge: "Independent Hyderabad property research",
   h1: "Know where Hyderabad grows next.",
-  sub: "AI-powered investment research for Hyderabad land and property — built on verified government infrastructure data, corridor by corridor.",
+  sub: "Prices measured from real listings, developers' TG-RERA records and tracked government infrastructure — for Hyderabad land and homes, corridor by corridor.",
   micro: "Not a listing site. A research platform.",
 };
 
@@ -140,8 +140,8 @@ export default function HomePage() {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 18 }}>
           {[
             { n: "01", icon: <Search size={22} />, label: "Tell us your budget", body: "Budget, horizon, city. Three inputs." },
-            { n: "02", icon: <Bot size={22} />, label: "AI researches the market", body: "Corridors, risk scores, exit timing." },
-            { n: "03", icon: <Building2 size={22} />, label: "Backed by real govt data", body: "RRR, Metro Phase 2, Pharma City, HMDA." },
+            { n: "02", icon: <Bot size={22} />, label: "We research the market", body: "Corridor prices, delivery records, infrastructure status." },
+            { n: "03", icon: <Building2 size={22} />, label: "Sourced from public records", body: "TG-RERA, NHAI, HMRL and HMDA — with links." },
           ].map((s) => (
             <div key={s.n} className="uv-card" style={{ position: "relative", padding: "1.75rem 1.5rem" }}>
               <span style={{ position: "absolute", top: 14, right: 18, fontFamily: "var(--font-mono)", fontWeight: 600, fontSize: "1.75rem", color: "var(--color-saffron)" }}>{s.n}</span>
@@ -165,7 +165,7 @@ export default function HomePage() {
             const active = f === cycleFilter;
             const label = f === "ALL" ? "All" : CYCLE[f].label;
             return (
-              <button key={f} type="button" onClick={() => setCycleFilter(f)} className="uv-chip"
+              <button key={f} type="button" onClick={() => setCycleFilter(f)} className="uv-chip" title={f === "ALL" ? undefined : CYCLE[f].explain}
                 style={{ cursor: "pointer", border: "1px solid var(--color-line)", background: active ? "var(--color-saffron)" : "var(--color-surface)", color: active ? "var(--color-ink)" : "var(--color-text-mid)" }}>
                 {f !== "ALL" && CYCLE[f].emoji ? `${CYCLE[f].emoji} ` : ""}{label}
               </button>

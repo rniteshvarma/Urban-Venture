@@ -17,6 +17,7 @@ interface CorridorRecommendation {
   infraHighlights: string[];
   exitOpportunities: string[];
   bestFor: string;
+  rentalYield?: [number, number] | null;
 }
 
 interface ReportData {
@@ -25,6 +26,7 @@ interface ReportData {
   overallRiskScore: number;
   riskRationale: string;
   marketOutlook: string;
+  basis?: string;
   disclaimer: string;
 }
 
@@ -52,10 +54,11 @@ export default function ReportCard({
 
   // Calculate compact ROI
   const firstCorridor = report.corridors?.[0];
-  const cagrMin = firstCorridor ? firstCorridor.appreciationMin : 12;
-  const cagrMax = firstCorridor ? firstCorridor.appreciationMax : 18;
-  const rentMin = 2;
-  const rentMax = 4;
+  // The top corridor's scenario growth and measured rent (plots earn none).
+  const cagrMin = firstCorridor?.appreciationMin ?? 0;
+  const cagrMax = firstCorridor?.appreciationMax ?? 0;
+  const rentMin = firstCorridor?.rentalYield?.[0] ?? 0;
+  const rentMax = firstCorridor?.rentalYield?.[1] ?? 0;
 
   let reValMin = budget;
   let reValMax = budget;
@@ -291,9 +294,9 @@ export default function ReportCard({
 
                   {/* Appreciation Range */}
                   <div className="bg-surface border border-luxury p-3 rounded-input flex justify-between items-center mb-4 text-sm">
-                    <span className="text-text-secondary">Expected Appreciation Range:</span>
+                    <span className="text-text-secondary">Price growth scenarios:</span>
                     <span className="font-bold text-accent font-display text-base">
-                      {corridor.appreciationMin}% - {corridor.appreciationMax}% over {horizon} years
+                      {corridor.appreciationMin}–{corridor.appreciationMax}% a year
                     </span>
                   </div>
 
@@ -344,7 +347,7 @@ export default function ReportCard({
 
                   {/* Best For Info */}
                   <p className="text-xs italic text-text-secondary border-t border-luxury pt-3">
-                    <strong>Optimal Investor Type:</strong> {corridor.bestFor}
+                    <strong>Suits:</strong> {corridor.bestFor}
                   </p>
 
                   {/* Comparable Projects (No Print in this horizontal carousel for printability, we can show them listed if print, or keep simple) */}
@@ -375,7 +378,7 @@ export default function ReportCard({
           <div className="text-center md:text-left">
             <span className="text-[10px] text-white/80 font-bold uppercase tracking-widest">Risk Analysis</span>
             <h3 className="font-display text-xl font-bold mb-2">Overall Portfolio Risk</h3>
-            <p className="text-xs text-gray-300">Calculated based on investment parameters and corridor allocations.</p>
+            <p className="text-xs text-gray-300">Average of the picked corridors&apos; risk levels (low 3, medium 5, high 8), +1 under a 3-year horizon.</p>
           </div>
 
           <div className="flex flex-col items-center justify-center">
@@ -402,8 +405,9 @@ export default function ReportCard({
               <p className="leading-relaxed">{report.marketOutlook}</p>
             </div>
             <div className="space-y-2">
-              <h4 className="font-bold uppercase text-text-primary tracking-wider">Advisor Disclaimer</h4>
+              <h4 className="font-bold uppercase text-text-primary tracking-wider">Disclaimer</h4>
               <p className="leading-relaxed">{report.disclaimer}</p>
+              {report.basis && <p className="leading-relaxed text-[11px]"><strong>How this was worked out:</strong> {report.basis}</p>}
             </div>
           </section>
         </div>
