@@ -1,0 +1,62 @@
+# Checks every push and pull request before Vercel deploys it.
+#   - type-check the whole app
+#   - run the unit tests (pure; no database needed)
+#   - lint: new files must be clean; changed files are reported (the repo
+#     still has older lint debt, so touching an old file doesn't fail the run)
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      # Only for `prisma generate`; no database is contacted.
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Type-check
+        run: npx tsc --noEmit -p .
+
+      - name: Unit tests
+        run: npm run -s test:geo
+
+      - name: Changed files
+        id: changed
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then BASE="${{ github.event.pull_request.base.sha }}"; else BASE="${{ github.event.before }}"; fi
+          if ! git cat-file -e "$BASE^{commit}" 2>/dev/null; then BASE="$(git rev-list --max-parents=0 HEAD | tail -1)"; fi
+          git diff --name-only --diff-filter=A "$BASE" HEAD -- '*.ts' '*.tsx' | grep -E '^(src|scripts)/' > added.txt || true
+          git diff --name-only --diff-filter=M "$BASE" HEAD -- '*.ts' '*.tsx' | grep -E '^(src|scripts)/' > modified.txt || true
+          echo "added=$(wc -l < added.txt | tr -d ' ')" >> "$GITHUB_OUTPUT"
+          echo "modified=$(wc -l < modified.txt | tr -d ' ')" >> "$GITHUB_OUTPUT"
+
+      - name: Lint new files (must pass)
+        if: steps.changed.outputs.added != '0'
+        run: xargs -a added.txt npx eslint --max-warnings=-1
+
+      - name: Lint changed files (report only)
+        if: steps.changed.outputs.modified != '0'
+        continue-on-error: true
+        run: xargs -a modified.txt npx eslint

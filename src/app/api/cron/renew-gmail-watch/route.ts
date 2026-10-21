@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { assertCron } from '@/lib/cron-auth';
+import { withJobRun } from '@/lib/ops/record';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(req: Request) {
+async function handler(req: Request) {
   const denied = assertCron(req);
   if (denied) return denied;
 
@@ -48,3 +49,5 @@ export async function GET(req: Request) {
     return NextResponse.json({ status: 'error', message: error.message }, { status: 500 });
   }
 }
+
+export const GET = withJobRun("renew-gmail-watch", handler);

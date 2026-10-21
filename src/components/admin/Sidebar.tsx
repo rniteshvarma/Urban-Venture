@@ -4,7 +4,8 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { 
+import {
+  Activity, 
   LayoutDashboard, 
   Users, 
   Kanban, 
@@ -157,6 +158,11 @@ export default function Sidebar() {
       name: "Analytics",
       path: "/admin/analytics",
       icon: <BarChart3 size={17} />,
+    },
+    {
+      name: "System health",
+      path: "/admin/system",
+      icon: <Activity size={17} />,
     },
   ];
 

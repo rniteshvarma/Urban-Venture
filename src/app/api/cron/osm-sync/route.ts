@@ -6,12 +6,13 @@
  */
 import { NextResponse, type NextRequest } from "next/server";
 import { assertCron } from "@/lib/cron-auth";
+import { withJobRun } from "@/lib/ops/record";
 import { runOsmJob } from "@/lib/osm/sync";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
-export async function GET(req: NextRequest) {
+async function handler(req: NextRequest) {
   const denied = assertCron(req);
   if (denied) return denied;
   try {
@@ -21,3 +22,5 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "OSM job failed" }, { status: 500 });
   }
 }
+
+export const GET = withJobRun("osm-sync", handler);

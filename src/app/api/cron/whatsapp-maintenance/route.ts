@@ -3,6 +3,7 @@
 // (quality alerts) and check messaging-tier usage.
 import { NextResponse, type NextRequest } from "next/server";
 import { assertCron } from "@/lib/cron-auth";
+import { withJobRun } from "@/lib/ops/record";
 import { processPending } from "@/lib/whatsapp/webhook";
 import { syncTemplates } from "@/lib/whatsapp/registry";
 import { checkTierUsage, runHealthCheck } from "@/lib/whatsapp/health";
@@ -11,7 +12,7 @@ import { sweepConcierge } from "@/lib/concierge/sweep";
 export const dynamic = "force-dynamic";
 export const maxDuration = 120;
 
-export async function GET(req: NextRequest) {
+async function handler(req: NextRequest) {
   const denied = assertCron(req);
   if (denied) return denied;
   try {
@@ -33,3 +34,5 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
+
+export const GET = withJobRun("whatsapp-maintenance", handler);

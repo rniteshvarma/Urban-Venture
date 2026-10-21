@@ -3001,3 +3001,35 @@ model RentalListing {
   @@index([sourcePage])
   @@index([lastSeenAt])
 }
+
+// ── Operations monitoring (src/lib/ops) ─────────────────────────────────────
+// One row per scheduled-job run, so /admin/system can show what last ran,
+// what failed and what has gone quiet. Rows older than 90 days are pruned.
+model JobRun {
+  id         String    @id @default(cuid())
+  job        String // cron path segment, e.g. "developer-records"
+  startedAt  DateTime  @default(now())
+  finishedAt DateTime?
+  ok         Boolean?
+  status     Int? // HTTP status the job returned
+  summary    Json?
+  error      String?
+
+  @@index([job, startedAt])
+}
+
+// Server errors caught by instrumentation.ts (uncaught render / route errors)
+// and by reportError() in job and API catch blocks. Pruned after 30 days.
+model AppError {
+  id        String   @id @default(cuid())
+  at        DateTime @default(now())
+  scope     String // route path or job name
+  message   String
+  digest    String?
+  method    String?
+  path      String?
+  stack     String?
+
+  @@index([at])
+  @@index([scope, at])
+}

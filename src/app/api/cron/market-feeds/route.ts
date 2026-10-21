@@ -6,13 +6,14 @@
  */
 import { NextResponse, type NextRequest } from "next/server";
 import { assertCron } from "@/lib/cron-auth";
+import { withJobRun } from "@/lib/ops/record";
 import { runMarketFeeds } from "@/lib/market/feeds/run";
 import { computeAllCorridorScores } from "@/lib/corridor-intelligence";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
-export async function GET(req: NextRequest) {
+async function handler(req: NextRequest) {
   const denied = assertCron(req);
   if (denied) return denied;
   try {
@@ -24,3 +25,5 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Market feeds failed" }, { status: 500 });
   }
 }
+
+export const GET = withJobRun("market-feeds", handler);

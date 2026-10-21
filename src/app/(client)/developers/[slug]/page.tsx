@@ -9,6 +9,7 @@ import { notFound } from "next/navigation";
 import prisma from "@/lib/prisma";
 import { FLAG_LABEL, ORDER_KIND_LABEL, monthYear, months, recordOf } from "@/lib/developers/display";
 import type { Flag } from "@/lib/developers/track-record";
+import { jsonLd, siteUrl } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +17,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const d = await prisma.developer.findUnique({ where: { slug }, select: { name: true } });
   return d
-    ? { title: `${d.name} — track record | Property Tiger`, description: `${d.name}: projects, TG-RERA completion dates, delays, extensions and TG-RERA orders, from public records.` }
+    ? { title: `${d.name} — track record | Property Tiger`, description: `${d.name}: projects, TG-RERA completion dates, delays, extensions and TG-RERA orders, from public records.`, alternates: { canonical: `${siteUrl()}/developers/${slug}` } }
     : { title: "Developer not found | Property Tiger" };
 }
 
@@ -47,9 +48,19 @@ export default async function DeveloperPage({ params }: { params: Promise<{ slug
   const rec = recordOf(d?.stats);
   if (!d || !rec) notFound();
   const s = rec.stats;
+  const org = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: d.name,
+    url: `${siteUrl()}/developers/${d.slug}`,
+    ...(d.established ? { foundingDate: String(d.established) } : {}),
+    ...(d.legalNames.length || d.aliases.length ? { alternateName: [...d.legalNames, ...d.aliases] } : {}),
+    areaServed: { "@type": "City", name: "Hyderabad" },
+  };
 
   return (
     <div className="bg-surface-dim min-h-screen">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(org) }} />
       <div className="bg-white border-b border-luxury py-3 px-6">
         <div className="max-w-6xl mx-auto"><Link href="/developers" className="text-xs font-semibold text-text-secondary hover:text-text-primary">← All developers</Link></div>
       </div>
