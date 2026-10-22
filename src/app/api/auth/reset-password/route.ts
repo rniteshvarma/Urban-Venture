@@ -6,8 +6,9 @@ import bcrypt from "bcryptjs";
 export async function POST(req: Request) {
   try {
     const { token, password } = await req.json();
-    if (!token) return NextResponse.json({ error: "Invalid link." }, { status: 400 });
-    if (!password || password.length < 8) return NextResponse.json({ error: "Password must be at least 8 characters." }, { status: 400 });
+    // Strings only: an object here ({"not": ""}) would become a query operator.
+    if (typeof token !== "string" || !token) return NextResponse.json({ error: "Invalid link." }, { status: 400 });
+    if (typeof password !== "string" || password.length < 8) return NextResponse.json({ error: "Password must be at least 8 characters." }, { status: 400 });
 
     const record = await prisma.passwordResetToken.findUnique({ where: { token } });
     if (!record || record.usedAt || record.expiresAt < new Date()) {

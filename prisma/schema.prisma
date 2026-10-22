@@ -58,6 +58,9 @@ model User {
   @@index([googleId])
   @@index([phone])
   savedSearches SavedSearch[]
+  /// Sign-up on an account that was created by a form (no password yet): the
+  /// password waits here until the email's owner clicks the verification link.
+  pendingPasswordHash String?
 }
 
 enum Role {

@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import prisma from "@/lib/prisma";
 import { buildResearchReport } from "@/lib/research/report";
+import { formContact } from "@/lib/leads/contact";
+import { getSessionUserId } from "@/lib/session";
 import { clientIp, hit, tooMany } from "@/lib/security/rate-limit";
 
 // Input validation schema
@@ -46,26 +48,17 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Search record not found" }, { status: 404 });
       }
 
-      // Find or create User
-      const user = await prisma.user.upsert({
-        where: { email },
-        update: {
-          name: name || undefined,
-          phone: phone || undefined,
-        },
-        create: {
-          email,
-          name: name || "Anonymous Client",
-          phone: phone || "",
-          role: "CLIENT",
-        }
-      });
-
-      // Update Search with user
-      await prisma.search.update({
-        where: { id: searchId },
-        data: { userId: user.id }
-      });
+      // A report already saved to an account stays with it.
+      const sessionUserId = await getSessionUserId();
+      if (existingSearch.userId && existingSearch.userId !== sessionUserId) {
+        return NextResponse.json({ error: "This report is already saved to an account." }, { status: 409 });
+      }
+      // Never changes an existing account; only its owner gets the report attached.
+      const contact = await formContact({ email, name, phone, sessionUserId });
+      const user = { id: contact.userId, name: null as string | null, phone: null as string | null };
+      if (contact.owned) {
+        await prisma.search.update({ where: { id: searchId }, data: { userId: contact.userId } });
+      }
 
       // Create a Lead
       const lead = await prisma.lead.create({
@@ -94,11 +87,7 @@ export async function POST(req: Request) {
       // Simple mock notification check
       console.log(`[LEAD NOTIFICATION] New lead captured via saving report: ${lead.name} (${lead.email})`);
 
-      return NextResponse.json({
-        success: true,
-        userId: user.id,
-        leadId: lead.id,
-      });
+      return NextResponse.json({ success: true, leadId: lead.id });
     }
 
     // Flow B: Initial report generation
@@ -110,20 +99,10 @@ export async function POST(req: Request) {
 
     // If contact info is submitted immediately along with the search form
     if (email) {
-      const user = await prisma.user.upsert({
-        where: { email },
-        update: {
-          name: name || undefined,
-          phone: phone || undefined,
-        },
-        create: {
-          email,
-          name: name || "Anonymous Client",
-          phone: phone || "",
-          role: "CLIENT",
-        }
-      });
-      userId = user.id;
+      const contact = await formContact({ email, name, phone, sessionUserId: await getSessionUserId() });
+      const user = { id: contact.userId, name: null as string | null, phone: null as string | null };
+      // The report is attached only to its owner's account.
+      userId = contact.owned ? user.id : null;
 
       // Create Lead
       const lead = await prisma.lead.create({

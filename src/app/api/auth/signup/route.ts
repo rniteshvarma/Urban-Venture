@@ -14,10 +14,11 @@ export async function POST(req: Request) {
     const limited = await hit("signupIp", clientIp(req.headers));
     if (!limited.ok) return tooMany(limited, "Too many sign-ups from this network. Please try again later.");
     const body = await req.json();
-    const name: string = (body.name || "").trim();
-    const email: string = (body.email || "").toLowerCase().trim();
-    const password: string = body.password || "";
-    const phone10 = (body.phone || "").replace(/\D/g, "").slice(-10);
+    const str = (v: unknown) => (typeof v === "string" ? v : "");
+    const name: string = str(body.name).trim().slice(0, 100);
+    const email: string = str(body.email).toLowerCase().trim();
+    const password: string = str(body.password);
+    const phone10 = str(body.phone).replace(/\D/g, "").slice(-10);
 
     if (!EMAIL_RE.test(email)) return NextResponse.json({ error: "Enter a valid email address." }, { status: 400 });
     if (password.length < 8) return NextResponse.json({ error: "Password must be at least 8 characters." }, { status: 400 });
@@ -38,14 +39,18 @@ export async function POST(req: Request) {
 
     const passwordHash = await bcrypt.hash(password, 12);
 
-    const user = existing
-      ? await prisma.user.update({
-          where: { id: existing.id },
-          data: { name: name || existing.name, password: passwordHash, phone: e164, authProvider: existing.googleId ? "BOTH" : "EMAIL" },
-        })
-      : await prisma.user.create({
-          data: { name: name || "Client", email, password: passwordHash, phone: e164, role: "CLIENT", authProvider: "EMAIL", phoneVerified: false },
-        });
+    // The email already has an account that was created by a form (no password).
+    // Setting a password on it here would let anyone who knows the address take
+    // it over, so the password waits until the email's owner verifies it.
+    if (existing) {
+      await prisma.user.update({ where: { id: existing.id }, data: { pendingPasswordHash: passwordHash } });
+      await createAndSendVerification({ id: existing.id, email: existing.email, name: existing.name }).catch((e) => console.error("signup: claim verification:", e));
+      return NextResponse.json({ success: true, verifyEmail: true });
+    }
+
+    const user = await prisma.user.create({
+      data: { name: name || "Client", email, password: passwordHash, phone: e164, role: "CLIENT", authProvider: "EMAIL", phoneVerified: false },
+    });
 
     // Link to existing CRM lead(s) or create a portal lead (fires automations).
     await resolveLeadIdentity(user).catch((e) => console.error("signup: resolveLeadIdentity:", e));

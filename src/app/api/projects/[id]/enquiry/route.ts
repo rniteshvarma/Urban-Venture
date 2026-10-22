@@ -10,6 +10,7 @@ import { calculateLeadScore } from "@/lib/lead-scorer";
 import { runMatchingForLead } from "@/lib/matching-engine";
 import { initLeadRoadmap } from "@/lib/roadmap";
 import { fireWhatsAppTrigger } from "@/lib/whatsapp/trigger-handler";
+import { formContact } from "@/lib/leads/contact";
 
 import { clientIp, hit, tooMany } from "@/lib/security/rate-limit";
 export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
@@ -39,8 +40,8 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
   // 1. Lead in the existing CRM (upsert the buyer by email when we have one)
   let leadUserId: string | null = sessionUserId;
   if (!leadUserId && email) {
-    const u = await prisma.user.upsert({ where: { email }, update: { name, phone }, create: { email, name, phone, role: "CLIENT" } });
-    leadUserId = u.id;
+    // Links to the contact's account without ever changing it.
+    leadUserId = (await formContact({ email, name, phone, sessionUserId: null })).userId;
   }
   const lead = await prisma.lead.create({
     data: {

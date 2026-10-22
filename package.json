@@ -36,7 +36,10 @@
     "market:recompute": "tsx --env-file-if-exists=.env.local scripts/market/recompute.ts",
     "market:feeds": "tsx --env-file-if-exists=.env.local scripts/market/feeds.ts",
     "developers:sync": "tsx --env-file-if-exists=.env.local scripts/developers/sync.ts",
-    "developers:seed": "tsx --env-file-if-exists=.env.local scripts/developers/seed.ts"
+    "developers:seed": "tsx --env-file-if-exists=.env.local scripts/developers/seed.ts",
+    "test:security": "tsx --env-file=.env.local --env-file=.env.test.local scripts/test/pentest.ts",
+    "test:regression": "tsx --env-file=.env.local --env-file=.env.test.local scripts/test/regression.ts",
+    "test:seed-users": "tsx --env-file=.env.local scripts/test/seed-test-users.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.102.0",

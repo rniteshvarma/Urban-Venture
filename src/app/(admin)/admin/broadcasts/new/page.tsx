@@ -22,6 +22,8 @@ import {
   Megaphone
 } from "lucide-react";
 import { toast } from "@/lib/toast";
+import SafeHtmlPreview from "@/components/admin/SafeHtmlPreview";
+import { escapeMergeValue } from "@/lib/security/escape";
 
 interface LeadPreview {
   id: string;
@@ -191,13 +193,14 @@ export default function NewBroadcastWizardPage() {
   };
 
   // Helper client-side tag interpolation for live preview
-  const getPreviewText = (text: string) => {
+  const getPreviewText = (text: string, html = false) => {
     if (!text) return "";
-    const name = sampleLead?.name || "John Doe";
+    // A lead's name comes from public forms: escape it before it goes into HTML.
+    const name = escapeMergeValue(sampleLead?.name || "John Doe", html);
     const budget = sampleLead?.budget ? `₹${sampleLead.budget.toLocaleString()}` : "₹1.5 Cr";
     
     return text
-      .replace(/\{\{lead_name\}\}/g, name)
+      .replace(/\{\{lead_name\}\}/g, () => name)
       .replace(/\{\{budget\}\}/g, budget)
       .replace(/\{\{horizon\}\}/g, "Immediate")
       .replace(/\{\{city\}\}/g, "Whitefield, Bangalore")
@@ -803,7 +806,7 @@ export default function NewBroadcastWizardPage() {
                       <div className="border-b border-slate-200 pb-1.5 font-bold">
                         Subject: <span className="font-normal font-sans text-slate-700">{emailSubject ? getPreviewText(emailSubject) : <span className="text-slate-400 italic">No subject.</span>}</span>
                       </div>
-                      <div className="font-mono text-[9px] max-h-36 overflow-y-auto whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: emailBody ? getPreviewText(emailBody) : "<span class='text-slate-400 italic'>No body content.</span>" }} />
+                      <SafeHtmlPreview html={emailBody ? getPreviewText(emailBody, true) : ""} className="h-36" />
                     </div>
                   </div>
                 )}

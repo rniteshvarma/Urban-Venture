@@ -115,7 +115,7 @@ export async function processBroadcastSend(broadcastId: string) {
 
             // Resolve email subject & body merge tags
             const resolvedSubject = await resolveMergeTags(subjectText, lead.id);
-            const resolvedBody = await resolveMergeTags(bodyText, lead.id);
+            const resolvedBody = await resolveMergeTags(bodyText, lead.id, { html: true });
 
             const emailResponse = await sendBroadcastEmail({
               leadId: lead.id,
@@ -298,7 +298,7 @@ export async function processBroadcastRetry(broadcastId: string) {
             const bodyText = broadcast.emailBody || "";
 
             const resolvedSubject = await resolveMergeTags(subjectText, lead.id);
-            const resolvedBody = await resolveMergeTags(bodyText, lead.id);
+            const resolvedBody = await resolveMergeTags(bodyText, lead.id, { html: true });
 
             const emailResponse = await sendBroadcastEmail({
               leadId: lead.id,

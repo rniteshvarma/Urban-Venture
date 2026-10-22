@@ -8,8 +8,9 @@ import { sendTemplateMessage } from "@/lib/whatsapp/send";
 /**
  * Send a 6-digit OTP to the user's phone as a WhatsApp AUTHENTICATION
  * template (WA_OTP_TEMPLATE, default "signup_otp_v1": body {{1}} = code plus
- * the copy-code button). With no provider credentials the send is a dry run
- * and the code is returned so verification stays testable end-to-end.
+ * the copy-code button). With no provider credentials the send is a dry run:
+ * in development the code is returned so verification stays testable; in
+ * production the request is refused (the code was never delivered).
  */
 export async function POST() {
   const session = await getServerSession(authOptions);
@@ -35,6 +36,11 @@ export async function POST() {
   });
 
   if (outcome.dryRun) {
+    // No WhatsApp provider: the code never reached the phone. Handing it back
+    // would let anyone "verify" any number, so that only happens in development.
+    if (process.env.NODE_ENV === "production") {
+      return NextResponse.json({ error: "Phone verification isn't available yet. You can skip it for now.", code: "OTP_UNAVAILABLE" }, { status: 503 });
+    }
     console.log(`[OTP • DRY RUN] code for ${user.phone}: ${code}`);
     return NextResponse.json({ success: true, devCode: code });
   }

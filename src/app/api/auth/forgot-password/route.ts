@@ -12,7 +12,7 @@ import { clientIp, hit, tooMany } from "@/lib/security/rate-limit";
 export async function POST(req: Request) {
   try {
     const { email } = await req.json();
-    const clean = (email || "").toLowerCase().trim();
+    const clean = typeof email === "string" ? email.toLowerCase().trim() : "";
     const [byIp, byEmail] = await Promise.all([hit("resetIp", clientIp(req.headers)), clean ? hit("resetEmail", clean) : null]);
     if (!byIp.ok || (byEmail && !byEmail.ok)) return tooMany(byEmail && !byEmail.ok ? byEmail : byIp, "Too many reset requests. Please try again later.");
     const user = clean ? await prisma.user.findUnique({ where: { email: clean } }) : null;

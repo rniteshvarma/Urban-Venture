@@ -1,5 +1,7 @@
 import prisma from "../prisma";
 
+import { escapeMergeValue } from "../security/escape";
+export { escapeMergeValue };
 /** Every merge tag's value for a lead, keyed "{{tag}}". Null when the lead is gone. */
 export async function mergeTagValues(leadId: string): Promise<Record<string, string> | null> {
   const lead = await prisma.lead.findUnique({
@@ -60,14 +62,16 @@ export async function resolveTemplateParams(tags: string[], leadId: string): Pro
   });
 }
 
-export async function resolveMergeTags(templateText: string, leadId: string): Promise<string> {
+export async function resolveMergeTags(templateText: string, leadId: string, opts: { html?: boolean } = {}): Promise<string> {
   const replacements = await mergeTagValues(leadId);
   if (!replacements) return templateText;
 
   let resolvedText = templateText;
   for (const [tag, value] of Object.entries(replacements)) {
     const regex = new RegExp(tag.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g");
-    resolvedText = resolvedText.replace(regex, value);
+    // A function replacer: "$&" or "$1" inside a value is inserted literally.
+    const safe = escapeMergeValue(String(value ?? ""), !!opts.html);
+    resolvedText = resolvedText.replace(regex, () => safe);
   }
 
   return resolvedText;

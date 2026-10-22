@@ -8,6 +8,7 @@ import { ArrowRight } from "lucide-react";
 import AuthShell from "@/components/client/auth/AuthShell";
 import GoogleButton from "@/components/client/auth/GoogleButton";
 import PasswordField from "@/components/client/auth/PasswordField";
+import { safeNext } from "@/lib/security/redirect";
 
 function Divider() {
   return (
@@ -20,7 +21,8 @@ function Divider() {
 function LoginInner() {
   const router = useRouter();
   const params = useSearchParams();
-  const next = params.get("next") || "/dashboard";
+  // Only same-site paths: an attacker-supplied ?next=https://… must not redirect off-site.
+  const next = safeNext(params.get("next"));
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<React.ReactNode>("");

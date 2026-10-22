@@ -6,6 +6,7 @@
 
 import { writeFile, mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
+import { randomUUID } from 'node:crypto';
 
 function hasBlob(): boolean {
   return !!process.env.BLOB_READ_WRITE_TOKEN;
@@ -17,8 +18,9 @@ export function storageMode(): 'blob' | 'local' {
 
 /** Persist a file and return a publicly-fetchable URL. */
 export async function storeFile(buffer: Buffer, filename: string, contentType: string): Promise<string> {
-  const safe = filename.replace(/[^a-zA-Z0-9._-]/g, '_');
-  const key = `extraction/${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${safe}`;
+  // Unguessable names: some uploads are private documents (sellers' ownership papers).
+  const ext = (filename.match(/\.[a-zA-Z0-9]{1,5}$/)?.[0] ?? '').toLowerCase();
+  const key = `extraction/${randomUUID()}${ext}`;
 
   if (hasBlob()) {
     const { put } = await import('@vercel/blob');

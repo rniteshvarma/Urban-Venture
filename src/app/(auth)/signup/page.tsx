@@ -10,6 +10,7 @@ import GoogleButton from "@/components/client/auth/GoogleButton";
 import PasswordField, { passwordStrength } from "@/components/client/auth/PasswordField";
 import OtpBoxes from "@/components/client/auth/OtpBoxes";
 import ConsentNote from "@/components/legal/ConsentNote";
+import { safeNext } from "@/lib/security/redirect";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_RE = /^[6-9]\d{9}$/;
@@ -28,7 +29,8 @@ function ErrorBox({ children }: { children: React.ReactNode }) {
 function SignupInner() {
   const router = useRouter();
   const params = useSearchParams();
-  const next = params.get("next") || "/dashboard";
+  // Only same-site paths: an attacker-supplied ?next=https://… must not redirect off-site.
+  const next = safeNext(params.get("next"));
 
   const [step, setStep] = useState<"identity" | "phone" | "otp">("identity");
   const [name, setName] = useState("");
@@ -74,6 +76,13 @@ function SignupInner() {
         else setError(data.error || "Could not create account.");
         setLoading(false); return false;
       }
+      if (data.verifyEmail) {
+        // The email already had an account from an earlier enquiry: the password
+        // only takes effect once the owner of that inbox confirms it.
+        setError(<>We&apos;ve sent a link to <strong>{email}</strong>. Open it to finish setting up your account, then sign in.</>);
+        setLoading(false);
+        return false;
+      }
       await signIn("credentials", { email: email.toLowerCase().trim(), password, redirect: false });
       await fetch("/api/auth/merge-anonymous", { method: "POST" }).catch(() => {});
       return true;
@@ -89,6 +98,8 @@ function SignupInner() {
     if (!(await createAccount())) return;
     // send OTP and move to verify step
     const r = await fetch("/api/auth/verify-phone/send", { method: "POST" }).then((x) => x.json()).catch(() => null);
+    // Phone verification isn't switched on yet (no WhatsApp provider): carry on without it.
+    if (r?.code === "OTP_UNAVAILABLE") return finish();
     setDevCode(r?.devCode ?? null);
     setResendIn(30);
     setLoading(false);

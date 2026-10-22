@@ -5,6 +5,8 @@ import { classifyLeadPersona } from "@/lib/persona-engine";
 import { runMatchingForLead } from "@/lib/matching-engine";
 import { initLeadRoadmap } from "@/lib/roadmap";
 import { fireWhatsAppTrigger } from "@/lib/whatsapp/trigger-handler";
+import { formContact } from "@/lib/leads/contact";
+import { getSessionUserId } from "@/lib/session";
 
 export async function POST(req: Request) {
   try {
@@ -15,20 +17,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Name, email, and phone are required" }, { status: 400 });
     }
 
-    // 1. Create or find User
-    const user = await prisma.user.upsert({
-      where: { email },
-      update: {
-        name,
-        phone
-      },
-      create: {
-        email,
-        name,
-        phone,
-        role: "CLIENT"
-      }
-    });
+    // 1. The contact's account — an existing one is linked but never changed.
+    const { userId } = await formContact({ email: String(email), name, phone, sessionUserId: await getSessionUserId() });
+    const user = { id: userId };
 
     // 2. Create Lead
     const lead = await prisma.lead.create({

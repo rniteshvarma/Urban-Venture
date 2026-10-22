@@ -3,6 +3,8 @@
  * <style>/external CSS). Each builder returns { subject, html, text }.
  */
 
+import { escapeHtml } from "../security/escape";
+
 const BRAND = {
   ink: '#0F172A',
   saffron: '#F59E0B',
@@ -55,6 +57,9 @@ function p(text: string): string {
   return `<p style="margin:0 0 14px;font-size:15px;line-height:1.6;color:${BRAND.textMid};">${text}</p>`;
 }
 
+/** Text from users (names, cities) is escaped before it goes into email HTML. */
+export const esc = escapeHtml;
+
 // ── Templates ────────────────────────────────────────────────────────────────
 
 export function verificationEmail(o: { name?: string | null; verifyUrl: string }): RenderedEmail {
@@ -64,7 +69,7 @@ export function verificationEmail(o: { name?: string | null; verifyUrl: string }
     html: layout({
       title: 'Confirm your email address',
       preheader: 'Verify your email to activate your Property Tiger account.',
-      bodyHtml: `${p(hi)}${p('Please confirm this email address to activate your account.')}<p style="margin:8px 0 24px;">${button(o.verifyUrl, 'Verify email')}</p>${p('This link expires in 24 hours. If you did not create an account, you can ignore this email.')}<p style="margin:0;font-size:12px;color:#94A3B8;word-break:break-all;">Or paste this link: ${o.verifyUrl}</p>`,
+      bodyHtml: `${p(esc(hi))}${p('Please confirm this email address to activate your account.')}<p style="margin:8px 0 24px;">${button(o.verifyUrl, 'Verify email')}</p>${p('This link expires in 24 hours. If you did not create an account, you can ignore this email.')}<p style="margin:0;font-size:12px;color:#94A3B8;word-break:break-all;">Or paste this link: ${o.verifyUrl}</p>`,
     }),
     text: `${hi}\n\nConfirm your email address to activate your Property Tiger account:\n${o.verifyUrl}\n\nThis link expires in 24 hours.`,
   };
@@ -77,7 +82,7 @@ export function passwordResetEmail(o: { name?: string | null; resetUrl: string }
     html: layout({
       title: 'Reset your password',
       preheader: 'Reset your Property Tiger password. Link valid for 1 hour.',
-      bodyHtml: `${p(hi)}${p('We received a request to reset your password. Click below to choose a new one.')}<p style="margin:8px 0 24px;">${button(o.resetUrl, 'Reset password')}</p>${p('This link expires in 1 hour and can be used once. If you did not request this, you can safely ignore it.')}<p style="margin:0;font-size:12px;color:#94A3B8;word-break:break-all;">Or paste this link: ${o.resetUrl}</p>`,
+      bodyHtml: `${p(esc(hi))}${p('We received a request to reset your password. Click below to choose a new one.')}<p style="margin:8px 0 24px;">${button(o.resetUrl, 'Reset password')}</p>${p('This link expires in 1 hour and can be used once. If you did not request this, you can safely ignore it.')}<p style="margin:0;font-size:12px;color:#94A3B8;word-break:break-all;">Or paste this link: ${o.resetUrl}</p>`,
     }),
     text: `${hi}\n\nReset your password (link valid 1 hour, single use):\n${o.resetUrl}\n\nIf you didn't request this, ignore this email.`,
   };
@@ -88,9 +93,9 @@ export function welcomeEmail(o: { name?: string | null }): RenderedEmail {
   return {
     subject: 'Welcome to Property Tiger',
     html: layout({
-      title: hi,
+      title: esc(hi),
       preheader: 'Your Property Tiger account is ready.',
-      bodyHtml: `${p('Your account is ready. Explore corridor intelligence, run AI research, and track the Hyderabad land market.')}<p style="margin:8px 0 24px;">${button(`${APP_URL}/dashboard`, 'Go to your dashboard')}</p>`,
+      bodyHtml: `${p('Your account is ready. Explore corridor intelligence, research where your budget fits, and track the Hyderabad land market.')}<p style="margin:8px 0 24px;">${button(`${APP_URL}/dashboard`, 'Go to your dashboard')}</p>`,
     }),
     text: `${hi}\n\nYour Property Tiger account is ready: ${APP_URL}/dashboard`,
   };
@@ -106,13 +111,14 @@ export function reportEmail(o: {
 }): RenderedEmail {
   const hi = o.name ? `Hi ${o.name},` : 'Hi,';
   const meta = `₹${o.budgetLakhs}L · ${o.horizonYears}yr · ${o.city}`;
+  const metaHtml = esc(meta);
   return {
     subject: `Your Property Tiger research report — ${meta}`,
     html: layout({
       title: 'Your investment research report',
-      preheader: `Report for ${meta}. PDF attached.`,
-      bodyHtml: `${p(hi)}${p(`Here is your AI research report (<strong>${meta}</strong>). The full report is attached as a PDF.`)}<div style="border:1px solid ${BRAND.line};border-radius:10px;padding:16px 18px;margin:0 0 20px;background:${BRAND.paper};">${o.contentHtml}</div>${o.viewUrl ? `<p style="margin:8px 0 0;">${button(o.viewUrl, 'View in your dashboard')}</p>` : ''}`,
-      footerNote: 'Model-based estimates from public data. Not investment advice. Verify title independently before any transaction.',
+      preheader: `Report for ${metaHtml}. PDF attached.`,
+      bodyHtml: `${p(esc(hi))}${p(`Here is your research report (<strong>${metaHtml}</strong>). The full report is attached as a PDF.`)}<div style="border:1px solid ${BRAND.line};border-radius:10px;padding:16px 18px;margin:0 0 20px;background:${BRAND.paper};">${o.contentHtml}</div>${o.viewUrl ? `<p style="margin:8px 0 0;">${button(o.viewUrl, 'View in your dashboard')}</p>` : ''}`,
+      footerNote: 'Scenario estimates from our listings and public data. Not investment advice. Verify title independently before any transaction.',
     }),
     text: `${hi}\n\nYour Property Tiger research report (${meta}) is attached as a PDF.${o.viewUrl ? `\nView online: ${o.viewUrl}` : ''}\n\nModel-based estimates from public data. Not investment advice.`,
   };

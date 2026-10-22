@@ -8,6 +8,7 @@ import prisma from "@/lib/prisma";
 import { requireSeller, ownedListing } from "@/lib/listings/api";
 import { detectFileType } from "@/lib/extraction/filetype";
 import { storeFile } from "@/lib/extraction/storage";
+import { MAX_UPLOAD_BYTES } from "@/lib/security/uploads";
 
 const MIME: Record<string, string> = { pdf: "application/pdf", jpeg: "image/jpeg", png: "image/png", webp: "image/webp", heic: "image/heic" };
 // role → MediaType + visibility
@@ -38,6 +39,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
   const created = [];
   for (let i = 0; i < files.length; i++) {
     const f = files[i];
+    if (f.size > MAX_UPLOAD_BYTES) return NextResponse.json({ error: `${f.name} is larger than ${MAX_UPLOAD_BYTES / 1_000_000} MB` }, { status: 413 });
     const buf = Buffer.from(await f.arrayBuffer());
     const type = detectFileType(buf);
     if (!type) return NextResponse.json({ error: `Unsupported file: ${f.name}` }, { status: 400 });

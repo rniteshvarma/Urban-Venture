@@ -20,6 +20,7 @@ import {
   Activity
 } from "lucide-react";
 import { toast } from "@/lib/toast";
+import SafeHtmlPreview from "@/components/admin/SafeHtmlPreview";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -320,7 +321,7 @@ export default function BroadcastReportPage({ params }: PageProps) {
                 <div className="border-b border-slate-200 pb-1 font-bold">
                   Subject: <span className="font-normal font-sans text-slate-700">{broadcast.emailSubject}</span>
                 </div>
-                <div className="font-mono text-[9px] max-h-36 overflow-y-auto whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: broadcast.emailBody }} />
+                <SafeHtmlPreview html={broadcast.emailBody ?? ""} className="h-36" />
               </div>
             </div>
           )}

@@ -1,46 +1,32 @@
+/**
+ * POST /api/admin/upload — an image or PDF for a project (admin only).
+ * The file's real type is read from its bytes (not its name), so an HTML or
+ * SVG file renamed .jpg can't be served from our domain; stored via the
+ * shared storage helper (Vercel Blob in production).
+ */
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
+import { requireAdmin } from "@/lib/admin-auth";
+import { ACCEPTED_UPLOAD_TYPES, detectFileType } from "@/lib/extraction/filetype";
+import { storeFile } from "@/lib/extraction/storage";
+import { MAX_UPLOAD_BYTES } from "@/lib/security/uploads";
+
+const MIME: Record<string, string> = { pdf: "application/pdf", jpeg: "image/jpeg", png: "image/png", webp: "image/webp", heic: "image/heic" };
 
 export async function POST(req: Request) {
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth.res;
   try {
-    const session = await getServerSession(authOptions);
-    if (!session || session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const formData = await req.formData();
-    const file = formData.get("file") as File | null;
-
-    if (!file) {
-      return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
-    }
-
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
-    // Ensure upload directory exists
-    const uploadDir = path.join(process.cwd(), "public", "uploads");
-    await mkdir(uploadDir, { recursive: true });
-
-    // Generate clean unique filename
-    const ext = path.extname(file.name);
-    const safeBase = path.basename(file.name, ext).replace(/[^a-zA-Z0-9]/g, "_");
-    const filename = `${safeBase}_${Date.now()}${ext}`;
-    const filePath = path.join(uploadDir, filename);
-
-    // Save file to public/uploads
-    await writeFile(filePath, buffer);
-    
-    // Return relative URL path
-    const fileUrl = `/uploads/${filename}`;
-    
-    return NextResponse.json({ success: true, url: fileUrl });
-  } catch (error: any) {
+    const file = formData.get("file");
+    if (!(file instanceof File)) return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
+    if (file.size > MAX_UPLOAD_BYTES) return NextResponse.json({ error: `File is larger than ${MAX_UPLOAD_BYTES / 1_000_000} MB` }, { status: 413 });
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const type = detectFileType(buffer);
+    if (!type || !ACCEPTED_UPLOAD_TYPES.includes(type)) return NextResponse.json({ error: "Only JPEG, PNG, WebP, HEIC images and PDFs can be uploaded" }, { status: 415 });
+    const url = await storeFile(buffer, file.name, MIME[type]);
+    return NextResponse.json({ success: true, url });
+  } catch (error) {
     console.error("Error in file upload handler:", error);
-    return NextResponse.json({ error: "Internal Server Error", details: error.message }, { status: 500 });
+    return NextResponse.json({ error: "Upload failed" }, { status: 500 });
   }
 }
-
