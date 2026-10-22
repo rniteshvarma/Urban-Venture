@@ -1,10 +1,25 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { EmailStatus } from "@prisma/client";
+import { verifySvix } from "@/lib/security/svix";
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json().catch(() => null);
+    // Only Resend may report delivery events: verify its (Svix) signature on the raw body.
+    const raw = await req.text();
+    const secret = process.env.RESEND_WEBHOOK_SECRET;
+    if (!secret) {
+      if (process.env.NODE_ENV === "production") return NextResponse.json({ error: "Webhook not configured" }, { status: 503 });
+    } else if (!verifySvix(secret, req.headers, raw)) {
+      return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+    }
+    const body = (() => {
+      try {
+        return JSON.parse(raw);
+      } catch {
+        return null;
+      }
+    })();
     if (!body || !body.type || !body.data || !body.data.email_id) {
       return NextResponse.json({ error: "Invalid webhook payload" }, { status: 400 });
     }

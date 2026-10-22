@@ -76,3 +76,22 @@ describe("project visibility", () => {
     assert.equal(projectWhere({ status: "ALL" }, { admin: true }).status, undefined);
   });
 });
+
+import { svixSignature, verifySvix } from "./svix";
+describe("Resend (Svix) webhook signatures", () => {
+  const secret = "whsec_" + Buffer.from("test-secret-key-bytes").toString("base64");
+  const body = '{"type":"email.delivered","data":{"email_id":"e1"}}';
+  const now = 1_790_000_000_000;
+  const headers = (sig: string, ts = String(now / 1000)) => new Headers({ "svix-id": "msg_1", "svix-timestamp": ts, "svix-signature": sig });
+  const good = `v1,${svixSignature(secret, "msg_1", String(now / 1000), body)}`;
+  test("a correct signature passes, also among several", () => {
+    assert.equal(verifySvix(secret, headers(good), body, now), true);
+    assert.equal(verifySvix(secret, headers(`v1,AAAA ${good}`), body, now), true);
+  });
+  test("tampered body, wrong secret, missing headers or stale timestamp fail", () => {
+    assert.equal(verifySvix(secret, headers(good), body.replace("delivered", "bounced"), now), false);
+    assert.equal(verifySvix("whsec_" + Buffer.from("other").toString("base64"), headers(good), body, now), false);
+    assert.equal(verifySvix(secret, new Headers(), body, now), false);
+    assert.equal(verifySvix(secret, headers(good), body, now + 10 * 60 * 1000), false);
+  });
+});
