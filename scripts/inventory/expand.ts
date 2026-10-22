@@ -301,10 +301,29 @@ if (arg("--dump-h247-images")) {
   const keys = new Set(final.map((r) => r.key));
   fs.writeFileSync(arg("--dump-h247-images")!, JSON.stringify(Object.fromEntries(Object.entries(h247Images).filter(([k]) => keys.has(k))), null, 1));
 }
+// The same parcel is often posted by more than one agent: same village, size
+// and price, pins within 300 m. Keep the earliest posting.
+const landSeen: InventoryRecord[] = [];
+const isDupLand = (r: InventoryRecord) =>
+  landSeen.some(
+    (o) =>
+      o.propertyType === r.propertyType && o.subLocality === r.subLocality && o.priceMinLakh === r.priceMinLakh &&
+      Math.abs((o.landAcres ?? 0) - (r.landAcres ?? 0)) < 0.001 &&
+      o.lat != null && r.lat != null && haversineKm(o.lat, o.lng!, r.lat, r.lng!) <= 0.3,
+  );
+const byPosted = (a: InventoryRecord, b: InventoryRecord) => String(a.postedAt ?? "").localeCompare(String(b.postedAt ?? ""));
+const deduped = new Set<string>();
+for (const r of [...kept, ...final].filter((x) => x.listingKind === "LAND_LISTING").sort(byPosted)) {
+  if (isDupLand(r)) {
+    deduped.add(r.key);
+    tally(src(r), "removed: same parcel posted twice");
+  } else landSeen.push(r);
+}
+
 console.log(JSON.stringify(report, null, 1));
 console.log(`floor-plan links repaired on ${repaired} existing records`);
-console.log(`existing ${existing.length} → kept ${kept.length}; added ${final.length}; total ${kept.length + final.length}`);
+console.log(`existing ${existing.length} → kept ${kept.length}; added ${final.length}; duplicates removed ${deduped.size}; total ${kept.length + final.length - deduped.size}`);
 if (WRITE) {
-  fs.writeFileSync(DATA, JSON.stringify([...kept, ...final], null, 1) + "\n");
+  fs.writeFileSync(DATA, JSON.stringify([...kept, ...final].filter((r) => !deduped.has(r.key)), null, 1) + "\n");
   console.log(`wrote ${DATA}`);
 }
