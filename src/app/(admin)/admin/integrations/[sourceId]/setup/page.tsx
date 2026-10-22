@@ -242,6 +242,7 @@ Thank you!`;
             <ol className="space-y-2 text-xs text-[#6E6D8A] list-decimal pl-5">
               <li>Create a Google Cloud Project and enable Gmail & Cloud Pub/Sub APIs.</li>
               <li>Set Pub/Sub push subscription endpoint to: <code className="bg-[#F4F0FF] px-2 py-0.5 rounded text-[#5B4FE0] font-mono">{origin}/api/webhooks/gmail</code></li>
+              <li>Turn on <strong>authentication</strong> for the push subscription (a service account), and set <code className="font-mono">GMAIL_PUSH_AUDIENCE</code> to that endpoint URL (and <code className="font-mono">GMAIL_PUSH_SERVICE_ACCOUNT</code> to the account&apos;s email). Alternatively add <code className="font-mono">?token=…</code> to the URL and set the same value as <code className="font-mono">GMAIL_PUSH_TOKEN</code>. Without one of these the endpoint refuses all pushes.</li>
               <li>Configure filters to process property enquiries automatically.</li>
             </ol>
           </div>

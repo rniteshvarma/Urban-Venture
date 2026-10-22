@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
+import { webhookToken } from '@/lib/security/tokens';
 import prisma from '@/lib/prisma';
-import crypto from 'crypto';
 import { requireAdmin } from "@/lib/admin-auth";
 
 export const dynamic = 'force-dynamic';
@@ -68,7 +68,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Name and Type are required' }, { status: 400 });
     }
 
-    const token = `${name.toLowerCase().replace(/[^a-z0-9]/g, '')}-${crypto.randomBytes(6).toString('hex')}`;
+    const token = webhookToken(name);
 
     const source = await prisma.inboundSource.create({
       data: {

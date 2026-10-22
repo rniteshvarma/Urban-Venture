@@ -8,6 +8,7 @@
  *   ACCOUNT_UPDATE   → admin alert on quality drop
  */
 import type { DeliveryStatus as ReportDeliveryStatus, WAStatus } from "@prisma/client";
+import { webhookToken } from "../security/tokens";
 import prisma from "../prisma";
 import { processInboundLead } from "../inbound/handler";
 import { calculateLeadScore } from "../lead-scorer";
@@ -87,7 +88,7 @@ async function handleInboundLead(ev: NormalisedInboundEvent): Promise<string> {
   let source = await prisma.inboundSource.findFirst({ where: { type: "WHATSAPP", isActive: true } });
   if (!source) {
     source = await prisma.inboundSource.create({
-      data: { name: "WhatsApp Business", type: "WHATSAPP", webhookToken: "whatsapp-token-uv-2026", defaultStatus: "NEW", dedupeWindow: 24, isActive: true },
+      data: { name: "WhatsApp Business", type: "WHATSAPP", webhookToken: webhookToken("whatsapp"), defaultStatus: "NEW", dedupeWindow: 24, isActive: true },
     });
   }
 

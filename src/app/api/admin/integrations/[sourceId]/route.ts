@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
+import { webhookToken } from '@/lib/security/tokens';
 import prisma from '@/lib/prisma';
-import crypto from 'crypto';
 import { requireAdmin } from "@/lib/admin-auth";
 
 export const dynamic = 'force-dynamic';
@@ -53,7 +53,7 @@ export async function PUT(
     if (body.regenerateToken) {
       const existing = await prisma.inboundSource.findUnique({ where: { id: sourceId } });
       const prefix = existing ? existing.name.toLowerCase().replace(/[^a-z0-9]/g, '') : 'token';
-      updateData.webhookToken = `${prefix}-${crypto.randomBytes(8).toString('hex')}`;
+      updateData.webhookToken = webhookToken(prefix);
     }
 
     const updatedSource = await prisma.inboundSource.update({

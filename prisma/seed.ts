@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import pg from 'pg';
@@ -77,7 +78,7 @@ async function main() {
       {
         name: "99acres",
         type: "PORTAL_WEBHOOK" as const,
-        webhookToken: "99acres-token-uv-2026",
+        webhookToken: `99acres-${randomBytes(16).toString("hex")}`,
         fieldMapping: {
           name: "name",
           mobile: "phone",
@@ -94,7 +95,7 @@ async function main() {
       {
         name: "MagicBricks",
         type: "PORTAL_WEBHOOK" as const,
-        webhookToken: "magicbricks-token-uv-2026",
+        webhookToken: `magicbricks-${randomBytes(16).toString("hex")}`,
         fieldMapping: {
           sender_name: "name",
           sender_phone: "phone",
@@ -110,7 +111,7 @@ async function main() {
       {
         name: "Housing.com",
         type: "PORTAL_WEBHOOK" as const,
-        webhookToken: "housing-token-uv-2026",
+        webhookToken: `housing-${randomBytes(16).toString("hex")}`,
         fieldMapping: {
           lead_name: "name",
           lead_phone: "phone",
@@ -125,7 +126,7 @@ async function main() {
       {
         name: "NoBroker",
         type: "PORTAL_WEBHOOK" as const,
-        webhookToken: "nobroker-token-uv-2026",
+        webhookToken: `nobroker-${randomBytes(16).toString("hex")}`,
         fieldMapping: {
           name: "name",
           phone: "phone",
@@ -140,7 +141,7 @@ async function main() {
       {
         name: "WhatsApp Business",
         type: "WHATSAPP" as const,
-        webhookToken: "whatsapp-token-uv-2026",
+        webhookToken: `whatsapp-${randomBytes(16).toString("hex")}`,
         fieldMapping: null,
         defaultStatus: "NEW" as const,
         dedupeWindow: 24,
@@ -149,7 +150,7 @@ async function main() {
       {
         name: "Gmail Inbox",
         type: "GMAIL" as const,
-        webhookToken: "gmail-token-uv-2026",
+        webhookToken: `gmail-${randomBytes(16).toString("hex")}`,
         fieldMapping: null,
         defaultStatus: "NEW" as const,
         dedupeWindow: 24,
@@ -158,7 +159,7 @@ async function main() {
       {
         name: "Website Form",
         type: "WEBSITE_FORM" as const,
-        webhookToken: "website-token-uv-2026",
+        webhookToken: `website-${randomBytes(16).toString("hex")}`,
         fieldMapping: null,
         defaultStatus: "NEW" as const,
         dedupeWindow: 24,
