@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getSessionUserId } from "@/lib/session";
+import { isPubliclyVisible } from "@/lib/projects/visibility";
 import { getAnonToken, pushAnonActivity } from "@/lib/anon-session";
 
 /**
@@ -34,8 +35,8 @@ export async function POST(req: Request) {
   const { projectId, note } = await req.json();
   if (!projectId) return NextResponse.json({ error: "projectId required" }, { status: 400 });
 
-  const exists = await prisma.project.findUnique({ where: { id: projectId }, select: { id: true } });
-  if (!exists) return NextResponse.json({ error: "Project not found" }, { status: 404 });
+  const exists = await prisma.project.findUnique({ where: { id: projectId }, select: { id: true, status: true, reviewState: true, listingStatus: true, ownerId: true } });
+  if (!exists || !isPubliclyVisible(exists)) return NextResponse.json({ error: "Project not found" }, { status: 404 });
 
   const userId = await getSessionUserId();
   if (!userId) {

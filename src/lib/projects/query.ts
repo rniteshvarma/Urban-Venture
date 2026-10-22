@@ -39,10 +39,11 @@ export function filtersFromParams(sp: URLSearchParams): ProjectFilters {
   };
 }
 
-export function projectWhere(f: ProjectFilters): Prisma.ProjectWhereInput {
+export function projectWhere(f: ProjectFilters, opts: { admin?: boolean } = {}): Prisma.ProjectWhereInput {
   const where: Prisma.ProjectWhereInput = {};
   const and: Prisma.ProjectWhereInput[] = [];
-  const status = f.status || "ACTIVE";
+  // Other statuses are for admins; the public feed is always ACTIVE.
+  const status = opts.admin ? f.status || "ACTIVE" : "ACTIVE";
   if (status !== "ALL") where.status = status as Prisma.EnumProjectStatusFilter["equals"];
   if (f.corridor) where.corridor = f.corridor;
   if (f.city) where.city = f.city;
@@ -66,6 +67,9 @@ export function projectWhere(f: ProjectFilters): Prisma.ProjectWhereInput {
   if (f.minBudget != null || f.maxBudget != null) {
     and.push({ minBudgetLakhs: { lte: f.maxBudget ?? 999999 } }, { maxBudgetLakhs: { gte: f.minBudget ?? 0 } });
   }
+  // Only approved, published listings are public; an admin asking for other
+  // statuses (status=ALL etc.) sees everything.
+  if (!opts.admin) and.push({ listingStatus: "APPROVED", reviewState: "PUBLISHED" });
   if (and.length) where.AND = and;
   // Seller Mode: never surface low-quality seller listings in the default feed.
   where.NOT = { listingSource: "SELLER", listingScore: { lt: 40 } };

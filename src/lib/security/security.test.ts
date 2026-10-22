@@ -46,3 +46,33 @@ describe("tokens and comparison", () => {
     assert.ok(!PUBLIC_TOKEN.test(a));
   });
 });
+
+import { canView, isPubliclyVisible, withoutPrivateFields } from "../projects/visibility";
+import { projectWhere } from "../projects/query";
+describe("project visibility", () => {
+  const live = { status: "ACTIVE", reviewState: "PUBLISHED", listingStatus: "APPROVED", ownerId: "u1" };
+  test("only approved, published, non-archived listings are public", () => {
+    assert.equal(isPubliclyVisible(live), true);
+    assert.equal(isPubliclyVisible({ ...live, status: "SOLD_OUT" }), true);
+    assert.equal(isPubliclyVisible({ ...live, listingStatus: "PENDING_REVIEW" }), false);
+    assert.equal(isPubliclyVisible({ ...live, reviewState: "DRAFT" }), false);
+    assert.equal(isPubliclyVisible({ ...live, status: "ARCHIVED" }), false);
+  });
+  test("owners and admins see their unpublished listings; nobody else does", () => {
+    const pending = { ...live, listingStatus: "PENDING_REVIEW" };
+    assert.equal(canView(pending, { userId: "u1", isAdmin: false }), true);
+    assert.equal(canView(pending, { userId: "u2", isAdmin: false }), false);
+    assert.equal(canView(pending, { userId: null, isAdmin: false }), false);
+    assert.equal(canView(pending, { userId: null, isAdmin: true }), true);
+  });
+  test("internal fields are stripped", () => {
+    const p = withoutPrivateFields({ name: "X", reviewNote: "internal", ownerId: "u1", surveyNumbers: ["12"], rejectReason: "r" });
+    assert.deepEqual(Object.keys(p), ["name"]);
+  });
+  test("the public feed can't be widened with ?status=", () => {
+    const w = projectWhere({ status: "ALL" });
+    assert.equal(w.status, "ACTIVE");
+    assert.ok(JSON.stringify(w.AND).includes('"listingStatus":"APPROVED"'));
+    assert.equal(projectWhere({ status: "ALL" }, { admin: true }).status, undefined);
+  });
+});

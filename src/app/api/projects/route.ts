@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import type { Prisma } from "@prisma/client";
 import { filtersFromParams, projectWhere } from "@/lib/projects/query";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { gradeFor } from "@/lib/listings/score";
 import { gradeOf } from "@/lib/inventory/rating";
@@ -20,7 +22,10 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
 
     const limit = Math.min(Math.max(Number(searchParams.get("limit")) || 0, 0), 2000) || undefined;
-    const where = projectWhere(filtersFromParams(searchParams));
+    const filters = filtersFromParams(searchParams);
+    // Non-default statuses are an admin view; checking the session only then keeps the public feed cheap.
+    const admin = filters.status && filters.status !== "ACTIVE" ? (await getServerSession(authOptions))?.user?.role === "ADMIN" : false;
+    const where = projectWhere(filters, { admin });
 
     const projects = await prisma.project.findMany({
       where,
