@@ -11,6 +11,7 @@ import { runMatchingForLead } from "@/lib/matching-engine";
 import { initLeadRoadmap } from "@/lib/roadmap";
 import { fireWhatsAppTrigger } from "@/lib/whatsapp/trigger-handler";
 
+import { clientIp, hit, tooMany } from "@/lib/security/rate-limit";
 export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;
   const body = await req.json().catch(() => ({}));
@@ -24,6 +25,8 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
   const budgetLakh = rawBudget == null || !Number.isFinite(rawBudget) || rawBudget <= 0 ? null : rawBudget > 100000 ? Math.round(rawBudget / 100000) : rawBudget;
 
   if (!name || !phone) return NextResponse.json({ error: "Name and phone are required." }, { status: 400 });
+  const [byIp, byPhone] = await Promise.all([hit("enquiryIp", clientIp(req.headers)), hit("enquiryPhone", phone.replace(/\D/g, "").slice(-10))]);
+  if (!byIp.ok || !byPhone.ok) return tooMany(byIp.ok ? byPhone : byIp, "Too many enquiries. Please try again later, or call us.");
 
   const project = await prisma.project.findFirst({
     where: { id, listingStatus: "APPROVED" },

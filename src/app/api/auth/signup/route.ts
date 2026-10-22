@@ -5,11 +5,14 @@ import { resolveLeadIdentity } from "@/lib/lead-resolution";
 import { refreshProfileScore } from "@/lib/profile-score";
 import { createAndSendVerification } from "@/lib/email/verification";
 
+import { clientIp, hit, tooMany } from "@/lib/security/rate-limit";
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_RE = /^[6-9]\d{9}$/;
 
 export async function POST(req: Request) {
   try {
+    const limited = await hit("signupIp", clientIp(req.headers));
+    if (!limited.ok) return tooMany(limited, "Too many sign-ups from this network. Please try again later.");
     const body = await req.json();
     const name: string = (body.name || "").trim();
     const email: string = (body.email || "").toLowerCase().trim();

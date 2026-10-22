@@ -2,28 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import prisma from "@/lib/prisma";
 import { buildResearchReport } from "@/lib/research/report";
-
-// In-memory rate limiting cache
-const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
-
-function isRateLimited(ip: string): boolean {
-  const now = Date.now();
-  const oneHour = 60 * 60 * 1000;
-  const limit = 10;
-
-  const record = rateLimitMap.get(ip);
-  if (!record || now > record.resetTime) {
-    rateLimitMap.set(ip, { count: 1, resetTime: now + oneHour });
-    return false;
-  }
-
-  if (record.count >= limit) {
-    return true;
-  }
-
-  record.count++;
-  return false;
-}
+import { clientIp, hit, tooMany } from "@/lib/security/rate-limit";
 
 // Input validation schema
 const researchSchema = z.object({
@@ -38,9 +17,6 @@ const researchSchema = z.object({
 
 export async function POST(req: Request) {
   try {
-    const ip = req.headers.get("x-forwarded-for")?.split(",")[0] || 
-               req.headers.get("x-real-ip") || 
-               "127.0.0.1";
 
     const body = await req.json();
     const parse = researchSchema.safeParse(body);
@@ -55,11 +31,9 @@ export async function POST(req: Request) {
     const { budget, horizon, city, name, email, phone, searchId } = parse.data;
 
     // Apply rate limiting (only for new report generation, not linking contact details)
-    if (!searchId && isRateLimited(ip)) {
-      return NextResponse.json(
-        { error: "Rate limit exceeded. You can only generate 10 reports per hour." },
-        { status: 429 }
-      );
+    if (!searchId) {
+      const limited = await hit("researchIp", clientIp(req.headers));
+      if (!limited.ok) return tooMany(limited, "Rate limit exceeded. You can only generate 10 reports per hour.");
     }
 
     // Flow A: Link contact info to an existing search (user submitted details after report was shown)

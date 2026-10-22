@@ -30,7 +30,7 @@ export default function AdminLoginPage() {
       });
 
       if (res?.error) {
-        setErrorMsg("Invalid email or password.");
+        setErrorMsg(res.error.includes("TOO_MANY_ATTEMPTS") ? "Too many sign-in attempts. Please wait 15 minutes." : "Invalid email or password.");
       } else {
         router.push("/admin/dashboard");
       }

@@ -50,6 +50,8 @@ function LoginInner() {
       if (res?.error) {
         if (res.error.includes("USE_GOOGLE")) {
           setError(<>This email is registered with Google. <button type="button" onClick={() => signIn("google", { callbackUrl: next })} style={{ color: "var(--color-saffron-deep)", fontWeight: 600, background: "none", border: "none", cursor: "pointer", padding: 0 }}>Continue with Google →</button></>);
+        } else if (res.error.includes("TOO_MANY_ATTEMPTS")) {
+          setError("Too many sign-in attempts. Please wait 15 minutes, or reset your password.");
         } else {
           setError("Invalid email or password.");
         }

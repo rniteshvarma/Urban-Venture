@@ -6,6 +6,7 @@ import bcrypt from "bcryptjs";
 import { resolveLeadIdentity } from "./lead-resolution";
 import { authSecret } from "./env";
 
+import { clear, clientIp, hit } from "./security/rate-limit";
 declare module "next-auth" {
   interface Session {
     user: {
@@ -41,10 +42,15 @@ const providers: NextAuthOptions["providers"] = [
       email: { label: "Email", type: "email" },
       password: { label: "Password", type: "password" },
     },
-    async authorize(credentials) {
+    async authorize(credentials, req) {
       if (!credentials?.email || !credentials?.password) {
         throw new Error("Missing email or password");
       }
+      // Slow down password guessing: per account and per IP, shared across instances.
+      const loginEmail = credentials.email.toLowerCase().trim();
+      const ip = clientIp((req?.headers ?? {}) as Record<string, string>);
+      const [byEmail, byIp] = await Promise.all([hit("loginEmail", loginEmail), hit("loginIp", ip)]);
+      if (!byEmail.ok || !byIp.ok) throw new Error("TOO_MANY_ATTEMPTS");
 
       let user: { id: string; name: string | null; email: string; password: string | null; role: "CLIENT" | "ADMIN"; googleId?: string | null } | null = null;
 
@@ -97,6 +103,7 @@ const providers: NextAuthOptions["providers"] = [
       // best-effort last-login stamp (never blocks auth)
       prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } }).catch(() => {});
 
+      await clear("loginEmail", loginEmail);
       return { id: user.id, name: user.name, email: user.email, role: user.role };
     },
   }),

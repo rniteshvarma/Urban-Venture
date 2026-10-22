@@ -52,11 +52,12 @@ export async function recentErrors(hours = 24, take = 50) {
   return { total, groups: [...groups.values()] };
 }
 
-/** Drop old monitoring rows (job runs after 90 days, errors after 30). */
+/** Drop old monitoring rows (job runs after 90 days, errors after 30) and expired rate-limit counters. */
 export async function pruneOps(now = new Date()) {
-  const [runs, errors] = await Promise.all([
+  const [runs, errors, limits] = await Promise.all([
     prisma.jobRun.deleteMany({ where: { startedAt: { lt: new Date(now.getTime() - 90 * 86_400_000) } } }),
     prisma.appError.deleteMany({ where: { at: { lt: new Date(now.getTime() - 30 * 86_400_000) } } }),
+    prisma.rateLimit.deleteMany({ where: { resetAt: { lt: now } } }),
   ]);
-  return { runs: runs.count, errors: errors.count };
+  return { runs: runs.count, errors: errors.count, rateLimits: limits.count };
 }

@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import { sendEmail } from "@/lib/email/client";
 import { passwordResetEmail } from "@/lib/email/templates";
 
+import { clientIp, hit, tooMany } from "@/lib/security/rate-limit";
 /**
  * Create a single-use, 1h password-reset token and email the link.
  * Always returns success (never reveal whether an email is registered).
@@ -12,6 +13,8 @@ export async function POST(req: Request) {
   try {
     const { email } = await req.json();
     const clean = (email || "").toLowerCase().trim();
+    const [byIp, byEmail] = await Promise.all([hit("resetIp", clientIp(req.headers)), clean ? hit("resetEmail", clean) : null]);
+    if (!byIp.ok || (byEmail && !byEmail.ok)) return tooMany(byEmail && !byEmail.ok ? byEmail : byIp, "Too many reset requests. Please try again later.");
     const user = clean ? await prisma.user.findUnique({ where: { email: clean } }) : null;
 
     if (user && user.password) {

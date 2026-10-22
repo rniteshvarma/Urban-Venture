@@ -7,6 +7,7 @@ import prisma from "@/lib/prisma";
 import { getSessionUserId } from "@/lib/session";
 import { describeFilters, type ProjectFilters } from "@/lib/projects/query";
 
+import { hit, tooMany } from "@/lib/security/rate-limit";
 const MAX_SEARCHES = 10;
 
 function cleanFilters(raw: unknown): ProjectFilters {
@@ -26,6 +27,8 @@ export async function GET() {
 export async function POST(req: Request) {
   const userId = await getSessionUserId();
   if (!userId) return NextResponse.json({ error: "Sign in to save searches" }, { status: 401 });
+  const limited = await hit("savedSearchUser", userId);
+  if (!limited.ok) return tooMany(limited);
   const body = await req.json().catch(() => ({}));
   const filters = cleanFilters(body.filters);
   const count = await prisma.savedSearch.count({ where: { userId } });

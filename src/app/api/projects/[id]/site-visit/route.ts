@@ -11,11 +11,14 @@ import { initLeadRoadmap } from "@/lib/roadmap";
 import { fireWhatsAppTrigger } from "@/lib/whatsapp/trigger-handler";
 import { validateVisitRequest } from "@/lib/buyer/site-visit";
 
+import { clientIp, hit, tooMany } from "@/lib/security/rate-limit";
 export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;
   const body = await req.json().catch(() => ({}));
   const v = validateVisitRequest(body, new Date());
   if (!v.ok) return NextResponse.json({ error: v.error }, { status: 400 });
+  const [byIp, byPhone] = await Promise.all([hit("enquiryIp", clientIp(req.headers)), hit("enquiryPhone", v.value.phone.replace(/\D/g, "").slice(-10))]);
+  if (!byIp.ok || !byPhone.ok) return tooMany(byIp.ok ? byPhone : byIp, "Too many requests. Please try again later, or call us.");
 
   const project = await prisma.project.findFirst({
     where: { id, listingStatus: "APPROVED", status: "ACTIVE" },

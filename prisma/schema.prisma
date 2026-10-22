@@ -3088,3 +3088,13 @@ enum SiteVisitStatus {
   CANCELLED
   NO_SHOW
 }
+
+// Fixed-window rate-limit counters shared by every server instance
+// (src/lib/security/rate-limit.ts). Expired rows are pruned by the daily ops check.
+model RateLimit {
+  key     String   @id // "<bucket>:<subject>", e.g. "login-email:a@b.com"
+  count   Int
+  resetAt DateTime
+
+  @@index([resetAt])
+}
