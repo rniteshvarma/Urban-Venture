@@ -91,9 +91,30 @@ export function rng(seed: string) {
   };
 }
 
+/**
+ * A generator that carries its seed. Components restart it at the top of every
+ * render (see `fresh`), so a render is a pure function of its props: the
+ * server and the browser draw the same picture, and React's double render in
+ * development doesn't shift the numbers.
+ */
+export type Rand = (() => number) & { seed?: string };
+
+export function seeded(seed: string): Rand {
+  const f: Rand = rng(seed);
+  f.seed = seed;
+  return f;
+}
+
+/** A new generator from the seed, when the caller passed a seeded one. */
+function fresh(r: () => number): () => number {
+  const seed = (r as Rand).seed;
+  return seed != null ? rng(seed) : r;
+}
+
 // ── Atmosphere ───────────────────────────────────────────────────────────────
 
-export function Sky({ id, p, sunX, sunY, rand }: { id: string; p: Palette; sunX: number; sunY: number; rand: () => number }) {
+export function Sky({ id, p, sunX, sunY, rand: seedRand }: { id: string; p: Palette; sunX: number; sunY: number; rand: () => number }) {
+  const rand = fresh(seedRand);
   const stars = p.stars ? Array.from({ length: 40 }, () => [rand() * W, rand() * H * 0.45, rand() * 1.1 + 0.3] as const) : [];
   return (
     <>
@@ -119,7 +140,8 @@ export function Sky({ id, p, sunX, sunY, rand }: { id: string; p: Palette; sunX:
   );
 }
 
-export function Clouds({ p, rand, y = 70 }: { p: Palette; rand: () => number; y?: number }) {
+export function Clouds({ p, rand: seedRand, y = 70 }: { p: Palette; rand: () => number; y?: number }) {
+  const rand = fresh(seedRand);
   return (
     <g opacity={0.35} fill={p.sun}>
       {Array.from({ length: 3 }, (_, i) => {
@@ -133,7 +155,8 @@ export function Clouds({ p, rand, y = 70 }: { p: Palette; rand: () => number; y?
 }
 
 /** Smooth rolling ridge from `y` down to the bottom. */
-export function Ridge({ y, amp, color, rand, freq = 3, opacity = 1 }: { y: number; amp: number; color: string; rand: () => number; freq?: number; opacity?: number }) {
+export function Ridge({ y, amp, color, rand: seedRand, freq = 3, opacity = 1 }: { y: number; amp: number; color: string; rand: () => number; freq?: number; opacity?: number }) {
+  const rand = fresh(seedRand);
   const phase = rand() * Math.PI * 2;
   const pts: string[] = [];
   for (let x = 0; x <= W; x += 16) {
@@ -144,7 +167,8 @@ export function Ridge({ y, amp, color, rand, freq = 3, opacity = 1 }: { y: numbe
 }
 
 /** Deccan granite boulder clusters — the Hyderabad signature on the horizon. */
-export function Boulders({ baseY, color, rand, count = 3 }: { baseY: number; color: string; rand: () => number; count?: number }) {
+export function Boulders({ baseY, color, rand: seedRand, count = 3 }: { baseY: number; color: string; rand: () => number; count?: number }) {
+  const rand = fresh(seedRand);
   return (
     <g fill={color}>
       {Array.from({ length: count }, (_, c) => {
@@ -164,7 +188,8 @@ export function Boulders({ baseY, color, rand, count = 3 }: { baseY: number; col
 
 // ── Built forms ──────────────────────────────────────────────────────────────
 
-function Windows({ x, y, w, h, color, rand, density = 0.45, cell = 7 }: { x: number; y: number; w: number; h: number; color: string; rand: () => number; density?: number; cell?: number }) {
+function Windows({ x, y, w, h, color, rand: seedRand, density = 0.45, cell = 7 }: { x: number; y: number; w: number; h: number; color: string; rand: () => number; density?: number; cell?: number }) {
+  const rand = fresh(seedRand);
   const out: React.ReactNode[] = [];
   for (let yy = y + 6; yy < y + h - 4; yy += cell) {
     for (let xx = x + 4; xx < x + w - 4; xx += cell - 1) {
@@ -251,7 +276,8 @@ export function Hangar({ x, baseY, w, color, lights }: { x: number; baseY: numbe
   );
 }
 
-export function Campus({ x, baseY, w, h, p, rand }: { x: number; baseY: number; w: number; h: number; p: Palette; rand: () => number }) {
+export function Campus({ x, baseY, w, h, p, rand: seedRand }: { x: number; baseY: number; w: number; h: number; p: Palette; rand: () => number }) {
+  const rand = fresh(seedRand);
   return (
     <g>
       <rect x={x} y={baseY - h} width={w} height={h} fill={p.near} />

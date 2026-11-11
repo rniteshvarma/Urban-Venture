@@ -1,286 +1,45 @@
-"use client";
+/**
+ * Homepage. Unchanged on screen: the server only preloads the corridors,
+ * featured projects and city figures the page used to fetch from the browser,
+ * so the HTML holds them for search engines and a fast first paint.
+ */
+import { pageMeta } from "@/lib/site";
+import { routeJson } from "@/lib/server/route-data";
+import { GET as corridorsGET } from "@/app/api/market/corridors/route";
+import { GET as projectsGET } from "@/app/api/projects/route";
+import { GET as pulseGET } from "@/app/api/market/pulse/route";
+import { GET as infraGET } from "@/app/api/market/infrastructure/route";
+import HomeView, { type HomeInitial, type PulseFigures } from "./HomeView";
+import type { CorridorCardData, ProjectCardData } from "@/components/ui";
 
-export const dynamic = "force-dynamic";
+export const metadata = pageMeta(
+  "",
+  "Property Tiger | Hyderabad property research",
+  "Hyderabad property research: prices measured from real listings, developers' TG-RERA records and tracked government infrastructure, area by area.",
+);
 
-import Link from "next/link";
-import React, { useEffect, useState } from "react";
-import { CITY, type SourcedFigure } from "@/lib/market/anchors";
-
-type PulseFigures = Record<"registrations" | "registrationsValue" | "avgPrice" | "priceGrowth" | "gccShare", SourcedFigure>;
-const CITY_DEFAULTS: PulseFigures = {
-  registrations: CITY.registrationsYtd,
-  registrationsValue: CITY.registrationsValueCr,
-  avgPrice: CITY.avgPriceSqFt,
-  priceGrowth: CITY.priceGrowthYoY,
-  gccShare: CITY.gccShareOfLeasing,
-};
-import { ArrowRight, Search, BarChart3, Building2, CheckCircle2, Calculator, FileText, Repeat } from "lucide-react";
-import HeroAppShowcase from "@/components/home/HeroAppShowcase";
-import {
-  SearchCommandBar,
-  SectionHeader,
-  CorridorCard,
-  ProjectCard,
-  MetricStat,
-  SkeletonCard,
-  SourceTag,
-  type CorridorCardData,
-  type ProjectCardData,
-  CYCLE,
-  type InvCycle,
-} from "@/components/ui";
-import { formatDate, formatCount } from "@/lib/format";
-
-
-// Homepage positioning copy — swappable (spec Part 1).
-const HERO = {
-  badge: "Independent Hyderabad property research",
-  h1: "Know where Hyderabad grows next.",
-  sub: "Prices measured from real listings, developers' TG-RERA records and tracked government infrastructure — for Hyderabad land and homes, corridor by corridor.",
-  micro: "Not a listing site. A research platform.",
-};
-
-const HERO_IMG =
-  "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1920&q=80";
-
-const CYCLE_FILTERS: (InvCycle | "ALL")[] = ["ALL", "ACT_NOW", "MID_CYCLE", "WATCH_AND_BUY", "PATIENT_CAPITAL"];
-
-export default function HomePage() {
-  const [corridors, setCorridors] = useState<CorridorCardData[] | null>(null);
-  const [projects, setProjects] = useState<ProjectCardData[] | null>(null);
-  const [infraCount, setInfraCount] = useState<number | null>(null);
-  // City figures — sourced constants, or newer ones an admin approved (/api/market/pulse).
-  const [city, setCity] = useState<PulseFigures>(CITY_DEFAULTS);
-  const [cycleFilter, setCycleFilter] = useState<InvCycle | "ALL">("ALL");
-
-  useEffect(() => {
-    const j = (r: Response) => (r.ok ? r.json() : Promise.reject(r.status));
-    fetch("/api/market/corridors").then(j).then(setCorridors).catch(() => setCorridors([]));
-    fetch("/api/projects?limit=8").then(j).then(setProjects).catch(() => setProjects([]));
-    fetch("/api/market/pulse").then(j).then((d) => d?.figures && setCity(d.figures)).catch(() => {});
-    fetch("/api/market/infrastructure")
-      .then(j)
-      .then((d) => setInfraCount(Array.isArray(d) ? d.length : Array.isArray(d?.projects) ? d.projects.length : null))
-      .catch(() => setInfraCount(null));
-  }, []);
-
-  const corridorOptions = (corridors ?? []).map((c) => ({ slug: c.corridor, name: c.name }));
-  const quickChips = (corridors ?? []).slice(0, 5).map((c) => ({
-    label: c.shortName || c.name,
-    href: `/market/${c.corridor}`,
-  }));
-
-  const filteredCorridors = (corridors ?? []).filter(
-    (c) => cycleFilter === "ALL" || (c as any).investmentCycle === cycleFilter
-  );
-
-  // Only shown when the corridor figures carry a real computed-at date — never today's date as a stand-in.
-  const lastUpdated = corridors?.[0]?.["lastComputedAt" as keyof CorridorCardData]
-    ? formatDate(corridors[0]["lastComputedAt" as keyof CorridorCardData] as any)
-    : null;
-
-  return (
-    <div className="flex flex-col">
-      {/* ═══ 5.1 HERO ═══ */}
-      <section style={{ position: "relative", background: "var(--color-ink)", overflow: "hidden" }}>
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          poster={HERO_IMG}
-          aria-hidden
-          onCanPlay={(e) => { e.currentTarget.muted = true; e.currentTarget.play().catch(() => {}); }}
-          onLoadedData={(e) => { e.currentTarget.muted = true; e.currentTarget.play().catch(() => {}); }}
-          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.5 }}
-          src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260405_170732_8a9ccda6-5cff-4628-b164-059c500a2b41.mp4"
-        />
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(0deg, var(--color-ink) 8%, rgba(13,13,18,0.55) 60%, rgba(13,13,18,0.75) 100%)" }} />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ position: "relative", zIndex: 2, paddingTop: "clamp(4rem, 9vw, 7rem)", paddingBottom: "5.5rem" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 48, flexWrap: "wrap" }}>
-            <div style={{ maxWidth: 600, flex: "1 1 380px", minWidth: 320 }}>
-              <span className="animate-fade-in-up" style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(255,255,255,0.08)", border: "1px solid var(--color-ink-line)", color: "#fff", padding: "6px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600 }}>
-                ⭐ {HERO.badge}
-              </span>
-              <h1 className="animate-fade-in-up stagger-1" style={{ fontFamily: "var(--font-jakarta)", fontWeight: 800, letterSpacing: "-0.02em", lineHeight: 1.02, color: "#fff", fontSize: "clamp(2.5rem, 5vw, 4rem)", marginTop: 20 }}>
-                {HERO.h1}
-              </h1>
-              <p className="animate-fade-in-up stagger-2" style={{ color: "var(--color-text-invert-mid)", fontSize: "clamp(1rem, 1.6vw, 1.25rem)", lineHeight: 1.6, marginTop: 18, maxWidth: 560 }}>
-                {HERO.sub}
-              </p>
-              <p className="animate-fade-in-up stagger-3" style={{ fontFamily: "var(--font-instrument)", fontStyle: "italic", color: "var(--color-saffron)", fontSize: "1.25rem", marginTop: 14 }}>
-                {HERO.micro}
-              </p>
-            </div>
-            <HeroAppShowcase />
-          </div>
-        </div>
-      </section>
-
-      {/* ═══ 5.2 SEARCH COMMAND BAR (overlaps hero) ═══ */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full" style={{ position: "relative", zIndex: 5, marginTop: -48 }}>
-        <SearchCommandBar corridors={corridorOptions} quickChips={quickChips} />
-      </div>
-
-      {/* ═══ 5.3 TRUST BAR ═══ */}
-      <div className="max-w-7xl mx-auto px-4 w-full" style={{ marginTop: 20 }}>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "8px 22px", justifyContent: "center", fontFamily: "var(--font-mono)", fontSize: "0.75rem", color: "var(--color-text-mid)" }}>
-          <span>✅ {corridors ? corridors.length : "…"} Corridors Tracked</span>
-          {infraCount != null && infraCount > 0 && (
-            <>
-              <span style={{ color: "var(--color-line)" }}>·</span>
-              <span>✅ {infraCount} Govt Projects Tracked</span>
-            </>
-          )}
-          <span style={{ color: "var(--color-line)" }}>·</span>
-          <span>✅ TG-RERA numbers shown, with a link to verify</span>
-          {lastUpdated && (
-            <>
-              <span style={{ color: "var(--color-line)" }}>·</span>
-              <span>✅ Area figures computed {lastUpdated}</span>
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* ═══ 5.4 HOW IT WORKS ═══ */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full" style={{ paddingTop: "4.5rem", paddingBottom: "1rem" }}>
-        <SectionHeader eyebrow="Not a listing site." title="How it works" subtitle="Two inputs. A shortlist of areas, built from measured prices and public records." />
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 18 }}>
-          {[
-            { n: "01", icon: <Search size={22} />, label: "Tell us your budget", body: "Your budget and how long you plan to hold." },
-            { n: "02", icon: <BarChart3 size={22} />, label: "We match it to the data", body: "Corridor prices, delivery records, infrastructure status." },
-            { n: "03", icon: <Building2 size={22} />, label: "Sourced from public records", body: "TG-RERA, NHAI, HMRL and HMDA — with links." },
-          ].map((s) => (
-            <div key={s.n} className="uv-card" style={{ position: "relative", padding: "1.75rem 1.5rem" }}>
-              <span style={{ position: "absolute", top: 14, right: 18, fontFamily: "var(--font-mono)", fontWeight: 600, fontSize: "1.75rem", color: "var(--color-saffron)" }}>{s.n}</span>
-              <div style={{ color: "var(--color-saffron-deep)", marginBottom: 14 }}>{s.icon}</div>
-              <h3 style={{ fontFamily: "var(--font-jakarta)", fontWeight: 700, fontSize: "1.125rem", color: "var(--color-text-hi)" }}>{s.label}</h3>
-              <p style={{ marginTop: 6, color: "var(--color-text-mid)", fontSize: "0.9375rem" }}>{s.body}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ═══ 5.6 CORRIDOR HEAT GRID ═══ */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full" style={{ paddingTop: "4rem" }}>
-        <SectionHeader
-          title="Where Hyderabad is moving"
-          action={<Link href="/market" className="uv-btn uv-btn-ghost" style={{ padding: "9px 16px", fontSize: "0.8125rem" }}>View all corridors <ArrowRight size={15} /></Link>}
-        />
-        {/* Filter chips */}
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 22 }}>
-          {CYCLE_FILTERS.map((f) => {
-            const active = f === cycleFilter;
-            const label = f === "ALL" ? "All" : CYCLE[f].label;
-            return (
-              <button key={f} type="button" onClick={() => setCycleFilter(f)} className="uv-chip" title={f === "ALL" ? undefined : CYCLE[f].explain}
-                style={{ cursor: "pointer", border: "1px solid var(--color-line)", background: active ? "var(--color-saffron)" : "var(--color-surface)", color: active ? "var(--color-ink)" : "var(--color-text-mid)" }}>
-                {f !== "ALL" && CYCLE[f].emoji ? `${CYCLE[f].emoji} ` : ""}{label}
-              </button>
-            );
-          })}
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 20 }}>
-          {corridors === null
-            ? Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} variant="corridor" />)
-            : filteredCorridors.slice(0, 9).map((c) => <CorridorCard key={c.corridor} corridor={c} />)}
-        </div>
-      </section>
-
-      {/* ═══ 5.7 LIVE MARKET PULSE (dark band) ═══ */}
-      <section style={{ background: "var(--color-ink)", marginTop: "4.5rem", padding: "3.25rem 0" }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 28 }}>
-            <MetricStat value={city.registrations.value} label="Homes registered" sub={city.registrations.period} />
-            <MetricStat value={city.registrationsValue.value} prefix="₹" suffix=" Cr" label="Registered value" sub={city.registrationsValue.period} />
-            <MetricStat value={city.priceGrowth.value} prefix="+" suffix="%" label="Price growth, YoY" sub={city.priceGrowth.period} />
-            <MetricStat value={city.avgPrice.value} prefix="₹" label="Avg / sq.ft" sub={city.avgPrice.period} />
-            <MetricStat value={city.gccShare.value} suffix="%" label="Office leasing by GCCs" sub={city.gccShare.period} />
-          </div>
-          <div style={{ marginTop: 22, textAlign: "right" }}>
-            <SourceTag align="right">{[...new Set([city.registrations.source, city.avgPrice.source, city.gccShare.source])].join(" · ")}</SourceTag>
-          </div>
-        </div>
-      </section>
-
-      {/* ═══ 5.8 FEATURED PROJECTS (carousel) ═══ */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full" style={{ paddingTop: "4.5rem" }}>
-        <SectionHeader
-          title="Featured projects"
-          action={<Link href="/projects" className="uv-btn uv-btn-ghost" style={{ padding: "9px 16px", fontSize: "0.8125rem" }}>All projects <ArrowRight size={15} /></Link>}
-        />
-        <div style={{ display: "flex", gap: 18, overflowX: "auto", scrollSnapType: "x mandatory", paddingBottom: 12, alignItems: "stretch" }} className="hide-scrollbar">
-          {projects === null
-            ? Array.from({ length: 4 }).map((_, i) => <div key={i} style={{ minWidth: 288, display: "flex" }}><SkeletonCard variant="project" /></div>)
-            : projects.slice(0, 8).map((p) => <ProjectCard key={p.id} project={p} variant="carousel" />)}
-        </div>
-      </section>
-
-      {/* ═══ 5.10 TOOLS STRIP ═══ */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full" style={{ paddingTop: "4.5rem" }}>
-        <SectionHeader title="Tools for the numbers" />
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16 }}>
-          {[
-            { icon: <Calculator size={20} />, name: "ROI Calculator", desc: "Price-growth scenarios beside equity, gold and FD.", href: "/calculator" },
-            { icon: <FileText size={20} />, name: "Real cost & EMI", desc: "Stamp duty, registration, GST and EMI — on every listing.", href: "/projects" },
-            { icon: <Repeat size={20} />, name: "Compare projects", desc: "Put listings side by side.", href: "/projects/compare" },
-            { icon: <BarChart3 size={20} />, name: "Price scenarios", desc: "Ten-year scenarios for each area.", href: "/market/forecast" },
-          ].map((t) => (
-            <Link key={t.name} href={t.href} className="uv-card uv-card-hover" style={{ padding: "1.4rem 1.35rem", display: "flex", flexDirection: "column", gap: 8, textDecoration: "none" }}>
-              <div style={{ color: "var(--color-saffron-deep)" }}>{t.icon}</div>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <h3 style={{ fontFamily: "var(--font-jakarta)", fontWeight: 700, fontSize: "1rem", color: "var(--color-text-hi)" }}>{t.name}</h3>
-                <ArrowRight size={16} color="var(--color-text-lo)" />
-              </div>
-              <p style={{ color: "var(--color-text-mid)", fontSize: "0.8125rem" }}>{t.desc}</p>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* ═══ 5.11 WHY US ═══ — only things this site actually has, each linked to where it lives */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full" style={{ paddingTop: "4.5rem", paddingBottom: "5rem" }}>
-        <SectionHeader eyebrow="Direct, and confident." title="Why us" />
-        <div className="uv-card" style={{ overflow: "hidden", padding: 0 }}>
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 520, tableLayout: "fixed" }}>
-              <colgroup>
-                <col style={{ width: "65%" }} />
-                <col style={{ width: "35%" }} />
-              </colgroup>
-              <thead>
-                <tr>
-                  <th style={{ textAlign: "left", padding: "16px 20px", fontSize: "0.8125rem", color: "var(--color-text-mid)", fontWeight: 600 }}>What you get here</th>
-                  <th style={{ textAlign: "center", padding: "16px 20px", fontSize: "0.8125rem", color: "var(--color-saffron-deep)", fontWeight: 700, background: "var(--color-saffron-wash)" }}>Where to find it</th>
-                </tr>
-              </thead>
-              <tbody>
-                {[
-                  ["Projects with a TG-RERA number you can verify", "/projects", "Projects"],
-                  ["Builders' delivery records and RERA orders", "/developers", "Developer records"],
-                  ["Area prices measured from listings, beside government guidance values", "/market", "Area prices"],
-                  ["Government infrastructure tracked from official sources", "/market", "Corridor pages"],
-                  ["The real cost of buying: duties, GST and EMI", "/projects", "On every listing"],
-                  ["Checks to make before you pay", "/market/legal", "Legal guide"],
-                ].map(([label, href, where], i) => (
-                  <tr key={i} style={{ borderTop: "1px solid var(--color-line)" }}>
-                    <td style={{ padding: "14px 20px", fontSize: "0.9375rem", color: "var(--color-text-hi)" }}>
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: 10 }}>
-                        <CheckCircle2 size={18} color="var(--color-growth)" style={{ flexShrink: 0 }} />
-                        {label}
-                      </span>
-                    </td>
-                    <td style={{ padding: "14px 20px", textAlign: "center", background: "var(--color-saffron-wash)", verticalAlign: "middle" }}>
-                      <Link href={href} style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--color-saffron-deep)", textDecoration: "underline", textUnderlineOffset: 3 }}>{where}</Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-    </div>
-  );
+export default async function HomePage() {
+  const [corridors, projects, pulse, infra] = await Promise.all([
+    routeJson<CorridorCardData[]>((r) => corridorsGET(r), "/api/market/corridors"),
+    routeJson<ProjectCardData[]>((r) => projectsGET(r), "/api/projects?limit=8"),
+    routeJson<{ figures?: PulseFigures }>(() => pulseGET(), "/api/market/pulse"),
+    routeJson<unknown>((r) => infraGET(r), "/api/market/infrastructure"),
+  ]);
+  const infraCount = Array.isArray(infra) ? infra.length : Array.isArray((infra as { projects?: unknown[] } | null)?.projects) ? (infra as { projects: unknown[] }).projects.length : null;
+  const initial: HomeInitial | null =
+    corridors && projects
+      ? {
+          // The homepage cards don't use each corridor's full market figures (~6 KB each) — leave them out of the page.
+          corridors: corridors.map((c) => {
+            const card: Record<string, unknown> = { ...c };
+            delete card.market;
+            delete card.adminNote;
+            return card as unknown as CorridorCardData;
+          }),
+          projects,
+          infraCount,
+          city: pulse?.figures ?? null,
+        }
+      : null;
+  return <HomeView initial={initial} />;
 }

@@ -3,6 +3,7 @@ import { Playfair_Display, Inter, Plus_Jakarta_Sans, JetBrains_Mono, Instrument_
 import { Providers } from "@/components/Providers";
 import Toaster from "@/components/ui/Toaster";
 import "./globals.css";
+import { siteUrl } from "@/lib/site";
 
 const playfair = Playfair_Display({
   variable: "--font-playfair",
@@ -33,6 +34,8 @@ const instrumentSerif = Instrument_Serif({
 });
 
 export const metadata: Metadata = {
+  // Absolute base for any relative social-preview image or link in page metadata.
+  metadataBase: new URL(siteUrl()),
   title: "Property Tiger | Hyderabad property research",
   description: "Hyderabad property research: measured prices, developer track records and infrastructure status, corridor by corridor.",
 };

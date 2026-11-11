@@ -8,6 +8,9 @@ import React from 'react';
 import { cookies } from 'next/headers';
 import type { NewsCategory, Prisma } from '@prisma/client';
 import prisma from '@/lib/prisma';
+import { pageMeta } from '@/lib/site';
+
+export const metadata = pageMeta('/news', 'Hyderabad property news — Market Signals | Property Tiger', 'Hyderabad real-estate news from public sources: infrastructure, government decisions, launches and prices, with a link to every original story.');
 import { buildFeedWhere } from '@/lib/news/query';
 import { ensureNewsCities } from '@/lib/news/seed-cities';
 import { isMockMode } from '@/lib/news/providers';

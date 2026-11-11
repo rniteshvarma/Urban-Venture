@@ -7,14 +7,12 @@
  * Update LEGAL_LAST_UPDATED when this text changes.
  */
 import React from "react";
+import { pageMeta } from "@/lib/site";
 import Link from "next/link";
 import LegalPage, { A, P, Section, UL } from "@/components/legal/LegalPage";
 import { LEGAL_LAST_UPDATED, legalDetails } from "@/lib/legal";
 
-export const metadata = {
-  title: "Privacy Policy | Property Tiger",
-  description: "What personal data Property Tiger collects, why, who it is shared with, how long it is kept, and how to exercise your rights.",
-};
+export const metadata = pageMeta("/legal/privacy", "Privacy Policy | Property Tiger", "What personal data Property Tiger collects, why, who it is shared with, how long it is kept, and how to exercise your rights.");
 
 const SECTIONS = [
   { id: "who", title: "Who we are" },

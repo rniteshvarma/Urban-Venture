@@ -4,11 +4,9 @@
  * Takedown contact comes from CONTENT_TAKEDOWN_EMAIL (fallback RESEND_REPLY_TO).
  */
 import React from 'react';
+import { pageMeta } from "@/lib/site";
 
-export const metadata = {
-  title: 'Content policy — Market Signals | Property Tiger',
-  description: 'How Property Tiger displays third-party news headlines, and how to request removal.',
-};
+export const metadata = pageMeta("/legal/content-policy", "Content policy — Market Signals | Property Tiger", "How Property Tiger displays third-party news headlines, and how to request removal.");
 
 const H2: React.CSSProperties = { fontSize: '1.05rem', fontWeight: 700, color: 'var(--color-text-hi)', margin: '28px 0 8px' };
 const P: React.CSSProperties = { margin: '0 0 10px', lineHeight: 1.65, color: 'var(--color-text-mid)', fontSize: '0.92rem' };

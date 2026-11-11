@@ -9,7 +9,7 @@
 import React, { useId } from "react";
 import {
   Boulders, Campus, Clouds, Crane, ControlTower, Dome, Factory, Fields, Finish, Fort, GlassDefs, Hangar, Highway, Lab,
-  Palm, PALETTES, Plane, Ridge, rng, Sky, SolarRows, Tower, Train, Tree, Truck, Viaduct, Villa, Warehouse, Water, H, W,
+  Palm, PALETTES, Plane, Ridge, seeded, type Rand, Sky, SolarRows, Tower, Train, Tree, Truck, Viaduct, Villa, Warehouse, Water, H, W,
   type Palette,
 } from "./kit";
 
@@ -69,7 +69,8 @@ export function resolveScene(slug: string, text: string): { scene: SceneKind; pa
 
 // ── Scenes ───────────────────────────────────────────────────────────────────
 
-type SceneProps = { id: string; p: Palette; r: () => number };
+/** `r()` hands each drawn element its own seeded generator (see `seeded` in kit.tsx). */
+type SceneProps = { id: string; p: Palette; r: () => Rand };
 
 function Skyline({ id, p, r }: SceneProps) {
   const base = 270;
@@ -79,9 +80,9 @@ function Skyline({ id, p, r }: SceneProps) {
   const front = [[46, 38, 150], [118, 34, 215], [190, 42, 175], [262, 32, 255], [330, 46, 205], [420, 36, 240], [500, 40, 170], [590, 34, 120]] as const;
   return (
     <>
-      <Sky id={id} p={p} sunX={520} sunY={116} rand={r} />
-      <Ridge y={250} amp={10} color={p.far} rand={r} opacity={0.8} />
-      <Boulders baseY={252} color={p.far} rand={r} count={2} />
+      <Sky id={id} p={p} sunX={520} sunY={116} rand={r()} />
+      <Ridge y={250} amp={10} color={p.far} rand={r()} opacity={0.8} />
+      <Boulders baseY={252} color={p.far} rand={r()} count={2} />
       <GlassDefs id={id} p={p} />
       <g opacity={0.45}>
         {back.map(([x, w, h], i) => (
@@ -89,7 +90,7 @@ function Skyline({ id, p, r }: SceneProps) {
         ))}
       </g>
       {front.map(([x, w, h], i) => (
-        <Tower key={i} id={id} x={x} baseY={base} w={w} h={h} p={p} rand={r} spire={i === 3 || i === 5} />
+        <Tower key={i} id={id} x={x} baseY={base} w={w} h={h} p={p} rand={r()} spire={i === 3 || i === 5} />
       ))}
       <Crane x={372} baseY={base - 150} h={46} color={p.near} />
       <Water id={id} y={base} p={p} />
@@ -103,15 +104,15 @@ function Skyline({ id, p, r }: SceneProps) {
 function Aerospace({ id, p, r }: SceneProps) {
   return (
     <>
-      <Sky id={id} p={p} sunX={150} sunY={150} rand={r} />
-      <Clouds p={p} rand={r} y={60} />
-      <Ridge y={240} amp={14} color={p.far} rand={r} />
-      <Boulders baseY={245} color={p.mid} rand={r} count={2} />
+      <Sky id={id} p={p} sunX={150} sunY={150} rand={r()} />
+      <Clouds p={p} rand={r()} y={60} />
+      <Ridge y={240} amp={14} color={p.far} rand={r()} />
+      <Boulders baseY={245} color={p.mid} rand={r()} count={2} />
       <Plane x={420} y={96} s={1.9} angle={-16} color={p.near} />
       <Hangar x={60} baseY={290} w={170} color={p.near} lights={p.lights} />
       <Hangar x={250} baseY={290} w={120} color={p.near} lights={p.lights} />
-      <Campus x={400} baseY={290} w={90} h={70} p={p} rand={r} />
-      <Campus x={500} baseY={290} w={110} h={96} p={p} rand={r} />
+      <Campus x={400} baseY={290} w={90} h={70} p={p} rand={r()} />
+      <Campus x={500} baseY={290} w={110} h={96} p={p} rand={r()} />
       <rect x={0} y={290} width={W} height={H - 290} fill={p.ground} />
       <rect x={0} y={318} width={W} height={10} fill={p.near} />
       {Array.from({ length: 16 }, (_, i) => (
@@ -124,9 +125,9 @@ function Aerospace({ id, p, r }: SceneProps) {
 function Airport({ id, p, r }: SceneProps) {
   return (
     <>
-      <Sky id={id} p={p} sunX={120} sunY={200} rand={r} />
-      <Clouds p={p} rand={r} y={80} />
-      <Ridge y={250} amp={10} color={p.far} rand={r} />
+      <Sky id={id} p={p} sunX={120} sunY={200} rand={r()} />
+      <Clouds p={p} rand={r()} y={80} />
+      <Ridge y={250} amp={10} color={p.far} rand={r()} />
       <Plane x={330} y={120} s={2.2} angle={8} color={p.near} />
       <ControlTower x={470} baseY={280} color={p.near} lights={p.lights} />
       <path d={`M40,280 L40,256 Q140,232 260,250 L260,280 Z`} fill={p.near} />
@@ -154,14 +155,14 @@ function Airport({ id, p, r }: SceneProps) {
 function FutureCity({ id, p, r }: SceneProps) {
   return (
     <>
-      <Sky id={id} p={p} sunX={320} sunY={170} rand={r} />
-      <Ridge y={236} amp={12} color={p.far} rand={r} />
-      <Boulders baseY={240} color={p.far} rand={r} count={3} />
+      <Sky id={id} p={p} sunX={320} sunY={170} rand={r()} />
+      <Ridge y={236} amp={12} color={p.far} rand={r()} />
+      <Boulders baseY={240} color={p.far} rand={r()} count={3} />
       <GlassDefs id={id} p={p} />
       <Dome x={70} baseY={262} w={150} p={p} />
       {[[250, 30, 180], [290, 26, 230], [322, 34, 200], [364, 24, 250], [396, 32, 170], [440, 28, 140]].map(([x, w, h], i) => (
         <g key={i}>
-          <Tower id={id} x={x} baseY={262} w={w} h={h} p={p} rand={r} spire={i === 3} />
+          <Tower id={id} x={x} baseY={262} w={w} h={h} p={p} rand={r()} spire={i === 3} />
           <path d={`M${x},${262 - h} q${w / 2},-14 ${w},0`} fill={p.glass[0]} opacity={0.6} />
         </g>
       ))}
@@ -175,14 +176,14 @@ function FutureCity({ id, p, r }: SceneProps) {
 function Pharma({ id, p, r }: SceneProps) {
   return (
     <>
-      <Sky id={id} p={p} sunX={520} sunY={90} rand={r} />
-      <Clouds p={p} rand={r} y={50} />
-      <Ridge y={230} amp={16} color={p.far} rand={r} />
-      <Boulders baseY={236} color={p.mid} rand={r} count={3} />
-      <Ridge y={262} amp={6} color={p.mid} rand={r} />
-      <Lab x={90} baseY={288} w={170} h={82} p={p} rand={r} />
-      <Lab x={290} baseY={288} w={130} h={110} p={p} rand={r} />
-      <Campus x={450} baseY={288} w={120} h={60} p={p} rand={r} />
+      <Sky id={id} p={p} sunX={520} sunY={90} rand={r()} />
+      <Clouds p={p} rand={r()} y={50} />
+      <Ridge y={230} amp={16} color={p.far} rand={r()} />
+      <Boulders baseY={236} color={p.mid} rand={r()} count={3} />
+      <Ridge y={262} amp={6} color={p.mid} rand={r()} />
+      <Lab x={90} baseY={288} w={170} h={82} p={p} rand={r()} />
+      <Lab x={290} baseY={288} w={130} h={110} p={p} rand={r()} />
+      <Campus x={450} baseY={288} w={120} h={60} p={p} rand={r()} />
       {[70, 272, 432, 590].map((x) => <Tree key={x} x={x} baseY={292} r={10} color={p.near} />)}
       <rect x={0} y={288} width={W} height={H - 288} fill={p.ground} />
       <path d={`M0,${H} Q${W / 2},300 ${W},${H}`} fill={p.near} opacity={0.35} />
@@ -193,10 +194,10 @@ function Pharma({ id, p, r }: SceneProps) {
 function HighwayScene({ id, p, r }: SceneProps) {
   return (
     <>
-      <Sky id={id} p={p} sunX={320} sunY={196} rand={r} />
-      <Clouds p={p} rand={r} y={70} />
-      <Ridge y={214} amp={10} color={p.far} rand={r} />
-      <Boulders baseY={218} color={p.far} rand={r} count={3} />
+      <Sky id={id} p={p} sunX={320} sunY={196} rand={r()} />
+      <Clouds p={p} rand={r()} y={70} />
+      <Ridge y={214} amp={10} color={p.far} rand={r()} />
+      <Boulders baseY={218} color={p.far} rand={r()} count={3} />
       <Fields p={p} horizonY={216} />
       <Factory x={40} baseY={222} w={90} p={p} />
       <Warehouse x={500} baseY={222} w={100} h={16} p={p} />
@@ -214,9 +215,9 @@ function HighwayScene({ id, p, r }: SceneProps) {
 function Industrial({ id, p, r }: SceneProps) {
   return (
     <>
-      <Sky id={id} p={p} sunX={440} sunY={150} rand={r} />
-      <Ridge y={230} amp={12} color={p.far} rand={r} />
-      <Boulders baseY={234} color={p.far} rand={r} count={2} />
+      <Sky id={id} p={p} sunX={440} sunY={150} rand={r()} />
+      <Ridge y={230} amp={12} color={p.far} rand={r()} />
+      <Boulders baseY={234} color={p.far} rand={r()} count={2} />
       <Factory x={40} baseY={284} w={180} p={p} />
       <Factory x={250} baseY={284} w={130} p={p} />
       <Warehouse x={410} baseY={284} w={200} h={34} p={p} />
@@ -234,11 +235,11 @@ function Industrial({ id, p, r }: SceneProps) {
 function Villas({ id, p, r }: SceneProps) {
   return (
     <>
-      <Sky id={id} p={p} sunX={120} sunY={96} rand={r} />
-      <Clouds p={p} rand={r} y={50} />
-      <Ridge y={222} amp={18} color={p.far} rand={r} />
-      <Boulders baseY={226} color={p.mid} rand={r} count={3} />
-      <Ridge y={258} amp={8} color={p.mid} rand={r} opacity={0.8} />
+      <Sky id={id} p={p} sunX={120} sunY={96} rand={r()} />
+      <Clouds p={p} rand={r()} y={50} />
+      <Ridge y={222} amp={18} color={p.far} rand={r()} />
+      <Boulders baseY={226} color={p.mid} rand={r()} count={3} />
+      <Ridge y={258} amp={8} color={p.mid} rand={r()} opacity={0.8} />
       {[50, 205, 360, 505].map((x, i) => (
         <Villa key={x} x={x} baseY={298 - (i % 2) * 8} s={1.55 + (i % 2) * 0.15} p={p} />
       ))}
@@ -254,12 +255,12 @@ function Lakeside({ id, p, r }: SceneProps) {
   const base = 250;
   return (
     <>
-      <Sky id={id} p={p} sunX={420} sunY={150} rand={r} />
-      <Ridge y={228} amp={10} color={p.far} rand={r} />
-      <Boulders baseY={232} color={p.far} rand={r} count={2} />
+      <Sky id={id} p={p} sunX={420} sunY={150} rand={r()} />
+      <Ridge y={228} amp={10} color={p.far} rand={r()} />
+      <Boulders baseY={232} color={p.far} rand={r()} count={2} />
       <GlassDefs id={id} p={p} />
       {[[60, 40, 110], [110, 36, 140], [156, 42, 120], [300, 38, 150], [346, 44, 128], [520, 40, 118], [566, 36, 96]].map(([x, w, h], i) => (
-        <Tower key={i} id={id} x={x} baseY={base} w={w} h={h} p={p} rand={r} glass={false} />
+        <Tower key={i} id={id} x={x} baseY={base} w={w} h={h} p={p} rand={r()} glass={false} />
       ))}
       {[220, 250, 450, 480].map((x) => <Tree key={x} x={x} baseY={base} r={12} color={p.near} />)}
       <Water id={id} y={base} p={p} />
@@ -273,9 +274,9 @@ function Lakeside({ id, p, r }: SceneProps) {
 function Logistics({ id, p, r }: SceneProps) {
   return (
     <>
-      <Sky id={id} p={p} sunX={120} sunY={160} rand={r} />
-      <Ridge y={232} amp={10} color={p.far} rand={r} />
-      <Boulders baseY={236} color={p.far} rand={r} count={2} />
+      <Sky id={id} p={p} sunX={120} sunY={160} rand={r()} />
+      <Ridge y={232} amp={10} color={p.far} rand={r()} />
+      <Boulders baseY={236} color={p.far} rand={r()} count={2} />
       <Warehouse x={30} baseY={276} w={200} h={40} p={p} />
       <Warehouse x={250} baseY={276} w={160} h={34} p={p} />
       <Warehouse x={430} baseY={276} w={190} h={44} p={p} />
@@ -292,11 +293,11 @@ function Logistics({ id, p, r }: SceneProps) {
 function Rail({ id, p, r }: SceneProps) {
   return (
     <>
-      <Sky id={id} p={p} sunX={500} sunY={170} rand={r} />
-      <Ridge y={236} amp={10} color={p.far} rand={r} />
+      <Sky id={id} p={p} sunX={500} sunY={170} rand={r()} />
+      <Ridge y={236} amp={10} color={p.far} rand={r()} />
       <GlassDefs id={id} p={p} />
       {[[30, 44, 110], [84, 40, 140], [134, 46, 100], [430, 40, 130], [480, 46, 160], [536, 42, 120], [588, 40, 100]].map(([x, w, h], i) => (
-        <Tower key={i} id={id} x={x} baseY={250} w={w} h={h} p={p} rand={r} glass={false} />
+        <Tower key={i} id={id} x={x} baseY={250} w={w} h={h} p={p} rand={r()} glass={false} />
       ))}
       <Viaduct y={250} p={p} />
       <Train x={170} y={250} cars={4} p={p} />
@@ -309,10 +310,10 @@ function Rail({ id, p, r }: SceneProps) {
 function FortScene({ id, p, r }: SceneProps) {
   return (
     <>
-      <Sky id={id} p={p} sunX={500} sunY={120} rand={r} />
-      <Clouds p={p} rand={r} y={60} />
-      <Ridge y={250} amp={10} color={p.far} rand={r} />
-      <Boulders baseY={254} color={p.far} rand={r} count={3} />
+      <Sky id={id} p={p} sunX={500} sunY={120} rand={r()} />
+      <Clouds p={p} rand={r()} y={60} />
+      <Ridge y={250} amp={10} color={p.far} rand={r()} />
+      <Boulders baseY={254} color={p.far} rand={r()} count={3} />
       <Fort x={300} baseY={290} p={p} />
       <Fields p={p} horizonY={288} />
       {[60, 110, 520, 580].map((x) => <Palm key={x} x={x} baseY={300} h={56} color={p.near} />)}
@@ -356,7 +357,9 @@ export default function CorridorScene({ slug, name, hints = "" }: { slug: string
   const id = `cs-${slug.replace(/[^a-zA-Z0-9]/g, "")}-${rawId.replace(/[^a-zA-Z0-9]/g, "")}`;
   const { scene, palette } = resolveScene(slug, `${name} ${hints}`);
   const Scene = SCENES[scene];
-  const r = rng(slug);
+  // A new seed per element, counted from zero on every render, so each render draws the same scene.
+  let n = 0;
+  const r = () => seeded(`${slug}:${n++}`);
   return (
     <svg
       viewBox={`0 0 ${W} ${H}`}
@@ -367,7 +370,8 @@ export default function CorridorScene({ slug, name, hints = "" }: { slug: string
       aria-label={`Illustration of ${name}: ${SCENE_ALT[scene]}`}
       style={{ position: "absolute", inset: 0, display: "block" }}
     >
-      <Scene id={id} p={palette} r={r} />
+      {/* Called directly (not as <Scene/>) so the seed counter above restarts with every render of this component. */}
+      {Scene({ id, p: palette, r })}
       <Finish id={id} />
     </svg>
   );

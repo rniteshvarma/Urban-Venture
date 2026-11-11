@@ -7,20 +7,36 @@
 import Link from "next/link";
 import prisma from "@/lib/prisma";
 import { recordOf } from "@/lib/developers/display";
+import { pageMeta } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
-  title: "Developer track records — Hyderabad | Property Tiger",
-  description: "Hyderabad developers' projects, TG-RERA completion dates, delays, extensions, declared litigation and TG-RERA orders — from public records.",
-};
+const TITLE = "Developer track records — Hyderabad | Property Tiger";
+const DESCRIPTION = "Hyderabad developers' projects, TG-RERA completion dates, delays, extensions, declared litigation and TG-RERA orders — from public records.";
+
+/** Rows per page. All 485 at once made a 900 KB page; every developer is still reachable through the pages and the sitemap. */
+const PER_PAGE = 60;
 
 type Filter = "all" | "delays" | "orders";
+type SP = Promise<{ q?: string; f?: string; page?: string }>;
 
-export default async function DevelopersPage({ searchParams }: { searchParams: Promise<{ q?: string; f?: string }> }) {
-  const { q = "", f = "all" } = await searchParams;
+const pageNumber = (raw?: string) => Math.max(1, Math.floor(Number(raw)) || 1);
+
+export async function generateMetadata({ searchParams }: { searchParams: SP }) {
+  const { q, f, page } = await searchParams;
+  const n = pageNumber(page);
+  // Searches and filters are views of the same list: point them at the list itself.
+  const path = !q && !f && n > 1 ? `/developers?page=${n}` : "/developers";
+  return pageMeta(path, n > 1 && !q && !f ? `Developer track records — page ${n} | Property Tiger` : TITLE, DESCRIPTION);
+}
+
+export default async function DevelopersPage({ searchParams }: { searchParams: SP }) {
+  const { q = "", f = "all", page } = await searchParams;
   const filter: Filter = f === "delays" || f === "orders" ? f : "all";
-  const rows = await prisma.developer.findMany({ orderBy: { name: "asc" } });
+  const rows = await prisma.developer.findMany({
+    orderBy: { name: "asc" },
+    select: { slug: true, name: true, aliases: true, legalNames: true, established: true, stats: true },
+  });
   const list = rows
     .map((d) => ({ d, r: recordOf(d.stats) }))
     .filter(({ d, r }) => {
@@ -44,6 +60,11 @@ export default async function DevelopersPage({ searchParams }: { searchParams: P
     },
     { projects: 0, withDeadline: 0, overdue: 0, orders: 0 },
   );
+  const pages = Math.max(1, Math.ceil(list.length / PER_PAGE));
+  const current = Math.min(pageNumber(page), pages);
+  const shown = list.slice((current - 1) * PER_PAGE, current * PER_PAGE);
+  const pageHref = (n: number) => ({ pathname: "/developers", query: { ...(q ? { q } : {}), ...(filter !== "all" ? { f: filter } : {}), ...(n > 1 ? { page: String(n) } : {}) } });
+
   const chip = (key: Filter, label: string) => (
     <Link
       href={{ pathname: "/developers", query: { ...(q ? { q } : {}), ...(key !== "all" ? { f: key } : {}) } }}
@@ -89,7 +110,7 @@ export default async function DevelopersPage({ searchParams }: { searchParams: P
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {list.map(({ d, r }) => {
+              {shown.map(({ d, r }) => {
                 const s = r!.stats;
                 return (
                   <tr key={d.slug} className="hover:bg-slate-50">
@@ -112,6 +133,22 @@ export default async function DevelopersPage({ searchParams }: { searchParams: P
             </tbody>
           </table>
         </div>
+        {pages > 1 && (
+          <nav aria-label="Developer list pages" className="flex flex-wrap items-center justify-between gap-3 text-xs">
+            <span className="text-text-secondary">
+              {(current - 1) * PER_PAGE + 1}–{Math.min(current * PER_PAGE, list.length)} of {list.length} developers
+            </span>
+            <div className="flex flex-wrap gap-1.5">
+              {current > 1 && <Link href={pageHref(current - 1)} rel="prev" className="filter-pill">← Previous</Link>}
+              {Array.from({ length: pages }, (_, i) => i + 1).map((n) => (
+                <Link key={n} href={pageHref(n)} aria-current={n === current ? "page" : undefined} className={n === current ? "filter-pill-active" : "filter-pill"}>
+                  {n}
+                </Link>
+              ))}
+              {current < pages && <Link href={pageHref(current + 1)} rel="next" className="filter-pill">Next →</Link>}
+            </div>
+          </nav>
+        )}
         <p className="text-[11px] text-text-secondary leading-relaxed">
           “—” means we don&apos;t have that developer&apos;s TG-RERA dates yet, not that there is no delay. Counts cover only projects in our listings.
           Orders are matched to a developer only when the name in the order is exactly the developer&apos;s (or its registered promoter&apos;s) name; an order is
