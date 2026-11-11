@@ -30,7 +30,7 @@ export async function GET(
     const project = match.project;
 
     // Generate custom pitch text
-    const pitchText = `Hi ${lead.name},\n\nI have an investment opportunity that matches your criteria:\n\n*${project.name}* by *${project.developer}* in *${project.corridor}*.\n\n• Price Range: ₹${project.minBudgetLakhs}L - ₹${project.maxBudgetLakhs}L\n• Horizon: ${project.minHorizonYears}-${project.maxHorizonYears} years\n• Risk Profile: ${project.riskLevel}\n• Highlights: ${project.infraHighlights.slice(0, 3).join(", ")}\n\nThis project fits your budget (₹${lead.budget}L) and investment horizon (${lead.horizon} years). Would you like to review the project brochure or schedule a site visit?`;
+    const pitchText = `Hi ${lead.name},\n\nI have an investment opportunity that matches your criteria:\n\n*${project.name}* by *${project.developer}* in *${project.corridor}*.\n\n• Price Range: ₹${project.minBudgetLakhs}L - ₹${project.maxBudgetLakhs}L\n• Horizon: ${project.minHorizonYears}-${project.maxHorizonYears} years\n• Risk Profile: ${project.riskLevel}\n• Highlights: ${project.infraHighlights.slice(0, 3).join(", ")}\n\n${lead.budget != null && lead.budget > 0 ? `This project is within your budget (₹${lead.budget}L).` : "Tell me your budget and I'll check the fit."} Would you like to review the project brochure or schedule a site visit?`;
 
     // Standard WhatsApp Send Link
     let cleanPhone = lead.phone.replace(/\D/g, "");

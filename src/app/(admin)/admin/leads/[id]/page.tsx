@@ -159,9 +159,12 @@ export default function LeadDetailPage({ params }: PageProps) {
     }
   };
 
-  const formatPrice = (val: number) => {
+  // A budget the buyer hasn't given shows as "Not stated" — never as a number.
+  const formatPrice = (val: number | null | undefined) => {
+    if (val == null || val <= 0) return "Not stated";
     return val < 100 ? `₹${val}L` : `₹${(val / 100).toFixed(1)}Cr`;
   };
+  const formatYears = (val: number | null | undefined, unit = "Yrs") => (val == null || val <= 0 ? "Not stated" : `${val} ${unit}`);
 
   if (isLoading) {
     return (
@@ -293,7 +296,7 @@ export default function LeadDetailPage({ params }: PageProps) {
           <div>
             <span className="text-[10px] text-text-secondary uppercase block mb-0.5">Budget & Horizon</span>
             <span className="font-semibold text-primary">
-              {formatPrice(lead.budget)} · {lead.horizon} Yrs
+              {formatPrice(lead.budget)} · {formatYears(lead.horizon)}
             </span>
           </div>
           <div>

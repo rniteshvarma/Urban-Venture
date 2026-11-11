@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { isPlaceholderEmail } from "@/lib/placeholder-email";
 import { User, ChevronRight, Check } from "lucide-react";
 import { PERSONA_META } from "@/lib/personas";
 
@@ -73,9 +74,12 @@ export default function LeadsTable({
     }
   };
 
-  const formatPrice = (val: number) => {
+  // A budget the buyer hasn't given shows as "Not stated" — never as a number.
+  const formatPrice = (val: number | null | undefined) => {
+    if (val == null || val <= 0) return "Not stated";
     return val < 100 ? `₹${val}L` : `₹${(val / 100).toFixed(1)}Cr`;
   };
+  const formatYears = (val: number | null | undefined, unit = "Yrs") => (val == null || val <= 0 ? "Not stated" : `${val} ${unit}`);
 
   const sortedLeads = [...leads].sort((a, b) => (b.leadScore || 0) - (a.leadScore || 0));
 
@@ -144,7 +148,7 @@ export default function LeadsTable({
                     </div>
                     <div className="flex flex-col gap-0.5">
                       <span className="font-bold text-[#1A1A2E] text-sm whitespace-nowrap">{lead.name}</span>
-                      <span className="text-[#8A8A9E] text-xs whitespace-nowrap">{lead.email}</span>
+                      <span className="text-[#8A8A9E] text-xs whitespace-nowrap">{isPlaceholderEmail(lead.email) ? "No email given" : lead.email}</span>
                       <span className="text-[#8A8A9E] text-[10px] whitespace-nowrap">{lead.phone}</span>
                     </div>
                   </div>
@@ -239,7 +243,7 @@ export default function LeadsTable({
                 </td>
                 
                 {/* Horizon */}
-                <td className="px-4 py-3.5 font-medium text-[#8A8A9E] whitespace-nowrap">{lead.horizon} Yrs</td>
+                <td className="px-4 py-3.5 font-medium text-[#8A8A9E] whitespace-nowrap">{formatYears(lead.horizon)}</td>
                 
                 {/* Status Dropdown */}
                 <td className="px-4 py-3.5 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>

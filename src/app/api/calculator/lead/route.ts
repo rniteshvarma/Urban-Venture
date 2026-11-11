@@ -1,76 +1,47 @@
-import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
-import { calculateLeadScore } from "@/lib/lead-scorer";
-import { classifyLeadPersona } from "@/lib/persona-engine";
-import { runMatchingForLead } from "@/lib/matching-engine";
-import { initLeadRoadmap } from "@/lib/roadmap";
-import { fireWhatsAppTrigger } from "@/lib/whatsapp/trigger-handler";
+// POST /api/calculator/lead — a call-back request from the ROI calculator.
+import { NextResponse, after } from "next/server";
 import { formContact } from "@/lib/leads/contact";
 import { getSessionUserId } from "@/lib/session";
+import { intakeLead, isValidMobile } from "@/lib/leads/intake";
+import { followUpLead } from "@/lib/leads/follow-up";
+import { clientIp, hit, tooMany } from "@/lib/security/rate-limit";
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const { name, email, phone, budget, horizon, city, notes } = body;
+    const body = await req.json().catch(() => ({}));
+    const name = String(body.name ?? "").trim();
+    const phone = String(body.phone ?? "").trim();
+    const email = body.email ? String(body.email).trim() : null;
 
-    if (!email || !name || !phone) {
-      return NextResponse.json({ error: "Name, email, and phone are required" }, { status: 400 });
-    }
+    if (!name || !phone) return NextResponse.json({ error: "Name and phone are required." }, { status: 400 });
+    if (!isValidMobile(phone)) return NextResponse.json({ error: "Enter a valid 10-digit mobile number." }, { status: 400 });
+    const [byIp, byPhone] = await Promise.all([hit("enquiryIp", clientIp(req.headers)), hit("enquiryPhone", phone.replace(/\D/g, "").slice(-10))]);
+    if (!byIp.ok || !byPhone.ok) return tooMany(byIp.ok ? byPhone : byIp, "Too many requests. Please try again later.");
 
-    // 1. The contact's account — an existing one is linked but never changed.
-    const { userId } = await formContact({ email: String(email), name, phone, sessionUserId: await getSessionUserId() });
-    const user = { id: userId };
+    // The contact's account — an existing one is linked but never changed. No email, no account.
+    const sessionUserId = await getSessionUserId();
+    const userId = sessionUserId ?? (email ? (await formContact({ email, name, phone, sessionUserId: null })).userId : null);
 
-    // 2. Create Lead
-    const lead = await prisma.lead.create({
-      data: {
-        userId: user.id,
-        name,
-        email,
-        phone,
-        budget: budget ? parseFloat(budget) : 50,
-        horizon: horizon ? parseInt(horizon) : 10,
-        city: city || "Hyderabad",
-        notes: notes || "Lead captured from ROI Calculator.",
-        status: "NEW",
-        source: "portal"
-      }
+    // The amount and years are what the visitor set on the calculator's sliders.
+    const budget = Number(body.budget);
+    const horizon = Number(body.horizon);
+    const what = String(body.notes ?? "").trim() || "Call-back request from the ROI calculator.";
+    const intake = await intakeLead({
+      name,
+      phone,
+      email,
+      budgetLakh: Number.isFinite(budget) && budget > 0 ? budget : null,
+      horizonYears: Number.isFinite(horizon) && horizon > 0 ? Math.round(horizon) : null,
+      city: body.city ? String(body.city) : "Hyderabad",
+      userId,
+      source: "calculator",
+      note: what,
     });
+    after(() => followUpLead(intake, what));
 
-    // 3. Run pipelines sequentially for consistency
-    try {
-      await initLeadRoadmap(lead.id);
-    } catch (err) {
-      console.error("Roadmap initialization failed:", err);
-    }
-
-    try {
-      await classifyLeadPersona(lead.id);
-    } catch (err) {
-      console.error("Persona classification failed:", err);
-    }
-
-    try {
-      await calculateLeadScore(lead.id);
-    } catch (err) {
-      console.error("Lead scoring failed:", err);
-    }
-
-    try {
-      await runMatchingForLead(lead.id);
-    } catch (err) {
-      console.error("Project matching failed:", err);
-    }
-
-    try {
-      await fireWhatsAppTrigger(lead.id, "LEAD_CREATED");
-    } catch (err) {
-      console.error("WhatsApp welcome trigger failed:", err);
-    }
-
-    return NextResponse.json({ success: true, leadId: lead.id });
-  } catch (error: any) {
+    return NextResponse.json({ success: true, leadId: intake.leadId });
+  } catch (error) {
     console.error("Error in POST /api/calculator/lead:", error);
-    return NextResponse.json({ error: "Internal Server Error", details: error.message }, { status: 500 });
+    return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
   }
 }

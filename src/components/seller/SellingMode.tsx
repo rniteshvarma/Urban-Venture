@@ -318,7 +318,7 @@ function RequestsTab({ userName }: { userName: string }) {
               <span style={{ fontSize: "0.8125rem", color: "var(--color-text-mid)" }}>For: <b style={{ color: "var(--color-text-hi)" }}>{m.forListing.name}</b></span>
             </div>
             <div style={{ fontSize: "0.8125rem", color: "var(--color-text-mid)", marginTop: 6 }}>
-              Budget ~{formatLakh(m.budgetLakh)} · {m.horizonYears}yr horizon · Searching since {formatDate(m.searchingSince)}
+              {m.budgetLakh != null && m.budgetLakh > 0 ? `Budget ~${formatLakh(m.budgetLakh)}` : "Budget not stated"}{m.horizonYears != null && m.horizonYears > 0 ? ` · ${m.horizonYears}yr horizon` : ""} · Searching since {formatDate(m.searchingSince)}
             </div>
             {m.interestedCorridors.length > 0 && <div style={{ fontSize: "0.75rem", color: "var(--color-text-lo)", marginTop: 4 }}>Interested in: {m.interestedCorridors.join(", ")}{m.persona ? ` · ${m.persona.replace(/_/g, " ")}` : ""}</div>}
             {m.reasons.length > 0 && <div style={{ fontSize: "0.75rem", color: "var(--color-text-mid)", marginTop: 6 }}><b>Why this matches:</b> {m.reasons.slice(0, 2).join(" · ")}</div>}

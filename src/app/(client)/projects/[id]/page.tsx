@@ -26,6 +26,7 @@ import { formatLakh, groupIndian } from "@/lib/format";
 import AccessibilityPanel, { type AccessibilityView } from "@/components/accessibility/AccessibilityPanel";
 import ImageLightbox from "@/components/projects/ImageLightbox";
 import ConsentNote from "@/components/legal/ConsentNote";
+import { WhatsAppInline } from "@/components/client/WhatsAppButton";
 import LayoutApproval from "@/components/projects/LayoutApproval";
 import CostPanel from "@/components/projects/CostPanel";
 import DueDiligence from "@/components/projects/DueDiligence";
@@ -184,7 +185,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
           phone,
           email: email || null,
           message: notes || null,
-          budgetLakh: project.minBudgetLakhs ?? null,
+          // No budget is sent: this form doesn't ask for one, and the listing's price is not the buyer's budget.
         }),
       });
 
@@ -802,13 +803,15 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
 
                     <div>
                       <label className="block text-[10px] font-bold uppercase tracking-wider text-text-secondary mb-1.5">
-                        Email Address
+                        Mobile Number
                       </label>
                       <input
-                        type="email"
-                        placeholder="name@example.com"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        type="tel"
+                        inputMode="tel"
+                        autoComplete="tel"
+                        placeholder="10-digit mobile number"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
                         className="input-premium w-full"
                         required
                       />
@@ -816,15 +819,14 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
 
                     <div>
                       <label className="block text-[10px] font-bold uppercase tracking-wider text-text-secondary mb-1.5">
-                        Phone Number
+                        Email (optional)
                       </label>
                       <input
-                        type="tel"
-                        placeholder="+91 99999 99999"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
+                        type="email"
+                        placeholder="name@example.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
                         className="input-premium w-full"
-                        required
                       />
                     </div>
 
@@ -850,8 +852,10 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                       disabled={isSubmitting}
                       className="btn-primary w-full py-3"
                     >
-                      {isSubmitting ? "Submitting..." : "Submit Inquiry"}
+                      {isSubmitting ? "Submitting..." : "Request a call back"}
                     </button>
+
+                    <WhatsAppInline text={`Hi Property Tiger, I'd like to know more about ${project.name}${typeof window !== "undefined" ? ` (${window.location.origin}/projects/${project.id})` : ""}.`} />
 
                     <ConsentNote className="text-center" share={isLand ? "Our team checks the listing first; we pass your details to the seller only with your go-ahead." : "We pass your details to this project's developer so they can respond."} />
                   </form>

@@ -33,17 +33,24 @@ export async function calculateLeadScore(leadId: string): Promise<{
 
   // 1. Budget size (20pts)
   // <25L=5, 25-50L=10, 50L-1Cr=15, >1Cr=20
-  let budgetScore = 5;
-  if (lead.budget > 100) budgetScore = 20;
-  else if (lead.budget >= 50) budgetScore = 15;
-  else if (lead.budget >= 25) budgetScore = 10;
+  // A budget the buyer never stated scores nothing — it is unknown, not small.
+  const budget = lead.budget != null && lead.budget > 0 ? lead.budget : null;
+  let budgetScore = budget == null ? 0 : 5;
+  if (budget != null) {
+    if (budget > 100) budgetScore = 20;
+    else if (budget >= 50) budgetScore = 15;
+    else if (budget >= 25) budgetScore = 10;
+  }
 
   // 2. Horizon alignment (15pts)
   // 3-7 years = 15, 1-2 years = 8, 8-10 years = 10, others = 5
-  let horizonScore = 5;
-  if (lead.horizon >= 3 && lead.horizon <= 7) horizonScore = 15;
-  else if (lead.horizon >= 8 && lead.horizon <= 10) horizonScore = 10;
-  else if (lead.horizon >= 1 && lead.horizon <= 2) horizonScore = 8;
+  const horizon = lead.horizon != null && lead.horizon > 0 ? lead.horizon : null;
+  let horizonScore = horizon == null ? 0 : 5;
+  if (horizon != null) {
+    if (horizon >= 3 && horizon <= 7) horizonScore = 15;
+    else if (horizon >= 8 && horizon <= 10) horizonScore = 10;
+    else if (horizon >= 1 && horizon <= 2) horizonScore = 8;
+  }
 
   // 3. Number of AI searches (20pts)
   // 1=5, 2=10, 3=15, 4+=20

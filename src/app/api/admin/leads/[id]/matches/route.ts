@@ -29,10 +29,9 @@ export async function GET(
       where: {
         city: { equals: lead.city, mode: "insensitive" },
         status: "ACTIVE",
-        minBudgetLakhs: { lte: lead.budget },
-        maxBudgetLakhs: { gte: lead.budget },
-        minHorizonYears: { lte: lead.horizon },
-        maxHorizonYears: { gte: lead.horizon },
+        // Filter on budget / holding period only when the buyer has stated them.
+        ...(lead.budget != null && lead.budget > 0 ? { minBudgetLakhs: { lte: lead.budget }, maxBudgetLakhs: { gte: lead.budget } } : {}),
+        ...(lead.horizon != null && lead.horizon > 0 ? { minHorizonYears: { lte: lead.horizon }, maxHorizonYears: { gte: lead.horizon } } : {}),
       },
       orderBy: { createdAt: "desc" }
     });

@@ -49,11 +49,13 @@ export async function GET(req: Request) {
       "50L-1Cr": 0,
       "1-2Cr": 0,
       "2Cr+": 0,
+      "Not stated": 0,
     };
 
     leads.forEach((l) => {
       const b = l.budget;
-      if (b < 25) budgetBuckets["<25L"]++;
+      if (b == null || b <= 0) budgetBuckets["Not stated"]++;
+      else if (b < 25) budgetBuckets["<25L"]++;
       else if (b <= 50) budgetBuckets["25-50L"]++;
       else if (b <= 100) budgetBuckets["50L-1Cr"]++;
       else if (b <= 200) budgetBuckets["1-2Cr"]++;
@@ -80,6 +82,7 @@ export async function GET(req: Request) {
     // 4. Horizon distribution
     const horizonCounts: { [key: string]: number } = {};
     leads.forEach((l) => {
+      if (l.horizon == null || l.horizon <= 0) return; // not stated — not a horizon
       const hStr = `${l.horizon}Y`;
       horizonCounts[hStr] = (horizonCounts[hStr] || 0) + 1;
     });

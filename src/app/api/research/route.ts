@@ -1,10 +1,12 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { z } from "zod";
 import prisma from "@/lib/prisma";
 import { buildResearchReport } from "@/lib/research/report";
 import { formContact } from "@/lib/leads/contact";
 import { getSessionUserId } from "@/lib/session";
 import { clientIp, hit, tooMany } from "@/lib/security/rate-limit";
+import { intakeLead, isValidMobile } from "@/lib/leads/intake";
+import { followUpLead } from "@/lib/leads/follow-up";
 
 // Input validation schema
 const researchSchema = z.object({
@@ -31,6 +33,9 @@ export async function POST(req: Request) {
     }
 
     const { budget, horizon, city, name, email, phone, searchId } = parse.data;
+    if (phone && !isValidMobile(phone)) {
+      return NextResponse.json({ error: "Enter a valid 10-digit mobile number." }, { status: 400 });
+    }
 
     // Apply rate limiting (only for new report generation, not linking contact details)
     if (!searchId) {
@@ -39,7 +44,7 @@ export async function POST(req: Request) {
     }
 
     // Flow A: Link contact info to an existing search (user submitted details after report was shown)
-    if (searchId && email) {
+    if (searchId && (email || phone)) {
       const existingSearch = await prisma.search.findUnique({
         where: { id: searchId }
       });
@@ -54,40 +59,28 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "This report is already saved to an account." }, { status: 409 });
       }
       // Never changes an existing account; only its owner gets the report attached.
-      const contact = await formContact({ email, name, phone, sessionUserId });
-      const user = { id: contact.userId, name: null as string | null, phone: null as string | null };
-      if (contact.owned) {
+      // A phone-only request has no account — the lead alone carries it.
+      const contact = email ? await formContact({ email, name, phone, sessionUserId }) : sessionUserId ? { userId: sessionUserId, owned: true } : null;
+      if (contact?.owned) {
         await prisma.search.update({ where: { id: searchId }, data: { userId: contact.userId } });
       }
 
-      // Create a Lead
-      const lead = await prisma.lead.create({
-        data: {
-          userId: user.id,
-          name: name || user.name || "Client",
-          email,
-          phone: phone || user.phone || "",
-          budget: existingSearch.budget,
-          horizon: existingSearch.horizon,
-          city: existingSearch.city,
-          notes: "Lead captured after generating a research report.",
-          status: "NEW",
-          source: "portal",
-        }
+      // The budget and holding period are the ones the visitor entered for this report.
+      const what = "Asked to be contacted after running a research report.";
+      const intake = await intakeLead({
+        name: name || "Client",
+        phone,
+        email,
+        budgetLakh: existingSearch.budget,
+        horizonYears: existingSearch.horizon,
+        city: existingSearch.city,
+        userId: contact?.userId ?? null,
+        source: "research",
+        note: what,
       });
+      after(() => followUpLead(intake, what));
 
-      // Initialize roadmap for the new lead
-      try {
-        const { initLeadRoadmap } = await import("@/lib/roadmap");
-        await initLeadRoadmap(lead.id);
-      } catch (roadmapErr) {
-        console.error("Failed to initialize lead roadmap in Flow A:", roadmapErr);
-      }
-
-      // Simple mock notification check
-      console.log(`[LEAD NOTIFICATION] New lead captured via saving report: ${lead.name} (${lead.email})`);
-
-      return NextResponse.json({ success: true, leadId: lead.id });
+      return NextResponse.json({ success: true, leadId: intake.leadId });
     }
 
     // Flow B: Initial report generation
@@ -98,38 +91,16 @@ export async function POST(req: Request) {
     let leadId: string | null = null;
 
     // If contact info is submitted immediately along with the search form
-    if (email) {
-      const contact = await formContact({ email, name, phone, sessionUserId: await getSessionUserId() });
-      const user = { id: contact.userId, name: null as string | null, phone: null as string | null };
+    if (email || phone) {
+      const sessionUserId = await getSessionUserId();
+      const contact = email ? await formContact({ email, name, phone, sessionUserId }) : sessionUserId ? { userId: sessionUserId, owned: true } : null;
       // The report is attached only to its owner's account.
-      userId = contact.owned ? user.id : null;
+      userId = contact?.owned ? contact.userId : null;
 
-      // Create Lead
-      const lead = await prisma.lead.create({
-        data: {
-          userId: user.id,
-          name: name || user.name || "Client",
-          email,
-          phone: phone || user.phone || "",
-          budget,
-          horizon,
-          city,
-          notes: "Lead captured at initial AI report generation.",
-          status: "NEW",
-          source: "portal",
-        }
-      });
-      leadId = lead.id;
-
-      // Initialize roadmap for the new lead
-      try {
-        const { initLeadRoadmap } = await import("@/lib/roadmap");
-        await initLeadRoadmap(lead.id);
-      } catch (roadmapErr) {
-        console.error("Failed to initialize lead roadmap in Flow B:", roadmapErr);
-      }
-      
-      console.log(`[LEAD NOTIFICATION] New lead captured at search: ${lead.name} (${lead.email})`);
+      const what = "Left contact details when running a research report.";
+      const intake = await intakeLead({ name: name || "Client", phone, email, budgetLakh: budget, horizonYears: horizon, city, userId: contact?.userId ?? null, source: "research", note: what });
+      after(() => followUpLead(intake, what));
+      leadId = intake.leadId;
     }
 
     // Save Search history

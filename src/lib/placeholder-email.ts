@@ -9,6 +9,11 @@ export function placeholderEmail(phoneE164: string): string {
   return `wa${phoneE164.replace(/\D/g, "")}@${DOMAIN}`;
 }
 
+/** Stand-in addresses older code wrote for leads with no email. Treated as "no email" everywhere. */
+const LEGACY_DOMAINS = ["no-email.local", "inbound.uv"];
+
 export function isPlaceholderEmail(email: string | null | undefined): boolean {
-  return !!email && email.toLowerCase().endsWith(`@${DOMAIN}`);
+  if (!email) return false;
+  const e = email.toLowerCase();
+  return e.endsWith(`@${DOMAIN}`) || LEGACY_DOMAINS.some((d) => e.endsWith(`@${d}`));
 }

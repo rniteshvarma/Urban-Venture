@@ -40,8 +40,9 @@ export async function mergeTagValues(leadId: string): Promise<Record<string, str
 
   const replacements: Record<string, string> = {
     "{{lead_name}}": lead.name,
-    "{{budget}}": `₹${lead.budget}L`,
-    "{{horizon}}": `${lead.horizon} Years`,
+    // Never a made-up figure in a message to a buyer.
+    "{{budget}}": lead.budget != null && lead.budget > 0 ? `₹${lead.budget}L` : "your budget",
+    "{{horizon}}": lead.horizon != null && lead.horizon > 0 ? `${lead.horizon} Years` : "your timeline",
     "{{city}}": lead.city,
     "{{email}}": lead.email,
     "{{portal_url}}": process.env.NEXTAUTH_URL || "http://localhost:3000",

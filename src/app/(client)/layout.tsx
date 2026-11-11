@@ -8,6 +8,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import { Menu, X, ChevronDown, ArrowRight, LogIn, LogOut, LayoutDashboard } from "lucide-react";
 import { Wordmark } from "@/components/ui";
+import WhatsAppFloat from "@/components/client/WhatsAppButton";
 
 interface NavChild {
   label: string;
@@ -175,6 +176,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
       )}
 
       <main className="flex-grow flex flex-col">{children}</main>
+      <WhatsAppFloat />
 
       {/* ── Footer (v2 dark) ── */}
       <footer style={{ background: "var(--color-ink)" }} className="pt-16 pb-10">

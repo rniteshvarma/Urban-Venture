@@ -549,9 +549,9 @@ export default function AdminProjectsPage() {
                       </div>
                       <div className="text-right">
                         <span className="font-bold text-[#5B4FE0] block text-sm">
-                          {lead.budget < 100 ? `₹${lead.budget}L` : `₹${(lead.budget / 100).toFixed(1)}Cr`}
+                          {lead.budget == null || lead.budget <= 0 ? "Budget not stated" : lead.budget < 100 ? `₹${lead.budget}L` : `₹${(lead.budget / 100).toFixed(1)}Cr`}
                         </span>
-                        <span className="text-[10px] text-[#8A8A9E]">{lead.horizon} Yrs horizon</span>
+                        <span className="text-[10px] text-[#8A8A9E]">{lead.horizon != null && lead.horizon > 0 ? `${lead.horizon} Yrs horizon` : "Horizon not stated"}</span>
                       </div>
                     </div>
                   ))}

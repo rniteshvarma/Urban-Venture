@@ -4,6 +4,7 @@ import { extractLeadIntelligence } from "./ai-extractor";
 import { classifyLeadPersona } from "../persona-engine";
 import { calculateLeadScore } from "../lead-scorer";
 import { fireWhatsAppTrigger } from "../whatsapp/trigger-handler";
+import { placeholderEmail } from "../placeholder-email";
 
 export interface ProcessInboundParams {
   sourceId: string;
@@ -137,11 +138,14 @@ export async function processInboundLead(params: ProcessInboundParams) {
   const newLead = await prisma.lead.create({
     data: {
       name: leadName,
-      phone: phone || `+91000000${Math.floor(1000 + Math.random() * 9000)}`,
-      email: email || `${leadName.toLowerCase().replace(/\s+/g, '')}${Math.floor(1000 + Math.random() * 9000)}@inbound.uv`,
+      // No made-up contact details: an email-only enquiry has no phone, a phone-only one
+      // gets the internal placeholder address that every email path skips.
+      phone: phone || '',
+      email: email || placeholderEmail(phone || `${Date.now()}`),
       notes: parsedData.message || `Lead created via ${source.name}`,
-      budget: aiExtracted.budget || (parsedData.budget ? parseFloat(parsedData.budget) : 35.0),
-      horizon: aiExtracted.horizon || 3,
+      // Only what the enquiry actually said; otherwise unknown.
+      budget: aiExtracted.budget || (parsedData.budget && parseFloat(parsedData.budget) > 0 ? parseFloat(parsedData.budget) : null),
+      horizon: aiExtracted.horizon || null,
       city: aiExtracted.city || parsedData.location || 'Hyderabad',
       status: source.defaultStatus || 'NEW',
       source: source.name.toLowerCase().replace(/\s+/g, '_'),

@@ -39,7 +39,7 @@ function layout(opts: { title: string; preheader?: string; bodyHtml: string; foo
         </td></tr>
         <tr><td style="padding:20px 28px;border-top:1px solid ${BRAND.line};">
           <p style="margin:0;font-size:12px;color:#94A3B8;line-height:1.5;">
-            ${opts.footerNote ?? 'Property Tiger — AI investment research for Hyderabad land and property.'}<br/>
+            ${opts.footerNote ?? 'Property Tiger — research for Hyderabad land and property.'}<br/>
             This is a transactional message from your Property Tiger account.
           </p>
         </td></tr>
@@ -122,4 +122,37 @@ export function reportEmail(o: {
     }),
     text: `${hi}\n\nYour Property Tiger research report (${meta}) is attached as a PDF.${o.viewUrl ? `\nView online: ${o.viewUrl}` : ''}\n\nModel-based estimates from public data. Not investment advice.`,
   };
+}
+
+/** Internal alert to the team: someone enquired. Not sent to buyers. */
+export function leadAlertEmail(o: {
+  repeat: boolean;
+  name: string;
+  phone: string;
+  email: string | null;
+  budgetLakh: number | null;
+  projectName: string | null;
+  what: string;
+  crmUrl: string;
+}): RenderedEmail {
+  const kind = o.repeat ? 'Repeat enquiry' : 'New enquiry';
+  const subject = `${kind}: ${o.name}${o.projectName ? ` — ${o.projectName}` : ''}`;
+  const rows: [string, string][] = [
+    ['Name', o.name],
+    ['Phone', o.phone || 'Not given'],
+    ['Email', o.email || 'Not given'],
+    ['Budget', o.budgetLakh != null && o.budgetLakh > 0 ? `₹${o.budgetLakh} L` : 'Not stated'],
+    ...(o.projectName ? ([['Listing', o.projectName]] as [string, string][]) : []),
+  ];
+  const table = `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 18px;font-size:15px;line-height:1.6;">${rows
+    .map(([k, v]) => `<tr><td style="padding:2px 16px 2px 0;color:#64748B;">${k}</td><td style="padding:2px 0;color:${BRAND.ink};font-weight:600;">${esc(v)}</td></tr>`)
+    .join('')}</table>`;
+  const html = layout({
+    title: kind,
+    preheader: `${o.name} · ${o.phone}`,
+    bodyHtml: `${p(esc(o.what))}${table}${o.repeat ? p('This person already has an open lead — the new enquiry was added to it.') : ''}${button(o.crmUrl, 'Open the lead')}`,
+    footerNote: 'Property Tiger — internal lead alert.',
+  });
+  const text = `${kind}\n${o.what}\n\n${rows.map(([k, v]) => `${k}: ${v}`).join('\n')}\n\n${o.crmUrl}`;
+  return { subject, html, text };
 }

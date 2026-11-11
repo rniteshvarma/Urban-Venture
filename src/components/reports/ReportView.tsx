@@ -2,6 +2,7 @@
 // client JS): mobile-first single column, every section hides when empty.
 
 import Link from "next/link";
+import { whatsappLink } from "@/lib/contact-links";
 import { formatLakh, formatINRFull } from "@/lib/format";
 import type { ReportContent, AreaView, MatchedPropertyView } from "@/lib/reports/types";
 import { Wordmark } from "@/components/ui";
@@ -18,10 +19,7 @@ interface Props {
 }
 
 /** A tap-to-chat link to our WhatsApp number with a prefilled keyword, when the number is configured. */
-function waLink(keyword: string): string | null {
-  const n = (process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "").replace(/\D/g, "");
-  return n ? `https://wa.me/${n}?text=${encodeURIComponent(keyword)}` : null;
-}
+const waLink = (keyword: string): string | null => whatsappLink(keyword);
 
 const fmtDate = (d: Date) => d.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
 const fmtRange = (a: Date, b: Date) => `${a.toLocaleDateString("en-IN", { day: "numeric", month: "short" })}–${b.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}`;

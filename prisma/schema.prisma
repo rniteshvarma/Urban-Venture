@@ -280,8 +280,8 @@ model Lead {
   name       String
   email      String
   phone      String
-  budget     Float // in Lakhs
-  horizon    Int // years
+  budget     Float? // in Lakhs; null = the buyer has not said (never a default)
+  horizon    Int? // years; null = not stated
   city       String
   notes      String?
   status     LeadStatus   @default(NEW)

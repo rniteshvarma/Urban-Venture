@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { isPlaceholderEmail } from "@/lib/placeholder-email";
 import Link from "next/link";
 import { 
   Flame, 
@@ -144,10 +145,10 @@ export default function LeadDetailPanel({
     // Resolve simple preview tags client-side
     let preview = template.message
       .replace(/{{lead_name}}/g, lead.name)
-      .replace(/{{budget}}/g, String(lead.budget))
-      .replace(/{{horizon}}/g, String(lead.horizon))
+      .replace(/{{budget}}/g, lead.budget != null && lead.budget > 0 ? String(lead.budget) : "[budget]")
+      .replace(/{{horizon}}/g, lead.horizon != null && lead.horizon > 0 ? String(lead.horizon) : "[years]")
       .replace(/{{city}}/g, lead.city)
-      .replace(/{{email}}/g, lead.email)
+      .replace(/{{email}}/g, isPlaceholderEmail(lead.email) ? "" : lead.email)
       .replace(/{{portal_url}}/g, window.location.origin)
       .replace(/{{agent_name}}/g, lead.assignedTo || "Property Advisor")
       .replace(/{{corridor}}/g, lead.user?.searches?.[0]?.aiResponse?.corridors?.[0]?.name?.replace("Corridor", "").trim() || "Hyderabad")
@@ -286,9 +287,12 @@ export default function LeadDetailPanel({
     }
   };
 
-  const formatPrice = (val: number) => {
+  // A budget the buyer hasn't given shows as "Not stated" — never as a number.
+  const formatPrice = (val: number | null | undefined) => {
+    if (val == null || val <= 0) return "Not stated";
     return val < 100 ? `₹${val}L` : `₹${(val / 100).toFixed(1)}Cr`;
   };
+  const formatYears = (val: number | null | undefined, unit = "Yrs") => (val == null || val <= 0 ? "Not stated" : `${val} ${unit}`);
 
   const persona = lead.persona ? PERSONA_CONFIGS[lead.persona] : null;
   const score = lead.leadScore || 0;
@@ -501,7 +505,7 @@ export default function LeadDetailPanel({
               <section className="grid grid-cols-2 gap-4 card-premium text-xs">
                 <div>
                   <span className="text-[9px] text-text-secondary font-bold uppercase block mb-1">Email Address</span>
-                  <a href={`mailto:${lead.email}`} className="font-semibold text-accent underline">{lead.email}</a>
+                  {isPlaceholderEmail(lead.email) ? <span className="text-slate-500">No email given</span> : <a href={`mailto:${lead.email}`} className="font-semibold text-accent underline">{lead.email}</a>}
                 </div>
                 <div>
                   <span className="text-[9px] text-slate-400 font-bold uppercase block mb-1">Phone Number</span>
@@ -546,7 +550,7 @@ export default function LeadDetailPanel({
                     {lead.status === "CONVERTED" ? "Lead converted! Record the purchase details." : "Ready to close? Record the purchase."}
                   </span>
                   <Link 
-                    href={`/admin/purchases/new?leadId=${lead.id}&clientName=${encodeURIComponent(lead.name)}&clientEmail=${encodeURIComponent(lead.email)}`}
+                    href={`/admin/purchases/new?leadId=${lead.id}&clientName=${encodeURIComponent(lead.name)}&clientEmail=${encodeURIComponent(isPlaceholderEmail(lead.email) ? "" : lead.email)}`}
                     className="w-full flex items-center justify-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-semibold text-sm transition-colors"
                   >
                     🏠 Record Purchase
@@ -566,7 +570,7 @@ export default function LeadDetailPanel({
                   </div>
                   <div className="border border-slate-200 p-3 rounded-card bg-white">
                     <span className="text-[9px] text-slate-400 font-bold uppercase block mb-1">Horizon</span>
-                    <span className="text-sm font-bold text-slate-800">{lead.horizon} Years</span>
+                    <span className="text-sm font-bold text-slate-800">{formatYears(lead.horizon, "Years")}</span>
                   </div>
                   <div className="border border-slate-200 p-3 rounded-card bg-white">
                     <span className="text-[9px] text-slate-400 font-bold uppercase block mb-1">Preferred City</span>

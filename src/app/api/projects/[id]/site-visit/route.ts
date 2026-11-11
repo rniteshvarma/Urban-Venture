@@ -2,16 +2,14 @@
 // Creates a SiteVisit for our team to confirm, and a Lead (source
 // "site_visit") so the CRM roadmap, scoring and automations run as for any
 // enquiry. The seller or developer is not contacted until our team confirms.
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import prisma from "@/lib/prisma";
 import { getSessionUserId } from "@/lib/session";
-import { classifyLeadPersona } from "@/lib/persona-engine";
-import { calculateLeadScore } from "@/lib/lead-scorer";
-import { initLeadRoadmap } from "@/lib/roadmap";
-import { fireWhatsAppTrigger } from "@/lib/whatsapp/trigger-handler";
-import { validateVisitRequest } from "@/lib/buyer/site-visit";
-
+import { SLOTS, validateVisitRequest } from "@/lib/buyer/site-visit";
+import { intakeLead } from "@/lib/leads/intake";
+import { followUpLead } from "@/lib/leads/follow-up";
 import { clientIp, hit, tooMany } from "@/lib/security/rate-limit";
+
 export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;
   const body = await req.json().catch(() => ({}));
@@ -22,42 +20,20 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
 
   const project = await prisma.project.findFirst({
     where: { id, listingStatus: "APPROVED", status: "ACTIVE" },
-    select: { id: true, name: true, city: true, minHorizonYears: true },
+    select: { id: true, name: true, city: true },
   });
   if (!project) return NextResponse.json({ error: "Listing not available." }, { status: 404 });
 
   const userId = await getSessionUserId();
   const { name, phone, email, date, slot, note } = v.value;
-  const lead = await prisma.lead.create({
-    data: {
-      userId: userId ?? undefined,
-      projectId: project.id,
-      name,
-      email: email ?? `${phone.replace(/\D/g, "")}@no-email.local`,
-      phone,
-      budget: 50,
-      horizon: project.minHorizonYears ?? 5,
-      city: project.city || "Hyderabad",
-      notes: `Site visit requested for "${project.name}" on ${date.toISOString().slice(0, 10)} (${slot.toLowerCase()})${note ? `: ${note}` : ""}`,
-      status: "NEW",
-      source: "site_visit",
-    },
-  });
+  const what = `Site visit requested for "${project.name}" on ${date.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kolkata" })} (${SLOTS[slot]})${note ? `: ${note}` : ""}`;
+  // Added to the buyer's open lead when they have one; no budget or holding period is assumed.
+  const intake = await intakeLead({ name, phone, email, city: project.city || "Hyderabad", projectId: project.id, userId, source: "site_visit", note: what });
+  const lead = { id: intake.leadId };
   const visit = await prisma.siteVisit.create({
     data: { projectId: project.id, leadId: lead.id, userId, name, phone, email, preferredDate: date, slot, note },
   });
 
-  for (const [label, fn] of [
-    ["roadmap", () => initLeadRoadmap(lead.id)],
-    ["persona", () => classifyLeadPersona(lead.id)],
-    ["score", () => calculateLeadScore(lead.id)],
-    ["whatsapp", () => fireWhatsAppTrigger(lead.id, "LEAD_CREATED")],
-  ] as const) {
-    try {
-      await fn();
-    } catch (err) {
-      console.error(`Site visit automation ${label} failed:`, err);
-    }
-  }
+  after(() => followUpLead(intake, what));
   return NextResponse.json({ ok: true, visitId: visit.id });
 }

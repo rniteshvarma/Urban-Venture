@@ -279,7 +279,7 @@ export default function AdminMatchesPage() {
               <option value="ALL">All Leads</option>
               {leads.map((l) => (
                 <option key={l.id} value={l.id}>
-                  {l.name} (Budget: ₹{l.budget}L)
+                  {l.name} ({l.budget != null && l.budget > 0 ? `Budget: ₹${l.budget}L` : "Budget not stated"})
                 </option>
               ))}
             </select>
@@ -362,7 +362,7 @@ export default function AdminMatchesPage() {
                       {match.lead.name}
                     </Link>
                     <span className="text-[11px] text-[#8A8A9E] block font-medium">
-                      ₹{match.lead.budget}L · {match.lead.horizon}Yrs · {match.lead.city}
+                      {match.lead.budget != null && match.lead.budget > 0 ? `₹${match.lead.budget}L` : "Budget not stated"}{match.lead.horizon != null && match.lead.horizon > 0 ? ` · ${match.lead.horizon}Yrs` : ""} · {match.lead.city}
                     </span>
                   </div>
 

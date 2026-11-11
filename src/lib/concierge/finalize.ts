@@ -45,11 +45,12 @@ const REPORT_TYPES: Record<ListingPropertyType, ReportPropertyType> = {
   INDUSTRIAL_LAND: "INDUSTRIAL_LAND",
 };
 
-function horizonFor(slots: Slots): number {
+/** Holding period in years from what the buyer said; null when they said nothing about it. */
+function horizonFor(slots: Slots): number | null {
   if (slots.horizonYears) return slots.horizonYears;
   if (slots.timeline === "READY" || slots.timeline === "WITHIN_1Y") return 1;
   if (slots.timeline === "LATER") return 3;
-  return 3;
+  return null;
 }
 
 /** Create or update the CRM lead for this phone with everything the concierge learned. */
@@ -101,7 +102,7 @@ export async function upsertLead(input: {
       name: input.name || "WhatsApp Contact",
       email: placeholderEmail(phone),
       phone,
-      budget: slots.budgetMaxLakh ?? slots.budgetMinLakh ?? 0,
+      budget: slots.budgetMaxLakh ?? slots.budgetMinLakh ?? null,
       horizon: horizonFor(slots),
       city: "Hyderabad",
       source: input.source,

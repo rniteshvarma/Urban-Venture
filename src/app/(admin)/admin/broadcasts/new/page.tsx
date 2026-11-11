@@ -197,7 +197,7 @@ export default function NewBroadcastWizardPage() {
     if (!text) return "";
     // A lead's name comes from public forms: escape it before it goes into HTML.
     const name = escapeMergeValue(sampleLead?.name || "John Doe", html);
-    const budget = sampleLead?.budget ? `₹${sampleLead.budget.toLocaleString()}` : "₹1.5 Cr";
+    const budget = sampleLead?.budget ? `₹${sampleLead.budget.toLocaleString()}` : "[budget]";
     
     return text
       .replace(/\{\{lead_name\}\}/g, () => name)

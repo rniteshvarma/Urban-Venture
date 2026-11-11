@@ -31,12 +31,11 @@ export async function GET(req: Request) {
       const total = personaLeads.length;
 
       // Budget & horizon averages
-      const avgBudget = total > 0 
-        ? Math.round(personaLeads.reduce((sum, l) => sum + l.budget, 0) / total)
-        : 0;
-      const avgHorizon = total > 0
-        ? Math.round(personaLeads.reduce((sum, l) => sum + l.horizon, 0) / total)
-        : 0;
+      // Averages over leads that actually stated a figure.
+      const budgets = personaLeads.map((l) => l.budget).filter((b): b is number => b != null && b > 0);
+      const horizons = personaLeads.map((l) => l.horizon).filter((h): h is number => h != null && h > 0);
+      const avgBudget = budgets.length ? Math.round(budgets.reduce((sum, b) => sum + b, 0) / budgets.length) : 0;
+      const avgHorizon = horizons.length ? Math.round(horizons.reduce((sum, h) => sum + h, 0) / horizons.length) : 0;
 
       // Conversion Rate
       const convertedCount = personaLeads.filter(l => l.status === LeadStatus.CONVERTED).length;

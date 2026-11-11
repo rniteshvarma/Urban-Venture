@@ -4,7 +4,7 @@ import prisma from "./prisma";
 import { classifyProfile } from "./concierge/persona";
 
 // Local heuristics classifier to use when Claude API is mocked
-function heuristicsClassification(lead: any): { persona: BuyerPersona; score: number; reason: string } {
+function heuristicsClassification(lead: any): { persona: BuyerPersona; score: number; reason: string } | null {
   // Leads with a captured buyer profile (WhatsApp concierge / CRM edits) use the profile rules.
   if (lead.purpose || lead.wantedTypes?.length) {
     return classifyProfile({
@@ -18,56 +18,59 @@ function heuristicsClassification(lead: any): { persona: BuyerPersona; score: nu
       requirements: lead.requirements,
     });
   }
-  const budget = lead.budget;
-  const horizon = lead.horizon;
-  const city = lead.city?.toLowerCase() || "";
+  // Unknown stays unknown: a budget or holding period the buyer never gave is
+  // not treated as a small one (null <= 3 is true in JavaScript).
+  const budget: number | null = lead.budget != null && lead.budget > 0 ? lead.budget : null;
+  const horizon: number | null = lead.horizon != null && lead.horizon > 0 ? lead.horizon : null;
   const notes = lead.notes?.toLowerCase() || "";
 
   // 1. Speculator (short horizon 1-3 years)
-  if (horizon <= 3 || notes.includes("speculat") || notes.includes("quick") || notes.includes("appreciation")) {
+  if ((horizon != null && horizon <= 3) || notes.includes("speculat") || notes.includes("quick")) {
     return {
       persona: BuyerPersona.LAND_SPECULATOR,
       score: 85,
-      reason: "Classified as Land Speculator due to short investment horizon (1-3 years) and appetite for fast capital appreciation."
+      reason: "Classified as Land Speculator due to a short holding period (1-3 years) or a stated wish for a quick resale."
     };
   }
   // 2. HNI (budget >= 1Cr)
-  if (budget >= 100 || notes.includes("hni") || notes.includes("multiple")) {
+  if ((budget != null && budget >= 100) || notes.includes("hni") || notes.includes("multiple")) {
     return {
       persona: BuyerPersona.HNI_PORTFOLIO_BUILDER,
       score: 90,
-      reason: "Classified as HNI Portfolio Builder based on a premium budget size above ₹1 Crore, suitable for diverse corridor preservation."
+      reason: "Classified as HNI Portfolio Builder based on a budget above ₹1 Crore or a stated interest in multiple properties."
     };
   }
-  // 3. NRI (budget >= 50L, interested in Hyderabad/abroad keywords)
-  if (budget >= 50 && (city.includes("hyderabad") || notes.includes("nri") || notes.includes("abroad"))) {
+  // 3. NRI — only when the buyer says so. Buying in Hyderabad with ₹50 L+ does not make someone an NRI.
+  if (lead.isNri || /\bnri\b/.test(notes) || notes.includes("abroad")) {
     return {
       persona: BuyerPersona.NRI_INVESTOR,
       score: 80,
-      reason: "Classified as NRI Investor due to an above-average budget, long-term horizon, and focus on premium developments in Hyderabad."
+      reason: "Classified as NRI Investor because the buyer said they live abroad."
     };
   }
+  // Nothing else to go on without a budget.
+  if (budget == null) return null;
   // 4. First time buyer (budget < 30L)
   if (budget < 30) {
     return {
       persona: BuyerPersona.FIRST_TIME_BUYER,
       score: 85,
-      reason: "Classified as First-Time Buyer because the investment amount is under ₹30 Lakhs, aligning with affordable residential plots."
+      reason: "Classified as First-Time Buyer because the stated budget is under ₹30 Lakhs."
     };
   }
   // 5. Retirement planner (budget 20-60L, horizon 7-10 years)
-  if (budget >= 20 && budget <= 60 && horizon >= 7) {
+  if (budget <= 60 && horizon != null && horizon >= 7) {
     return {
       persona: BuyerPersona.RETIREMENT_PLANNER,
       score: 75,
-      reason: "Classified as Retirement Planner based on a long-term investment horizon (7+ years) and low-to-moderate target budget."
+      reason: "Classified as Retirement Planner based on a long holding period (7+ years) and a low-to-moderate budget."
     };
   }
-  // 6. Professional first home (budget 30-80L, horizon 3-7 years)
+  // 6. Professional first home (budget 30L+, mid-term horizon)
   return {
     persona: BuyerPersona.PROFESSIONAL_FIRST_HOME,
     score: 75,
-    reason: "Classified as Professional First Home based on typical salaried professional budget (₹30-80L) and mid-term horizon."
+    reason: "Classified as Professional First Home based on a stated budget of ₹30 Lakhs or more and no other signal."
   };
 }
 
@@ -93,7 +96,7 @@ export async function classifyLeadPersona(leadId: string): Promise<{
   const searchCount = lead.user?.searches?.length || 0;
   const apiKey = process.env.ANTHROPIC_API_KEY;
 
-  let result: { persona: BuyerPersona; score: number; reason: string };
+  let result: { persona: BuyerPersona; score: number; reason: string } | null;
 
   if (!apiKey || apiKey === "mock-anthropic-key-for-local-testing" || apiKey.trim() === "") {
     // Heuristics fallback
@@ -119,8 +122,8 @@ Classify this lead into exactly ONE persona from this list:
 - LAND_BANKER: Patient capital, open plots held 5+ years
 
 Lead data:
-- Budget: ₹${lead.budget} Lakhs
-- Investment Horizon: ${lead.horizon} years
+- Budget: ${lead.budget != null && lead.budget > 0 ? `₹${lead.budget} Lakhs` : "not stated"}
+- Investment Horizon: ${lead.horizon != null && lead.horizon > 0 ? `${lead.horizon} years` : "not stated"}
 - City: ${lead.city}
 - Number of AI searches done: ${searchCount}
 - Notes/context: ${lead.notes || 'none'}
@@ -160,6 +163,9 @@ Respond ONLY in this JSON format:
       result = heuristicsClassification(lead);
     }
   }
+
+  // Too little is known to classify — leave the persona as it is rather than guess.
+  if (!result) return null;
 
   // Update Lead in database
   await prisma.lead.update({

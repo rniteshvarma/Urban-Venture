@@ -9,8 +9,10 @@ export function calculateMatch(
   let score = 0;
   const reasons: string[] = [];
 
-  // 1. Budget size (30 pts)
-  if (lead.budget >= project.minBudgetLakhs && lead.budget <= project.maxBudgetLakhs) {
+  // 1. Budget size (30 pts) — only when the buyer has stated one
+  if (lead.budget == null || lead.budget <= 0) {
+    reasons.push("Budget not stated yet, so budget fit isn't scored.");
+  } else if (lead.budget >= project.minBudgetLakhs && lead.budget <= project.maxBudgetLakhs) {
     score += 30;
     reasons.push(`Budget (₹${lead.budget}L) fits the project range (₹${project.minBudgetLakhs}L - ₹${project.maxBudgetLakhs}L).`);
   } else if (lead.budget >= project.minBudgetLakhs * 0.8 && lead.budget <= project.maxBudgetLakhs * 1.2) {
@@ -20,8 +22,10 @@ export function calculateMatch(
     reasons.push(`Budget (₹${lead.budget}L) is outside the project range.`);
   }
 
-  // 2. Horizon alignment (20 pts)
-  if (lead.horizon >= project.minHorizonYears && lead.horizon <= project.maxHorizonYears) {
+  // 2. Horizon alignment (20 pts) — only when stated
+  if (lead.horizon == null || lead.horizon <= 0) {
+    reasons.push("Holding period not stated yet, so it isn't scored.");
+  } else if (lead.horizon >= project.minHorizonYears && lead.horizon <= project.maxHorizonYears) {
     score += 20;
     reasons.push(`Investment horizon (${lead.horizon}Y) overlaps project timeline (${project.minHorizonYears}-${project.maxHorizonYears}Y).`);
   } else if (Math.abs(lead.horizon - project.minHorizonYears) <= 1 || Math.abs(lead.horizon - project.maxHorizonYears) <= 1) {
@@ -127,34 +131,13 @@ export async function runMatchingForLead(leadId: string) {
   for (const project of activeProjects) {
     const { score, reasons } = calculateMatch(lead, project, personaConfig);
     
-    const existingMatch = await prisma.projectLeadMatch.findUnique({
-      where: {
-        projectId_leadId: {
-          projectId: project.id,
-          leadId: lead.id
-        }
-      }
+    // One atomic upsert: two runs for the same lead at once (two quick enquiries)
+    // used to collide between the look-up and the insert.
+    await prisma.projectLeadMatch.upsert({
+      where: { projectId_leadId: { projectId: project.id, leadId: lead.id } },
+      update: { matchScore: score, matchReasons: reasons },
+      create: { projectId: project.id, leadId: lead.id, matchScore: score, matchReasons: reasons, isDismissed: false },
     });
-
-    if (existingMatch) {
-      await prisma.projectLeadMatch.update({
-        where: { id: existingMatch.id },
-        data: {
-          matchScore: score,
-          matchReasons: reasons,
-        }
-      });
-    } else {
-      await prisma.projectLeadMatch.create({
-        data: {
-          projectId: project.id,
-          leadId: lead.id,
-          matchScore: score,
-          matchReasons: reasons,
-          isDismissed: false
-        }
-      });
-    }
   }
 }
 
@@ -182,34 +165,13 @@ export async function runMatchingForProject(projectId: string) {
 
     const { score, reasons } = calculateMatch(lead, project, personaConfig);
 
-    const existingMatch = await prisma.projectLeadMatch.findUnique({
-      where: {
-        projectId_leadId: {
-          projectId: project.id,
-          leadId: lead.id
-        }
-      }
+    // One atomic upsert: two runs for the same lead at once (two quick enquiries)
+    // used to collide between the look-up and the insert.
+    await prisma.projectLeadMatch.upsert({
+      where: { projectId_leadId: { projectId: project.id, leadId: lead.id } },
+      update: { matchScore: score, matchReasons: reasons },
+      create: { projectId: project.id, leadId: lead.id, matchScore: score, matchReasons: reasons, isDismissed: false },
     });
-
-    if (existingMatch) {
-      await prisma.projectLeadMatch.update({
-        where: { id: existingMatch.id },
-        data: {
-          matchScore: score,
-          matchReasons: reasons,
-        }
-      });
-    } else {
-      await prisma.projectLeadMatch.create({
-        data: {
-          projectId: project.id,
-          leadId: lead.id,
-          matchScore: score,
-          matchReasons: reasons,
-          isDismissed: false
-        }
-      });
-    }
   }
 }
 

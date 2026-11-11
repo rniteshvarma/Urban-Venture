@@ -146,7 +146,7 @@ function CalculatorContent() {
 
   const handleLeadSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!leadName.trim() || !leadEmail.trim() || !leadPhone.trim()) return;
+    if (!leadName.trim() || !leadPhone.trim()) return;
 
     setIsSubmittingLead(true);
     try {
@@ -160,7 +160,7 @@ function CalculatorContent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: leadName,
-          email: leadEmail,
+          email: leadEmail.trim() || null,
           phone: leadPhone,
           budget: initialAmount,
           horizon: years,
@@ -653,18 +653,19 @@ function CalculatorContent() {
             <div className="space-y-1">
               <input 
                 type="email"
-                placeholder="Email Address"
+                placeholder="Email (optional)"
                 value={leadEmail}
                 onChange={(e) => setLeadEmail(e.target.value)}
                 className="input-premium w-full"
-                required
               />
             </div>
 
             <div className="space-y-1">
               <input 
                 type="tel"
-                placeholder="Phone Number"
+                inputMode="tel"
+                autoComplete="tel"
+                placeholder="10-digit mobile number"
                 value={leadPhone}
                 onChange={(e) => setLeadPhone(e.target.value)}
                 className="input-premium w-full"

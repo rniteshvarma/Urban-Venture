@@ -71,8 +71,9 @@ export async function resolveLeadIdentity(user: ResolvableUser) {
       name: user.name || "Client",
       email,
       phone: user.phone || "",
-      budget: user.budget ?? 0,
-      horizon: user.horizon ?? 0,
+      // Unknown until the buyer says — never 0 or a default.
+      budget: user.budget && user.budget > 0 ? user.budget : null,
+      horizon: user.horizon && user.horizon > 0 ? user.horizon : null,
       city: user.preferredCity || "Hyderabad",
       notes: "Client created a portal account.",
       status: "NEW",
