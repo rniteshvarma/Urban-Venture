@@ -20,6 +20,7 @@ import prisma from "../../src/lib/prisma";
 import { rateProject, horizonFor, median, haversineKm, type InventoryType } from "../../src/lib/inventory/rating";
 import type { InventoryRecord } from "../../src/lib/inventory/record";
 import { zoneFor } from "../../src/lib/inventory/zones";
+import { isPriceMove } from "../../src/lib/inventory/recheck";
 
 const DRY = process.argv.includes("--dry-run");
 const KEEP_DUMMIES = process.argv.includes("--keep-dummies");
@@ -131,14 +132,16 @@ async function main() {
   // ── 2. upsert inventory ──
   const existing = await prisma.project.findMany({
     where: { sourceType: "CSV_IMPORT", listingSource: "ADMIN" },
-    select: { id: true, specifications: true },
+    select: { id: true, specifications: true, minBudgetLakhs: true, maxBudgetLakhs: true },
   });
   const idByKey = new Map<string, string>();
   const hashByKey = new Map<string, string>();
+  const priceById = new Map<string, { min: number; max: number }>();
   for (const e of existing) {
     const spec = e.specifications as { inventoryKey?: string; inventoryHash?: string } | null;
     if (!spec?.inventoryKey) continue;
     idByKey.set(spec.inventoryKey, e.id);
+    priceById.set(e.id, { min: e.minBudgetLakhs, max: e.maxBudgetLakhs });
     if (spec.inventoryHash) hashByKey.set(spec.inventoryKey, spec.inventoryHash);
   }
 
@@ -284,7 +287,13 @@ async function main() {
     writes.push(
       id
         ? async () => {
+            // A new crawl that moves the asking price is recorded for the price badges.
+            const before = priceById.get(id);
+            const after = { min: data.minBudgetLakhs, max: data.maxBudgetLakhs };
             await prisma.$transaction([
+              ...(before && isPriceMove(before, after)
+                ? [prisma.projectPriceChange.create({ data: { projectId: id, fromMinLakh: before.min, toMinLakh: after.min, fromMaxLakh: before.max, toMaxLakh: after.max, source: "inventory" } })]
+                : []),
               prisma.projectUnitType.deleteMany({ where: { projectId: id } }),
               prisma.projectMedia.deleteMany({ where: { projectId: id } }),
               prisma.project.update({

@@ -61,6 +61,9 @@ model User {
   /// Sign-up on an account that was created by a form (no password yet): the
   /// password waits here until the email's owner clicks the verification link.
   pendingPasswordHash String?
+  /// First-visit answers that personalise the homepage: { budget, purpose, area }.
+  homePrefs           Json?
+  recentViews         RecentView[]
 }
 
 enum Role {
@@ -207,6 +210,52 @@ model Project {
   @@index([listingStatus, latitude, longitude])
   @@index([developerSlug])
   siteVisits SiteVisit[]
+
+  // Source freshness: set by scripts/inventory/recheck.ts when it re-reads the
+  // listing's source page. Null until the first re-check (the collection date
+  // in specifications.sources stands in until then).
+  sourceCheckedAt DateTime?
+  sourceState     SourceState?
+  /// When the source first stopped showing the listing (sold, withdrawn or removed).
+  sourceGoneSince DateTime?
+  priceChanges    ProjectPriceChange[]
+  recentViews     RecentView[]
+}
+
+enum SourceState {
+  LIVE
+  GONE
+}
+
+/// A change in a project's asking-price range, recorded when a re-check or an
+/// inventory update moves it. Drives the "₹4 L lower" badges.
+model ProjectPriceChange {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  fromMinLakh Float
+  toMinLakh   Float
+  fromMaxLakh Float
+  toMaxLakh   Float
+  /// "recheck" | "inventory" | "seller"
+  source      String
+  changedAt   DateTime @default(now())
+
+  @@index([projectId, changedAt])
+  @@index([changedAt])
+}
+
+/// Projects a signed-in buyer opened, newest first (kept to the last 30).
+model RecentView {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  viewedAt  DateTime @default(now())
+
+  @@unique([userId, projectId])
+  @@index([userId, viewedAt])
 }
 
 enum RiskLevel {
@@ -3073,6 +3122,10 @@ model SiteVisit {
   email         String?
   preferredDate DateTime
   slot          String // "MORNING" | "AFTERNOON" | "EVENING"
+  /// "IN_PERSON" | "VIDEO" (a video walk-through for buyers abroad)
+  mode          String          @default("IN_PERSON")
+  /// The buyer's IANA time zone when they booked, so we can call at a sane hour.
+  timeZone      String?
   note          String?
   status        SiteVisitStatus @default(REQUESTED)
   confirmedFor  DateTime?

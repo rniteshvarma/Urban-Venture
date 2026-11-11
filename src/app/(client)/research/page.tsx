@@ -23,17 +23,23 @@ export default function ResearchPage() {
   const [formData, setFormData] = useState({ budget: 0, horizon: 0, city: "" });
   const [stepIdx, setStepIdx] = useState(0);
 
+  // Projects to show under each recommended corridor: the top few per corridor,
+  // fetched once the report names them (the feed is ranked best-first).
   useEffect(() => {
-    async function loadProjects() {
-      try {
-        const res = await fetch("/api/projects");
-        if (res.ok) setAllProjects(await res.json());
-      } catch (err) {
-        console.error("Failed to load projects:", err);
-      }
-    }
-    loadProjects();
-  }, []);
+    const names: string[] = (reportData?.corridors ?? []).map((c: { name: string }) => c.name.split(" ")[0]).filter(Boolean);
+    if (!names.length) return;
+    let cancelled = false;
+    Promise.all(
+      [...new Set(names)].map((n) =>
+        fetch(`/api/projects?corridorLike=${encodeURIComponent(n)}&limit=6`).then((r) => (r.ok ? r.json() : [])).catch(() => []),
+      ),
+    ).then((lists) => {
+      if (!cancelled) setAllProjects(lists.flat());
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [reportData]);
 
   // cycle the "researching…" status lines while loading
   useEffect(() => {

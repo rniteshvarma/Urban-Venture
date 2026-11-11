@@ -21,6 +21,8 @@ export const JOBS: JobSpec[] = [
   { job: "renew-gmail-watch", label: "Gmail inbound watch", everyHours: 24 },
   { job: "ops-check", label: "Health check & alerts", everyHours: 24 },
   { job: "saved-search-alerts", label: "Buyer alerts (saved searches, price changes)", everyHours: 24 },
+  // Runs from GitHub Actions (.github/workflows/recheck-listings.yml), not a Vercel cron.
+  { job: "listing-recheck", label: "Listing re-check (sold / removed / price changes)", everyHours: 24 * 7 },
 ];
 
 export type JobHealth = "OK" | "FAILED" | "STALE" | "NEVER_RAN" | "RUNNING";

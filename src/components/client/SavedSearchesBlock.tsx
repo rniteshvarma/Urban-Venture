@@ -14,6 +14,10 @@ const href = (f: ProjectFilters) => {
   if (f.type) p.set("type", f.type);
   if (f.corridor) p.set("corridor", f.corridor);
   if (f.locality) p.set("locality", f.locality);
+  if (f.risk) p.set("risk", f.risk);
+  // The budget chips on /projects, by their lakh range.
+  const budget = ({ "null-30": "<30L", "30-60": "30-60L", "60-120": "60-120L", "120-null": ">120L" } as Record<string, string>)[`${f.minBudget ?? null}-${f.maxBudget ?? null}`];
+  if (budget) p.set("budget", budget);
   return `/projects${p.toString() ? `?${p}` : ""}`;
 };
 

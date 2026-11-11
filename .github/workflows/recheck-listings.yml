@@ -1,0 +1,48 @@
+# Weekly re-check of every researched listing against its source page:
+# marks sold / removed listings and records asking-price changes.
+# Needs the DATABASE_URL repository secret (the production database URL);
+# without it the job exits without doing anything.
+name: Re-check listings
+
+on:
+  schedule:
+    - cron: "30 21 * * 6" # Sunday 03:00 IST
+  workflow_dispatch:
+    inputs:
+      budget_minutes:
+        description: "Time budget in minutes"
+        default: "320"
+
+concurrency:
+  group: recheck-listings
+  cancel-in-progress: false
+
+jobs:
+  recheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+    steps:
+      - name: Skip when the database secret is missing
+        if: env.DATABASE_URL == ''
+        run: echo "DATABASE_URL secret not set — nothing to do."
+
+      - uses: actions/checkout@v4
+        if: env.DATABASE_URL != ''
+
+      - uses: actions/setup-node@v4
+        if: env.DATABASE_URL != ''
+        with:
+          node-version: 22
+          cache: npm
+
+      - if: env.DATABASE_URL != ''
+        run: npm ci
+
+      - if: env.DATABASE_URL != ''
+        run: npx prisma generate
+
+      - name: Re-check listings
+        if: env.DATABASE_URL != ''
+        run: npx tsx scripts/inventory/recheck.ts --budget-minutes ${{ github.event.inputs.budget_minutes || '320' }}
