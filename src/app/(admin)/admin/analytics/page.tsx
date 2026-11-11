@@ -163,7 +163,7 @@ export default function AdminAnalyticsPage() {
                   <div className="flex items-center justify-between pb-3 border-b border-[#F5F3FB]">
                     <div>
                       <h3 className="font-display text-base font-bold text-[#1A1A2E]">Corridor Popularity Heatmap</h3>
-                      <p className="text-xs text-[#8A8A9E]">Distribution of corridors recommended by the AI engine</p>
+                      <p className="text-xs text-[#8A8A9E]">Areas that came up most in research-tool runs</p>
                     </div>
                     <ChevronRight size={16} className="text-[#8A8A9E]" />
                   </div>
@@ -215,7 +215,7 @@ export default function AdminAnalyticsPage() {
                   <div className="flex items-center justify-between pb-3 border-b border-[#F5F3FB]">
                     <div>
                       <h3 className="font-display text-base font-bold text-[#1A1A2E]">Conversion Funnel Analytics</h3>
-                      <p className="text-xs text-[#8A8A9E]">Conversion stages from search to CRM deal closure</p>
+                      <p className="text-xs text-[#8A8A9E]">All leads, those contacted, and those converted</p>
                     </div>
                     <ChevronRight size={16} className="text-[#8A8A9E]" />
                   </div>
@@ -226,8 +226,8 @@ export default function AdminAnalyticsPage() {
                 <div className="crm-card p-6 sm:p-7 space-y-4">
                   <div className="flex items-center justify-between pb-3 border-b border-[#F5F3FB]">
                     <div>
-                      <h3 className="font-display text-base font-bold text-[#1A1A2E]">AI Buyer Persona Distribution</h3>
-                      <p className="text-xs text-[#8A8A9E]">Proportional split of leads into AI-classified buyer personas</p>
+                      <h3 className="font-display text-base font-bold text-[#1A1A2E]">Buyer persona distribution</h3>
+                      <p className="text-xs text-[#8A8A9E]">Share of leads in each buyer persona (rule-based unless Claude is connected)</p>
                     </div>
                     <ChevronRight size={16} className="text-[#8A8A9E]" />
                   </div>
@@ -257,7 +257,7 @@ export default function AdminAnalyticsPage() {
                   <div className="flex items-center justify-between pb-3 border-b border-[#F5F3FB]">
                     <div>
                       <h3 className="font-display text-base font-bold text-[#1A1A2E]">Predictive Lead Score Grades</h3>
-                      <p className="text-xs text-[#8A8A9E]">Lead grouping by predictive conversion score grades</p>
+                      <p className="text-xs text-[#8A8A9E]">Leads grouped by lead-score grade</p>
                     </div>
                     <ChevronRight size={16} className="text-[#8A8A9E]" />
                   </div>

@@ -123,7 +123,7 @@ export default function FiltersPanel({
 
           <Group label="Listed by">
             <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
-              {([["ALL", "All"], ["ADMIN", "Our verified inventory"], ["SELLER", "Owners & agents"]] as const).map(([k, label]) => (
+              {([["ALL", "All"], ["ADMIN", "Listings we researched"], ["SELLER", "Owners & agents"]] as const).map(([k, label]) => (
                 <Pill key={k} on={draft.source === k} onClick={() => setDraft({ ...draft, source: k })}>{label}</Pill>
               ))}
             </div>
@@ -143,7 +143,7 @@ export default function FiltersPanel({
                 <Pill key={g} on={draft.grades.includes(g)} onClick={() => setDraft({ ...draft, grades: toggle(draft.grades, g) })}>{g}</Pill>
               ))}
             </div>
-            <p style={{ fontSize: "0.625rem", color: "#A0A0AE", marginTop: 5 }}>Verified inventory is unscored and always shown.</p>
+            <p style={{ fontSize: "0.625rem", color: "#A0A0AE", marginTop: 5 }}>Listings we researched are unscored and always shown.</p>
           </Group>
 
           <Group label="Posted within">

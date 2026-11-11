@@ -85,7 +85,7 @@ export default function LayersPanel({
 
       <div style={{ overflowY: "auto", padding: "10px 14px 14px" }}>
         <SectionLabel>Properties</SectionLabel>
-        <Row label="Our verified inventory" color="#2563EB" checked={showAdmin} onChange={() => onShowAdmin(!showAdmin)} />
+        <Row label="Listings we researched" color="#2563EB" checked={showAdmin} onChange={() => onShowAdmin(!showAdmin)} />
         <Row label="Owner & agent listings" color="#FFB400" checked={showSeller} onChange={() => onShowSeller(!showSeller)} />
 
         <SectionLabel>Nearby places</SectionLabel>

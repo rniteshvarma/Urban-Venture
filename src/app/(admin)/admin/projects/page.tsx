@@ -444,7 +444,7 @@ export default function AdminProjectsPage() {
               <span className="text-3xl">📈</span>
               <h3 className="font-display text-lg font-bold text-[#1A1A2E]">No Corridor Metrics Found</h3>
               <p className="text-xs max-w-sm mx-auto leading-relaxed">
-                Add corridor CAGR and yield mappings to feed the AI investment engine.
+                Add corridor growth and yield figures used by the calculator and matching.
               </p>
             </div>
           ) : (

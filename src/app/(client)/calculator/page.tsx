@@ -27,17 +27,18 @@ import {
 } from "lucide-react";
 import { toast } from "@/lib/toast";
 import ConsentNote from "@/components/legal/ConsentNote";
+import { ANCHOR_RATES } from "@/lib/market/forecast";
+import { CITY } from "@/lib/market/anchors";
+import { BENCHMARK_RATES } from "@/lib/calculator";
 
 interface Corridor {
   id: string;
   corridor: string;
-  historicalCAGR: number;
-  projectedCAGRMin: number;
-  projectedCAGRMax: number;
-  rentalYieldMin: number;
-  rentalYieldMax: number;
-  infraScore: number;
-  demandScore: number;
+  name?: string;
+  projectedCAGRMin: number | null;
+  projectedCAGRMax: number | null;
+  rentalYieldMin: number | null;
+  rentalYieldMax: number | null;
   riskLevel: string;
   overallScore?: number;
 }
@@ -56,10 +57,11 @@ function CalculatorContent() {
   const [selectedCorridorId, setSelectedCorridorId] = useState<string>("CUSTOM");
   
   // Custom corridor rates
-  const [customCagrMin, setCustomCagrMin] = useState<number>(12);
-  const [customCagrMax, setCustomCagrMax] = useState<number>(18);
-  const [customRentMin, setCustomRentMin] = useState<number>(2);
-  const [customRentMax, setCustomRentMax] = useState<number>(4);
+  // Start from the published city figures (src/lib/market/anchors.ts), never a hoped-for return.
+  const [customCagrMin, setCustomCagrMin] = useState<number>(ANCHOR_RATES.conservative);
+  const [customCagrMax, setCustomCagrMax] = useState<number>(ANCHOR_RATES.optimistic);
+  const [customRentMin, setCustomRentMin] = useState<number>(CITY.rentalYield.value);
+  const [customRentMax, setCustomRentMax] = useState<number>(CITY.rentalYield.value);
 
   // Output
   const [calculationData, setCalculationData] = useState<any>(null);
@@ -148,9 +150,10 @@ function CalculatorContent() {
 
     setIsSubmittingLead(true);
     try {
-      const corridorText = selectedCorridorId === "CUSTOM" 
-        ? "Custom Parameters" 
-        : corridors.find(c => c.id === selectedCorridorId)?.corridor || "General Hyderabad";
+      const picked = corridors.find(c => c.id === selectedCorridorId);
+      const corridorText = selectedCorridorId === "CUSTOM"
+        ? "Hyderabad overall (own rates)"
+        : picked?.name || picked?.corridor || "Hyderabad overall";
 
       const res = await fetch("/api/calculator/lead", {
         method: "POST",
@@ -162,7 +165,7 @@ function CalculatorContent() {
           budget: initialAmount,
           horizon: years,
           city: "Hyderabad",
-          notes: `ROI Calculator Lead. Corridor interest: ${corridorText}. Simulated ROI return forecast generated and sent to dashboard.`
+          notes: `Call-back request from the ROI calculator. Area: ${corridorText}. Amount ₹${initialAmount} L over ${years} years.`
         })
       });
 
@@ -190,27 +193,27 @@ function CalculatorContent() {
     
     return [
       {
-        name: "Real Estate (Cons.)",
+        name: "Property (low case)",
         Value: calculationData.finalRealEstateMin,
         fill: "#E09600"
       },
       {
-        name: "Real Estate (Opt.)",
+        name: "Property (high case)",
         Value: calculationData.finalRealEstateMax,
         fill: "#FFB400"
       },
       {
-        name: "Nifty 50 Index (12%)",
+        name: `Nifty 50 (assumed ${BENCHMARK_RATES.nifty}%)`,
         Value: calculationData.finalNifty,
         fill: "#10B981"
       },
       {
-        name: "Gold (9%)",
+        name: `Gold (assumed ${BENCHMARK_RATES.gold}%)`,
         Value: calculationData.finalGold,
         fill: "#F59E0B"
       },
       {
-        name: "Fixed Deposit (6.5%)",
+        name: `Fixed deposit (assumed ${BENCHMARK_RATES.fd}%)`,
         Value: calculationData.finalFD,
         fill: "#64748B"
       }
@@ -231,7 +234,7 @@ function CalculatorContent() {
             Hyderabad ROI &amp; Appreciation Simulator
           </h1>
           <p className="text-sm leading-relaxed" style={{ color: "var(--color-text-invert-mid)" }}>
-            Simulate compounding returns in major Hyderabad real estate corridors. Contrast appreciation + rental yield projections with liquid equity, gold, and debt benchmarks.
+            See what an amount could be worth under conservative and optimistic price-growth scenarios for a Hyderabad area, next to example rates for equity, gold and a fixed deposit. Scenarios, not predictions.
           </p>
         </div>
       </div>
@@ -295,10 +298,11 @@ function CalculatorContent() {
               onChange={(e) => setSelectedCorridorId(e.target.value)}
               className="w-full bg-[#1A1A22] border border-[#2A2A35] px-3.5 py-2.5 rounded-[8px] text-xs text-white font-medium focus:outline-none focus:border-[#FFB400] transition-colors [&>option]:bg-[#0D0D12] [&>option]:text-white"
             >
-              <option value="CUSTOM">Custom Parameters (Configure Below)</option>
+              <option value="CUSTOM">Hyderabad overall (set your own rates below)</option>
               {corridors.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.corridor} (Rating: {c.overallScore || 0}/100) ({c.projectedCAGRMin}-{c.projectedCAGRMax}% CAGR)
+                  {c.name || c.corridor}
+                  {c.projectedCAGRMin != null && c.projectedCAGRMax != null ? ` · ${c.projectedCAGRMin}–${c.projectedCAGRMax}% a year` : ""}
                 </option>
               ))}
             </select>
@@ -307,19 +311,22 @@ function CalculatorContent() {
           {/* Custom / Corridor Stats parameters block */}
           {selectedCorridorId === "CUSTOM" ? (
             <div className="bg-[#1A1A22] p-4 rounded-xl border border-[#2A2A35] space-y-4">
-              <span className="text-[10px] text-saffron font-bold uppercase tracking-wider block">Custom ROI Parameters</span>
+              <span className="text-[10px] text-saffron font-bold uppercase tracking-wider block">Growth and rent rates</span>
+              <p className="text-[10px] leading-relaxed text-slate-400">
+                Starts at Hyderabad&apos;s published figures: {ANCHOR_RATES.conservative}% a year ({CITY.rbiAllIndiaHpiYoY.source}, {CITY.rbiAllIndiaHpiYoY.period}) to {ANCHOR_RATES.optimistic}% a year (Hyderabad {CITY.price2019SqFt.period}–{CITY.priceQ2_2026SqFt.period}, {CITY.priceQ2_2026SqFt.source}), and a {CITY.rentalYield.value}% rental yield ({CITY.rentalYield.source}, {CITY.rentalYield.period}). Move a slider to test your own assumption.
+              </p>
               
               {/* Custom CAGR slider */}
               <div className="space-y-1.5 text-xs">
                 <div className="flex justify-between font-semibold text-slate-200">
-                  <span>Appreciation CAGR Min</span>
+                  <span>Price growth a year, low case</span>
                   <span className="text-saffron font-bold">{customCagrMin}%</span>
                 </div>
                 <input 
                   type="range" 
-                  min="5" 
+                  min="0" 
                   max="25" 
-                  step="0.5"
+                  step="0.1"
                   value={customCagrMin}
                   onChange={(e) => {
                     const val = parseFloat(e.target.value);
@@ -332,14 +339,14 @@ function CalculatorContent() {
 
               <div className="space-y-1.5 text-xs">
                 <div className="flex justify-between font-semibold text-slate-200">
-                  <span>Appreciation CAGR Max</span>
+                  <span>Price growth a year, high case</span>
                   <span className="text-saffron font-bold">{customCagrMax}%</span>
                 </div>
                 <input 
                   type="range" 
-                  min="5" 
+                  min="0" 
                   max="25" 
-                  step="0.5"
+                  step="0.1"
                   value={customCagrMax}
                   onChange={(e) => {
                     const val = parseFloat(e.target.value);
@@ -353,14 +360,14 @@ function CalculatorContent() {
               {/* Custom rent slider */}
               <div className="space-y-1.5 text-xs">
                 <div className="flex justify-between font-semibold text-slate-200">
-                  <span>Rental Yield Min</span>
+                  <span>Rental yield, low case</span>
                   <span className="text-saffron font-bold">{customRentMin}%</span>
                 </div>
                 <input 
                   type="range" 
                   min="0" 
                   max="8" 
-                  step="0.5"
+                  step="0.1"
                   value={customRentMin}
                   onChange={(e) => {
                     const val = parseFloat(e.target.value);
@@ -373,14 +380,14 @@ function CalculatorContent() {
 
               <div className="space-y-1.5 text-xs">
                 <div className="flex justify-between font-semibold text-slate-200">
-                  <span>Rental Yield Max</span>
+                  <span>Rental yield, high case</span>
                   <span className="text-saffron font-bold">{customRentMax}%</span>
                 </div>
                 <input 
                   type="range" 
                   min="0" 
                   max="8" 
-                  step="0.5"
+                  step="0.1"
                   value={customRentMax}
                   onChange={(e) => {
                     const val = parseFloat(e.target.value);
@@ -396,24 +403,32 @@ function CalculatorContent() {
               <div className="bg-[#1A1A22] p-4 rounded-xl border border-[#2A2A35] space-y-3 text-xs">
                 <div className="flex items-center gap-1 text-saffron font-bold">
                   <MapPin className="w-3.5 h-3.5" />
-                  <span>Corridor Highlights</span>
+                  <span>This area, from our data</span>
                 </div>
                 <div className="grid grid-cols-2 gap-3 text-[11px] pt-1">
                   <div>
-                    <span className="text-slate-400 block font-semibold">Risk Rating</span>
+                    <span className="text-slate-400 block font-semibold">Our area score</span>
+                    <span className="font-bold text-white">{selectedCorridor.overallScore ?? "—"} / 100</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 block font-semibold">Risk level</span>
                     <span className="font-bold text-white uppercase tracking-wide">{selectedCorridor.riskLevel}</span>
                   </div>
                   <div>
-                    <span className="text-slate-400 block font-semibold">Historical CAGR</span>
-                    <span className="font-bold text-white">{selectedCorridor.historicalCAGR}%</span>
+                    <span className="text-slate-400 block font-semibold">Growth scenarios</span>
+                    <span className="font-bold text-white">
+                      {selectedCorridor.projectedCAGRMin != null && selectedCorridor.projectedCAGRMax != null
+                        ? `${selectedCorridor.projectedCAGRMin}–${selectedCorridor.projectedCAGRMax}% a year`
+                        : "Not measured yet"}
+                    </span>
                   </div>
                   <div>
-                    <span className="text-slate-400 block font-semibold">Infrastructure</span>
-                    <span className="font-bold text-white">{selectedCorridor.infraScore} / 10</span>
-                  </div>
-                  <div>
-                    <span className="text-slate-400 block font-semibold">Market Demand</span>
-                    <span className="font-bold text-white">{selectedCorridor.demandScore} / 10</span>
+                    <span className="text-slate-400 block font-semibold">Measured rental yield</span>
+                    <span className="font-bold text-white">
+                      {selectedCorridor.rentalYieldMin != null && selectedCorridor.rentalYieldMax != null
+                        ? `${selectedCorridor.rentalYieldMin}–${selectedCorridor.rentalYieldMax}%`
+                        : "Too few rentals"}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -430,9 +445,9 @@ function CalculatorContent() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100 pb-3">
               <div>
                 <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-                  <TrendingUp className="w-4 h-4 text-[#FFB400]" /> Wealth Multiplier Projections
+                  <TrendingUp className="w-4 h-4 text-[#FFB400]" /> Scenario comparison
                 </h2>
-                <p className="text-[10px] text-slate-400 mt-0.5">Comparative forecast over {years} years</p>
+                <p className="text-[10px] text-slate-400 mt-0.5">Value after {years} years in each scenario — not a prediction</p>
               </div>
 
               <div className="flex border border-slate-200 rounded-lg p-0.5 bg-slate-50 text-[10px] uppercase font-bold tracking-wider">
@@ -462,7 +477,7 @@ function CalculatorContent() {
             {/* Calculations Loading or Render */}
             {isCalculating || !calculationData ? (
               <div className="h-64 flex items-center justify-center text-xs text-slate-400 animate-pulse">
-                Running compounding engine returns simulations...
+                Working out the scenarios…
               </div>
             ) : (
               <div className="flex-grow flex flex-col justify-between">
@@ -470,19 +485,19 @@ function CalculatorContent() {
                 {/* Highlight Boxes for RE (Cons) vs RE (Opt) */}
                 <div className="grid grid-cols-2 gap-4 text-center animate-fade-in-up">
                   <div className="card-premium">
-                    <span className="text-[10px] text-text-secondary uppercase font-bold tracking-wider block mb-1">Conservative Real Estate</span>
+                    <span className="text-[10px] text-text-secondary uppercase font-bold tracking-wider block mb-1">Property, low case</span>
                     <span className="font-display text-2xl sm:text-3xl font-black text-text-primary leading-none block">
                       {formatPrice(calculationData.finalRealEstateMin)}
                     </span>
-                    <span className="text-[9px] text-success font-bold block mt-1">Apprec: {calculationData.appreciationCagrMin}% · Yield: {calculationData.rentalYieldMin}%</span>
+                    <span className="text-[9px] text-success font-bold block mt-1">Growth {calculationData.appreciationCagrMin}% · Rent {calculationData.rentalYieldMin}%</span>
                   </div>
 
                   <div className="card-premium border-accent/20 bg-accent-light/10 shadow-glow-cyan">
-                    <span className="text-[10px] text-saffron uppercase font-bold tracking-wider block mb-1">Optimistic Real Estate</span>
+                    <span className="text-[10px] text-saffron uppercase font-bold tracking-wider block mb-1">Property, high case</span>
                     <span className="font-display text-2xl sm:text-3xl font-black text-primary leading-none block">
                       {formatPrice(calculationData.finalRealEstateMax)}
                     </span>
-                    <span className="text-[9px] text-success font-bold block mt-1">Apprec: {calculationData.appreciationCagrMax}% · Yield: {calculationData.rentalYieldMax}%</span>
+                    <span className="text-[9px] text-success font-bold block mt-1">Growth {calculationData.appreciationCagrMax}% · Rent {calculationData.rentalYieldMax}%</span>
                   </div>
                 </div>
 
@@ -515,7 +530,7 @@ function CalculatorContent() {
                             fontFamily: "Inter, sans-serif",
                             fontSize: "11px",
                           }}
-                          formatter={(value: any) => [`₹${parseFloat(value).toFixed(1)}L`, "Projected Value"]}
+                          formatter={(value: any) => [`₹${parseFloat(value).toFixed(1)}L`, "Value in this scenario"]}
                         />
                         <Bar 
                           dataKey="Value" 
@@ -531,11 +546,11 @@ function CalculatorContent() {
                       <thead className="sticky top-0 bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-[9px] font-bold tracking-wider">
                         <tr>
                           <th className="px-4 py-2">Year</th>
-                          <th className="px-4 py-2">Real Estate (Cons.)</th>
-                          <th className="px-4 py-2">Real Estate (Opt.)</th>
-                          <th className="px-4 py-2">Nifty (12%)</th>
-                          <th className="px-4 py-2">Gold (9%)</th>
-                          <th className="px-4 py-2">FD (6.5%)</th>
+                          <th className="px-4 py-2">Property (low)</th>
+                          <th className="px-4 py-2">Property (high)</th>
+                          <th className="px-4 py-2">Nifty ({BENCHMARK_RATES.nifty}%)</th>
+                          <th className="px-4 py-2">Gold ({BENCHMARK_RATES.gold}%)</th>
+                          <th className="px-4 py-2">FD ({BENCHMARK_RATES.fd}%)</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100">
@@ -553,15 +568,18 @@ function CalculatorContent() {
                     </table>
                   </div>
                 )}
+                <p className="mt-4 text-[10px] leading-relaxed text-slate-500">
+                  The Nifty 50, gold and fixed-deposit figures use fixed example rates ({BENCHMARK_RATES.nifty}%, {BENCHMARK_RATES.gold}% and {BENCHMARK_RATES.fd}% a year). They are assumptions for comparison, not measured or forecast returns. Property values are before stamp duty, registration, maintenance and tax.
+                </p>
               </div>
             )}
           </div>
 
-          {/* Infrastructure Tailwind Boosts Card */}
+          {/* Tracked infrastructure for the chosen area */}
           {calculationData?.infrastructureTailwinds && calculationData.infrastructureTailwinds.length > 0 && (
             <div className="bg-emerald-50/20 border border-emerald-200/50 p-5 rounded-2xl space-y-3 animate-fade-in shadow-sm">
               <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-700 flex items-center gap-1.5">
-                <TrendingUp className="w-4 h-4 text-emerald-600 animate-pulse" /> Infrastructure Tailwind Boosts
+                <TrendingUp className="w-4 h-4 text-emerald-600" /> Tracked infrastructure in this area
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {calculationData.infrastructureTailwinds.map((project: any, idx: number) => (
@@ -582,7 +600,7 @@ function CalculatorContent() {
             </div>
           )}
 
-          {/* AI Takeaways Block */}
+          {/* Takeaways worked out from the figures above */}
           {takeaways.length > 0 && (
             <div className="bg-blue-50/20 border border-blue-200/50 p-5 rounded-2xl space-y-3 animate-fade-in shadow-sm">
               <h4 className="text-xs font-bold uppercase tracking-wider text-[#FFB400] flex items-center gap-1.5">
@@ -602,10 +620,10 @@ function CalculatorContent() {
       <div className="card-premium max-w-3xl mx-auto space-y-6">
         <div className="text-center space-y-2">
           <h3 className="font-display text-lg sm:text-xl font-extrabold text-primary tracking-tight">
-            Receive a Detailed Investment Feasibility Report
+            Talk this through with our team
           </h3>
           <p className="text-xs text-text-secondary max-w-lg mx-auto leading-relaxed">
-            Get a tailored real estate advisory docket including RERA certifications, developer comparables, exiting timeline logs, and corridor analytics matching this calculation.
+            Leave your number and we&apos;ll call you about this area and amount: the projects that fit, their TG-RERA records and what buying would really cost.
           </p>
         </div>
 
@@ -614,9 +632,9 @@ function CalculatorContent() {
             <span className="w-12 h-12 rounded-full bg-success-light border border-success/20 flex items-center justify-center text-success mx-auto text-xl">
               ✓
             </span>
-            <h4 className="font-bold text-sm text-text-primary">Feasibility Request Logged!</h4>
+            <h4 className="font-bold text-sm text-text-primary">Request received</h4>
             <p className="text-xs text-text-secondary max-w-sm mx-auto leading-relaxed">
-              Our Senior Property Advisor has received your simulation parameters. We will contact you at your verified phone number shortly.
+              We have your details and the figures you entered. Our team will call you on the number you gave.
             </p>
           </div>
         ) : (
@@ -659,9 +677,9 @@ function CalculatorContent() {
               disabled={isSubmittingLead}
               className="btn-primary sm:col-span-3 w-full py-3 mt-2 flex items-center justify-center gap-1.5 shadow-glow-cyan"
             >
-              Get Custom Investment Feasibility Report <ArrowRight className="w-3.5 h-3.5" />
+              Request a call back <ArrowRight className="w-3.5 h-3.5" />
             </button>
-            <ConsentNote className="sm:col-span-3" share="We use your details to send the report and follow up about it." />
+            <ConsentNote className="sm:col-span-3" share="We use your details to call you back about this enquiry." />
           </form>
         )}
       </div>
@@ -673,7 +691,7 @@ export default function CalculatorPage() {
   return (
     <Suspense fallback={
       <div className="max-w-6xl mx-auto px-4 py-16 text-center text-slate-500 animate-pulse text-sm">
-        Initializing Interactive Compounding Simulator...
+        Loading the calculator…
       </div>
     }>
       <CalculatorContent />

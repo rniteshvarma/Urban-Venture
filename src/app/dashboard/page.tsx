@@ -213,7 +213,7 @@ function GreetingBlock({ data, mode, setMode, seller }: { data: DashData; mode: 
             <Link href={`/research?budget=${resume.lastReport.budget}&horizon=${resume.lastReport.horizon}&city=${encodeURIComponent(resume.lastReport.city)}`} className="uv-btn" style={{ fontSize: "0.75rem", padding: "7px 12px", background: "var(--color-ink-soft)", color: "#fff", border: "1px solid var(--color-ink-line)" }}>Re-run</Link>
           </ResumeCard>
         ) : (
-          <ResumeCard icon="🤖" title="Run your first AI report" line="Budget, horizon, city — three inputs.">
+          <ResumeCard icon="📊" title="Run your first research report" line="Your budget and how long you plan to hold.">
             <Link href="/research" className="uv-btn uv-btn-primary" style={{ fontSize: "0.75rem", padding: "7px 12px" }}>Start <ArrowRight size={14} /></Link>
           </ResumeCard>
         )}
@@ -293,7 +293,7 @@ function SavedBlock({ data, tab, setTab }: { data: DashData; tab: string; setTab
       ))}
 
       {tab === "reports" && (saved.reports.length === 0 ? (
-        <Empty icon={<FileText size={22} />} text="No saved reports yet." cta="Run an AI report" href="/research" />
+        <Empty icon={<FileText size={22} />} text="No saved reports yet." cta="Run a research report" href="/research" />
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {saved.reports.map((r) => <ReportRow key={r.id} r={r} />)}

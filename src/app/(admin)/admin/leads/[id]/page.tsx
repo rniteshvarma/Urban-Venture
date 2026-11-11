@@ -321,7 +321,7 @@ export default function LeadDetailPage({ params }: PageProps) {
           onClick={() => setActiveTab("profile")}
           className={`${activeTab === "profile" ? "filter-pill-active" : "filter-pill"} shrink-0`}
         >
-          📋 Client Profile & AI History
+          📋 Client profile & research history
         </button>
       </div>
 
@@ -414,10 +414,10 @@ export default function LeadDetailPage({ params }: PageProps) {
               {/* AI Recommendations Logs */}
               <div className="card-premium space-y-4">
                 <h3 className="section-header">
-                  AI Recommendation Logs ({searchRecommendations.length})
+                  Research-tool runs ({searchRecommendations.length})
                 </h3>
                 {searchRecommendations.length === 0 ? (
-                  <p className="text-xs text-text-secondary italic">No AI recommendation searches run by this client.</p>
+                  <p className="text-xs text-text-secondary italic">This client has not run the research tool.</p>
                 ) : (
                   <div className="space-y-4">
                     {searchRecommendations.map((search: any) => {

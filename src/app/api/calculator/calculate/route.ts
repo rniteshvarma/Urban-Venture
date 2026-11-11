@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { runRoiCalculations } from "@/lib/calculator";
+import { runRoiCalculations, BENCHMARK_RATES } from "@/lib/calculator";
 import prisma from "@/lib/prisma";
 import { ANCHOR_RATES } from "@/lib/market/forecast";
 import { CITY } from "@/lib/market/anchors";
@@ -26,7 +26,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid initial investment amount" }, { status: 400 });
     }
 
-    let corridorName = "General Hyderabad Corridor";
+    let corridorName = "Hyderabad overall";
     // Defaults are the published city anchors (src/lib/market/anchors.ts), not a hoped-for return.
     let cagrMin = customCagrMin !== undefined ? parseFloat(customCagrMin) : ANCHOR_RATES.conservative;
     let cagrMax = customCagrMax !== undefined ? parseFloat(customCagrMax) : ANCHOR_RATES.optimistic;
@@ -86,17 +86,23 @@ export async function POST(req: Request) {
       }
     }
 
+    // Whether the visitor moved the sliders away from the published figures.
+    const isCustom = !corridorId || corridorId === "CUSTOM";
+    const ownGrowth = isCustom && (cagrMin !== ANCHOR_RATES.conservative || cagrMax !== ANCHOR_RATES.optimistic);
+    const ownRent = isCustom && (rentMin !== CITY.rentalYield.value || rentMax !== CITY.rentalYield.value);
+    const fdNote = `a fixed deposit at an assumed ${BENCHMARK_RATES.fd}% a year`;
+
     // Run the compounding calculations
     const summary = runRoiCalculations(initialAmount, years, cagrMin, cagrMax, rentMin, rentMax);
 
     // Takeaways are worked out from the figures above — no generated prose.
     const takeaways = [
-      `Investing ${inr(initialAmount)} in ${corridorName} grows to between ${inr(summary.finalRealEstateMin)} and ${inr(summary.finalRealEstateMax)} over ${years} years in our conservative-to-optimistic scenarios${summary.finalRealEstateMin > summary.finalFD ? ", ahead of a fixed deposit even in the conservative case" : summary.finalRealEstateMax > summary.finalFD ? " — the conservative case trails a fixed deposit, so the outcome depends on the area delivering" : ", which trails a fixed deposit"}.`,
+      `Investing ${inr(initialAmount)} in ${corridorName} grows to between ${inr(summary.finalRealEstateMin)} and ${inr(summary.finalRealEstateMax)} over ${years} years ${ownGrowth ? `at the growth rates you set (${cagrMin}–${cagrMax}% a year)` : isCustom ? `at Hyderabad's published growth range (${cagrMin}–${cagrMax}% a year)` : "in our conservative-to-optimistic scenarios"}${summary.finalRealEstateMin > summary.finalFD ? `, ahead of ${fdNote} even in the low case` : summary.finalRealEstateMax > summary.finalFD ? ` — the low case trails ${fdNote}, so the outcome depends on the area delivering` : `, which trails ${fdNote}`}.`,
       rentMax > 0
-        ? `Rental yield is taken as ${rentMin === rentMax ? `${rentMin}%` : `${rentMin}–${rentMax}%`} a year (${rentMin === CITY.rentalYield.value && rentMax === CITY.rentalYield.value ? "Hyderabad average, ANAROCK Q2 2026" : "gross yield measured from rental listings in this corridor"}).`
-        : `Plots earn no rent, so the return depends entirely on price growth and on how easily you can resell.`,
-      !corridorId || corridorId === "CUSTOM"
-        ? `These are Hyderabad-wide figures — pick a corridor to use its own price scenarios, rent and infrastructure.`
+        ? `Rental yield is taken as ${rentMin === rentMax ? `${rentMin}%` : `${rentMin}–${rentMax}%`} a year (${ownRent ? "the rate you set" : isCustom ? `Hyderabad average, ${CITY.rentalYield.source} ${CITY.rentalYield.period}` : rentMin === CITY.rentalYield.value && rentMax === CITY.rentalYield.value ? `Hyderabad average, ${CITY.rentalYield.source} ${CITY.rentalYield.period}` : "gross yield measured from rental listings in this corridor"}).`
+        : `No rent is counted, so the return depends entirely on price growth and on how easily you can resell.`,
+      isCustom
+        ? `These are Hyderabad-wide figures — pick an area to use its own price scenarios, rent and infrastructure.`
         : infrastructureTailwinds.length
         ? `Infrastructure behind the optimistic case: ${infrastructureTailwinds.map((p) => `${p.name} (${String(p.status).replace(/_/g, " ").toLowerCase()})`).join("; ")}. Projects not yet under construction can take years to start — the conservative case assumes little of them.`
         : `No infrastructure project tracked for ${corridorName} is under way, so the range leans on Hyderabad's citywide price growth.`,

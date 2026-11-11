@@ -3,6 +3,7 @@
 import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import { scoreBandLabel } from "@/components/ui/enums";
 import { 
   Brain, 
   TrendingUp, 
@@ -270,7 +271,7 @@ function ComparePageContent() {
                     c.investorSentiment === "CAUTIOUS" ? "badge-danger" :
                     "badge-warning"
                   }`}>
-                    {c.investorSentiment}
+                    {scoreBandLabel(c.investorSentiment)}
                   </span>
                 </div>
               ))}
@@ -476,10 +477,10 @@ function ComparePageContent() {
             <div className="card-premium p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 max-w-4xl mx-auto">
               <div className="space-y-1.5">
                 <h3 className="text-sm font-bold text-text-primary flex items-center gap-1.5">
-                  <Brain className="text-navy-ink" size={16} /> AI Research Report Builder
+                  <Brain className="text-navy-ink" size={16} /> Budget research
                 </h3>
                 <p className="text-text-secondary text-xs leading-relaxed max-w-xl">
-                  Ready to draft a detailed investor proposal? Transfer these compared corridors directly into our AI Research compiler to generate a customized PDF proposal document.
+                  See which areas fit your budget and holding period, using the same measured prices, infrastructure timelines and delivery records.
                 </p>
               </div>
               <button
@@ -489,7 +490,7 @@ function ComparePageContent() {
                 }}
                 className="btn-primary"
               >
-                Assemble AI Report <ChevronRight size={14} />
+                Open the research tool <ChevronRight size={14} />
               </button>
             </div>
 

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { scoreBandLabel } from "@/components/ui/enums";
 import { ArrowLeft, TrendingUp, Loader2, Info, Ruler, ExternalLink } from "lucide-react";
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid, Legend, ReferenceLine } from "recharts";
 import type { CorridorMarketStats } from "@/lib/market/compute";
@@ -138,8 +139,8 @@ export default function ForecastHubPage() {
                   </div>
                 )}
                 <div className="flex justify-between">
-                  <span className="text-text-secondary">Sentiment</span>
-                  <span className="font-bold text-navy-ink">{selected.investorSentiment ?? "—"}</span>
+                  <span className="text-text-secondary">Score band</span>
+                  <span className="font-bold text-navy-ink">{scoreBandLabel(selected.investorSentiment)}</span>
                 </div>
               </div>
             )}

@@ -14,7 +14,7 @@ const CITY_DEFAULTS: PulseFigures = {
   priceGrowth: CITY.priceGrowthYoY,
   gccShare: CITY.gccShareOfLeasing,
 };
-import { ArrowRight, Search, Bot, Building2, CheckCircle2, Calculator, Ruler, FileText, Repeat } from "lucide-react";
+import { ArrowRight, Search, BarChart3, Building2, CheckCircle2, Calculator, FileText, Repeat } from "lucide-react";
 import HeroAppShowcase from "@/components/home/HeroAppShowcase";
 import {
   SearchCommandBar,
@@ -74,9 +74,10 @@ export default function HomePage() {
     (c) => cycleFilter === "ALL" || (c as any).investmentCycle === cycleFilter
   );
 
+  // Only shown when the corridor figures carry a real computed-at date — never today's date as a stand-in.
   const lastUpdated = corridors?.[0]?.["lastComputedAt" as keyof CorridorCardData]
     ? formatDate(corridors[0]["lastComputedAt" as keyof CorridorCardData] as any)
-    : formatDate(new Date());
+    : null;
 
   return (
     <div className="flex flex-col">
@@ -125,22 +126,30 @@ export default function HomePage() {
       <div className="max-w-7xl mx-auto px-4 w-full" style={{ marginTop: 20 }}>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "8px 22px", justifyContent: "center", fontFamily: "var(--font-mono)", fontSize: "0.75rem", color: "var(--color-text-mid)" }}>
           <span>✅ {corridors ? corridors.length : "…"} Corridors Tracked</span>
+          {infraCount != null && infraCount > 0 && (
+            <>
+              <span style={{ color: "var(--color-line)" }}>·</span>
+              <span>✅ {infraCount} Govt Projects Tracked</span>
+            </>
+          )}
           <span style={{ color: "var(--color-line)" }}>·</span>
-          <span>✅ {infraCount ?? "12"} Govt Projects Monitored</span>
-          <span style={{ color: "var(--color-line)" }}>·</span>
-          <span>✅ HMDA / RERA Verified</span>
-          <span style={{ color: "var(--color-line)" }}>·</span>
-          <span>✅ Data updated {lastUpdated}</span>
+          <span>✅ TG-RERA numbers shown, with a link to verify</span>
+          {lastUpdated && (
+            <>
+              <span style={{ color: "var(--color-line)" }}>·</span>
+              <span>✅ Area figures computed {lastUpdated}</span>
+            </>
+          )}
         </div>
       </div>
 
       {/* ═══ 5.4 HOW IT WORKS ═══ */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full" style={{ paddingTop: "4.5rem", paddingBottom: "1rem" }}>
-        <SectionHeader eyebrow="Not a listing site." title="How it works" subtitle="Three inputs. A research report backed by real government data." />
+        <SectionHeader eyebrow="Not a listing site." title="How it works" subtitle="Two inputs. A shortlist of areas, built from measured prices and public records." />
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 18 }}>
           {[
-            { n: "01", icon: <Search size={22} />, label: "Tell us your budget", body: "Budget, horizon, city. Three inputs." },
-            { n: "02", icon: <Bot size={22} />, label: "We research the market", body: "Corridor prices, delivery records, infrastructure status." },
+            { n: "01", icon: <Search size={22} />, label: "Tell us your budget", body: "Your budget and how long you plan to hold." },
+            { n: "02", icon: <BarChart3 size={22} />, label: "We match it to the data", body: "Corridor prices, delivery records, infrastructure status." },
             { n: "03", icon: <Building2 size={22} />, label: "Sourced from public records", body: "TG-RERA, NHAI, HMRL and HMDA — with links." },
           ].map((s) => (
             <div key={s.n} className="uv-card" style={{ position: "relative", padding: "1.75rem 1.5rem" }}>
@@ -213,12 +222,12 @@ export default function HomePage() {
         <SectionHeader title="Tools for the numbers" />
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16 }}>
           {[
-            { icon: <Calculator size={20} />, name: "ROI Calculator", desc: "Project appreciation vs Nifty, gold, FD." },
-            { icon: <FileText size={20} />, name: "EMI Calculator", desc: "Monthly outgo at current home-loan rates." },
-            { icon: <Ruler size={20} />, name: "Stamp Duty", desc: "Registration + stamp duty for Telangana." },
-            { icon: <Repeat size={20} />, name: "Unit Converter", desc: "sq.yd ↔ sq.ft ↔ acre ↔ guntha ↔ cent." },
+            { icon: <Calculator size={20} />, name: "ROI Calculator", desc: "Price-growth scenarios beside equity, gold and FD.", href: "/calculator" },
+            { icon: <FileText size={20} />, name: "Real cost & EMI", desc: "Stamp duty, registration, GST and EMI — on every listing.", href: "/projects" },
+            { icon: <Repeat size={20} />, name: "Compare projects", desc: "Put listings side by side.", href: "/projects/compare" },
+            { icon: <BarChart3 size={20} />, name: "Price scenarios", desc: "Ten-year scenarios for each area.", href: "/market/forecast" },
           ].map((t) => (
-            <Link key={t.name} href="/calculator" className="uv-card uv-card-hover" style={{ padding: "1.4rem 1.35rem", display: "flex", flexDirection: "column", gap: 8, textDecoration: "none" }}>
+            <Link key={t.name} href={t.href} className="uv-card uv-card-hover" style={{ padding: "1.4rem 1.35rem", display: "flex", flexDirection: "column", gap: 8, textDecoration: "none" }}>
               <div style={{ color: "var(--color-saffron-deep)" }}>{t.icon}</div>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <h3 style={{ fontFamily: "var(--font-jakarta)", fontWeight: 700, fontSize: "1rem", color: "var(--color-text-hi)" }}>{t.name}</h3>
@@ -230,44 +239,40 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ═══ 5.11 WHY US ═══ */}
+      {/* ═══ 5.11 WHY US ═══ — only things this site actually has, each linked to where it lives */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full" style={{ paddingTop: "4.5rem", paddingBottom: "5rem" }}>
         <SectionHeader eyebrow="Direct, and confident." title="Why us" />
         <div className="uv-card" style={{ overflow: "hidden", padding: 0 }}>
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 520, tableLayout: "fixed" }}>
               <colgroup>
-                <col style={{ width: "50%" }} />
-                <col style={{ width: "25%" }} />
-                <col style={{ width: "25%" }} />
+                <col style={{ width: "65%" }} />
+                <col style={{ width: "35%" }} />
               </colgroup>
               <thead>
                 <tr>
-                  <th style={{ textAlign: "left", padding: "16px 20px", fontSize: "0.8125rem", color: "var(--color-text-mid)", fontWeight: 600 }}></th>
-                  <th style={{ textAlign: "center", padding: "16px 20px", fontSize: "0.8125rem", color: "var(--color-text-mid)", fontWeight: 600 }}>Listing Portals</th>
-                  <th style={{ textAlign: "center", padding: "16px 20px", fontSize: "0.8125rem", color: "var(--color-saffron-deep)", fontWeight: 700, background: "var(--color-saffron-wash)" }}>This Platform</th>
+                  <th style={{ textAlign: "left", padding: "16px 20px", fontSize: "0.8125rem", color: "var(--color-text-mid)", fontWeight: 600 }}>What you get here</th>
+                  <th style={{ textAlign: "center", padding: "16px 20px", fontSize: "0.8125rem", color: "var(--color-saffron-deep)", fontWeight: 700, background: "var(--color-saffron-wash)" }}>Where to find it</th>
                 </tr>
               </thead>
               <tbody>
                 {[
-                  ["Property listings", true, true],
-                  ["Government infrastructure data", false, true],
-                  ["Corridor appreciation history", false, true],
-                  ["AI investment recommendations", false, true],
-                  ["Legal due-diligence guidance", false, true],
-                  ["Post-purchase value tracking", false, true],
-                ].map(([label, them, us], i) => (
+                  ["Projects with a TG-RERA number you can verify", "/projects", "Projects"],
+                  ["Builders' delivery records and RERA orders", "/developers", "Developer records"],
+                  ["Area prices measured from listings, beside government guidance values", "/market", "Area prices"],
+                  ["Government infrastructure tracked from official sources", "/market", "Corridor pages"],
+                  ["The real cost of buying: duties, GST and EMI", "/projects", "On every listing"],
+                  ["Checks to make before you pay", "/market/legal", "Legal guide"],
+                ].map(([label, href, where], i) => (
                   <tr key={i} style={{ borderTop: "1px solid var(--color-line)" }}>
-                    <td style={{ padding: "14px 20px", fontSize: "0.9375rem", color: "var(--color-text-hi)" }}>{label as string}</td>
-                    <td style={{ padding: "14px 20px", textAlign: "center", color: them ? "var(--color-text-mid)" : "var(--color-text-lo)", verticalAlign: "middle" }}>
-                      <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 24, height: 24, margin: "0 auto" }}>
-                        {them ? <CheckCircle2 size={18} /> : "—"}
+                    <td style={{ padding: "14px 20px", fontSize: "0.9375rem", color: "var(--color-text-hi)" }}>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 10 }}>
+                        <CheckCircle2 size={18} color="var(--color-growth)" style={{ flexShrink: 0 }} />
+                        {label}
                       </span>
                     </td>
-                    <td style={{ padding: "14px 20px", textAlign: "center", background: "var(--color-saffron-wash)", color: "var(--color-growth)", verticalAlign: "middle" }}>
-                      <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 24, height: 24, margin: "0 auto" }}>
-                        {us ? <CheckCircle2 size={18} /> : "—"}
-                      </span>
+                    <td style={{ padding: "14px 20px", textAlign: "center", background: "var(--color-saffron-wash)", verticalAlign: "middle" }}>
+                      <Link href={href} style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--color-saffron-deep)", textDecoration: "underline", textUnderlineOffset: 3 }}>{where}</Link>
                     </td>
                   </tr>
                 ))}

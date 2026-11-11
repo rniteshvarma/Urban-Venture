@@ -143,7 +143,8 @@ export function buildWhere(bbox: Bbox | null, f: ExploreFilters): Prisma.Project
   }
 
   if (f.verifiedOnly) {
-    and.push({ OR: [{ listingSource: "ADMIN" }, { approvalVerified: true }] });
+    // Same rule as the "Verified" badge: a TG-RERA number or an admin-checked approval.
+    and.push({ OR: [{ AND: [{ reraNumber: { not: null } }, { NOT: { reraNumber: "" } }] }, { approvalVerified: true }] });
   }
 
   if (and.length > 0) where.AND = and;

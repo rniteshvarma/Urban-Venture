@@ -8,17 +8,18 @@ interface ConversionFunnelProps {
 }
 
 export default function ConversionFunnel({ data }: ConversionFunnelProps) {
-  const [hoveredIdx, setHoveredIdx] = useState<number | null>(1); // Default active on second column (Qualification)
+  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
 
-  const STAGE_NAMES = ["Lead", "Qualification", "Negotiation", "Closed-Won"];
-  
-  const funnelStages = STAGE_NAMES.map((name, idx) => {
-    const originalItem = data[idx] || { value: 0 };
-    return {
-      name,
-      value: originalItem.value || (idx === 0 ? 132 : idx === 1 ? 61 : idx === 2 ? 14 : 6)
-    };
-  });
+  // Real counts only, under their own names. "Searches" (research-tool runs) is
+  // left out: leads also arrive from enquiries, site visits and WhatsApp, so it
+  // is not a stage every lead passes through and a rate against it means nothing.
+  const funnelStages = (data ?? [])
+    .filter((d) => d.name !== "Searches")
+    .map((d) => ({ name: d.name, value: Number(d.value) || 0 }));
+
+  if (funnelStages.length === 0 || funnelStages[0].value === 0) {
+    return <p className="py-10 text-center text-xs text-[#8A8A9E]">No leads yet — the funnel appears once leads come in.</p>;
+  }
 
   const stagesWithRates = funnelStages.map((stage, idx) => {
     let rate = 100;
@@ -35,20 +36,20 @@ export default function ConversionFunnel({ data }: ConversionFunnelProps) {
   return (
     <div className="space-y-6 select-none w-full">
       {/* Main Funnel Chart columns */}
-      <div className="grid grid-cols-4 gap-3.5 relative pt-12 pb-2">
+      <div className="grid gap-3.5 relative pt-12 pb-2" style={{ gridTemplateColumns: `repeat(${funnelStages.length}, minmax(0, 1fr))` }}>
         
         {/* Floating Tooltip Card on Hover */}
         {hoveredIdx !== null && (
           <div 
             className="absolute z-20 bg-white rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.1)] p-3.5 flex flex-col justify-center gap-1.5 transition-all duration-300 pointer-events-none border border-[#F0EDFA]"
             style={{
-              left: `${(hoveredIdx * 25) + 4}%`,
+              left: `${(hoveredIdx * 100) / funnelStages.length + 4}%`,
               top: "-12px",
               width: "190px",
             }}
           >
             <div className="flex items-center justify-between text-xs text-[#8A8A9E] font-medium">
-              <span>Deal Stage</span>
+              <span>Stage</span>
               <span className="bg-[#F4F0FF] text-[#5B4FE0] px-2.5 py-0.5 rounded-full font-bold text-[11px]">
                 {stagesWithRates[hoveredIdx].name}
               </span>
@@ -66,7 +67,7 @@ export default function ConversionFunnel({ data }: ConversionFunnelProps) {
           const isActive = hoveredIdx === idx;
           
           const maxVal = stagesWithRates[0].value || 1;
-          const heightPercent = Math.max(12, Math.round((stage.value / maxVal) * 100));
+          const heightPercent = stage.value === 0 ? 0 : Math.max(6, Math.round((stage.value / maxVal) * 100));
 
           return (
             <div 

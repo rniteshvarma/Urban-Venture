@@ -5,7 +5,7 @@ import LocationCombobox from "./LocationCombobox";
 import type { LocationSuggestion } from "@/lib/projects/location-search";
 import { useRouter } from "next/navigation";
 import * as Slider from "@radix-ui/react-slider";
-import { Bot, Building2, BarChart3, Calculator, ArrowRight, ChevronDown } from "lucide-react";
+import { Building2, BarChart3, MapPinned, Calculator, ArrowRight, ChevronDown } from "lucide-react";
 import { formatLakh } from "@/lib/format";
 
 type TabKey = "ai" | "projects" | "corridor" | "calc";
@@ -24,9 +24,9 @@ interface SearchCommandBarProps {
 }
 
 const TABS: { key: TabKey; label: string; icon: React.ComponentType<{ size?: number }>; badge?: string }[] = [
-  { key: "ai", label: "AI Research", icon: Bot, badge: "NEW" },
+  { key: "ai", label: "Research", icon: BarChart3 },
   { key: "projects", label: "Projects", icon: Building2 },
-  { key: "corridor", label: "Corridor Data", icon: BarChart3 },
+  { key: "corridor", label: "Corridor Data", icon: MapPinned },
   { key: "calc", label: "Calculate", icon: Calculator, badge: "FREE" },
 ];
 

@@ -85,7 +85,7 @@ export default function ResearchPage() {
           <PageHero
             eyebrow={<><Bot size={12} /> Corridor research</>}
             title="Where your budget fits"
-            subtitle="Three inputs — budget, horizon, city. We match them against measured entry prices, infrastructure timelines and delivery records across Hyderabad's corridors."
+            subtitle="Two inputs — your budget and how long you plan to hold. We match them against measured entry prices, infrastructure timelines and delivery records across Hyderabad's corridors."
           />
         </div>
       )}

@@ -184,7 +184,7 @@ export default function AdminDashboardPage() {
             Real Estate Analytics & Growth Hub
           </h1>
           <p className="text-xs sm:text-sm text-black max-w-2xl leading-relaxed font-medium">
-            Real-time pipeline data and intelligent corridor forecasts for Hyderabad as of {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}.
+            Leads, pipeline and corridor scores for Hyderabad as of {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}.
           </p>
         </div>
         <div className="flex flex-wrap gap-3 shrink-0 z-10 relative">
@@ -398,7 +398,7 @@ export default function AdminDashboardPage() {
             {/* Insight callout box */}
             <div className="crm-insight-box">
               <Sparkles className="w-4 h-4 text-[#5B4FE0] shrink-0 mt-0.5" />
-              <span>Fast initial responses within 30 minutes build trust and boost conversion rates by 4x.</span>
+              <span>Call new enquiries the same day — the lead list shows how long each has been waiting.</span>
             </div>
           </div>
         </div>
@@ -498,7 +498,7 @@ export default function AdminDashboardPage() {
             {/* Insight callout box */}
             <div className="crm-insight-box">
               <Sparkles className="w-4 h-4 text-[#5B4FE0] shrink-0 mt-0.5" />
-              <span>WhatsApp broadcasts deliver 98% open rates compared to traditional email campaigns.</span>
+              <span>Broadcasts need a connected email or WhatsApp provider before they can send.</span>
             </div>
           </div>
         </div>
@@ -515,10 +515,10 @@ export default function AdminDashboardPage() {
               </div>
               <div>
                 <h3 className="font-display font-bold text-lg text-[#1A1A2E]">
-                  AI Corridor Intelligence Console
+                  Corridor Intelligence Console
                 </h3>
                 <p className="text-xs text-[#8A8A9E]">
-                  Infrastructure tracking, predictive pricing models, and automated corridor scores
+                  Tracked infrastructure, price scenarios and computed corridor scores
                 </p>
               </div>
             </div>
@@ -637,7 +637,7 @@ export default function AdminDashboardPage() {
               <h3 className="font-display font-bold text-base text-[#1A1A2E]">
                 Top Searched Corridors
               </h3>
-              <p className="text-xs text-[#8A8A9E]">AI recommendation and inquiry heatmap</p>
+              <p className="text-xs text-[#8A8A9E]">Areas that came up most in research-tool runs</p>
             </div>
             <ChevronRight className="w-4 h-4 text-[#8A8A9E]" />
           </div>
@@ -649,9 +649,9 @@ export default function AdminDashboardPage() {
           <div className="flex items-center justify-between pb-3 border-b border-[#F5F3FB]">
             <div>
               <h3 className="font-display font-bold text-base text-[#1A1A2E]">
-                Leads Conversion Pipeline Funnel
+                Lead funnel
               </h3>
-              <p className="text-xs text-[#8A8A9E]">Conversion rates across customer roadmap</p>
+              <p className="text-xs text-[#8A8A9E]">All leads, those contacted, and those converted</p>
             </div>
             <ChevronRight className="w-4 h-4 text-[#8A8A9E]" />
           </div>

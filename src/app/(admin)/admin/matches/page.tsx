@@ -212,7 +212,7 @@ export default function AdminMatchesPage() {
         <div className="crm-card p-6 flex flex-col justify-between space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-[#8A8A9E]">Active Matches</span>
-            <span className="badge bg-purple-100 text-purple-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full">AI Matrix</span>
+            <span className="badge bg-purple-100 text-purple-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full">Rule-based</span>
           </div>
           <div className="text-4xl font-display font-bold text-[#1A1A2E]">{totalCount}</div>
           <div className="w-full h-1.5 rounded-full bg-[#F0EEFA] overflow-hidden">
@@ -234,7 +234,7 @@ export default function AdminMatchesPage() {
         <div className="crm-card p-6 flex flex-col justify-between space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-[#8A8A9E]">Average Match Score</span>
-            <span className="badge bg-blue-100 text-blue-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full">Confidence</span>
+            <span className="badge bg-blue-100 text-blue-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full">Average</span>
           </div>
           <div className="text-4xl font-display font-bold text-[#5B4FE0]">{avgScore}%</div>
           <div className="w-full h-1.5 rounded-full bg-[#F0EEFA] overflow-hidden">

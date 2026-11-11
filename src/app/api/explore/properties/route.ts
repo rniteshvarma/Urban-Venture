@@ -105,7 +105,9 @@ export async function GET(req: Request) {
             source: r.listingSource,
             // Admin inventory is verified by definition; seller listings must
             // have had their approval verified by a reviewer.
-            isVerified: isAdmin || r.approvalVerified,
+            // "Verified" means an approval we can point to: a TG-RERA number, or an
+            // approval an admin checked. Being in our catalogue is not verification.
+            isVerified: !!r.reraNumber || r.approvalVerified,
             scoreGrade: inventoryOrSellerGrade(r),
             priceBand: bandFor(priceLakh, breaks),
             thumb: r.imageUrls?.[0] ?? null,

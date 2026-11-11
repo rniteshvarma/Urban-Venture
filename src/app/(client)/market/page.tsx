@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import { scoreBandLabel } from "@/components/ui/enums";
 import { 
   Building2, 
   Map, 
@@ -32,20 +33,6 @@ const MarketMap = dynamic(() => import("@/components/market/MarketMap"), {
   )
 });
 
-const ZONE_DESCRIPTIONS: Record<string, string> = {
-  "adibatla": "Southeast IT & Aerospace Corridor · Ranga Reddy",
-  "tukkuguda-shamshabad": "South Airport Corridor · Premium Villa Belt",
-  "kadthal-fcda": "South Srisailam Highway · Future City Gateway",
-  "maheshwaram-pharma-city": "South Pharma City Influence Zone · Ranga Reddy",
-  "shadnagar": "South Bangalore Highway NH-44 · Industrial Belt",
-  "shankarpally-mokila": "West Premium Gated Villa sanctuary · Ranga Reddy",
-  "sangareddy-industrial": "Northwest Mumbai Highway NH-65 · IIT Hub",
-  "kompally-bachupally": "North NH-44 Residential Corridor · Medchal",
-  "medchal-dundigal": "North Warehousing & Logistics Belt · Medchal",
-  "ghatkesar-peerzadiguda": "East Warangal Highway IT Corridor · Medchal",
-  "bibinagar-bhongir": "East AIIMS Medical Hub & Yadadri Corridor",
-  "kokapet-neopolis": "West Neopolis Commercial Hub · Gold Standard Area"
-};
 
 /** Dated public milestones (no forecasts or labels). */
 const GROWTH_MILESTONES = [
@@ -189,7 +176,7 @@ export default function MarketHubPage() {
     return (
       <div className="flex flex-col items-center justify-center py-40 min-h-screen" style={{ background: "var(--color-paper)", color: "var(--color-text-hi)" }}>
         <Loader2 className="animate-spin" size={40} style={{ color: "var(--color-saffron-deep)" }} />
-        <span className="text-xs font-mono tracking-widest mt-4 uppercase" style={{ color: "var(--color-text-mid)" }}>Initializing Deep Research Node…</span>
+        <span className="text-xs font-mono tracking-widest mt-4 uppercase" style={{ color: "var(--color-text-mid)" }}>Loading market data…</span>
       </div>
     );
   }
@@ -219,7 +206,7 @@ export default function MarketHubPage() {
       <section className="relative overflow-hidden py-16 px-6" style={{ background: "var(--color-ink)" }}>
         <div className="max-w-7xl mx-auto text-center space-y-6 relative z-10">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-mono uppercase tracking-wider" style={{ background: "var(--color-ink-soft)", border: "1px solid var(--color-ink-line)", color: "var(--color-saffron)" }}>
-            <Sparkles size={11} /> Deep Research Edition · Hyderabad Growth Engine
+            <Sparkles size={11} /> Hyderabad · every figure with its source
           </div>
           <h2 className="text-4xl md:text-6xl tracking-tight leading-tight" style={{ fontFamily: "var(--font-jakarta)", fontWeight: 800, letterSpacing: "-0.02em", color: "#fff" }}>
             Market Intelligence & <br className="hidden md:inline" />
@@ -268,7 +255,7 @@ export default function MarketHubPage() {
             <Compass className="text-navy-ink" size={20} />
             Directional Corridors & Economic Anchors
           </h3>
-          <p className="text-text-secondary text-xs mt-1">Understanding Hyderabad's radial growth driven by dedicated industrial and service sector nodes.</p>
+          <p className="text-text-secondary text-xs mt-1">The four sides of the city and the landmarks each one is built around.</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -278,8 +265,7 @@ export default function MarketHubPage() {
               <span className="badge" style={{ background: "var(--color-saffron-wash)", color: "var(--color-saffron-deep)" }}>IT & FINANCE</span>
             </div>
             <h4 className="font-display text-lg text-text-primary">Kokapet-Shankarpally Belt</h4>
-            <p className="text-xs text-text-secondary">Cmds premium high-rises and luxury villa sanctuary plots. Driven by Hitec City spillover and Neopolis SEZ expansion.</p>
-            <div className="text-[10px] font-mono text-navy-ink font-bold">Anchors: Neopolis IT SEZ, Financial District, ORR Exit 1.</div>
+            <div className="text-[10px] font-mono text-navy-ink font-bold">Landmarks: Neopolis (Kokapet), Financial District, ORR Exit 1.</div>
           </div>
 
           <div className="card-premium p-5 space-y-3 animate-fade-in-up stagger-2">
@@ -288,8 +274,7 @@ export default function MarketHubPage() {
               <span className="badge" style={{ background: "var(--color-saffron-wash)", color: "var(--color-saffron-deep)" }}>AEROSPACE & MFG</span>
             </div>
             <h4 className="font-display text-lg text-text-primary">Tukkuguda-Shamshabad</h4>
-            <p className="text-xs text-text-secondary">Gateway to Mucherla Future City and Srisailam Highway. Commands rapid appreciation from airport expansions.</p>
-            <div className="text-[10px] font-mono text-navy-ink font-bold">Anchors: RGIA Airport, Fab City, Aerospace SEZ.</div>
+            <div className="text-[10px] font-mono text-navy-ink font-bold">Landmarks: RGIA Airport, Fab City, Srisailam Highway.</div>
           </div>
 
           <div className="card-premium p-5 space-y-3 animate-fade-in-up stagger-3">
@@ -298,8 +283,7 @@ export default function MarketHubPage() {
               <span className="badge" style={{ background: "var(--color-saffron-wash)", color: "var(--color-saffron-deep)" }}>LOGISTICS & MFG</span>
             </div>
             <h4 className="font-display text-lg text-text-primary">Medchal-Kompally Belt</h4>
-            <p className="text-xs text-text-secondary">An established warehousing powerhouse transitioning to high-density budget-friendly residential housing layouts.</p>
-            <div className="text-[10px] font-mono text-navy-ink font-bold">Anchors: NH-44 Logistics parks, Gundlapochampally MMTS.</div>
+            <div className="text-[10px] font-mono text-navy-ink font-bold">Landmarks: NH-44, Gundlapochampally MMTS station.</div>
           </div>
 
           <div className="card-premium p-5 space-y-3 animate-fade-in-up stagger-4">
@@ -308,8 +292,7 @@ export default function MarketHubPage() {
               <span className="badge" style={{ background: "var(--color-saffron-wash)", color: "var(--color-saffron-deep)" }}>HEALTH & TECH</span>
             </div>
             <h4 className="font-display text-lg text-text-primary">Ghatkesar-Bibinagar</h4>
-            <p className="text-xs text-text-secondary">Anchored by medical universities, spiritual tourism (Yadadri), and suburban tech offices Pocharam.</p>
-            <div className="text-[10px] font-mono text-navy-ink font-bold">Anchors: Pocharam IT Campus, AIIMS Medical Hub, NH-163.</div>
+            <div className="text-[10px] font-mono text-navy-ink font-bold">Landmarks: Pocharam IT campus, AIIMS Bibinagar, NH-163, Yadadri.</div>
           </div>
         </div>
       </section>
@@ -320,7 +303,7 @@ export default function MarketHubPage() {
           <h3 className="text-2xl font-display text-text-primary flex items-center gap-2">
             Hyderabad Growth Corridor Profiles
           </h3>
-          <p className="text-text-secondary text-xs mt-1">Audit corridor ratings calculated from RERA counts, YoY returns, and infrastructure indexes.</p>
+          <p className="text-text-secondary text-xs mt-1">Each area is scored out of 100 on four parts: infrastructure, RERA projects, activity and outlook.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -341,7 +324,7 @@ export default function MarketHubPage() {
                         {c.name}
                       </h4>
                       <p className="text-[10px] text-navy-ink font-mono uppercase tracking-wider font-bold mt-1.5">
-                        {ZONE_DESCRIPTIONS[c.corridor] || "Hyderabad Zone Corridor"}
+                        {[c.zone, c.district].filter(Boolean).join(" · ") || "Hyderabad"}
                       </p>
                     </div>
 
@@ -368,7 +351,7 @@ export default function MarketHubPage() {
                   {/* Sentiment & Sparkline */}
                   <div className="flex items-center justify-between border-y border-slate-200 py-2.5 bg-surface-dim/30 px-2 rounded-md">
                     <span className={`badge ${isBullish ? 'badge-hot' : isCautious ? 'badge-warning' : 'badge-premium'}`}>
-                      {c.investorSentiment}
+                      {scoreBandLabel(c.investorSentiment)}
                     </span>
 
                     <div className="flex items-center gap-2">

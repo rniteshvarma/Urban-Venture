@@ -62,7 +62,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
             </Link>
 
             <nav className="hidden lg:flex items-center gap-7">
-              {/* Research goes straight to the AI research tool — a menu holding
+              {/* Research goes straight to the research tool — a menu holding
                   a single destination is a hover to reach a click. */}
               <Link href="/research" className={linkCls(pathname?.startsWith("/research"))}>Research</Link>
 
@@ -205,7 +205,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
             <div>
               <h4 className="text-xs font-semibold uppercase tracking-wider text-text-invert mb-5">Research</h4>
               <ul className="space-y-1 text-sm text-text-invert-mid [&_a]:inline-block [&_a]:py-1.5">
-                <li><Link href="/research" className="hover:text-text-invert transition-colors">AI Research Tool</Link></li>
+                <li><Link href="/research" className="hover:text-text-invert transition-colors">Budget Research Tool</Link></li>
                 <li><Link href="/market" className="hover:text-text-invert transition-colors">Corridor Intelligence</Link></li>
                 <li><Link href="/projects" className="hover:text-text-invert transition-colors">Projects</Link></li>
                 <li><Link href="/calculator" className="hover:text-text-invert transition-colors">Calculators</Link></li>

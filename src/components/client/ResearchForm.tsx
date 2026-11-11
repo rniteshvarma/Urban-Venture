@@ -60,7 +60,8 @@ export default function ResearchForm({ onSubmit, isLoading }: ResearchFormProps)
     return 5;
   });
   const [city, setCity] = useState<string>(() => {
-    if (initialCityParam) return initialCityParam;
+    // We only hold data for Hyderabad — ignore any other city in the link.
+    void initialCityParam;
     return "Hyderabad";
   });
   const [name, setName] = useState("");
@@ -83,7 +84,7 @@ export default function ResearchForm({ onSubmit, isLoading }: ResearchFormProps)
   };
 
   const horizons = [1, 2, 3, 5, 7, 10];
-  const cities = ["Hyderabad", "Bengaluru", "Chennai", "Mumbai", "Pune"];
+  const cities = ["Hyderabad"];
 
   const sliderPos = budgetToSlider(budget);
 
@@ -109,8 +110,8 @@ export default function ResearchForm({ onSubmit, isLoading }: ResearchFormProps)
         {step === 1 && (
           <div className="animate-fade-in" style={{ display: "flex", flexDirection: "column", gap: 28 }}>
             <div>
-              <h2 style={{ fontFamily: "var(--font-jakarta)", fontWeight: 800, fontSize: "1.25rem", color: "var(--color-text-hi)" }}>Target Location</h2>
-              <p style={{ fontSize: "0.8125rem", color: "var(--color-text-mid)", marginTop: 2 }}>Select your preferred investment destination</p>
+              <h2 style={{ fontFamily: "var(--font-jakarta)", fontWeight: 800, fontSize: "1.25rem", color: "var(--color-text-hi)" }}>Location</h2>
+              <p style={{ fontSize: "0.8125rem", color: "var(--color-text-mid)", marginTop: 2 }}>We cover Hyderabad for now — every figure here is measured from Hyderabad listings and records.</p>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 14 }}>
               {cities.map((c) => {

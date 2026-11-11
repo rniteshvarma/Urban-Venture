@@ -49,6 +49,8 @@ export default function SystemHealthPage() {
   };
 
   const issues = data?.jobs.filter((j) => j.health === "FAILED" || j.health === "STALE").length ?? 0;
+  // A job with no recorded run is unknown, not healthy — say so instead of "All healthy".
+  const neverRan = data?.jobs.filter((j) => j.health === "NEVER_RAN").length ?? 0;
   return (
     <div className="p-6 lg:p-8 space-y-6 max-w-6xl">
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
@@ -70,7 +72,7 @@ export default function SystemHealthPage() {
           <section className="rounded-2xl bg-white border border-[#F0EDFA] overflow-x-auto">
             <div className="px-5 py-4 border-b border-[#F0EDFA] flex items-center justify-between">
               <h2 className="font-semibold">Scheduled jobs</h2>
-              <span className={`text-xs font-semibold rounded-full px-2.5 py-1 ${issues ? TONE.FAILED : TONE.OK}`}>{issues ? `${issues} need attention` : "All healthy"}</span>
+              <span className={`text-xs font-semibold rounded-full px-2.5 py-1 ${issues ? TONE.FAILED : neverRan ? TONE.NEVER_RAN : TONE.OK}`}>{issues ? `${issues} need attention` : neverRan ? `${neverRan} of ${data.jobs.length} have never run` : "All healthy"}</span>
             </div>
             <table className="w-full text-xs">
               <thead className="text-left text-[10px] uppercase text-[#8A8A9E]">

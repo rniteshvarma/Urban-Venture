@@ -225,7 +225,7 @@ export default function ProjectForm({ initialData, isEdit = false }: ProjectForm
               {isEdit ? "Edit Mapped Project" : "Add New Target Project"}
             </h1>
             <p className="text-xs text-[#8A8A9E] mt-0.5">
-              Map property inventory to growth corridors, risk indexes, and AI matching rules.
+              Map property inventory to growth corridors, risk levels and matching rules.
             </p>
           </div>
         </div>

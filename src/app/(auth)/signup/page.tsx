@@ -159,7 +159,7 @@ function SignupInner() {
         </div>
         <h1 style={{ fontFamily: "var(--font-jakarta)", fontWeight: 800, fontSize: "1.75rem", color: "var(--color-text-hi)" }}>One last thing</h1>
         <p style={{ color: "var(--color-text-mid)", fontSize: "0.875rem", marginTop: 4, marginBottom: 22 }}>
-          We&apos;ll send your AI reports and project updates to WhatsApp.
+          We use your number to verify your account and to reach you about your enquiries.
         </p>
         <form onSubmit={createThenVerify} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <div>

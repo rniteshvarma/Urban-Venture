@@ -41,7 +41,7 @@ export default function AdminPersonasPage() {
   }, []);
 
   const handleReclassifyAll = async () => {
-    if (!confirm("Are you sure you want to reclassify all leads? This runs the AI classifier for every lead and updates their persona profiles.")) return;
+    if (!confirm("Are you sure you want to reclassify all leads? This re-runs the persona classifier for every lead and updates their persona profiles.")) return;
     
     setIsReclassifying(true);
     try {
@@ -81,7 +81,7 @@ export default function AdminPersonasPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-[#F0EDFA]">
         <div>
           <span className="text-[11px] text-[#5B4FE0] font-bold uppercase tracking-widest block mb-1">
-            AI Buyer Profiling
+            Buyer profiling
           </span>
           <h1 className="font-display text-2xl sm:text-3xl font-bold text-[#1A1A2E]">
             Persona Segmentation

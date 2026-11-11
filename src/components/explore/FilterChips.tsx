@@ -60,7 +60,7 @@ function activeChips(f: ExploreFilterState): Chip[] {
   if (f.source !== "ALL") {
     out.push({
       key: "source",
-      label: f.source === "ADMIN" ? "Our verified inventory" : "Owner listed",
+      label: f.source === "ADMIN" ? "Listings we researched" : "Owner listed",
       clear: (s) => ({ ...s, source: "ALL" }),
     });
   }

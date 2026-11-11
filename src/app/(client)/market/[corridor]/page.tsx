@@ -37,7 +37,7 @@ import {
 import { formatDate } from "@/lib/format";
 import type { CorridorMarketStats } from "@/lib/market/compute";
 import { SCORE_LABELS } from "@/lib/market/scores";
-import { CYCLE, HEAT, type HeatRating, type InvCycle } from "@/components/ui/enums";
+import { CYCLE, HEAT, scoreBandLabel, type HeatRating, type InvCycle } from "@/components/ui/enums";
 
 /** One contributor to a corridor's infra score (see /api/market/corridors/[slug]/infra). */
 interface InfraDriver {
@@ -278,7 +278,7 @@ export default function CorridorDetailPage() {
               profile.investorSentiment === "CAUTIOUS" ? "bg-red-50 text-[#D93B30] border-red-200" :
               "bg-amber-50 text-[#9A6A1E] border-amber-200"
             }`}>
-              {profile.investorSentiment ? `${profile.investorSentiment.toLowerCase()} on our score` : "Not scored"}
+              {scoreBandLabel(profile.investorSentiment)}
             </span>
           </div>
         </div>
@@ -617,7 +617,7 @@ export default function CorridorDetailPage() {
                     </div>
                     {days !== null && (
                       <div className="text-[11px] text-text-secondary">
-                        Project data verified {days === 0 ? "today" : days === 1 ? "yesterday" : `${days} days ago`}
+                        Status last checked {days === 0 ? "today" : days === 1 ? "yesterday" : `${days} days ago`}
                       </div>
                     )}
                   </div>

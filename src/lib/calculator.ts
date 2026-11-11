@@ -22,6 +22,12 @@ export interface CalculatorSummary {
   rentalYieldMax: number;
 }
 
+/**
+ * Comparison rates, % a year. These are fixed example assumptions, not measured
+ * or sourced returns — every screen that shows them must say so.
+ */
+export const BENCHMARK_RATES = { fd: 6.5, nifty: 12, gold: 9 } as const;
+
 export function runRoiCalculations(
   initialAmount: number, // in Lakhs
   years: number,
@@ -32,10 +38,10 @@ export function runRoiCalculations(
 ): CalculatorSummary {
   const yearlyData: CalculationResult[] = [];
   
-  // Benchmark CAGR rates
-  const FD_CAGR = 0.065;   // 6.5%
-  const NIFTY_CAGR = 0.12; // 12%
-  const GOLD_CAGR = 0.09;  // 9%
+  // Benchmark rates (example assumptions — see BENCHMARK_RATES)
+  const FD_CAGR = BENCHMARK_RATES.fd / 100;
+  const NIFTY_CAGR = BENCHMARK_RATES.nifty / 100;
+  const GOLD_CAGR = BENCHMARK_RATES.gold / 100;
 
   let reValMin = initialAmount;
   let reValMax = initialAmount;

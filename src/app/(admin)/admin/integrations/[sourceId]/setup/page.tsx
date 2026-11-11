@@ -252,7 +252,7 @@ Thank you!`;
         <div className="pt-4 border-t border-[#F0EDFA] flex flex-col sm:flex-row items-center justify-between gap-4">
           <div>
             <h4 className="font-display font-bold text-sm text-[#1A1A2E]">Test Connection</h4>
-            <p className="text-xs text-[#8A8A9E]">Send a test lead payload to verify real-time AI extraction and deduplication.</p>
+            <p className="text-xs text-[#8A8A9E]">Send a test lead payload to check that fields are read correctly and duplicates are caught.</p>
           </div>
           <button
             onClick={handleTestConnection}

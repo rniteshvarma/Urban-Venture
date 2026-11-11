@@ -38,12 +38,20 @@ export const CYCLE: Record<InvCycle, { label: string; emoji?: string; explain: s
   PATIENT_CAPITAL: { label: "Long horizon",        explain: "No nearby infrastructure under way, or completion further out." },
 };
 
-// ── Investor sentiment ──────────────────────────────────────
+// ── Score band ──────────────────────────────────────────────
+// Stored as BULLISH / NEUTRAL / CAUTIOUS (score 70+, 45–69, under 45 — see
+// src/lib/market/scores.ts). Shown as a plain score band: it describes where
+// the area's score sits, it is not a view on whether to buy.
 export const SENTIMENT: Record<Sentiment, Tone> = {
-  BULLISH:  { label: "Bullish",  emoji: "▲", bg: "var(--color-growth-wash)",  fg: "var(--color-growth)" },
-  NEUTRAL:  { label: "Neutral",  emoji: "▬", bg: "var(--color-caution-wash)", fg: "#9A6A1E" },
-  CAUTIOUS: { label: "Cautious", emoji: "▼", bg: "var(--color-alert-wash)",   fg: "var(--color-alert)" },
+  BULLISH:  { label: "High score", emoji: "▲", bg: "var(--color-growth-wash)",  fg: "var(--color-growth)" },
+  NEUTRAL:  { label: "Mid score",  emoji: "▬", bg: "var(--color-caution-wash)", fg: "#9A6A1E" },
+  CAUTIOUS: { label: "Low score",  emoji: "▼", bg: "var(--color-alert-wash)",   fg: "var(--color-alert)" },
 };
+
+/** "High score" / "Mid score" / "Low score" for a stored sentiment value; "Not scored" when missing. */
+export function scoreBandLabel(sentiment: string | null | undefined): string {
+  return sentiment && sentiment in SENTIMENT ? SENTIMENT[sentiment as Sentiment].label : "Not scored";
+}
 
 // ── Risk level ──────────────────────────────────────────────
 export const RISK: Record<RiskLevel, Tone> = {

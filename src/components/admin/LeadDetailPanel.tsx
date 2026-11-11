@@ -151,8 +151,8 @@ export default function LeadDetailPanel({
       .replace(/{{portal_url}}/g, window.location.origin)
       .replace(/{{agent_name}}/g, lead.assignedTo || "Property Advisor")
       .replace(/{{corridor}}/g, lead.user?.searches?.[0]?.aiResponse?.corridors?.[0]?.name?.replace("Corridor", "").trim() || "Hyderabad")
-      .replace(/{{project_name}}/g, matchedProjects[0]?.project?.name || matchedProjects[0]?.name || "Premium Villa Plots")
-      .replace(/{{project_price}}/g, String(matchedProjects[0]?.project?.minBudgetLakhs || matchedProjects[0]?.minBudgetLakhs || 45));
+      .replace(/{{project_name}}/g, matchedProjects[0]?.project?.name || matchedProjects[0]?.name || "[project name]")
+      .replace(/{{project_price}}/g, String(matchedProjects[0]?.project?.minBudgetLakhs || matchedProjects[0]?.minBudgetLakhs || "[price]"));
 
     setWaPreview(preview);
   }, [selectedTemplateId, templates, lead, matchedProjects]);
@@ -166,7 +166,7 @@ export default function LeadDetailPanel({
       const res = await fetch(`/api/admin/leads/${lead.id}/classify`, { method: "POST" });
       if (res.ok) {
         if (onRefresh) onRefresh();
-        toast.show("Persona successfully reclassified by AI Engine!");
+        toast.show("Persona reclassified.");
       } else {
         const data = await res.json();
         toast.show(`Failed to reclassify: ${data.error || "Server Error"}${data.details ? " - " + data.details : ""}`);
@@ -413,7 +413,7 @@ export default function LeadDetailPanel({
                       </span>
                       <div>
                         <span className="text-sm font-bold text-slate-800 leading-none block">{persona.label}</span>
-                        <span className="text-[9px] font-bold text-slate-500 uppercase block mt-1">AI Classification</span>
+                        <span className="text-[9px] font-bold text-slate-500 uppercase block mt-1">Persona</span>
                       </div>
                     </div>
                   ) : (
@@ -425,7 +425,7 @@ export default function LeadDetailPanel({
               {/* Persona Rationale Explanation */}
               {persona && lead.personaReason && (
                 <section className="card-premium p-3 text-xs leading-relaxed text-text-primary">
-                  <span className="font-bold text-[10px] text-text-secondary block uppercase tracking-wider mb-1">AI Persona Rationale:</span>
+                  <span className="font-bold text-[10px] text-text-secondary block uppercase tracking-wider mb-1">Why this persona:</span>
                   "{lead.personaReason}"
                 </section>
               )}
@@ -434,7 +434,7 @@ export default function LeadDetailPanel({
               <section className="bg-[#F4F0FF]/80 border border-[#E0D7FF] p-4 rounded-2xl space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-[#5B4FE0] flex items-center gap-1">
-                    📡 Inbound Context & AI Extraction
+                    📡 Inbound context
                   </span>
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#5B4FE0] text-white">
                     {(lead as any).sourceChannel?.replace('_', ' ') || lead.source?.toUpperCase() || 'INBOUND'}
@@ -450,12 +450,12 @@ export default function LeadDetailPanel({
 
                 {((lead as any).aiExtractedBudget || (lead as any).aiExtractedProperty || (lead as any).aiConfidenceScore) && (
                   <div className="bg-[#5B4FE0]/10 p-3 rounded-xl text-xs space-y-1 text-[#1A1A2E]">
-                    <span className="font-bold text-[10px] text-[#5B4FE0] uppercase block">AI Intelligence Summary:</span>
+                    <span className="font-bold text-[10px] text-[#5B4FE0] uppercase block">Read from the enquiry:</span>
                     <div>
                       {(lead as any).aiExtractedBudget ? `Extracted Budget: ₹${(lead as any).aiExtractedBudget}L · ` : ''}
                       {(lead as any).aiExtractedHorizon ? `${(lead as any).aiExtractedHorizon}yr Horizon · ` : ''}
                       {(lead as any).aiExtractedProperty ? `Property: ${(lead as any).aiExtractedProperty} · ` : ''}
-                      Confidence: {(lead as any).aiConfidenceScore || 75}%
+                      {(lead as any).aiConfidenceScore ? `Confidence: ${(lead as any).aiConfidenceScore}%` : "Confidence not recorded"}
                     </div>
                   </div>
                 )}

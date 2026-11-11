@@ -4,9 +4,9 @@ import { Check } from "lucide-react";
 import { Wordmark } from "@/components/ui";
 
 const BENEFITS = [
-  "Save AI research reports and re-run them anytime",
-  "Watch corridors and get alerted when prices move",
-  "Track appreciation on properties you own",
+  "Save research reports and re-run them anytime",
+  "Save a search and get an email when a listing or price changes",
+  "Watch an area and see how its prices have moved since",
 ];
 
 /** Split-screen auth layout: dark ink value panel (desktop) + paper form panel. */

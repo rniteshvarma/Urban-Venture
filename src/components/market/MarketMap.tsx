@@ -107,7 +107,7 @@ export default function MarketMap({ projects, corridors = [] }: MarketMapProps) 
                 Score: ${corr.overallScore}/100
               </span>
               <span style="background: ${corr.sentiment === 'BULLISH' ? '#10b981' : corr.sentiment === 'CAUTIOUS' ? '#ef4444' : '#f59e0b'}; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; text-transform: uppercase;">
-                ${corr.sentiment || 'NEUTRAL'}
+                ${corr.sentiment === 'BULLISH' ? 'High score' : corr.sentiment === 'CAUTIOUS' ? 'Low score' : corr.sentiment === 'NEUTRAL' ? 'Mid score' : 'Not scored'}
               </span>
             </div>
             <div style="font-size: 11px; color: #334155; margin-bottom: 4px;"><b>Projected CAGR:</b> ${corr.projectedCAGRMin || 12}% - ${corr.projectedCAGRMax || 18}%</div>

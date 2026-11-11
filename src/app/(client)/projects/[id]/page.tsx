@@ -772,8 +772,8 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
               {/* Form Section */}
               <div className="p-6 space-y-6 bg-surface">
                 <div className="text-center border-b border-gray-100 pb-4">
-                  <h4 className="font-display text-base font-bold text-text-primary">Direct Advisor Connect</h4>
-                  <p className="text-[10px] text-text-secondary mt-1">Get priority access to inventory and pricing</p>
+                  <h4 className="font-display text-base font-bold text-text-primary">Ask about this listing</h4>
+                  <p className="text-[10px] text-text-secondary mt-1">Leave your details and our team will get back to you</p>
                 </div>
 
                 {submitSuccess ? (

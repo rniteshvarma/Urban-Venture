@@ -195,7 +195,7 @@ export default function CustomerProfile({
           {/* AI Searches & Recommendations History */}
           <section className="space-y-3">
             <h3 className="section-header">
-              AI Recommendations History ({customer.searchesCount})
+              Research-tool runs ({customer.searchesCount})
             </h3>
             {customer.searches.length === 0 ? (
               <p className="text-xs text-text-secondary italic">No searches recorded yet.</p>
@@ -239,7 +239,7 @@ export default function CustomerProfile({
                 ...customer.searches.map((s) => ({
                   type: "search",
                   date: new Date(s.createdAt),
-                  title: "AI Analysis Generated",
+                  title: "Research report generated",
                   desc: `Ran report for ₹${s.budget}L budget in ${s.city} targeting ${s.horizon} years.`,
                 })),
                 ...customer.leads.map((l) => ({

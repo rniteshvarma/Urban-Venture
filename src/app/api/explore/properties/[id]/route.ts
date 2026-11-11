@@ -19,7 +19,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
         latitude: true, longitude: true,
         minBudgetLakhs: true, maxBudgetLakhs: true, totalAreaSqYd: true, totalAreaSqFt: true,
         propertyType: true, listingSource: true, listingScore: true, sourceType: true,
-        approvalStatus: true, approvalNumber: true, approvalVerified: true,
+        approvalStatus: true, approvalNumber: true, approvalVerified: true, reraNumber: true,
         roadWidthFeet: true, facingOptions: true, ownershipType: true,
         availablePlots: true, totalPlots: true, imageUrls: true,
         accessibility: { select: { score: true, confidence: true, components: true, nearest: true, within: true, watchOuts: true, computedAt: true } },
@@ -75,7 +75,8 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
         ownershipType: p.ownershipType,
         plotsAvailable: p.availablePlots != null && p.totalPlots != null ? `${p.availablePlots} of ${p.totalPlots}` : null,
       },
-      isVerified: isAdmin || p.approvalVerified,
+      // A TG-RERA number or an admin-checked approval — not merely being in our catalogue.
+      isVerified: !!p.reraNumber || p.approvalVerified,
       source: p.listingSource,
       scoreGrade: inventoryOrSellerGrade(p),
       corridor: corridor ? { slug: corridor.slug, name: corridor.shortName, score: corridor.overallScore } : null,

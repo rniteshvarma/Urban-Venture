@@ -94,7 +94,7 @@ export default function LeadsTable({
             </th>
             <th className="px-4 py-3.5 whitespace-nowrap">Client Name / Contact</th>
             <th className="px-4 py-3.5 whitespace-nowrap">Source</th>
-            <th className="px-4 py-3.5 whitespace-nowrap">AI Segment</th>
+            <th className="px-4 py-3.5 whitespace-nowrap">Segment</th>
             <th className="px-4 py-3.5 whitespace-nowrap">Lead Score</th>
             <th className="px-4 py-3.5 whitespace-nowrap">City</th>
             <th className="px-4 py-3.5 whitespace-nowrap">Budget</th>
@@ -214,7 +214,7 @@ export default function LeadsTable({
                           <span className="font-bold text-[#5B4FE0]">{factors.horizon || 0} / 15</span>
                         </div>
                         <div className="flex justify-between">
-                          <span>AI Searches Count</span>
+                          <span>Research-tool runs</span>
                           <span className="font-bold text-[#5B4FE0]">{factors.searches || 0} / 20</span>
                         </div>
                         <div className="flex justify-between">

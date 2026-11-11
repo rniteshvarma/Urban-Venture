@@ -19,9 +19,9 @@ const BOX_W = 480;
 
 interface CardDef { Icon: typeof MapIcon; label: string; text: string; tint: string; tintBg: string; top: string }
 const CARDS: CardDef[] = [
-  { Icon: MapIcon, label: "EXPLORE MAP", text: "Growth corridors, live", tint: "var(--color-saffron-deep, #E09600)", tintBg: "var(--color-saffron-wash)", top: "2%" },
-  { Icon: TrendingUp, label: "CORRIDOR SCORES", text: "Ranked by intelligence", tint: "var(--color-growth)", tintBg: "var(--color-growth-wash)", top: "40%" },
-  { Icon: Sparkles, label: "AI RESEARCH", text: "AI shortlists your desired properties", tint: "var(--color-navy-ink)", tintBg: "var(--color-navy-wash)", top: "78%" },
+  { Icon: MapIcon, label: "EXPLORE MAP", text: "Every listing on one map", tint: "var(--color-saffron-deep, #E09600)", tintBg: "var(--color-saffron-wash)", top: "2%" },
+  { Icon: TrendingUp, label: "CORRIDOR SCORES", text: "Areas scored on public data", tint: "var(--color-growth)", tintBg: "var(--color-growth-wash)", top: "40%" },
+  { Icon: Sparkles, label: "RESEARCH", text: "Shortlist areas that fit your budget", tint: "var(--color-navy-ink)", tintBg: "var(--color-navy-wash)", top: "78%" },
 ];
 
 function Card({ Icon, label, text, tint, tintBg }: CardDef) {
