@@ -12,6 +12,9 @@ import { GET as infraGET } from "@/app/api/market/infrastructure/route";
 import HomeView, { type HomeInitial, type PulseFigures } from "./HomeView";
 import type { CorridorCardData, ProjectCardData } from "@/components/ui";
 
+// Rebuilt at most hourly from the database, so new listings, scores and figures appear without a redeploy.
+export const revalidate = 3600;
+
 export const metadata = pageMeta(
   "",
   "Property Tiger | Hyderabad property research",

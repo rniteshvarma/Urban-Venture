@@ -12,6 +12,9 @@ import { GET as pulseGET } from "@/app/api/market/pulse/route";
 import { GET as pricingGET } from "@/app/api/market/corridors/[slug]/appreciation/route";
 import MarketHubView, { type MarketInitial } from "./MarketHubView";
 
+// Rebuilt at most hourly from the database, so new listings, scores and figures appear without a redeploy.
+export const revalidate = 3600;
+
 export const metadata = pageMeta(
   "/market",
   "Hyderabad property market — area prices, infrastructure & scores | Property Tiger",
