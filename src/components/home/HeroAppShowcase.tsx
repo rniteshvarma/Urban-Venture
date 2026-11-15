@@ -2,7 +2,7 @@
 
 /**
  * Hero app showcase — phone mockup with floating feature cards + connector dots,
- * layered over the banner video. Shown from lg (≥1024px) up; hidden on smaller
+ * layered over the hero scene (HeroScene). Shown from lg (≥1024px) up; hidden on smaller
  * screens so the hero stays clean (no stacked duplicate).
  *
  * IMAGE: replace public/hero-app-mockup.png with the real bezel-framed phone

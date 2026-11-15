@@ -5,10 +5,10 @@ import LocationCombobox from "./LocationCombobox";
 import type { LocationSuggestion } from "@/lib/projects/location-search";
 import { useRouter } from "next/navigation";
 import * as Slider from "@radix-ui/react-slider";
-import { Building2, BarChart3, MapPinned, Calculator, ArrowRight, ChevronDown } from "lucide-react";
+import { Building2, BarChart3, MapPinned, Calculator, Compass, ArrowRight, ChevronDown } from "lucide-react";
 import { formatLakh } from "@/lib/format";
 
-type TabKey = "ai" | "projects" | "corridor" | "calc";
+type TabKey = "ai" | "projects" | "corridor" | "calc" | "vastu";
 
 interface CorridorOption {
   slug: string;
@@ -28,7 +28,48 @@ const TABS: { key: TabKey; label: string; icon: React.ComponentType<{ size?: num
   { key: "projects", label: "Projects", icon: Building2 },
   { key: "corridor", label: "Corridor Data", icon: MapPinned },
   { key: "calc", label: "Calculate", icon: Calculator, badge: "FREE" },
+  { key: "vastu", label: "Vastu Check", icon: Compass, badge: "FREE" },
 ];
+
+// Main-door directions, as /vastu takes them (?facing=).
+const FACINGS: { id: string; label: string }[] = [
+  { id: "N", label: "North" }, { id: "NE", label: "North-East" }, { id: "E", label: "East" }, { id: "SE", label: "South-East" },
+  { id: "S", label: "South" }, { id: "SW", label: "South-West" }, { id: "W", label: "West" }, { id: "NW", label: "North-West" },
+];
+
+/** A labelled native select in the same box as the popovers, so every field in a row matches. */
+function SelectField({ label, value, onChange, children, grow = false }: { label: string; value: string; onChange: (v: string) => void; children: React.ReactNode; grow?: boolean }) {
+  return (
+    <label
+      style={{
+        position: "relative",
+        display: "flex",
+        flexDirection: "column",
+        gap: 2,
+        padding: "9px 14px",
+        background: "var(--color-surface)",
+        border: "1px solid var(--color-line)",
+        borderRadius: 12,
+        cursor: "pointer",
+        minWidth: 160,
+        flex: grow ? "1 1 260px" : "0 0 auto",
+      }}
+    >
+      <span style={{ fontSize: "0.625rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--color-text-lo)", fontWeight: 600 }}>{label}</span>
+      <span style={{ position: "relative", display: "flex", alignItems: "center" }}>
+        <select
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="uv-select-bare"
+          style={{ appearance: "none", WebkitAppearance: "none", border: 0, background: "transparent", padding: "0 22px 0 0", margin: 0, width: "100%", fontSize: "0.875rem", fontWeight: 600, color: "var(--color-text-hi)", cursor: "pointer", textOverflow: "ellipsis" }}
+        >
+          {children}
+        </select>
+        <ChevronDown size={14} style={{ position: "absolute", right: 0, pointerEvents: "none", color: "var(--color-text-hi)" }} />
+      </span>
+    </label>
+  );
+}
 
 const BUDGET_PRESETS = [10, 25, 50, 100, 200]; // in Lakh
 const HORIZONS = [3, 5, 7, 10];
@@ -109,6 +150,7 @@ export default function SearchCommandBar({ corridors = [], quickChips = [], clas
   const [propType, setPropType] = useState("");
   const [corridorSlug, setCorridorSlug] = useState(corridors[0]?.slug ?? "");
   const [calcAmount, setCalcAmount] = useState(25);
+  const [facing, setFacing] = useState("E");
 
   const go = (path: string) => router.push(path);
   const searchProjects = () => {
@@ -135,7 +177,7 @@ export default function SearchCommandBar({ corridors = [], quickChips = [], clas
       }}
     >
       {/* Tab row */}
-      <div style={{ display: "flex", borderBottom: "1px solid var(--color-line)", overflowX: "auto", borderTopLeftRadius: "var(--radius-uv-lg)", borderTopRightRadius: "var(--radius-uv-lg)" }}>
+      <div role="tablist" aria-label="What do you want to do?" style={{ display: "flex", borderBottom: "1px solid var(--color-line)", overflowX: "auto", borderTopLeftRadius: "var(--radius-uv-lg)", borderTopRightRadius: "var(--radius-uv-lg)" }}>
         {TABS.map((t) => {
           const active = t.key === tab;
           const Icon = t.icon;
@@ -144,7 +186,9 @@ export default function SearchCommandBar({ corridors = [], quickChips = [], clas
               key={t.key}
               type="button"
               onClick={() => setTab(t.key)}
+              role="tab"
               aria-selected={active}
+              className="uv-tab"
               style={{
                 position: "relative",
                 display: "flex",
@@ -315,19 +359,15 @@ export default function SearchCommandBar({ corridors = [], quickChips = [], clas
         )}
 
         {tab === "corridor" && (
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "flex-end" }}>
             {corridors.length > 0 ? (
-              <select className="input-premium" value={corridorSlug} onChange={(e) => setCorridorSlug(e.target.value)} style={{ flex: 1, minWidth: 220 }}>
-                {corridors.map((c) => (
-                  <option key={c.slug} value={c.slug}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
+              <SelectField label="Area" value={corridorSlug} onChange={setCorridorSlug} grow>
+                {corridors.map((c) => <option key={c.slug} value={c.slug}>{c.name}</option>)}
+              </SelectField>
             ) : (
               <input className="input-premium" placeholder="Corridor name" value={corridorSlug} onChange={(e) => setCorridorSlug(e.target.value)} style={{ flex: 1, minWidth: 220 }} />
             )}
-            <button type="button" className="uv-btn uv-btn-primary" disabled={!corridorSlug} onClick={() => go(`/market/${corridorSlug}`)}>
+            <button type="button" className="uv-btn uv-btn-primary" disabled={!corridorSlug} onClick={() => go(`/market/${corridorSlug}`)} style={{ marginLeft: "auto" }}>
               View Intelligence Report <ArrowRight size={16} />
             </button>
           </div>
@@ -345,13 +385,9 @@ export default function SearchCommandBar({ corridors = [], quickChips = [], clas
               </div>
             </Popover>
             {corridors.length > 0 && (
-              <select className="input-premium" value={corridorSlug} onChange={(e) => setCorridorSlug(e.target.value)} style={{ minWidth: 180 }}>
-                {corridors.map((c) => (
-                  <option key={c.slug} value={c.slug}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
+              <SelectField label="Area" value={corridorSlug} onChange={setCorridorSlug} grow>
+                {corridors.map((c) => <option key={c.slug} value={c.slug}>{c.name}</option>)}
+              </SelectField>
             )}
             <button
               type="button"
@@ -360,6 +396,20 @@ export default function SearchCommandBar({ corridors = [], quickChips = [], clas
               style={{ marginLeft: "auto" }}
             >
               Calculate Returns <ArrowRight size={16} />
+            </button>
+          </div>
+        )}
+
+        {tab === "vastu" && (
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "flex-end" }}>
+            <SelectField label="Main door faces" value={facing} onChange={setFacing}>
+              {FACINGS.map((f) => <option key={f.id} value={f.id}>{f.label}</option>)}
+            </SelectField>
+            <p style={{ flex: "1 1 260px", margin: 0, alignSelf: "center", fontSize: "0.8125rem", lineHeight: 1.5, color: "var(--color-text-mid)" }}>
+              Mark where each room sits — or upload the floor plan — and see how the home lines up with common Vastu guidelines. Free, no sign-up.
+            </p>
+            <button type="button" className="uv-btn uv-btn-primary" onClick={() => go(`/vastu?facing=${facing}`)} style={{ marginLeft: "auto" }}>
+              Start Vastu Check <ArrowRight size={16} />
             </button>
           </div>
         )}

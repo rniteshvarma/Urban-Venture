@@ -1,0 +1,141 @@
+/* Homepage hero background: blurred sky, a house that sinks into live fog
+   and rises in the other light. Everything is driven by one rAF clock in
+   HeroScene.tsx through --k (0 morning, 1 night) and --sink. */
+
+.hero {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  background: var(--color-ink);
+}
+
+.layer,
+.layer img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.layer img {
+  display: block;
+  object-fit: cover;
+  object-position: 50% 62%;
+}
+
+/* 1. Sky — still, blurred; night fades in with --k. */
+.sky img { filter: blur(7px); transform: scale(1.05); }
+.skyN { opacity: var(--k); }
+
+/* 2. House + garden — the only layer that moves (Y only). */
+.home { will-change: transform; transform: translate3d(0, var(--sink, 0px), 0); }
+.set { position: absolute; inset: 0; visibility: hidden; }
+.on { visibility: visible; }
+.ground {
+  -webkit-mask-image: linear-gradient(transparent 54%, #000 64%);
+  mask-image: linear-gradient(transparent 54%, #000 64%);
+}
+
+/* 3. Tilt-shift softening of the foreground: a blurred copy of the full photo,
+   masked to the bottom. (A full-screen backdrop-filter does the same but
+   breaks compositing in Chromium, hiding the content above it.) */
+.soft {
+  -webkit-mask-image: linear-gradient(transparent 70%, #000 92%);
+  mask-image: linear-gradient(transparent 70%, #000 92%);
+}
+.soft img { filter: blur(9px); transform: scale(1.03); }
+
+/* Readability scrim for the hero copy (darker in morning light), and a fade
+   into the ink edge the search bar overlaps. */
+.scrim {
+  --edge: color-mix(in srgb, var(--color-paper) calc((1 - var(--k)) * 100%), var(--color-ink));
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(0deg, var(--edge) 0%, transparent 14%),
+    linear-gradient(90deg,
+      rgba(13, 13, 18, calc(0.86 - var(--k) * 0.08)) 0%,
+      rgba(13, 13, 18, calc(0.76 - var(--k) * 0.1)) 36%,
+      rgba(13, 13, 18, calc(0.3 - var(--k) * 0.12)) 58%,
+      rgba(13, 13, 18, 0) 76%);
+}
+
+/* 4. Fog — WebGL2 canvas, rendered small and upscaled. */
+.fog { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+
+/* Bottom edge, above the fog: the hero fades into the page (light in the
+   morning, ink at night) where the search bar overlaps it. */
+.edge {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 10%;
+  pointer-events: none;
+  background: linear-gradient(0deg, color-mix(in srgb, var(--color-paper) calc((1 - var(--k)) * 100%), var(--color-ink)), transparent);
+}
+
+/* 5. The existing hero content. */
+.content { position: relative; z-index: 2; }
+
+/* Morning / Night toggle — in the site's language: a translucent pill like
+   the hero badge, with the active side a solid saffron pill like
+   .uv-btn-primary. The two fills crossfade on --k. */
+.toggle {
+  position: relative;
+  display: inline-grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  width: 232px;
+  height: 46px;
+  margin-top: 26px;
+  padding: 4px;
+  border-radius: var(--radius-pill, 999px);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--color-ink-line);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+.toggle button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: var(--radius-pill, 999px);
+  background: none;
+  cursor: pointer;
+  font: inherit;
+}
+.toggle button::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--color-saffron);
+  box-shadow: var(--uv-sh-1);
+  opacity: var(--on);
+}
+.toggle button:hover .label { opacity: 1; }
+.toggle button:focus-visible { outline: 2px solid var(--color-saffron); outline-offset: 2px; }
+.label {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--font-inter), sans-serif;
+  font-weight: 600;
+  font-size: 0.875rem;
+  /* Ink on saffron (AA), white on the glass. */
+  color: color-mix(in srgb, var(--color-ink) calc(var(--on) * 100%), #fff);
+  opacity: calc(0.75 + var(--on) * 0.25);
+}
+.btnM { --on: calc(1 - var(--k)); }
+.btnN { --on: var(--k); }
+
+@media (max-width: 820px) {
+  .layer img { object-position: 72% 62% !important; }
+  .scrim {
+    background:
+      linear-gradient(0deg, var(--edge) 0%, transparent 16%),
+      linear-gradient(0deg, rgba(13, 13, 18, calc(0.7 - var(--k) * 0.12)), rgba(13, 13, 18, calc(0.7 - var(--k) * 0.12)));
+  }
+}

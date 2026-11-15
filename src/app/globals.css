@@ -960,6 +960,32 @@ button.uv-chip, a.uv-chip { max-width: 100%; }
 .hide-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
 .hide-scrollbar::-webkit-scrollbar { display: none; }
 
+/* Homepage card grids that become swipeable rails on phones. */
+@media (max-width: 767px) {
+  .uv-rail { display: flex !important; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding-bottom: 8px; }
+  .uv-rail::-webkit-scrollbar { display: none; }
+  .uv-rail > * { flex: 0 0 84%; min-width: 0; scroll-snap-align: start; }
+}
+
+/* Search card tabs and bare selects: no browser focus box on click, a saffron ring for keyboard users. */
+.uv-tab:focus { outline: none; }
+.uv-tab:focus-visible { outline: 2px solid var(--color-saffron); outline-offset: -4px; border-radius: 10px; }
+.uv-select-bare:focus { outline: none; }
+label:has(> span > .uv-select-bare:focus-visible) { border-color: var(--color-saffron) !important; box-shadow: 0 0 0 3px var(--color-saffron-wash); }
+
+/* One-row carousel: 3 cards per view on desktop, 2 on tablet, swipe on phones. */
+.uv-rail-row { display: flex; gap: 20px; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 8px; }
+.uv-rail-row > * { flex: 0 0 calc((100% - 40px) / 3); min-width: 0; scroll-snap-align: start; }
+.uv-rail-row > * > * { width: 100%; }
+@media (max-width: 1023px) { .uv-rail-row > * { flex-basis: calc((100% - 20px) / 2); } }
+@media (max-width: 640px) { .uv-rail-row > * { flex-basis: 86%; } }
+
+/* FAQ rows (<details>) */
+.uv-faq summary { list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 18px 20px; font-weight: 700; color: var(--color-text-hi); }
+.uv-faq summary::-webkit-details-marker { display: none; }
+.uv-faq summary::after { content: "+"; font-size: 1.25rem; line-height: 1; color: var(--color-saffron-deep); }
+.uv-faq[open] summary::after { content: "–"; }
+
 /* Reduced-motion: honour user preference across v2 motion */
 @media (prefers-reduced-motion: reduce) {
   .uv-marquee-track { animation: none; }
