@@ -9,6 +9,10 @@ import { signOut, useSession } from "next-auth/react";
 import { Menu, X, ChevronDown, ArrowRight, LogIn, LogOut, LayoutDashboard } from "lucide-react";
 import { Wordmark } from "@/components/ui";
 import WhatsAppFloat from "@/components/client/WhatsAppButton";
+import { HOW_WE_EARN, publicProof } from "@/lib/proof";
+
+// NEXT_PUBLIC_* values are fixed at build time, so this is computed once.
+const proof = publicProof();
 
 interface NavChild {
   label: string;
@@ -19,9 +23,18 @@ const MARKET_MENU: NavChild[] = [
   { label: "Corridor Intelligence", href: "/market" },
   { label: "Approvals Database", href: "/market/approvals" },
   { label: "Developer Track Records", href: "/developers" },
+  { label: "What Buyers Want", href: "/market/demand" },
   { label: "Compare Corridors", href: "/market/compare" },
   { label: "2026–35 Forecast", href: "/market/forecast" },
   { label: "Legal Guide", href: "/market/legal" },
+];
+
+// Free tools, grouped so the bar stays short.
+const TOOLS_MENU: NavChild[] = [
+  { label: "Vastu Check", href: "/vastu" },
+  { label: "EMI Calculator", href: "/emi-calculator" },
+  { label: "ROI Calculator", href: "/calculator" },
+  { label: "Compare Projects", href: "/projects/compare" },
 ];
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
@@ -84,8 +97,23 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
               <Link href="/explore" className={linkCls(pathname?.startsWith("/explore"))}>Explore Map</Link>
               <Link href="/projects" className={linkCls(pathname?.startsWith("/projects"))}>Projects</Link>
+              <Link href="/buying-help" className={linkCls(pathname?.startsWith("/buying-help"))}>Buying Help</Link>
               <Link href="/news" className={linkCls(pathname?.startsWith("/news"))}>News</Link>
-              <Link href="/calculator" className={linkCls(pathname?.startsWith("/calculator"))}>ROI Calculator</Link>
+              {/* Tools dropdown */}
+              <div className="relative group py-5">
+                <button className={`${linkCls(TOOLS_MENU.some((t) => pathname?.startsWith(t.href)))} flex items-center gap-1.5`}>
+                  Tools <ChevronDown className="w-3.5 h-3.5 opacity-70 group-hover:rotate-180 transition-transform" />
+                </button>
+                <div className="absolute left-0 top-full w-56 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50"
+                  style={{ background: "var(--color-ink-soft)", border: "1px solid var(--color-ink-line)", borderRadius: 14, padding: 8 }}>
+                  {TOOLS_MENU.map((c) => (
+                    <Link key={c.href} href={c.href} className="flex items-center justify-between px-3 py-2 text-xs font-semibold rounded-lg text-text-invert-mid hover:text-text-invert" style={{ transition: "color 150ms" }}>
+                      {c.label}
+                      {c.href === "/vastu" && <span className="text-[9px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded-full" style={{ background: "var(--color-saffron)", color: "var(--color-ink)" }}>Free</span>}
+                    </Link>
+                  ))}
+                </div>
+              </div>
             </nav>
           </div>
 
@@ -143,6 +171,9 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
               </div>
               <Link href="/explore" className="text-base font-medium">Explore Map</Link>
               <Link href="/projects" className="text-base font-medium">Projects</Link>
+              <Link href="/buying-help" className="text-base font-medium">Buying Help</Link>
+              <Link href="/emi-calculator" className="text-base font-medium">EMI Calculator</Link>
+              <Link href="/vastu" className="text-base font-medium">Vastu Check</Link>
               <Link href="/news" className="text-base font-medium">News</Link>
               <Link href="/calculator" className="text-base font-medium">ROI Calculator</Link>
               <div className="flex gap-3" style={{ marginTop: 8, paddingTop: 16, borderTop: "1px solid var(--color-ink-line)" }}>
@@ -181,6 +212,19 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
       {/* ── Footer (v2 dark) ── */}
       <footer style={{ background: "var(--color-ink)" }} className="pt-16 pb-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* How we're paid, and proof the business has set (src/lib/proof.ts) */}
+          <div className="mb-12 rounded-2xl px-5 py-4 flex flex-col lg:flex-row lg:items-center gap-3 lg:gap-6 text-sm" style={{ background: "var(--color-ink-soft)", border: "1px solid var(--color-ink-line)" }}>
+            <span className="font-semibold text-text-invert">{HOW_WE_EARN.short}</span>
+            <span className="text-text-invert-mid">No paid placements — <Link href="/how-we-score" className="underline hover:text-text-invert">same scoring rules for every listing</Link>.</span>
+            {proof.reraAgentNumber && (
+              <span className="text-text-invert-mid">TG-RERA agent <span className="font-mono text-text-invert">{proof.reraAgentNumber}</span></span>
+            )}
+            {proof.google && (
+              <span className="text-text-invert-mid">
+                <span className="text-text-invert font-semibold">{proof.google.rating.toFixed(1)} ★</span> from {proof.google.reviews.toLocaleString("en-IN")} Google reviews
+              </span>
+            )}
+          </div>
           <div className="grid grid-cols-2 lg:grid-cols-5 gap-10">
             <div className="col-span-2">
               <Wordmark className="text-2xl font-extrabold text-text-invert" style={{ fontFamily: "var(--font-jakarta)" }} />
@@ -210,7 +254,10 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
                 <li><Link href="/research" className="hover:text-text-invert transition-colors">Budget Research Tool</Link></li>
                 <li><Link href="/market" className="hover:text-text-invert transition-colors">Corridor Intelligence</Link></li>
                 <li><Link href="/projects" className="hover:text-text-invert transition-colors">Projects</Link></li>
-                <li><Link href="/calculator" className="hover:text-text-invert transition-colors">Calculators</Link></li>
+                <li><Link href="/calculator" className="hover:text-text-invert transition-colors">ROI Calculator</Link></li>
+                <li><Link href="/emi-calculator" className="hover:text-text-invert transition-colors">EMI Calculator</Link></li>
+                <li><Link href="/vastu" className="hover:text-text-invert transition-colors">Vastu Check</Link></li>
+                <li><Link href="/buying-help" className="hover:text-text-invert transition-colors">Buying Help</Link></li>
                 <li><Link href="/explore" className="hover:text-text-invert transition-colors">Explore Map</Link></li>
               </ul>
             </div>
@@ -223,6 +270,8 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
                 <li><Link href="/market/compare" className="hover:text-text-invert transition-colors">Compare Corridors</Link></li>
                 <li><Link href="/market/forecast" className="hover:text-text-invert transition-colors">2026–35 Forecast</Link></li>
                 <li><Link href="/market/legal" className="hover:text-text-invert transition-colors">Legal Guide</Link></li>
+                <li><Link href="/market/demand" className="hover:text-text-invert transition-colors">What Buyers Want</Link></li>
+                <li><Link href="/how-we-score" className="hover:text-text-invert transition-colors">How We Score</Link></li>
                 <li><Link href="/news" className="hover:text-text-invert transition-colors">Market News</Link></li>
               </ul>
             </div>

@@ -18,6 +18,11 @@ const STATIC: { path: string; priority: number; changeFrequency: MetadataRoute.S
   { path: "/news", priority: 0.6, changeFrequency: "daily" },
   { path: "/research", priority: 0.6, changeFrequency: "monthly" },
   { path: "/calculator", priority: 0.5, changeFrequency: "monthly" },
+  { path: "/buying-help", priority: 0.8, changeFrequency: "monthly" },
+  { path: "/emi-calculator", priority: 0.6, changeFrequency: "monthly" },
+  { path: "/vastu", priority: 0.6, changeFrequency: "monthly" },
+  { path: "/how-we-score", priority: 0.6, changeFrequency: "monthly" },
+  { path: "/market/demand", priority: 0.6, changeFrequency: "weekly" },
   { path: "/legal/privacy", priority: 0.2, changeFrequency: "yearly" },
   { path: "/legal/terms", priority: 0.2, changeFrequency: "yearly" },
 ];

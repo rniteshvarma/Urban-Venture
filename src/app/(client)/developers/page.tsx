@@ -7,7 +7,8 @@
 import Link from "next/link";
 import prisma from "@/lib/prisma";
 import { recordOf } from "@/lib/developers/display";
-import { pageMeta } from "@/lib/site";
+import { pageMeta, PUBLIC_PROJECT } from "@/lib/site";
+import { TigerScoreBadge } from "@/components/score/TigerScore";
 
 export const dynamic = "force-dynamic";
 
@@ -37,6 +38,14 @@ export default async function DevelopersPage({ searchParams }: { searchParams: S
     orderBy: { name: "asc" },
     select: { slug: true, name: true, aliases: true, legalNames: true, established: true, stats: true },
   });
+  // Average Property Tiger Score per builder, over their scored listings.
+  const avgBySlug = new Map(
+    (await prisma.project.groupBy({
+      by: ["developerSlug"],
+      where: { developerSlug: { not: null }, tigerScore: { not: null }, ...PUBLIC_PROJECT },
+      _avg: { tigerScore: true },
+    })).map((g) => [g.developerSlug!, g._avg.tigerScore != null ? Math.round(g._avg.tigerScore * 10) / 10 : null]),
+  );
   const list = rows
     .map((d) => ({ d, r: recordOf(d.stats) }))
     .filter(({ d, r }) => {
@@ -101,6 +110,7 @@ export default async function DevelopersPage({ searchParams }: { searchParams: S
             <thead>
               <tr className="bg-slate-50 border-b border-luxury text-[10px] font-bold uppercase text-text-secondary">
                 <th className="px-4 py-3">Developer</th>
+                <th className="px-3 py-3 text-right" title="Average Property Tiger Score across their scored listings">Avg score</th>
                 <th className="px-3 py-3 text-right">Projects</th>
                 <th className="px-3 py-3 text-right">Ready</th>
                 <th className="px-3 py-3 text-right">Building</th>
@@ -118,6 +128,7 @@ export default async function DevelopersPage({ searchParams }: { searchParams: S
                       <Link href={`/developers/${d.slug}`} className="font-semibold text-text-primary hover:underline">{d.name}</Link>
                       {d.established && <span className="text-text-secondary"> · since {d.established}</span>}
                     </td>
+                    <td className="px-3 py-2.5 text-right"><TigerScoreBadge score={avgBySlug.get(d.slug) ?? null} label={false} /></td>
                     <td className="px-3 py-2.5 text-right font-mono">{s.projects}</td>
                     <td className="px-3 py-2.5 text-right font-mono">{s.completed}</td>
                     <td className="px-3 py-2.5 text-right font-mono">{s.underConstruction}</td>
@@ -128,7 +139,7 @@ export default async function DevelopersPage({ searchParams }: { searchParams: S
                 );
               })}
               {list.length === 0 && (
-                <tr><td colSpan={7} className="px-4 py-10 text-center text-text-secondary">No developers match.</td></tr>
+                <tr><td colSpan={8} className="px-4 py-10 text-center text-text-secondary">No developers match.</td></tr>
               )}
             </tbody>
           </table>

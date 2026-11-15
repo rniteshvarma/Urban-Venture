@@ -39,8 +39,9 @@ export function projectOrder(sort: ProjectSort | string | null | undefined): Pri
     case "newest":
       return [{ createdAt: "desc" }, { id: "asc" }];
     default:
-      // Researched inventory first (ADMIN < SELLER), then rating, then recency.
-      return [{ listingSource: "asc" }, { listingScore: { sort: "desc", nulls: "last" } }, { createdAt: "desc" }, { id: "asc" }];
+      // "Top rated": the Property Tiger Score, same rules for every listing (nothing paid for),
+      // then researched inventory before seller listings, then recency.
+      return [{ tigerScore: { sort: "desc", nulls: "last" } }, { listingSource: "asc" }, { createdAt: "desc" }, { id: "asc" }];
   }
 }
 

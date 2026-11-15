@@ -1,6 +1,6 @@
 /**
- * Seed cities (News module spec, Part 8). Hyderabad carries the full query set;
- * the others use lighter defaults tuned later via /admin/news/cities.
+ * News city. Property Tiger covers Hyderabad only; any other city rows from
+ * older seeds are switched off by retireOtherCities().
  */
 
 import prisma from '../prisma';
@@ -22,20 +22,20 @@ interface SeedCity {
   geoLng?: number;
 }
 
+/** Property Tiger covers Hyderabad only (owner's decision, Nov 2026). */
 export const SEED_CITIES: SeedCity[] = [
-  { slug: 'india', name: 'All India', displayOrder: 0, queryTerms: ['India real estate', 'land acquisition', 'RERA', 'NHAI', 'REIT', 'repo rate', 'infrastructure'] },
   {
     slug: 'hyderabad', name: 'Hyderabad', stateCode: 'TG', displayOrder: 1, geoLat: 17.385, geoLng: 78.4867,
     queryTerms: ['Hyderabad real estate', 'Telangana land', 'HMDA', 'DTCP Telangana', 'TG RERA', 'Outer Ring Road Hyderabad', 'Regional Ring Road', 'Hyderabad metro', 'Pharma City', 'Future City Telangana', 'GHMC', 'Kokapet', 'Shadnagar', 'Genome Valley', 'TSIIC', 'Hyderabad property registration'],
   },
-  { slug: 'bengaluru', name: 'Bengaluru', stateCode: 'KA', displayOrder: 2, queryTerms: ['Bengaluru real estate', 'Karnataka land', 'BDA', 'BMRDA', 'peripheral ring road', 'Bengaluru metro'] },
-  { slug: 'chennai', name: 'Chennai', stateCode: 'TN', displayOrder: 3, queryTerms: ['Chennai real estate', 'Tamil Nadu land', 'CMDA', 'Chennai metro', 'OMR corridor'] },
-  { slug: 'pune', name: 'Pune', stateCode: 'MH', displayOrder: 4, queryTerms: ['Pune real estate', 'PMRDA', 'Pune ring road', 'Hinjewadi'] },
-  { slug: 'mumbai', name: 'Mumbai', stateCode: 'MH', displayOrder: 5, queryTerms: ['Mumbai real estate', 'MMRDA', 'Navi Mumbai airport', 'coastal road'] },
-  { slug: 'delhi-ncr', name: 'Delhi NCR', stateCode: 'DL', displayOrder: 6, queryTerms: ['Delhi NCR real estate', 'DDA', 'Noida', 'Gurugram', 'Dwarka expressway'] },
-  { slug: 'vijayawada-amaravati', name: 'Vijayawada–Amaravati', stateCode: 'AP', displayOrder: 7, queryTerms: ['Amaravati', 'CRDA', 'Vijayawada real estate', 'Andhra Pradesh capital'] },
-  { slug: 'visakhapatnam', name: 'Visakhapatnam', stateCode: 'AP', displayOrder: 8, queryTerms: ['Visakhapatnam real estate', 'VMRDA', 'Vizag port', 'Andhra Pradesh land'] },
 ];
+export const NEWS_CITY = 'hyderabad';
+
+/** Switch off any city that isn't in SEED_CITIES (older databases seeded other cities). */
+export async function retireOtherCities(): Promise<number> {
+  const r = await prisma.newsCity.updateMany({ where: { slug: { notIn: SEED_CITIES.map((c) => c.slug) }, isActive: true }, data: { isActive: false } });
+  return r.count;
+}
 
 export async function seedCities(): Promise<number> {
   for (const c of SEED_CITIES) {
@@ -55,7 +55,10 @@ export async function seedCities(): Promise<number> {
  * so admin tuning and deliberately removed cities are never overwritten.
  */
 export async function ensureNewsCities(): Promise<void> {
-  if ((await prisma.newsCity.count()) > 0) return;
+  if ((await prisma.newsCity.count()) > 0) {
+    await retireOtherCities();
+    return;
+  }
   await prisma.newsCity.createMany({
     data: SEED_CITIES.map((c) => ({
       slug: c.slug,

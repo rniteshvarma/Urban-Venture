@@ -5,14 +5,13 @@
  */
 
 import React from 'react';
-import { cookies } from 'next/headers';
 import type { NewsCategory, Prisma } from '@prisma/client';
 import prisma from '@/lib/prisma';
 import { pageMeta } from '@/lib/site';
 
 export const metadata = pageMeta('/news', 'Hyderabad property news — Market Signals | Property Tiger', 'Hyderabad real-estate news from public sources: infrastructure, government decisions, launches and prices, with a link to every original story.');
 import { buildFeedWhere } from '@/lib/news/query';
-import { ensureNewsCities } from '@/lib/news/seed-cities';
+import { ensureNewsCities, NEWS_CITY } from '@/lib/news/seed-cities';
 import { isMockMode } from '@/lib/news/providers';
 import { ALL_CATEGORIES } from '@/lib/news/categories';
 import { relativeTime } from '@/lib/news/format';
@@ -34,12 +33,6 @@ function hoursAgo(h: number): Date {
 
 type SP = Promise<{ city?: string; category?: string; minImpact?: string; sort?: string; page?: string }>;
 
-async function resolveCity(paramCity?: string): Promise<string> {
-  if (paramCity) return paramCity;
-  const cookieCity = (await cookies()).get('news_city')?.value;
-  if (cookieCity) return cookieCity;
-  return 'india';
-}
 
 export default async function NewsPage({ searchParams }: { searchParams: SP }) {
   const sp = await searchParams;
@@ -48,15 +41,11 @@ export default async function NewsPage({ searchParams }: { searchParams: SP }) {
   const sort = sp.sort === 'impact' ? 'impact' : 'latest';
   const requestedPage = Math.max(1, Math.floor(Number(sp.page) || 1));
 
-  const cityQuery = { where: { isActive: true }, orderBy: { displayOrder: 'asc' as const } };
-  let cities = await prisma.newsCity.findMany(cityQuery);
-  if (cities.length === 0) {
-    // Fresh database: create the default cities so the live refresh has feeds to pull.
-    await ensureNewsCities();
-    cities = await prisma.newsCity.findMany(cityQuery);
-  }
-  let city = await resolveCity(sp.city);
-  if (!cities.some((c) => c.slug === city)) city = 'india';
+  // Hyderabad only. ensureNewsCities() creates the city on a fresh database and
+  // switches off any other city an older seed left behind.
+  await ensureNewsCities();
+  const cities = await prisma.newsCity.findMany({ where: { slug: NEWS_CITY, isActive: true } });
+  const city = NEWS_CITY;
 
   // `id` breaks publishedAt ties (common in RSS), so pages never repeat or skip a story.
   const orderBy: Prisma.NewsArticleOrderByWithRelationInput[] =
@@ -64,23 +53,14 @@ export default async function NewsPage({ searchParams }: { searchParams: SP }) {
       ? [{ isPinned: 'desc' }, { impactScore: 'desc' }, { publishedAt: 'desc' }, { id: 'desc' }]
       : [{ isPinned: 'desc' }, { publishedAt: 'desc' }, { id: 'desc' }];
 
-  // "All India" is the union of every city's feed plus national stories.
   const extra: Prisma.NewsArticleWhereInput = {
-    ...(city === 'india' ? {} : { cityScope: city }),
+    cityScope: city,
     ...(category ? { category } : {}),
     ...(minImpact ? { impactScore: { gte: minImpact } } : {}),
   };
 
-  let where = await buildFeedWhere(extra);
-  let total = await prisma.newsArticle.count({ where });
-
-  // Empty city coverage → fall back to India-wide (spec Part 7.5).
-  let fellBackToIndia = false;
-  if (total === 0 && city !== 'india') {
-    fellBackToIndia = true;
-    where = await buildFeedWhere({ cityScope: 'india', ...(category ? { category } : {}), ...(minImpact ? { impactScore: { gte: minImpact } } : {}) });
-    total = await prisma.newsArticle.count({ where });
-  }
+  const where = await buildFeedWhere(extra);
+  const total = await prisma.newsArticle.count({ where });
 
   // Newest first, PAGE_SIZE per page: new stories land on page 1 and push older
   // ones onto later pages. Nothing is hidden for its age (ingest prunes at 90 days).
@@ -109,7 +89,7 @@ export default async function NewsPage({ searchParams }: { searchParams: SP }) {
   const dayAgo = hoursAgo(24);
   const brief = await prisma.newsArticle.groupBy({
     by: ['category'],
-    where: await buildFeedWhere({ ...(city === 'india' ? {} : { cityScope: city }), publishedAt: { gte: dayAgo } }),
+    where: await buildFeedWhere({ cityScope: city, publishedAt: { gte: dayAgo } }),
     _count: true,
     orderBy: { _count: { category: 'desc' } },
   });
@@ -119,7 +99,6 @@ export default async function NewsPage({ searchParams }: { searchParams: SP }) {
 
   // Only page 1 holds the newest stories, so only it can say when the feed last moved.
   const updatedAgo = page === 1 && articles.length ? relativeTime(articles.reduce((m, a) => (a.ingestedAt > m ? a.ingestedAt : m), articles[0].ingestedAt)) : null;
-  const cityName = cities.find((c) => c.slug === city)?.name ?? 'All India';
   const lockedBanner = process.env.NODE_ENV === 'production' && isMockMode();
 
   return (
@@ -161,11 +140,6 @@ export default async function NewsPage({ searchParams }: { searchParams: SP }) {
         </div>
       )}
 
-      {fellBackToIndia && (
-        <p style={{ fontSize: '0.85rem', color: 'var(--color-text-lo)', marginBottom: 14 }}>
-          We&rsquo;re still building coverage for {cityName}. Showing India-wide signals below.
-        </p>
-      )}
 
       {articles.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '80px 20px', color: 'var(--color-text-lo)' }}>

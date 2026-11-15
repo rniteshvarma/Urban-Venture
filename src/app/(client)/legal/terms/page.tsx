@@ -122,6 +122,7 @@ export default function TermsPage() {
 
       <Section id="fees" title="10. Fees">
         <p style={P}>Using the research features is currently free. If we introduce paid features, we will show the price and terms before you pay.</p>
+        <p style={P}>Buyers do not pay us for our buying help. When you buy a project through us, the builder pays us a fee after the sale closes. Builders cannot pay for a higher ranking or a better score on our site.</p>
       </Section>
 
       <Section id="liability" title="11. Disclaimers & liability">

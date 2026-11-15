@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { TigerScoreBadge } from "@/components/score/TigerScore";
 import Link from "next/link";
 import { MapPin, Phone, Building2 } from "lucide-react";
 import SaveHeart from "./SaveHeart";
@@ -34,6 +35,8 @@ export interface ProjectCardData {
   possessionText?: string | null;
   inventoryGrade?: "A" | "B" | "C" | "D" | null;
   inventoryScore?: number | null;
+  /** Property Tiger Score, 0–10 (src/lib/score) */
+  tigerScore?: number | null;
   /** "LAND_LISTING" for individual land / plot sales (not RERA projects) */
   listingKind?: string | null;
 }
@@ -61,25 +64,8 @@ function ImagePlaceholder({ p }: { p: ProjectCardData }) {
 }
 
 /** v2 project card. Grid & carousel share the vertical layout; list is a horizontal row. */
-const GRADE_TONE: Record<string, { bg: string; fg: string }> = {
-  A: { bg: "var(--color-growth)", fg: "#fff" },
-  B: { bg: "var(--color-saffron)", fg: "var(--color-ink)" },
-  C: { bg: "var(--color-caution-wash)", fg: "#9A6A1E" },
-  D: { bg: "var(--color-alert-wash)", fg: "var(--color-alert)" },
-};
 
 /** Property Tiger rating pill for researched inventory. */
-function GradePill({ grade, score }: { grade: string; score?: number | null }) {
-  const t = GRADE_TONE[grade] ?? GRADE_TONE.C;
-  return (
-    <span
-      title="Property Tiger rating — legal, developer, location, delivery, planning and price"
-      style={{ background: t.bg, color: t.fg, padding: "3px 9px", borderRadius: 999, fontSize: "0.6875rem", fontWeight: 800, letterSpacing: "0.03em", boxShadow: "0 1px 4px rgba(0,0,0,0.25)" }}
-    >
-      {grade}{score != null ? ` · ${score}` : ""}
-    </span>
-  );
-}
 
 export default function ProjectCard({ project: p, variant = "grid", className = "" }: ProjectCardProps) {
   const [broken, setBroken] = useState(false);
@@ -168,9 +154,9 @@ export default function ProjectCard({ project: p, variant = "grid", className = 
             <VerifiedBadge type="RERA" />
           </div>
         )}
-        {p.inventoryGrade && (
+        {p.tigerScore != null && (
           <div style={{ position: "absolute", bottom: 10, right: 10 }}>
-            <GradePill grade={p.inventoryGrade} score={p.inventoryScore} />
+            <TigerScoreBadge score={p.tigerScore} />
           </div>
         )}
         {p.status !== "ACTIVE" && (

@@ -4,6 +4,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { rescoreApprovedListings, expireStaleListings, nudgeExpiryAndDrafts, enquirySlaSweep } from "@/lib/listings/maintenance";
 import { assertCron } from "@/lib/cron-auth";
+import { scoreAllListings } from "@/lib/score/compute";
 import { withJobRun } from "@/lib/ops/record";
 
 export const dynamic = "force-dynamic";
@@ -17,7 +18,9 @@ async function handler(req: NextRequest) {
     const rescored = await rescoreApprovedListings();
     const nudges = await nudgeExpiryAndDrafts();
     const sla = await enquirySlaSweep();
-    return NextResponse.json({ ok: true, ...expired, ...rescored, ...nudges, ...sla });
+    // Property Tiger Score for every public listing (picks up new map data, prices and builder records).
+    const tiger = await scoreAllListings();
+    return NextResponse.json({ ok: true, ...expired, ...rescored, ...nudges, ...sla, tiger });
   } catch (error) {
     console.error("cron listings-daily", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

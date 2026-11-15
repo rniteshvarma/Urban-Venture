@@ -192,6 +192,11 @@ model Project {
   listingScore   Int? // 0-100 composite
   scoreBreakdown Json?
   scoredAt       DateTime?
+  /// Property Tiger Score: one 0–10 number from eight lenses (src/lib/score). Same rules for every listing.
+  tigerScore     Float?
+  /// The lens-by-lens breakdown behind tigerScore: { version, score, band, measured, lenses[], caps[] }
+  tigerScoreData Json?
+  tigerScoredAt  DateTime?
 
   // Counters
   viewCount    Int @default(0)
@@ -209,6 +214,7 @@ model Project {
   // ST_MakeEnvelope. Revisit if PostGIS is ever installed.
   @@index([listingStatus, latitude, longitude])
   @@index([developerSlug])
+  @@index([tigerScore])
   siteVisits SiteVisit[]
 
   // Source freshness: set by scripts/inventory/recheck.ts when it re-reads the
@@ -2989,6 +2995,12 @@ model Developer {
   established Int?
   stats       Json?
   computedAt  DateTime @default(now())
+  /// Google Business rating, typed in by an admin from the builder's public Google profile
+  /// (never scraped). Shown only with its review count, link and the date it was checked.
+  googleRating      Float?
+  googleReviewCount Int?
+  googleProfileUrl  String?
+  googleCheckedAt   DateTime?
 }
 
 /// Data from a project's public TG-RERA certificate page.

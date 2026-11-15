@@ -17,7 +17,7 @@ interface Unit { label: string; unitCategory: string; areaSqYd: number | null; b
 interface P {
   id: string; name: string; developer: string; developerSlug?: string | null; corridor: string; propertyType: string; minBudgetLakhs: number; maxBudgetLakhs: number;
   possessionText: string | null; reraNumber: string | null; totalUnits: number | null; totalLandAcres: number | null; amenities: string[]; imageUrls: string[];
-  inventoryGrade: string | null; inventoryScore: number | null; accessibility: { score: number } | null; unitTypes?: Unit[];
+  inventoryGrade: string | null; inventoryScore: number | null; tigerScore: number | null; tigerScoreData: { band: string | null } | null; accessibility: { score: number } | null; unitTypes?: Unit[];
   specifications: { locality?: string; listingKind?: string; constructionStatus?: string } | null;
 }
 
@@ -69,7 +69,7 @@ function CompareInner() {
     },
     { label: "Possession", cell: (p) => p.possessionText ?? "—" },
     { label: "TG-RERA", cell: (p) => p.reraNumber ?? "Not registered" },
-    { label: "Tiger Rating", cell: (p) => (p.inventoryGrade ? `${p.inventoryGrade} · ${p.inventoryScore}/100` : "—") },
+    { label: "Tiger Score", cell: (p) => (p.tigerScore != null ? `${p.tigerScore.toFixed(1)} /10 · ${p.tigerScoreData?.band ?? ""}` : "Not scored") },
     { label: "Accessibility", cell: (p) => (p.accessibility ? `${p.accessibility.score}/100` : "—") },
     { label: "Land / units", cell: (p) => [p.totalLandAcres ? `${p.totalLandAcres} acres` : null, p.totalUnits && p.specifications?.listingKind !== "LAND_LISTING" ? `${groupIndian(p.totalUnits)} units` : null].filter(Boolean).join(" · ") || "—" },
     { label: "Amenities", cell: (p) => (p.amenities.length ? `${p.amenities.length} listed` : "—") },

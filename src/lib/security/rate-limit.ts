@@ -20,6 +20,8 @@ export const LIMITS = {
   enquiryIp: { max: 12, windowSec: 60 * 60 },
   enquiryPhone: { max: 6, windowSec: 24 * 60 * 60 },
   researchIp: { max: 10, windowSec: 60 * 60 },
+  // Floor-plan reading calls a paid AI model, so it's capped per visitor.
+  vastuIp: { max: 6, windowSec: 60 * 60 },
   savedSearchUser: { max: 20, windowSec: 60 * 60 },
 } satisfies Record<string, Limit>;
 

@@ -540,7 +540,7 @@ export default function BroadcastTemplatesPage() {
                       <input
                         ref={emailSubjectRef}
                         type="text"
-                        placeholder="Welcome {{lead_name}} - Exclusive Bangalore Investment Opportunities"
+                        placeholder="Welcome {{lead_name}} - ExclusiveHyderabad investment opportunities"
                         value={formSubject}
                         onChange={(e) => setFormSubject(e.target.value)}
                         className="w-full input-premium px-3.5 py-2 rounded text-xs focus:outline-none focus:border-blue-600"
@@ -569,7 +569,7 @@ export default function BroadcastTemplatesPage() {
 
                       <textarea
                         ref={emailBodyTextAreaRef}
-                        placeholder="<p>Dear {{lead_name}},</p><p>We have identified Bangalore matches with a budget matching {{budget}}.</p>"
+                        placeholder="<p>Dear {{lead_name}},</p><p>We have found Hyderabad matches with a budget matching {{budget}}.</p>"
                         value={formBody}
                         onChange={(e) => setFormBody(e.target.value)}
                         rows={7}

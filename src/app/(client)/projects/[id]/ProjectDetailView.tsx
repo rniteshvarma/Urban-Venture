@@ -19,14 +19,15 @@ import {
   LayoutGrid,
   Ruler,
   Award,
-  Info,
   Compass,
 } from "lucide-react";
 import { formatLakh, groupIndian } from "@/lib/format";
 import AccessibilityPanel, { type AccessibilityView } from "@/components/accessibility/AccessibilityPanel";
 import ImageLightbox from "@/components/projects/ImageLightbox";
 import ConsentNote from "@/components/legal/ConsentNote";
+import { TigerScorecard, TigerScoreBadge, type TigerScoreData } from "@/components/score/TigerScore";
 import { WhatsAppInline } from "@/components/client/WhatsAppButton";
+import { HOW_WE_EARN } from "@/lib/proof";
 import LayoutApproval from "@/components/projects/LayoutApproval";
 import CostPanel from "@/components/projects/CostPanel";
 import DueDiligence from "@/components/projects/DueDiligence";
@@ -115,18 +116,14 @@ interface ProjectDetails {
   inventoryScore: number | null;
   inventoryGrade: string | null;
   inventoryRating: { total: number; grade: string; components: RatingComponent[] } | null;
+  tigerScore: number | null;
+  tigerScoreData: TigerScoreData | null;
   /** separate from the rating; null until the OpenStreetMap job has scored it */
   accessibility: AccessibilityView | null;
 }
 
 const TS_RERA_SEARCH = "https://rerait.telangana.gov.in/SearchList/Search";
 
-const GRADE_COLOR: Record<string, string> = {
-  A: "var(--color-growth)",
-  B: "var(--color-saffron-deep)",
-  C: "#9A6A1E",
-  D: "var(--color-alert)",
-};
 
 export default function ProjectDetailView({ id, initialProject, pageUrl }: { id: string; initialProject: ProjectDetails | null; pageUrl: string }) {
   // Server-rendered with the public view when there is one; otherwise loaded below.
@@ -256,7 +253,6 @@ export default function ProjectDetailView({ id, initialProject, pageUrl }: { id:
   const locality = spec.locality;
   const hasPin = project.latitude != null && project.longitude != null;
   const reraNumbers = (project.reraNumber ?? "").split(",").map((s) => s.trim()).filter(Boolean);
-  const rating = project.inventoryRating;
   const sources = spec.sources ?? [];
   const accessed = sources[0]?.accessed;
   const isLand = spec.listingKind === "LAND_LISTING";
@@ -464,14 +460,12 @@ export default function ProjectDetailView({ id, initialProject, pageUrl }: { id:
                 <div className="mt-1">{getRiskBadge(project.riskLevel)}</div>
               </div>
               <div className="space-y-1 border-l border-gray-100 pl-4 sm:pl-6">
-                {project.inventoryGrade ? (
+                {project.tigerScore != null ? (
                   <>
                     <span className="text-[10px] text-text-secondary uppercase tracking-wider font-bold flex items-center gap-1.5">
-                      <Award size={12} className="text-saffron-deep" /> Tiger Rating
+                      <Award size={12} className="text-saffron-deep" /> Tiger Score
                     </span>
-                    <span className="text-base font-bold block" style={{ color: GRADE_COLOR[project.inventoryGrade] }}>
-                      {project.inventoryGrade} <span className="text-text-secondary font-semibold">· {project.inventoryScore}/100</span>
-                    </span>
+                    <a href="#tiger-score-heading" className="block mt-0.5"><TigerScoreBadge score={project.tigerScore} label={false} size="md" /></a>
                   </>
                 ) : (
                   <>
@@ -543,35 +537,8 @@ export default function ProjectDetailView({ id, initialProject, pageUrl }: { id:
               </section>
             )}
 
-            {/* Property Tiger rating */}
-            {rating && (
-              <section className="card-premium space-y-5 !p-8 border-t-4 border-t-saffron">
-                <div className="flex items-center justify-between gap-4 flex-wrap">
-                  <h2 className="section-header text-xl flex items-center gap-2"><Award size={18} className="text-saffron-deep" /> Property Tiger Rating</h2>
-                  <span className="font-display text-3xl font-bold" style={{ color: GRADE_COLOR[rating.grade] }}>
-                    {rating.grade} <span className="text-base text-text-secondary font-semibold">{rating.total}/100</span>
-                  </span>
-                </div>
-                <div className="space-y-4">
-                  {rating.components.map((c) => (
-                    <div key={c.key}>
-                      <div className="flex justify-between text-xs font-semibold text-text-primary">
-                        <span>{c.label}</span>
-                        <span className="font-mono">{c.points}/{c.max}</span>
-                      </div>
-                      <div className="h-2 rounded-full bg-gray-100 mt-1.5 overflow-hidden">
-                        <div className="h-full rounded-full" style={{ width: `${(c.points / c.max) * 100}%`, background: "var(--color-saffron)" }} />
-                      </div>
-                      <div className="text-[11px] text-text-secondary mt-1">{c.note}</div>
-                    </div>
-                  ))}
-                </div>
-                <p className="text-[11px] text-text-secondary flex items-start gap-1.5">
-                  <Info size={12} className="shrink-0 mt-0.5" />
-                  Computed from public facts — RERA registration, developer history, distance to the HITEC City–Financial District job hub, delivery stage, density and price against same-zone projects. Missing facts score neutral. Not investment advice.
-                </p>
-              </section>
-            )}
+            {/* Property Tiger Score — eight lenses, same rules for every listing */}
+            <TigerScorecard data={project.tigerScoreData} />
 
             {/* Amenities */}
             {project.amenities?.length > 0 && (
@@ -776,6 +743,7 @@ export default function ProjectDetailView({ id, initialProject, pageUrl }: { id:
                 <div className="text-center border-b border-gray-100 pb-4">
                   <h4 className="font-display text-base font-bold text-text-primary">Ask about this listing</h4>
                   <p className="text-[10px] text-text-secondary mt-1">Leave your details and our team will get back to you</p>
+                  <p className="text-[10px] font-semibold text-growth mt-1">{HOW_WE_EARN.short}</p>
                 </div>
 
                 {submitSuccess ? (

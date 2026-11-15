@@ -100,3 +100,40 @@ export function kindOf(propertyType: string, listingKind?: string | null): Purch
   if (t.includes("commercial")) return "commercial";
   return "apartment";
 }
+
+export interface AmortYear { year: number; principal: number; interest: number; balance: number }
+
+/**
+ * Year-by-year repayment of a loan (lakh) at an annual rate (%) over years,
+ * with monthly compounding. Amounts in rupees. Optional prepayment in lakh
+ * paid at the end of a given year (reduces tenure, EMI unchanged).
+ */
+export function amortise(loanLakh: number, annualRatePct: number, years: number, prepay?: { lakh: number; afterYear: number }) {
+  const r = annualRatePct / 1200;
+  const n = Math.round(years * 12);
+  let balance = loanLakh * 100_000;
+  // Unrounded instalment for the schedule (a rupee-rounded one leaves a small balance at the end).
+  const monthly = r === 0 ? balance / n : (balance * r * (1 + r) ** n) / ((1 + r) ** n - 1);
+  const rows: AmortYear[] = [];
+  let totalInterest = 0;
+  let months = 0;
+  for (let y = 1; balance > 0.5 && y <= years; y++) {
+    let p = 0, it = 0;
+    for (let m = 0; m < 12 && balance > 0.5; m++) {
+      const interest = balance * r;
+      const principal = Math.min(balance, monthly - interest);
+      balance -= principal;
+      p += principal;
+      it += interest;
+      months++;
+    }
+    if (prepay && y === prepay.afterYear && balance > 0) {
+      const extra = Math.min(balance, prepay.lakh * 100_000);
+      balance -= extra;
+      p += extra;
+    }
+    totalInterest += it;
+    rows.push({ year: y, principal: Math.round(p), interest: Math.round(it), balance: Math.max(0, Math.round(balance)) });
+  }
+  return { emi: Math.round(monthly), rows, totalInterest: Math.round(totalInterest), months };
+}

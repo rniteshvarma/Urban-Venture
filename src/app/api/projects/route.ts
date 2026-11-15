@@ -18,7 +18,7 @@ const cardSelect = (since: Date) =>
     riskLevel: true, propertyType: true, infraHighlights: true, imageUrls: true, status: true,
     createdAt: true, possessionText: true, reraNumber: true, latitude: true, longitude: true,
     listingSource: true, sourceType: true, listingScore: true, specifications: true,
-    sourceCheckedAt: true, sourceState: true, sourceGoneSince: true,
+    sourceCheckedAt: true, sourceState: true, sourceGoneSince: true, tigerScore: true,
     priceChanges: { where: { changedAt: { gte: since } }, orderBy: { changedAt: "desc" }, take: 1, select: { fromMinLakh: true, toMinLakh: true, changedAt: true } },
   }) satisfies Prisma.ProjectSelect;
 

@@ -62,17 +62,20 @@ export default function NewsFilters({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14, minWidth: 0 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-        <select
-          value={city}
-          onChange={(e) => onCity(e.target.value)}
-          style={{ padding: '8px 30px 8px 12px', borderRadius: 8, border: '1px solid var(--color-line)', backgroundColor: 'var(--color-surface)', color: 'var(--color-text-hi)', fontWeight: 600, fontSize: '0.85rem' }}
-        >
-          {cities.map((c) => (
-            <option key={c.slug} value={c.slug}>
-              {c.name} ({c.articleCount})
-            </option>
-          ))}
-        </select>
+        {/* Hyderabad only today; the picker returns if more cities are ever switched on. */}
+        {cities.length > 1 && (
+          <select
+            value={city}
+            onChange={(e) => onCity(e.target.value)}
+            style={{ padding: '8px 30px 8px 12px', borderRadius: 8, border: '1px solid var(--color-line)', backgroundColor: 'var(--color-surface)', color: 'var(--color-text-hi)', fontWeight: 600, fontSize: '0.85rem' }}
+          >
+            {cities.map((c) => (
+              <option key={c.slug} value={c.slug}>
+                {c.name} ({c.articleCount})
+              </option>
+            ))}
+          </select>
+        )}
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: '0.75rem', color: 'var(--color-text-lo)' }}>
           <span className="news-live-dot" style={{ width: 8, height: 8, borderRadius: 999, background: 'var(--color-growth)', display: 'inline-block' }} />
           Live

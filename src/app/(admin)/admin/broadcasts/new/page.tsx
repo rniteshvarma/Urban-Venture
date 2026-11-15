@@ -90,6 +90,14 @@ export default function NewBroadcastWizardPage() {
   const [recipientsStatusList, setRecipientsStatusList] = useState<any[]>([]);
   const [sendingStats, setSendingStats] = useState<any>(null);
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  // Hyderabad areas that have live listings — the same names leads are matched on.
+  const [areas, setAreas] = useState<{ name: string; count: number }[]>([]);
+  useEffect(() => {
+    fetch("/api/projects/corridors")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((d) => setAreas(Array.isArray(d) ? d : []))
+      .catch(() => setAreas([]));
+  }, []);
 
   // Initialize query parameters if redirected from shortcuts
   useEffect(() => {
@@ -203,7 +211,7 @@ export default function NewBroadcastWizardPage() {
       .replace(/\{\{lead_name\}\}/g, () => name)
       .replace(/\{\{budget\}\}/g, budget)
       .replace(/\{\{horizon\}\}/g, "Immediate")
-      .replace(/\{\{city\}\}/g, "Whitefield, Bangalore")
+      .replace(/\{\{city\}\}/g, "Kokapet, Hyderabad")
       .replace(/\{\{agent_name\}\}/g, "Sravan")
       .replace(/\{\{project_name\}\}/g, "Urban Prime Towers")
       .replace(/\{\{project_price\}\}/g, "₹1.85 Cr");
@@ -501,11 +509,10 @@ export default function NewBroadcastWizardPage() {
                     onChange={(e) => handleFilterChange("corridor", e.target.value)}
                     className="w-full input-premium px-3.5 py-2.5 rounded text-xs focus:outline-none focus:border-blue-600"
                   >
-                    <option value="">-- Select Corridor --</option>
-                    <option value="North Bangalore">North Bangalore (Hebbal, Devanahalli)</option>
-                    <option value="East Bangalore">East Bangalore (Whitefield, Varthur)</option>
-                    <option value="Sarjapur Road">Sarjapur Road / ORR</option>
-                    <option value="South Bangalore">South Bangalore (Kanakapura, JP Nagar)</option>
+                    <option value="">-- Select area --</option>
+                    {areas.map((a) => (
+                      <option key={a.name} value={a.name}>{a.name} ({a.count} listings)</option>
+                    ))}
                   </select>
                 </div>
               )}
@@ -757,7 +764,7 @@ export default function NewBroadcastWizardPage() {
                     <label className="block font-bold text-slate-500 uppercase tracking-wider">Email Subject</label>
                     <input
                       type="text"
-                      placeholder=" Bangalore Investment Opportunities"
+                      placeholder="Hyderabad investment opportunities"
                       value={emailSubject}
                       onChange={(e) => setEmailSubject(e.target.value)}
                       className="w-full input-premium px-3.5 py-2 rounded text-xs focus:outline-none"
@@ -768,7 +775,7 @@ export default function NewBroadcastWizardPage() {
                   <div className="space-y-1">
                     <label className="block font-bold text-slate-500 uppercase tracking-wider">Email Body (HTML format)</label>
                     <textarea
-                      placeholder="<p>Dear {{lead_name}},</p><p>Check out our Bangalore listings...</p>"
+                      placeholder="<p>Dear {{lead_name}},</p><p>Check out our Hyderabad listings...</p>"
                       value={emailBody}
                       onChange={(e) => setEmailBody(e.target.value)}
                       rows={6}
@@ -845,7 +852,7 @@ export default function NewBroadcastWizardPage() {
                 <label className="block font-bold text-slate-500 uppercase tracking-wider">Campaign Name</label>
                 <input
                   type="text"
-                  placeholder="e.g. Bangalore Investors Newsletter - Q3"
+                  placeholder="e.g. Hyderabad Buyers Newsletter - Q3"
                   value={campaignName}
                   onChange={(e) => setCampaignName(e.target.value)}
                   className="w-full input-premium px-3.5 py-2.5 rounded text-xs focus:outline-none focus:border-blue-600 font-semibold"

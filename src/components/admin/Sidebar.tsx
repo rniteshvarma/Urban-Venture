@@ -174,6 +174,11 @@ export default function Sidebar() {
 
   const marketItems = [
     {
+      name: "Builders",
+      path: "/admin/developers",
+      icon: <Building2 size={16} />,
+    },
+    {
       name: "Infra Updates",
       path: "/admin/infrastructure/updates",
       icon: <Radar size={16} />,

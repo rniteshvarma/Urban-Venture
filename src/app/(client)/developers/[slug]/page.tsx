@@ -9,7 +9,8 @@ import { notFound } from "next/navigation";
 import prisma from "@/lib/prisma";
 import { FLAG_LABEL, ORDER_KIND_LABEL, monthYear, months, recordOf } from "@/lib/developers/display";
 import type { Flag } from "@/lib/developers/track-record";
-import { jsonLd, siteUrl } from "@/lib/site";
+import { jsonLd, siteUrl, PUBLIC_PROJECT } from "@/lib/site";
+import { TigerScoreBadge } from "@/components/score/TigerScore";
 
 export const dynamic = "force-dynamic";
 
@@ -48,6 +49,14 @@ export default async function DeveloperPage({ params }: { params: Promise<{ slug
   const rec = recordOf(d?.stats);
   if (!d || !rec) notFound();
   const s = rec.stats;
+  // Average Property Tiger Score across this builder's scored listings (same rules as every listing).
+  const scored = await prisma.project.aggregate({
+    where: { developerSlug: d.slug, tigerScore: { not: null }, ...PUBLIC_PROJECT },
+    _avg: { tigerScore: true },
+    _count: { tigerScore: true },
+  });
+  const avgScore = scored._avg.tigerScore != null ? Math.round(scored._avg.tigerScore * 10) / 10 : null;
+  const google = d.googleRating != null && d.googleReviewCount ? { rating: d.googleRating, reviews: d.googleReviewCount, url: d.googleProfileUrl, checked: d.googleCheckedAt } : null;
   const org = {
     "@context": "https://schema.org",
     "@type": "Organization",
@@ -76,7 +85,30 @@ export default async function DeveloperPage({ params }: { params: Promise<{ slug
       </section>
 
       <main className="max-w-6xl mx-auto px-6 py-8 space-y-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="stat-card">
+            <div className="stat-label">Average Property Tiger Score</div>
+            <div className="stat-value mt-1 flex items-center gap-2">
+              {avgScore != null ? <TigerScoreBadge score={avgScore} label={false} size="md" /> : "—"}
+            </div>
+            <p className="text-[10px] text-text-secondary mt-1 leading-relaxed">
+              {avgScore != null ? `Across ${scored._count.tigerScore} scored project${scored._count.tigerScore === 1 ? "" : "s"} in our listings. ` : "None of their projects has enough data for a score yet. "}
+              <Link href="/how-we-score" className="underline">How we score</Link>
+            </p>
+          </div>
+          <div className="stat-card">
+            <div className="stat-label">Google rating</div>
+            <div className="stat-value mt-1">{google ? <>{google.rating.toFixed(1)} <span className="text-amber-500">★</span></> : "—"}</div>
+            <p className="text-[10px] text-text-secondary mt-1 leading-relaxed">
+              {google ? (
+                <>
+                  From {google.reviews.toLocaleString("en-IN")} public reviews on the builder&apos;s Google profile
+                  {google.checked ? `, checked ${google.checked.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}` : ""}
+                  {google.url ? <> · <a href={google.url} target="_blank" rel="noopener noreferrer" className="underline">See reviews</a></> : null}
+                </>
+              ) : "We haven't checked this builder's Google reviews yet."}
+            </p>
+          </div>
           <Tile label="Projects in our listings" value={s.projects} note={`${s.completed} ready to move · ${s.underConstruction} under construction`} />
           <Tile
             label="On track with RERA dates"

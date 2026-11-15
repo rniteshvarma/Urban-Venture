@@ -291,10 +291,17 @@ export async function rebuildDevelopers(opts: { log?: Log; today?: Date } = {}) 
     });
   }
 
+  // Google ratings are typed in by an admin, not derived — carry them across the rebuild by slug.
+  const google = new Map(
+    (await prisma.developer.findMany({
+      where: { googleRating: { not: null } },
+      select: { slug: true, googleRating: true, googleReviewCount: true, googleProfileUrl: true, googleCheckedAt: true },
+    })).map(({ slug, ...g }) => [slug, g]),
+  );
   await prisma.$transaction([
     prisma.developer.deleteMany({}),
     prisma.developer.createMany({
-      data: rows.map((r) => ({ slug: r.slug, name: r.name, aliases: r.aliases, legalNames: r.legalNames, matchKeys: r.matchKeys, established: r.established, stats: r.record as unknown as Prisma.InputJsonValue, computedAt: new Date() })),
+      data: rows.map((r) => ({ slug: r.slug, name: r.name, aliases: r.aliases, legalNames: r.legalNames, matchKeys: r.matchKeys, established: r.established, stats: r.record as unknown as Prisma.InputJsonValue, computedAt: new Date(), ...(google.get(r.slug) ?? {}) })),
     }),
   ]);
   for (const r of rows) await prisma.project.updateMany({ where: { id: { in: r.ps.map((p) => p.id) } }, data: { developerSlug: r.slug } });
