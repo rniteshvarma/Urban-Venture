@@ -5,7 +5,6 @@
  *
  * Runs in the build (scripts/score/compute.ts) and in the daily listings cron.
  */
-import { Prisma } from "@prisma/client";
 import prisma from "../prisma";
 import { PUBLIC_PROJECT } from "../site";
 import { haversineKm, median, monthsUntil } from "../inventory/rating";
@@ -87,7 +86,7 @@ export async function scoreAllListings(opts: { log?: Log; now?: Date } = {}) {
   }
 
   let scored = 0, unscored = 0;
-  const writes: Prisma.PrismaPromise<unknown>[] = [];
+  const rows: { id: string; score: number | null; data: unknown }[] = [];
   for (const l of listings) {
     const spec = (l.specifications ?? {}) as Spec;
     const kind = kindOf(l);
@@ -151,13 +150,21 @@ export async function scoreAllListings(opts: { log?: Log; now?: Date } = {}) {
     };
     const result = scoreListing(input);
     if (result.score != null) scored++; else unscored++;
-    writes.push(prisma.project.update({
-      where: { id: l.id },
-      data: { tigerScore: result.score, tigerScoreData: result as unknown as Prisma.InputJsonValue, tigerScoredAt: now },
-    }));
+    rows.push({ id: l.id, score: result.score, data: result });
   }
 
-  for (let i = 0; i < writes.length; i += 200) await prisma.$transaction(writes.slice(i, i + 200));
+  // One UPDATE per 500 listings. Per-row updates inside a transaction need one
+  // round trip each, and from the Vercel build (iad1) to the Tokyo database
+  // 200 of them overran Prisma's 5 s transaction limit, so the build saved no
+  // scores at all. Each statement here is atomic on its own.
+  for (let i = 0; i < rows.length; i += 500) {
+    const batch = JSON.stringify(rows.slice(i, i + 500));
+    await prisma.$executeRaw`
+      UPDATE "Project" AS p
+      SET "tigerScore" = v.score, "tigerScoreData" = v.data, "tigerScoredAt" = ${now}
+      FROM jsonb_to_recordset(${batch}::jsonb) AS v(id text, score double precision, data jsonb)
+      WHERE p.id = v.id`;
+  }
   log(`[score] ${SCORE_VERSION}: ${scored} listings scored, ${unscored} without enough data (of ${listings.length})`);
   return { scored, unscored, total: listings.length };
 }
