@@ -5,6 +5,7 @@
 import { X } from "lucide-react";
 import type { ExploreFilterState } from "@/lib/explore/use-url-state";
 import { DEFAULT_FILTERS } from "@/lib/explore/use-url-state";
+import { X as T, glass } from "./theme";
 
 const TYPE_LABELS: Record<string, string> = {
   RESIDENTIAL_PLOT: "Plots",
@@ -91,14 +92,14 @@ export default function FilterChips({ filters, onChange }: { filters: ExploreFil
     <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center", pointerEvents: "auto" }}>
       {chips.map((c) => (
         <span key={c.key} style={{
-          display: "inline-flex", alignItems: "center", gap: 5, background: "#FFF4D6",
-          color: "#7A5200", border: "1px solid #FFD98A", borderRadius: 999,
-          padding: "4px 8px 4px 11px", fontSize: "0.75rem", fontWeight: 600,
-          boxShadow: "0 2px 10px rgba(16,16,26,.10)",
+          display: "inline-flex", alignItems: "center", gap: 5, background: "rgba(40,32,12,.92)",
+          color: T.saffronText, border: `1px solid ${T.saffronLine}`, borderRadius: 999,
+          padding: "5px 9px 5px 12px", fontSize: "0.75rem", fontWeight: 600,
+          boxShadow: T.shadow, backdropFilter: T.blur,
         }}>
           {c.label}
           <button onClick={() => onChange(c.clear(filters))} aria-label={`Remove ${c.label}`}
-            style={{ background: "none", border: "none", cursor: "pointer", color: "#7A5200", display: "grid", placeItems: "center", padding: 0 }}>
+            style={{ background: "none", border: "none", cursor: "pointer", color: T.saffronText, display: "grid", placeItems: "center", padding: 0 }}>
             <X size={12} />
           </button>
         </span>
@@ -106,17 +107,21 @@ export default function FilterChips({ filters, onChange }: { filters: ExploreFil
 
       {chips.length > 0 && (
         <button onClick={() => onChange(DEFAULT_FILTERS)}
-          style={{ background: "#fff", border: "none", borderRadius: 999, padding: "5px 11px", fontSize: "0.75rem", fontWeight: 600, color: "#5A5A66", cursor: "pointer", boxShadow: "0 2px 10px rgba(16,16,26,.10)" }}>
+          style={{ ...quickChip, color: T.textLo }}>
           Clear all
         </button>
       )}
 
       {quick.filter((qk) => !qk.on).map((qk) => (
         <button key={qk.key} onClick={qk.toggle}
-          style={{ background: "#fff", border: "none", borderRadius: 999, padding: "5px 11px", fontSize: "0.75rem", fontWeight: 600, color: "#3A3A47", cursor: "pointer", boxShadow: "0 2px 10px rgba(16,16,26,.10)" }}>
+          style={quickChip}>
           {qk.label}
         </button>
       ))}
     </div>
   );
 }
+
+const quickChip: React.CSSProperties = {
+  ...glass, borderRadius: 999, padding: "6px 13px", fontSize: "0.75rem", fontWeight: 600, color: T.textMid, cursor: "pointer",
+};

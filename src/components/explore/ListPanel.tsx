@@ -14,6 +14,7 @@ import { X, BadgeCheck, ShieldCheck } from "lucide-react";
 import { formatLakh, formatLakhRange, formatINRFull } from "@/lib/format";
 import type { PropertyFeature } from "@/lib/explore/use-map-data";
 import { accessTone } from "@/components/accessibility/AccessibilityPanel";
+import { X as T, iconBtn } from "./theme";
 
 export type SortKey = "score" | "priceAsc" | "priceDesc" | "area" | "newest";
 
@@ -104,21 +105,21 @@ export default function ListPanel({
     : { position: "absolute", left: 0, top: 0, bottom: 0, width: LIST_PANEL_WIDTH };
 
   return (
-    <div style={{ ...shell, background: "#F7F7F9", zIndex: 38, display: "flex", flexDirection: "column", boxShadow: "0 4px 20px rgba(16,16,26,.22)", pointerEvents: "auto" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "14px 16px", background: "#fff", borderBottom: "1px solid #EFEFF3", flexShrink: 0 }}>
-        <span style={{ fontSize: "0.9375rem", fontWeight: 700, color: "#0D0D12" }}>
+    <div style={{ ...shell, background: T.solid, borderRight: `1px solid ${T.line}`, color: T.text, zIndex: 38, display: "flex", flexDirection: "column", boxShadow: T.shadow, pointerEvents: "auto" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "14px 16px", background: T.solid, borderBottom: `1px solid ${T.line}`, flexShrink: 0 }}>
+        <span style={{ fontSize: "0.9375rem", fontWeight: 700, color: T.text }}>
           <span className="uv-mono">{total.toLocaleString("en-IN")}</span> {total === 1 ? "property" : "properties"}
-          <span style={{ fontWeight: 400, color: "#8A8A99", fontSize: "0.8125rem" }}> in this view</span>
+          <span style={{ fontWeight: 400, color: T.textLo, fontSize: "0.8125rem" }}> in this view</span>
         </span>
         <select value={sort} onChange={(e) => onSort(e.target.value as SortKey)} aria-label="Sort properties"
-          style={{ marginLeft: "auto", fontSize: "0.75rem", fontWeight: 600, border: "1px solid #E4E4EA", borderRadius: 8, padding: "4px 24px 4px 8px", backgroundColor: "#fff", color: "#2A2A35", cursor: "pointer" }}>
+          style={{ marginLeft: "auto", fontSize: "0.75rem", fontWeight: 600, border: `1px solid ${T.line}`, borderRadius: 8, padding: "4px 24px 4px 8px", backgroundColor: T.raised, color: T.text, cursor: "pointer" }}>
           {SORTS.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
         </select>
-        <button onClick={onClose} aria-label="Close list" style={{ background: "none", border: "none", cursor: "pointer", color: "#8A8A99" }}><X size={17} /></button>
+        <button onClick={onClose} aria-label="Close list" style={iconBtn}><X size={17} /></button>
       </div>
 
       {rows.length === 0 ? (
-        <div style={{ padding: "2.5rem 1.25rem", textAlign: "center", color: "#8A8A99", fontSize: "0.875rem" }}>
+        <div style={{ padding: "2.5rem 1.25rem", textAlign: "center", color: T.textLo, fontSize: "0.875rem" }}>
           No properties in the current view.
         </div>
       ) : (
@@ -176,27 +177,27 @@ function PropertyCard({ f, hovered, selected, onHover, onSelect }: {
       onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSelect(f); } }}
       style={{
         height: CARD_H, display: "flex", flexDirection: "column", overflow: "hidden", cursor: "pointer",
-        background: "#fff", borderRadius: 14, outline: "none",
-        border: selected ? "2px solid #0D0D12" : hovered ? "2px solid #FFB400" : "2px solid transparent",
-        boxShadow: hovered || selected ? "0 6px 18px rgba(16,16,26,.14)" : "0 1px 3px rgba(16,16,26,.08)",
+        background: T.raised, borderRadius: 14, outline: "none",
+        border: selected ? `2px solid ${T.saffron}` : hovered ? `2px solid ${T.saffronLine}` : `2px solid ${T.line}`,
+        boxShadow: selected ? "0 0 0 4px rgba(255,180,0,.12), 0 10px 24px rgba(0,0,0,.4)" : hovered ? "0 10px 24px rgba(0,0,0,.4)" : "none",
         transition: "box-shadow .15s, border-color .15s",
       }}
     >
-      <div style={{ position: "relative", height: PHOTO_H, flexShrink: 0, background: "#F0F0F4" }}>
+      <div style={{ position: "relative", height: PHOTO_H, flexShrink: 0, background: "#1F1F29" }}>
         {p.thumb ? (
           /* eslint-disable-next-line @next/next/no-img-element */
           <img src={p.thumb} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
         ) : (
-          <div style={{ display: "grid", placeItems: "center", height: "100%", fontSize: 11, color: "#B4B4C0" }}>No photo</div>
+          <div style={{ display: "grid", placeItems: "center", height: "100%", fontSize: 11, color: T.textFaint }}>No photo</div>
         )}
         <div style={{ position: "absolute", top: 8, left: 8, right: 8, display: "flex", gap: 6, justifyContent: "space-between" }}>
           {p.scoreGrade ? (
-            <span style={{ fontSize: "0.6875rem", fontWeight: 800, color: "#7A5200", background: "#FFF4D6", borderRadius: 999, padding: "3px 9px" }}>
+            <span style={{ fontSize: "0.6875rem", fontWeight: 800, color: "#0D0D12", background: T.saffron, borderRadius: 999, padding: "3px 9px" }}>
               Rating {p.scoreGrade}
             </span>
           ) : <span />}
           {p.isVerified && (
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: "0.6875rem", fontWeight: 700, color: "#0B7A43", background: "#fff", borderRadius: 999, padding: "3px 9px" }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: "0.6875rem", fontWeight: 700, color: T.good, background: "rgba(13,13,18,.82)", backdropFilter: "blur(6px)", borderRadius: 999, padding: "3px 9px" }}>
               <BadgeCheck size={12} /> Verified
             </span>
           )}
@@ -204,27 +205,27 @@ function PropertyCard({ f, hovered, selected, onHover, onSelect }: {
       </div>
 
       <div style={{ padding: "10px 12px", display: "flex", flexDirection: "column", gap: 3, minWidth: 0 }}>
-        <div className="uv-mono" style={{ fontSize: "1.0625rem", fontWeight: 800, color: "#0D0D12", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+        <div className="uv-mono" style={{ fontSize: "1.0625rem", fontWeight: 800, color: T.saffronText, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
           {price}
         </div>
         {facts && (
-          <div style={{ fontSize: "0.75rem", fontWeight: 600, color: "#2A2A35", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{facts}</div>
+          <div style={{ fontSize: "0.75rem", fontWeight: 600, color: T.textMid, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{facts}</div>
         )}
-        <div style={{ fontSize: "0.8125rem", color: "#2A2A35", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+        <div style={{ fontSize: "0.8125rem", color: T.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
           <span style={{ fontWeight: 700 }}>{p.name}</span>
-          {p.locality && <span style={{ color: "#6B6B78" }}> · {p.locality}</span>}
+          {p.locality && <span style={{ color: T.textLo }}> · {p.locality}</span>}
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.6875rem", color: "#8A8A99", minWidth: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.6875rem", color: T.textLo, minWidth: 0 }}>
           <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{meta || (p.rateValue ? `${formatINRFull(p.rateValue)}/${p.rateUnit}` : "")}</span>
           <span style={{ display: "inline-flex", alignItems: "center", gap: 8, marginLeft: "auto", flexShrink: 0 }}>
             {p.access != null && (
               <span title="Accessibility: how well connected and well served this location is (separate from the rating)"
-                style={{ fontWeight: 700, color: accessTone(p.access).fg, background: accessTone(p.access).bg, borderRadius: 999, padding: "1px 7px" }}>
+                style={{ fontWeight: 700, color: accessTone(p.access, true).fg, background: accessTone(p.access, true).bg, borderRadius: 999, padding: "1px 7px" }}>
                 Access {p.access}
               </span>
             )}
             {p.rera && (
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 3, color: "#0B7A43", fontWeight: 700 }}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 3, color: T.good, fontWeight: 700 }}>
                 <ShieldCheck size={12} /> RERA
               </span>
             )}

@@ -9,6 +9,7 @@ import { X } from "lucide-react";
 import type { ExploreFilterState } from "@/lib/explore/use-url-state";
 import { DEFAULT_FILTERS, filtersToParams } from "@/lib/explore/use-url-state";
 import type { Bounds } from "@/lib/explore/use-map-data";
+import { X as T, choicePill, sectionLabel, ghostBtn, iconBtn } from "./theme";
 
 const TYPES = [
   { key: "RESIDENTIAL_PLOT", label: "Plots" },
@@ -86,11 +87,11 @@ export default function FiltersPanel({
 
   return (
     <>
-      <div onClick={onClose} style={{ position: "absolute", inset: 0, background: "rgba(10,10,16,.35)", zIndex: 40, pointerEvents: "auto" }} />
-      <div style={{ ...shell, background: "#fff", zIndex: 41, display: "flex", flexDirection: "column", boxShadow: "0 4px 20px rgba(16,16,26,.28)", pointerEvents: "auto" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 18px", borderBottom: "1px solid #EFEFF3" }}>
-          <h3 style={{ fontFamily: "var(--font-jakarta)", fontWeight: 800, fontSize: "1rem", color: "#0D0D12" }}>Filters</h3>
-          <button onClick={onClose} aria-label="Close filters" style={{ background: "none", border: "none", cursor: "pointer", color: "#8A8A99" }}><X size={18} /></button>
+      <div onClick={onClose} style={{ position: "absolute", inset: 0, background: "rgba(5,5,9,.5)", zIndex: 40, pointerEvents: "auto" }} />
+      <div style={{ ...shell, background: T.solid, borderRight: `1px solid ${T.line}`, color: T.text, zIndex: 41, display: "flex", flexDirection: "column", boxShadow: T.shadow, pointerEvents: "auto" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 18px", borderBottom: `1px solid ${T.line}` }}>
+          <h3 style={{ fontFamily: "var(--font-jakarta)", fontWeight: 800, fontSize: "1rem", color: T.text }}>Filters</h3>
+          <button onClick={onClose} aria-label="Close filters" style={iconBtn}><X size={18} /></button>
         </div>
 
         <div style={{ flex: 1, overflowY: "auto", padding: "16px 18px", display: "flex", flexDirection: "column", gap: 20 }}>
@@ -118,7 +119,7 @@ export default function FiltersPanel({
               onMax={(v) => setDraft({ ...draft, maxArea: v })}
               minPlaceholder="Any" maxPlaceholder="Any"
             />
-            <p style={{ fontSize: "0.625rem", color: "#A0A0AE", marginTop: 5 }}>1 acre = 4,840 sq.yd</p>
+            <p style={{ fontSize: "0.625rem", color: T.textFaint, marginTop: 5 }}>1 acre = 4,840 sq.yd</p>
           </Group>
 
           <Group label="Listed by">
@@ -143,7 +144,7 @@ export default function FiltersPanel({
                 <Pill key={g} on={draft.grades.includes(g)} onClick={() => setDraft({ ...draft, grades: toggle(draft.grades, g) })}>{g}</Pill>
               ))}
             </div>
-            <p style={{ fontSize: "0.625rem", color: "#A0A0AE", marginTop: 5 }}>Listings we researched are unscored and always shown.</p>
+            <p style={{ fontSize: "0.625rem", color: T.textFaint, marginTop: 5 }}>Listings we researched are unscored and always shown.</p>
           </Group>
 
           <Group label="Posted within">
@@ -155,11 +156,11 @@ export default function FiltersPanel({
           </Group>
         </div>
 
-        <div style={{ borderTop: "1px solid #EFEFF3", padding: "12px 18px", display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ flex: 1, fontSize: "0.8125rem", color: "#3A3A47" }}>
+        <div style={{ borderTop: `1px solid ${T.line}`, padding: "12px 18px", display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ flex: 1, fontSize: "0.8125rem", color: T.textMid }}>
             {counting ? "Counting…" : count == null ? "—" : <>Showing <b className="uv-mono">{count.toLocaleString("en-IN")}</b> {count === 1 ? "property" : "properties"}</>}
           </span>
-          <button onClick={() => setDraft(DEFAULT_FILTERS)} className="uv-btn uv-btn-ghost" style={{ fontSize: "0.8125rem" }}>Reset</button>
+          <button onClick={() => setDraft(DEFAULT_FILTERS)} style={ghostBtn}>Reset</button>
           <button onClick={() => { onApply(draft); onClose(); }} className="uv-btn uv-btn-primary" style={{ fontSize: "0.8125rem" }}>Apply</button>
         </div>
       </div>
@@ -170,7 +171,7 @@ export default function FiltersPanel({
 function Group({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <div style={{ fontSize: "0.6875rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "#8A8A99", fontWeight: 700, marginBottom: 8 }}>{label}</div>
+      <div style={{ ...sectionLabel, marginBottom: 8 }}>{label}</div>
       {children}
     </div>
   );
@@ -178,12 +179,7 @@ function Group({ label, children }: { label: string; children: React.ReactNode }
 
 function Pill({ on, onClick, children }: { on: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
-    <button onClick={onClick} style={{
-      borderRadius: 999, padding: "6px 12px", fontSize: "0.75rem", fontWeight: 600, cursor: "pointer",
-      border: on ? "1px solid #FFB400" : "1px solid #E4E4EA",
-      background: on ? "#FFF4D6" : "#fff",
-      color: on ? "#7A5200" : "#3A3A47",
-    }}>{children}</button>
+    <button onClick={onClick} aria-pressed={on} style={choicePill(on)}>{children}</button>
   );
 }
 
@@ -192,12 +188,12 @@ function Range({ min, max, onMin, onMax, minPlaceholder, maxPlaceholder }: {
   onMin: (v: number | null) => void; onMax: (v: number | null) => void;
   minPlaceholder: string; maxPlaceholder: string;
 }) {
-  const inp: React.CSSProperties = { width: "100%", padding: "8px 10px", borderRadius: 9, border: "1px solid #E4E4EA", fontSize: "0.8125rem", color: "#1A1A24" };
+  const inp: React.CSSProperties = { width: "100%", padding: "8px 10px", borderRadius: 9, border: `1px solid ${T.line}`, background: T.raised, fontSize: "0.8125rem", color: T.text };
   const parse = (v: string) => (v === "" ? null : Number.isFinite(Number(v)) ? Number(v) : null);
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
       <input type="number" value={min ?? ""} placeholder={minPlaceholder} onChange={(e) => onMin(parse(e.target.value))} style={inp} />
-      <span style={{ color: "#A0A0AE", fontSize: "0.8125rem" }}>–</span>
+      <span style={{ color: T.textFaint, fontSize: "0.8125rem" }}>–</span>
       <input type="number" value={max ?? ""} placeholder={maxPlaceholder} onChange={(e) => onMax(parse(e.target.value))} style={inp} />
     </div>
   );

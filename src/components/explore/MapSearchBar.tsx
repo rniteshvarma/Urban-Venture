@@ -9,6 +9,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Search, LocateFixed, X, Clock } from "lucide-react";
+import { X as T, glass, sectionLabel, iconBtn } from "./theme";
 
 export interface GeoResult {
   id: string;
@@ -81,19 +82,19 @@ export default function MapSearchBar({ onPick, onLocate }: { onPick: (r: GeoResu
   return (
     <div ref={box} style={{ position: "relative", width: "min(380px, 74vw)", pointerEvents: "auto" }}>
       <div style={{
-        display: "flex", alignItems: "center", gap: 8, background: "#fff",
-        borderRadius: 999, boxShadow: "0 4px 20px rgba(16,16,26,.18)", padding: "0 6px 0 14px", height: 46,
+        ...glass, display: "flex", alignItems: "center", gap: 8,
+        borderRadius: 999, padding: "0 6px 0 14px", height: 46,
       }}>
-        <Search size={17} style={{ color: "#8A8A99", flexShrink: 0 }} />
+        <Search size={17} style={{ color: T.textLo, flexShrink: 0 }} />
         <input
           value={q}
           onChange={(e) => { setQ(e.target.value); setOpen(true); }}
           onFocus={() => setOpen(true)}
           placeholder="Search a location — Kokapet, Adibatla, Shankarpally…"
-          style={{ flex: 1, border: "none", outline: "none", fontSize: "0.875rem", color: "#1A1A24", background: "transparent", minWidth: 0 }}
+          style={{ flex: 1, border: "none", outline: "none", fontSize: "0.875rem", color: T.text, background: "transparent", minWidth: 0 }}
         />
         {q && (
-          <button onClick={() => { setQ(""); setResults([]); }} style={{ background: "none", border: "none", cursor: "pointer", color: "#8A8A99", display: "grid", placeItems: "center" }} aria-label="Clear search">
+          <button onClick={() => { setQ(""); setResults([]); }} style={iconBtn} aria-label="Clear search">
             <X size={15} />
           </button>
         )}
@@ -101,7 +102,7 @@ export default function MapSearchBar({ onPick, onLocate }: { onPick: (r: GeoResu
           onClick={onLocate}
           title="Use my location"
           aria-label="Use my location"
-          style={{ width: 34, height: 34, borderRadius: 999, border: "none", background: "#F4F4F7", cursor: "pointer", display: "grid", placeItems: "center", color: "#2A2A35", flexShrink: 0 }}
+          style={{ width: 34, height: 34, borderRadius: 999, border: `1px solid ${T.line}`, background: T.raised, cursor: "pointer", display: "grid", placeItems: "center", color: T.text, flexShrink: 0 }}
         >
           <LocateFixed size={16} />
         </button>
@@ -109,8 +110,8 @@ export default function MapSearchBar({ onPick, onLocate }: { onPick: (r: GeoResu
 
       {(open && (results.length > 0 || showRecents || (q.trim().length >= 2 && !busy))) && (
         <div style={{
-          position: "absolute", top: 54, left: 0, right: 0, background: "#fff", borderRadius: 14,
-          boxShadow: "0 4px 20px rgba(16,16,26,.18)", maxHeight: 340, overflowY: "auto", padding: 6,
+          ...glass, position: "absolute", top: 54, left: 0, right: 0, borderRadius: 14,
+          maxHeight: 340, overflowY: "auto", padding: 6,
         }}>
           {showRecents && (
             <>
@@ -127,7 +128,7 @@ export default function MapSearchBar({ onPick, onLocate }: { onPick: (r: GeoResu
           ))}
 
           {q.trim().length >= 2 && !busy && results.length === 0 && (
-            <div style={{ padding: "14px 12px", fontSize: "0.8125rem", color: "#8A8A99" }}>
+            <div style={{ padding: "14px 12px", fontSize: "0.8125rem", color: T.textLo }}>
               No matching location.
               <div style={{ fontSize: "0.6875rem", marginTop: 4, lineHeight: 1.45 }}>
                 Village and mandal search activates once the LGD geography dataset is loaded.
@@ -142,7 +143,7 @@ export default function MapSearchBar({ onPick, onLocate }: { onPick: (r: GeoResu
 
 function GroupLabel({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ fontSize: "0.625rem", textTransform: "uppercase", letterSpacing: "0.06em", color: "#A0A0AE", fontWeight: 700, padding: "8px 10px 4px" }}>
+    <div style={{ ...sectionLabel, padding: "8px 10px 4px" }}>
       {children}
     </div>
   );
@@ -152,17 +153,17 @@ function Row({ r, onPick, icon }: { r: GeoResult; onPick: (r: GeoResult) => void
   return (
     <button
       onClick={() => onPick(r)}
-      style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", textAlign: "left", background: "none", border: "none", cursor: "pointer", padding: "8px 10px", borderRadius: 9, color: "#1A1A24" }}
-      onMouseEnter={(e) => (e.currentTarget.style.background = "#F4F4F7")}
+      style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", textAlign: "left", background: "none", border: "none", cursor: "pointer", padding: "8px 10px", borderRadius: 9, color: T.text }}
+      onMouseEnter={(e) => (e.currentTarget.style.background = T.raisedHover)}
       onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
     >
-      {icon && <span style={{ color: "#A0A0AE", flexShrink: 0 }}>{icon}</span>}
+      {icon && <span style={{ color: T.textLo, flexShrink: 0 }}>{icon}</span>}
       <span style={{ flex: 1, minWidth: 0 }}>
         <span style={{ display: "block", fontSize: "0.8125rem", fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.label}</span>
-        {r.sublabel && <span style={{ display: "block", fontSize: "0.6875rem", color: "#8A8A99", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.sublabel}</span>}
+        {r.sublabel && <span style={{ display: "block", fontSize: "0.6875rem", color: T.textLo, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.sublabel}</span>}
       </span>
       {!r.flyTo && (
-        <span title="No map position on file — this filters instead of recentring" style={{ fontSize: "0.5625rem", color: "#B87A00", background: "#FDF3DC", padding: "2px 6px", borderRadius: 999, fontWeight: 700, flexShrink: 0 }}>
+        <span title="No map position on file — this filters instead of recentring" style={{ fontSize: "0.5625rem", color: T.saffronText, background: T.saffronSoft, padding: "2px 6px", borderRadius: 999, fontWeight: 700, flexShrink: 0 }}>
           FILTER
         </span>
       )}

@@ -39,8 +39,9 @@ import { colorExpression, type ColorMode } from "@/lib/explore/color-modes";
 import {
   SOURCE_ID, INFRA_SOURCE_ID, baseStyle, clusterLayer, clusterCountLayer, dotLayer,
   HIGHLIGHT_SOURCE_ID, HIGHLIGHT_HALO_LAYER, HIGHLIGHT_RING_LAYER, HIGHLIGHT_PIN_LAYER,
+  CLUSTER_GLOW_LAYER, DOT_GLOW_LAYER, clusterGlowLayer, dotGlowLayer, DEFAULT_BASEMAP, buildingTone,
   highlightHaloLayer, highlightRingLayer, highlightPinLayer, highlightHaloPaint,
-  CLUSTER_LAYER, DOT_LAYER, infraLineLayer, infraPointLayer,
+  CLUSTER_LAYER, CLUSTER_COUNT_LAYER, DOT_LAYER, infraLineLayer, infraPointLayer,
   NEARBY_SOURCE_ID, NEARBY_LAYER, nearbyLayer, RING_SOURCE_ID, RING_2KM_LAYER, RING_5KM_LAYER, ring2kmLayer, ring5kmLayer,
   INFRA_CATEGORY_COLORS, BASEMAPS, type BasemapId,
 } from "@/lib/explore/layer-styles";
@@ -58,8 +59,14 @@ import ColorModeToggle from "./ColorModeToggle";
 import MapControls from "./MapControls";
 import { NoPropertiesAnywhere, NoneInViewport, NoFilterMatches, StaleBanner, LoadingBar } from "./EmptyStates";
 import { areaLabel } from "@/lib/explore/query";
+import { useFocus3D, addFocusBuildings } from "./useFocus3D";
+import { X, pillBtn } from "./theme";
 
-const BASEMAP_KEY = "uv_explore_basemap";
+// v2: the dark 3D map became the default; an older saved "streets" choice
+// would otherwise hide it from everyone who had visited before.
+const BASEMAP_KEY = "uv_explore_basemap_v2";
+/** City-view tilt on the dark 3D map (flat on the raster maps). */
+const CITY_PITCH_3D = 40;
 const EMPTY_FC = { type: "FeatureCollection" as const, features: [] };
 
 /** The hover / selection marker: its own source, drawn above everything else. */
@@ -75,6 +82,25 @@ function addHighlight(map: MapLibreMap) {
  * OpenStreetMap "Nearby" dots (under the property dots, so listings stay on
  * top and clickable), the 2 / 5 km rings, then the hover / selection marker.
  */
+/** Focus buildings, then the property clusters and dots (with their glows). */
+function addPropertyLayers(map: MapLibreMap, color: ColorMode, basemap: BasemapId) {
+  addFocusBuildings(map, buildingTone(basemap), CLUSTER_GLOW_LAYER);
+  if (map.getSource(SOURCE_ID)) return;
+  map.addSource(SOURCE_ID, { type: "geojson", data: EMPTY_FC, cluster: true, clusterMaxZoom: 13, clusterRadius: 45 });
+  map.addLayer(clusterGlowLayer as never);
+  map.addLayer(clusterLayer as never);
+  map.addLayer(clusterCountLayer as never);
+  map.addLayer(dotGlowLayer(color) as never);
+  map.addLayer(dotLayer(color) as never);
+}
+
+/** Listing layers dimmed while one listing is in the 3D focus view. */
+const DIM_LAYERS: [string, string, unknown][] = [
+  [DOT_LAYER, "circle-opacity", 1], [DOT_GLOW_LAYER, "circle-opacity", 0.45],
+  [CLUSTER_LAYER, "circle-opacity", 0.9], [CLUSTER_LAYER, "circle-stroke-opacity", 0.9],
+  [CLUSTER_GLOW_LAYER, "circle-opacity", 0.32], [CLUSTER_COUNT_LAYER, "text-opacity", 1],
+];
+
 function addOverlays(map: MapLibreMap) {
   if (!map.getSource(NEARBY_SOURCE_ID)) map.addSource(NEARBY_SOURCE_ID, { type: "geojson", data: EMPTY_FC, attribution: OSM_ATTRIBUTION });
   if (!map.getLayer(NEARBY_LAYER)) map.addLayer(nearbyLayer() as never, map.getLayer(CLUSTER_LAYER) ? CLUSTER_LAYER : undefined);
@@ -115,8 +141,8 @@ export default function ExploreMap() {
 
   const { data, loading, staleError, loadedOnce, request } = useMapData(filters);
 
-  // Streets by default (clearest for finding a locality); a choice made in Layers is remembered.
-  const [basemap, setBasemap] = useState<BasemapId>("streets");
+  // Dark 3D by default; a choice made in Layers is remembered.
+  const [basemap, setBasemap] = useState<BasemapId>(DEFAULT_BASEMAP);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [layersOpen, setLayersOpen] = useState(false);
   const [reqOpen, setReqOpen] = useState(false);
@@ -167,16 +193,22 @@ export default function ExploreMap() {
   useEffect(() => {
     if (!hydrated || mapRef.current || !containerRef.current) return;
 
+    const desktop = window.innerWidth >= 768;
     const map = new MapLibreMap({
       container: containerRef.current,
       style: baseStyle(basemap),
       center: [view.lng, view.lat],
       zoom: view.zoom,
+      pitch: basemap === "dark" ? CITY_PITCH_3D : 0,
+      maxPitch: 75,
       attributionControl: false,
-      // Accidental rotation is the most common complaint about mobile maps.
-      dragRotate: false,
-      pitchWithRotate: false,
+      // Right-drag tilts and turns the 3D map on desktop. Accidental rotation
+      // is the most common complaint about mobile maps, so touch never rotates
+      // (a two-finger drag still tilts).
+      dragRotate: desktop,
+      pitchWithRotate: desktop,
       touchZoomRotate: true,
+      canvasContextAttributes: { antialias: true },
     });
     map.touchZoomRotate.disableRotation();
     mapRef.current = map;
@@ -185,16 +217,7 @@ export default function ExploreMap() {
     map.addControl(new AttributionControl({ compact: true }), "bottom-right");
 
     map.on("load", () => {
-      map.addSource(SOURCE_ID, {
-        type: "geojson",
-        data: EMPTY_FC,
-        cluster: true,
-        clusterMaxZoom: 13,
-        clusterRadius: 45,
-      });
-      map.addLayer(clusterLayer as never);
-      map.addLayer(clusterCountLayer as never);
-      map.addLayer(dotLayer("price") as never);
+      addPropertyLayers(map, "price", basemap);
       addOverlays(map);
       // Data may already have arrived while the style was loading — seed the
       // source immediately rather than waiting for the next change to `visible`,
@@ -223,7 +246,13 @@ export default function ExploreMap() {
     });
     ro.observe(containerRef.current);
 
+    // The 3D orbit turns the camera every frame, and each turn ends a "move".
+    // Only a real change of place or zoom should refetch and rewrite the URL.
+    let last = { lat: NaN, lng: NaN, zoom: NaN };
     const onMoveEnd = () => {
+      const c0 = map.getCenter(), z0 = map.getZoom();
+      if (Math.abs(c0.lat - last.lat) < 1e-6 && Math.abs(c0.lng - last.lng) < 1e-6 && Math.abs(z0 - last.zoom) < 1e-3) return;
+      last = { lat: c0.lat, lng: c0.lng, zoom: z0 };
       const b = boundsOf(map);
       setBounds(b);
       requestRef.current(b, map.getZoom());
@@ -275,7 +304,7 @@ export default function ExploreMap() {
       popupRef.current?.remove();
       popupRef.current = new Popup({ closeButton: false, closeOnClick: false, offset: 12, className: "uv-map-tip" })
         .setLngLat((f.geometry as GeoJSON.Point).coordinates as [number, number])
-        .setHTML(`<span style="font:600 12px Inter,system-ui;color:#0D0D12">${price}${area}</span>`)
+        .setHTML(`<span style="font:600 12px Inter,system-ui;color:#F2F2F6">${price}${area}</span>`)
         .addTo(map);
     });
     // Nearby place: name it on hover.
@@ -337,6 +366,7 @@ export default function ExploreMap() {
     const map = mapRef.current;
     if (!map || !ready) return;
     map.setPaintProperty(DOT_LAYER, "circle-color", colorExpression(color) as never);
+    if (map.getLayer(DOT_GLOW_LAYER)) map.setPaintProperty(DOT_GLOW_LAYER, "circle-color", colorExpression(color) as never);
   }, [color, ready]);
 
   // Selection + hover marker — from its own unclustered source, so the home
@@ -407,7 +437,7 @@ export default function ExploreMap() {
     for (const km of [2, 5]) {
       const el = document.createElement("div");
       el.textContent = `${km} km`;
-      el.style.cssText = "font:700 11px/1 var(--font-jakarta),sans-serif;color:#0D0D12;background:#fff;border-radius:999px;padding:3px 7px;box-shadow:0 1px 4px rgba(16,16,26,.25);pointer-events:none";
+      el.style.cssText = "font:700 11px/1 var(--font-jakarta),sans-serif;color:#FFCB52;background:rgba(13,13,18,.88);border:1px solid rgba(255,180,0,.45);border-radius:999px;padding:3px 7px;box-shadow:0 2px 8px rgba(0,0,0,.4);pointer-events:none";
       ringMarkers.current.push(new Marker({ element: el }).setLngLat([lng, lat + km / 110.574]).addTo(map));
     }
   }, [selectedAt, ready]);
@@ -448,16 +478,10 @@ export default function ExploreMap() {
     map.setStyle(baseStyle(b));
     map.once("styledata", () => {
       // setStyle() usually drops our source with the old style, but not always.
-      // The early return here used to skip setReady(true) when the source had
-      // survived, leaving `ready` false for good — after which the effect that
-      // pushes data into the source bailed out on every update and the map
-      // silently stopped showing properties until a full reload.
-      if (!map.getSource(SOURCE_ID)) {
-        map.addSource(SOURCE_ID, { type: "geojson", data: EMPTY_FC, cluster: true, clusterMaxZoom: 13, clusterRadius: 45 });
-        map.addLayer(clusterLayer as never);
-        map.addLayer(clusterCountLayer as never);
-        map.addLayer(dotLayer(color) as never);
-      }
+      // Never skip setReady(true) when the source survived: `ready` stuck at
+      // false stops every data update reaching the map until a full reload.
+      // The focus buildings are always re-added, in the new map's tone.
+      addPropertyLayers(map, color, b);
       addOverlays(map);
       setReady(true);
     });
@@ -505,6 +529,31 @@ export default function ExploreMap() {
     // Keep the hover / selection marker above any infrastructure just drawn.
     for (const id of [HIGHLIGHT_HALO_LAYER, HIGHLIGHT_RING_LAYER, HIGHLIGHT_PIN_LAYER]) if (map.getLayer(id)) map.moveLayer(id);
   }, [layers, infraCatalog, ready]);
+
+  // ── 3D focus view of the selected listing ──
+  const focus3d = useFocus3D({
+    mapRef, ready, selectedId: selected, tone: buildingTone(basemap), dimLayers: DIM_LAYERS,
+    // Keep the listing in the part of the map the detail card doesn't cover.
+    padding: () => window.innerWidth < 768
+      ? { top: 70, bottom: Math.round(window.innerHeight * 0.55), left: 20, right: 20 }
+      : { top: 90, bottom: 40, left: 420, right: 80 },
+  });
+
+  const [pitched, setPitched] = useState(false);
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !ready) return;
+    const sync = () => setPitched(map.getPitch() > 5);
+    sync();
+    map.on("moveend", sync);
+    return () => { map.off("moveend", sync); };
+  }, [ready]);
+  const toggle3D = useCallback(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    const flat = map.getPitch() > 5;
+    map.easeTo({ pitch: flat ? 0 : 55, bearing: flat ? 0 : map.getBearing(), duration: 700 });
+  }, []);
 
   // ── Actions ──
   const flyTo = useCallback((lat: number, lng: number, zoom: number) => {
@@ -572,7 +621,7 @@ export default function ExploreMap() {
   const showZoomOut = nothingInView && totalListings !== 0 && !filtersActive;
 
   return (
-    <div style={{ position: "relative", width: "100%", height: "100%", overflow: "hidden", background: "#0D0D12" }}>
+    <div className="uv-explore" style={{ position: "relative", width: "100%", height: "100%", overflow: "hidden", background: X.bg, colorScheme: "dark" }}>
       <div ref={containerRef} style={{ position: "absolute", inset: 0, left: listOffset }} />
 
       <LoadingBar active={loading} />
@@ -630,9 +679,9 @@ export default function ExploreMap() {
         <button onClick={() => setListOpen(true)} title="List view"
           style={{
             position: "absolute", left: 0, top: "50%", transform: "translateY(-50%)", zIndex: 16,
-            background: "#fff", border: "none", borderRadius: "0 12px 12px 0", cursor: "pointer",
-            boxShadow: "0 4px 20px rgba(16,16,26,.18)", padding: "16px 7px",
-            display: "flex", flexDirection: "column", alignItems: "center", gap: 6, color: "#2A2A35",
+            background: X.panel, border: `1px solid ${X.line}`, borderLeft: "none", borderRadius: "0 12px 12px 0", cursor: "pointer",
+            boxShadow: X.shadow, backdropFilter: X.blur, padding: "16px 7px",
+            display: "flex", flexDirection: "column", alignItems: "center", gap: 6, color: X.text,
           }}>
           <List size={16} />
           <span style={{ writingMode: "vertical-rl", fontSize: "0.6875rem", fontWeight: 700, letterSpacing: "0.05em" }}>LIST</span>
@@ -658,8 +707,10 @@ export default function ExploreMap() {
           onZoomIn={() => mapRef.current?.zoomIn()}
           onZoomOut={() => mapRef.current?.zoomOut()}
           onLocate={locate}
-          onReset={() => flyTo(DEFAULT_VIEW.lat, DEFAULT_VIEW.lng, DEFAULT_VIEW.zoom)}
+          onReset={() => mapRef.current?.flyTo({ center: [DEFAULT_VIEW.lng, DEFAULT_VIEW.lat], zoom: DEFAULT_VIEW.zoom, pitch: basemap === "dark" ? CITY_PITCH_3D : 0, bearing: 0, padding: { top: 0, bottom: 0, left: 0, right: 0 }, duration: 900 })}
           locating={locating}
+          pitched={pitched}
+          onToggle3D={toggle3D}
         />
       )}
 
@@ -672,13 +723,15 @@ export default function ExploreMap() {
           id={selected}
           onClose={() => commitSelected(null)}
           isMobile={isMobile}
+          left={`calc(16px + ${listOffset})`}
           onShowNearby={() => commitNearby([...new Set([...nearby, ...DEFAULT_NEARBY])])}
+          focus3d={focus3d}
         />
       )}
 
       {/* Nearby place tooltip (positions are relative to the map, which sits beside an open list). */}
       {tip && (
-        <div style={{ position: "absolute", left: `calc(${listOffset} + ${tip.x + 12}px)`, top: tip.y - 12, zIndex: 30, pointerEvents: "none", background: "#0D0D12", color: "#fff", fontSize: "0.75rem", padding: "5px 9px", borderRadius: 8, whiteSpace: "nowrap", boxShadow: "0 4px 14px rgba(16,16,26,.25)" }}>
+        <div style={{ position: "absolute", left: `calc(${listOffset} + ${tip.x + 12}px)`, top: tip.y - 12, zIndex: 30, pointerEvents: "none", background: X.panel, border: `1px solid ${X.line}`, color: X.text, fontSize: "0.75rem", padding: "5px 9px", borderRadius: 8, whiteSpace: "nowrap", boxShadow: X.shadow }}>
           <b>{tip.name}</b>{tip.label && <span style={{ opacity: 0.7 }}> · {tip.label}</span>}
         </div>
       )}
@@ -703,22 +756,24 @@ export default function ExploreMap() {
       )}
 
       <style>{`
-        .uv-map-tip .maplibregl-popup-content { padding: 5px 9px; border-radius: 8px; box-shadow: 0 4px 20px rgba(16,16,26,.18); }
+        .uv-map-tip .maplibregl-popup-content { padding: 5px 9px; border-radius: 8px; background: rgba(18,18,25,.95); border: 1px solid rgba(255,255,255,.1); box-shadow: 0 8px 24px rgba(0,0,0,.45); }
         .uv-map-tip .maplibregl-popup-tip { display: none; }
+        .uv-explore .maplibregl-ctrl-attrib { background: rgba(13,13,18,.72); color: #A3A3B2; }
+        .uv-explore .maplibregl-ctrl-attrib a { color: #D6D6E0; }
+        .uv-explore .maplibregl-ctrl-attrib-button { filter: invert(1); }
+        .uv-explore .uv-skeleton { background: linear-gradient(90deg, #1B1B24 0%, #262631 50%, #1B1B24 100%); background-size: 200% 100%; }
+        .uv-explore ::-webkit-scrollbar { width: 8px; height: 8px; }
+        .uv-explore ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.14); border-radius: 999px; }
+        .uv-explore ::-webkit-scrollbar-track { background: transparent; }
+        .uv-explore input::placeholder { color: #6A6A7A; }
+        .uv-explore select option { background: #1B1B24; color: #F2F2F6; }
       `}</style>
     </div>
   );
 }
 
-const pillBtn: React.CSSProperties = {
-  display: "inline-flex", alignItems: "center", gap: 6, background: "#fff", border: "none",
-  borderRadius: 999, padding: "0 16px", height: 46, cursor: "pointer",
-  boxShadow: "0 4px 20px rgba(16,16,26,.18)", fontSize: "0.8125rem", fontWeight: 600, color: "#2A2A35",
-  pointerEvents: "auto",
-};
-
 const fab: React.CSSProperties = {
   position: "absolute", zIndex: 16, width: 52, height: 52, borderRadius: 999,
-  background: "#fff", border: "none", cursor: "pointer", display: "grid", placeItems: "center",
-  boxShadow: "0 4px 20px rgba(16,16,26,.22)", color: "#2A2A35",
+  background: X.panel, border: `1px solid ${X.line}`, cursor: "pointer", display: "grid", placeItems: "center",
+  boxShadow: X.shadow, backdropFilter: X.blur, color: X.text,
 };

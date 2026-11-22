@@ -7,11 +7,15 @@
 // ListingEnquiry + CRM Lead exactly as elsewhere in the app.
 
 import { useCallback, useEffect, useState } from "react";
-import { X, Bookmark, Share2, Navigation, ExternalLink, ChevronLeft, ChevronRight, BadgeCheck } from "lucide-react";
+import { X, Bookmark, Share2, Navigation, ExternalLink, ChevronLeft, ChevronRight, BadgeCheck, Building2, Orbit } from "lucide-react";
 import { formatLakh, formatINRFull } from "@/lib/format";
 import EnquiryModal from "./EnquiryModal";
 import { areaLabel } from "@/lib/explore/query";
 import AccessibilityPanel, { type AccessibilityView } from "@/components/accessibility/AccessibilityPanel";
+import { X as T, iconBtn } from "./theme";
+import type { useFocus3D } from "./useFocus3D";
+
+type Focus3D = ReturnType<typeof useFocus3D>;
 
 interface Detail {
   id: string;
@@ -45,7 +49,16 @@ interface Detail {
   url: string;
 }
 
-export default function PropertyDetailCard({ id, onClose, isMobile, onShowNearby }: { id: string; onClose: () => void; isMobile: boolean; onShowNearby?: () => void }) {
+export default function PropertyDetailCard({ id, onClose, isMobile, onShowNearby, left = 16, focus3d }: {
+  id: string;
+  onClose: () => void;
+  isMobile: boolean;
+  onShowNearby?: () => void;
+  /** desktop: distance from the left edge (beside an open list) */
+  left?: number | string;
+  /** the 3D focus view of this listing on the map */
+  focus3d?: Focus3D;
+}) {
   const [d, setD] = useState<Detail | null>(null);
   const [img, setImg] = useState(0);
   const [saved, setSaved] = useState(false);
@@ -97,12 +110,13 @@ export default function PropertyDetailCard({ id, onClose, isMobile, onShowNearby
   const height = isMobile ? (snap === 0 ? 140 : snap === 1 ? "52vh" : "88vh") : "auto";
   const shell: React.CSSProperties = isMobile
     ? { position: "absolute", left: 0, right: 0, bottom: 0, height, borderRadius: "20px 20px 0 0", maxHeight: "88vh" }
-    : { position: "absolute", left: 16, bottom: 20, width: 380, borderRadius: 20, maxHeight: "calc(100% - 200px)" };
+    : { position: "absolute", left, bottom: 20, width: 380, borderRadius: 20, maxHeight: "calc(100% - 110px)" };
+  const f3 = focus3d?.focus && focus3d.focus.id === id ? focus3d : null;
 
   return (
     <>
       <div style={{
-        ...shell, background: "#fff", zIndex: 35, boxShadow: "0 4px 20px rgba(16,16,26,.28)",
+        ...shell, background: T.panel, border: `1px solid ${T.line}`, color: T.text, backdropFilter: T.blur, zIndex: 35, boxShadow: T.shadow,
         display: "flex", flexDirection: "column", overflow: "hidden", pointerEvents: "auto",
         animation: "uv-cardin 240ms cubic-bezier(.2,.8,.2,1)",
       }}>
@@ -110,7 +124,7 @@ export default function PropertyDetailCard({ id, onClose, isMobile, onShowNearby
 
         {isMobile && (
           <div onClick={() => setSnap((s) => (s + 1) % 3)} style={{ padding: "8px 0 4px", display: "grid", placeItems: "center", cursor: "grab", flexShrink: 0 }}>
-            <span style={{ width: 38, height: 4, borderRadius: 999, background: "#DCDCE4" }} />
+            <span style={{ width: 38, height: 4, borderRadius: 999, background: T.lineStrong }} />
           </div>
         )}
 
@@ -126,33 +140,34 @@ export default function PropertyDetailCard({ id, onClose, isMobile, onShowNearby
               <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <span style={{ fontFamily: "var(--font-jakarta)", fontWeight: 800, fontSize: "1.05rem", color: "#0D0D12" }}>
+                    <span style={{ fontFamily: "var(--font-jakarta)", fontWeight: 800, fontSize: "1.05rem", color: T.text }}>
                       {d.areaValue ? areaLabel(d.areaValue, d.areaUnit) : d.name}
                     </span>
-                    {d.isVerified && <BadgeCheck size={16} style={{ color: "#0F9D58", flexShrink: 0 }} />}
-                    {d.scoreGrade && <span style={{ fontSize: "0.625rem", fontWeight: 800, color: "#7A5200", background: "#FFF4D6", borderRadius: 999, padding: "2px 7px" }}>{d.scoreGrade}</span>}
+                    {d.isVerified && <BadgeCheck size={16} style={{ color: T.good, flexShrink: 0 }} />}
+                    {d.scoreGrade && <span style={{ fontSize: "0.625rem", fontWeight: 800, color: "#0D0D12", background: T.saffron, borderRadius: 999, padding: "2px 7px" }}>{d.scoreGrade}</span>}
                   </div>
-                  <div style={{ fontSize: "0.75rem", color: "#8A8A99", marginTop: 2 }}>📍 {d.location || "Location not specified"}</div>
+                  {d.areaValue && <div style={{ fontSize: "0.8125rem", fontWeight: 600, color: T.textMid, marginTop: 1 }}>{d.name}</div>}
+                  <div style={{ fontSize: "0.75rem", color: T.textLo, marginTop: 2 }}>📍 {d.location || "Location not specified"}</div>
                   <div style={{ marginTop: 6 }}>
                     {d.rateValue && (
-                      <span className="uv-mono" style={{ fontWeight: 700, fontSize: "0.9375rem", color: "#0D0D12" }}>
-                        {formatINRFull(d.rateValue)}<span style={{ color: "#8A8A99", fontWeight: 400 }}> / {d.rateUnit}</span>
+                      <span className="uv-mono" style={{ fontWeight: 700, fontSize: "0.9375rem", color: T.text }}>
+                        {formatINRFull(d.rateValue)}<span style={{ color: T.textLo, fontWeight: 400 }}> / {d.rateUnit}</span>
                       </span>
                     )}
                     {d.priceLakh > 0 && (
-                      <span className="uv-mono" style={{ marginLeft: d.rateValue ? 8 : 0, fontWeight: 800, fontSize: "0.9375rem", color: "#B87A00" }}>
+                      <span className="uv-mono" style={{ marginLeft: d.rateValue ? 8 : 0, fontWeight: 800, fontSize: "0.9375rem", color: T.saffronText }}>
                         {d.rateValue ? "(Total " : d.priceFrom ? "from " : ""}{formatLakh(d.priceLakh)}{d.rateValue ? ")" : ""}
                       </span>
                     )}
                   </div>
                 </div>
-                <button onClick={onClose} aria-label="Close" style={{ background: "none", border: "none", cursor: "pointer", color: "#8A8A99", flexShrink: 0 }}><X size={17} /></button>
+                <button onClick={onClose} aria-label="Close" style={{ ...iconBtn, flexShrink: 0, width: 30, height: 30, borderRadius: 999, border: `1px solid ${T.line}` }}><X size={16} /></button>
               </div>
             </div>
 
             <div style={{ flex: 1, overflowY: "auto" }}>
               {d.images.length > 0 && (
-                <div style={{ position: "relative", margin: "0 16px", borderRadius: 12, overflow: "hidden", background: "#F0F0F4" }}>
+                <div style={{ position: "relative", margin: "0 16px", borderRadius: 12, overflow: "hidden", background: "#1F1F29" }}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={d.images[img]} alt={d.name} style={{ width: "100%", height: 168, objectFit: "cover", display: "block" }} />
                   {d.images.length > 1 && (
@@ -169,8 +184,8 @@ export default function PropertyDetailCard({ id, onClose, isMobile, onShowNearby
                 </div>
               )}
 
-              <div style={{ display: "flex", justifyContent: "space-around", padding: "12px 8px", borderBottom: "1px solid #EFEFF3", margin: "12px 0 0" }}>
-                <Action icon={<Bookmark size={16} fill={saved ? "#B87A00" : "none"} />} label={saved ? "Saved" : "Shortlist"} onClick={shortlist} active={saved} />
+              <div style={{ display: "flex", justifyContent: "space-around", padding: "12px 8px", borderBottom: `1px solid ${T.line}`, margin: "12px 0 0" }}>
+                <Action icon={<Bookmark size={16} fill={saved ? T.saffron : "none"} />} label={saved ? "Saved" : "Shortlist"} onClick={shortlist} active={saved} />
                 <Action icon={<Share2 size={16} />} label={copied ? "Copied" : "Share"} onClick={share} active={copied} />
                 <Action
                   icon={<Navigation size={16} />}
@@ -180,6 +195,28 @@ export default function PropertyDetailCard({ id, onClose, isMobile, onShowNearby
                 />
                 <Action icon={<ExternalLink size={16} />} label="Open" onClick={() => window.open(d.url, "_blank", "noopener")} />
               </div>
+
+              {f3 && (
+                <div style={{ padding: "12px 16px 2px", display: "flex", flexDirection: "column", gap: 8 }}>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    {f3.focus!.tigerScore != null && (
+                      <span style={{ display: "inline-flex", alignItems: "baseline", gap: 5, border: `1px solid ${T.line}`, background: T.raised, borderRadius: 10, padding: "6px 10px" }}>
+                        <b className="uv-mono" style={{ fontSize: "1rem", color: T.text }}>{f3.focus!.tigerScore.toFixed(1)}</b>
+                        <span style={{ fontSize: "0.625rem", letterSpacing: "0.06em", textTransform: "uppercase", color: T.textLo }}>Tiger Score /10</span>
+                      </span>
+                    )}
+                    <label style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 6, fontSize: "0.75rem", color: T.textMid, cursor: "pointer" }}>
+                      <input type="checkbox" checked={f3.orbit} onChange={(e) => f3.setOrbit(e.target.checked)} style={{ accentColor: T.saffron }} />
+                      <Orbit size={13} aria-hidden /> Orbit
+                    </label>
+                  </div>
+                  {f3.shapeNote && (
+                    <div style={{ display: "flex", gap: 7, alignItems: "flex-start", fontSize: "0.75rem", lineHeight: 1.45, color: T.textMid, padding: "8px 10px", borderRadius: 10, background: "rgba(255,180,0,.07)", border: "1px solid rgba(255,180,0,.22)" }}>
+                      <Building2 size={14} aria-hidden style={{ flexShrink: 0, marginTop: 1, color: T.saffron }} /> {f3.shapeNote}
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div style={{ padding: "12px 16px", display: "flex", flexDirection: "column", gap: 7 }}>
                 <Attr label="Location" value={d.location || null} />
@@ -197,16 +234,17 @@ export default function PropertyDetailCard({ id, onClose, isMobile, onShowNearby
                 {d.corridor && <Attr label="Corridor" value={`${d.corridor.name}${d.corridor.score != null ? ` · score ${d.corridor.score}` : ""}`} />}
               </div>
 
-              <div style={{ padding: "14px 16px 16px", borderTop: "1px solid #EFEFF3" }}>
+              <div style={{ padding: "14px 16px 16px", borderTop: `1px solid ${T.line}` }}>
                 {d.accessibility ? (
-                  <AccessibilityPanel a={d.accessibility} onShowNearby={onShowNearby} />
+                  <AccessibilityPanel a={d.accessibility} onShowNearby={onShowNearby} dark
+                    onPickNearest={f3 ? f3.pickNearest : undefined} activeNearest={f3?.activeKind ?? null} pickable={f3?.mappedKinds ?? []} />
                 ) : (
-                  <div style={{ fontSize: "0.75rem", color: "#8A8A99" }}>Accessibility hasn&rsquo;t been scored for this location yet.</div>
+                  <div style={{ fontSize: "0.75rem", color: T.textLo }}>Accessibility hasn&rsquo;t been scored for this location yet.</div>
                 )}
               </div>
             </div>
 
-            <div style={{ padding: "10px 16px 14px", flexShrink: 0, borderTop: "1px solid #EFEFF3" }}>
+            <div style={{ padding: "10px 16px 14px", flexShrink: 0, borderTop: `1px solid ${T.line}` }}>
               <button onClick={() => setEnquiry(true)} className="uv-btn uv-btn-primary" style={{ width: "100%", justifyContent: "center", fontSize: "0.875rem", padding: "11px" }}>
                 Contact Agent
               </button>
@@ -225,7 +263,7 @@ function Arrow({ side, onClick }: { side: "left" | "right"; onClick: () => void 
     <button onClick={onClick} aria-label={side === "left" ? "Previous image" : "Next image"} style={{
       position: "absolute", top: "50%", transform: "translateY(-50%)", [side]: 8,
       width: 28, height: 28, borderRadius: 999, border: "none", cursor: "pointer",
-      background: "rgba(255,255,255,.9)", display: "grid", placeItems: "center", color: "#2A2A35",
+      background: "rgba(13,13,18,.75)", display: "grid", placeItems: "center", color: "#F2F2F6",
     } as React.CSSProperties}>
       {side === "left" ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
     </button>
@@ -236,7 +274,7 @@ function Action({ icon, label, onClick, active, disabled }: { icon: React.ReactN
   return (
     <button onClick={onClick} disabled={disabled} style={{
       display: "flex", flexDirection: "column", alignItems: "center", gap: 3, background: "none", border: "none",
-      cursor: disabled ? "not-allowed" : "pointer", color: active ? "#B87A00" : disabled ? "#C4C4CE" : "#3A3A47",
+      cursor: disabled ? "not-allowed" : "pointer", color: active ? T.saffronText : disabled ? T.textFaint : T.textMid,
       fontSize: "0.625rem", fontWeight: 600, padding: "2px 8px",
     }}>
       {icon}{label}
@@ -248,10 +286,10 @@ function Attr({ label, value, suffix, suffixTone }: { label: string; value: stri
   if (!value) return null;
   return (
     <div style={{ display: "flex", gap: 10, fontSize: "0.75rem" }}>
-      <span style={{ width: 78, color: "#8A8A99", flexShrink: 0 }}>{label}</span>
-      <span style={{ flex: 1, color: "#1A1A24" }}>
+      <span style={{ width: 78, color: T.textLo, flexShrink: 0 }}>{label}</span>
+      <span style={{ flex: 1, color: T.text }}>
         {value}
-        {suffix && <span style={{ marginLeft: 6, color: suffixTone === "good" ? "#0F9D58" : "#B87A00", fontWeight: 600 }}>{suffix}</span>}
+        {suffix && <span style={{ marginLeft: 6, color: suffixTone === "good" ? T.good : T.saffronText, fontWeight: 600 }}>{suffix}</span>}
       </span>
     </div>
   );

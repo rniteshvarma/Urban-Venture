@@ -10,6 +10,7 @@
 import { useEffect, useState } from "react";
 import { X, Pin, Star, Plus, LogIn } from "lucide-react";
 import type { ExploreFilterState } from "@/lib/explore/use-url-state";
+import { X as T, glass, pillBtn, sectionLabel, iconBtn } from "./theme";
 
 interface SavedReportRow { id: string; title: string; budget: number; horizon: number; city: string }
 interface WatchRow { slug: string; name: string }
@@ -47,16 +48,16 @@ export default function RequirementsPanel({
   }
 
   return (
-    <div style={{ width: 300, background: "#fff", borderRadius: 14, boxShadow: "0 4px 20px rgba(16,16,26,.18)", padding: "12px 14px 14px", pointerEvents: "auto", maxHeight: "min(60vh, 460px)", overflowY: "auto" }}>
+    <div style={{ ...glass, width: 300, borderRadius: 14, padding: "12px 14px 14px", pointerEvents: "auto", maxHeight: "min(60vh, 460px)", overflowY: "auto" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-        <span style={{ fontFamily: "var(--font-jakarta)", fontWeight: 800, fontSize: "0.875rem", color: "#0D0D12" }}>My Requirements</span>
-        <button onClick={onToggleOpen} aria-label="Close" style={{ background: "none", border: "none", cursor: "pointer", color: "#8A8A99" }}><X size={16} /></button>
+        <span style={{ fontFamily: "var(--font-jakarta)", fontWeight: 800, fontSize: "0.875rem", color: T.text }}>My Requirements</span>
+        <button onClick={onToggleOpen} aria-label="Close" style={iconBtn}><X size={16} /></button>
       </div>
 
-      {authed === null && <div style={{ fontSize: "0.75rem", color: "#A0A0AE" }}>Loading…</div>}
+      {authed === null && <div style={{ fontSize: "0.75rem", color: T.textFaint }}>Loading…</div>}
 
       {authed === false && (
-        <div style={{ fontSize: "0.8125rem", color: "#5A5A66", lineHeight: 1.5 }}>
+        <div style={{ fontSize: "0.8125rem", color: T.textMid, lineHeight: 1.5 }}>
           Sign in to use your saved searches and watched corridors here.
           <a
             href={`/login?next=${encodeURIComponent(typeof window !== "undefined" ? window.location.pathname + window.location.search : "/explore")}`}
@@ -71,7 +72,7 @@ export default function RequirementsPanel({
       {authed && (
         <>
           {reports.length === 0 && watches.length === 0 && (
-            <p style={{ fontSize: "0.75rem", color: "#A0A0AE", lineHeight: 1.5 }}>
+            <p style={{ fontSize: "0.75rem", color: T.textLo, lineHeight: 1.5 }}>
               Nothing saved yet. Save a research report or watch a corridor, and it will show up here.
             </p>
           )}
@@ -79,23 +80,23 @@ export default function RequirementsPanel({
           {reports.map((r) => (
             <button key={r.id} onClick={() => onApply({ maxPrice: r.budget })}
               style={rowBtn}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "#F4F4F7")}
+              onMouseEnter={(e) => (e.currentTarget.style.background = T.raisedHover)}
               onMouseLeave={(e) => (e.currentTarget.style.background = "none")}>
-              <Pin size={13} style={{ color: "#B87A00", flexShrink: 0 }} />
+              <Pin size={13} style={{ color: T.saffron, flexShrink: 0 }} />
               <span style={{ flex: 1, minWidth: 0 }}>
-                <span style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "#1A1A24", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.title}</span>
-                <span style={{ display: "block", fontSize: "0.625rem", color: "#8A8A99" }}>Under ₹{r.budget}L · {r.city}</span>
+                <span style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: T.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.title}</span>
+                <span style={{ display: "block", fontSize: "0.625rem", color: T.textLo }}>Under ₹{r.budget}L · {r.city}</span>
               </span>
-              <span style={{ fontSize: "0.625rem", color: "#B87A00", fontWeight: 700, flexShrink: 0 }}>APPLY</span>
+              <span style={{ fontSize: "0.625rem", color: T.saffronText, fontWeight: 700, flexShrink: 0 }}>APPLY</span>
             </button>
           ))}
 
           {watches.length > 0 && (
-            <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid #EFEFF3" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: "0.625rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "#8A8A99", fontWeight: 700, marginBottom: 5 }}>
+            <div style={{ marginTop: 10, paddingTop: 10, borderTop: `1px solid ${T.line}` }}>
+              <div style={{ ...sectionLabel, display: "flex", alignItems: "center", gap: 5, marginBottom: 5 }}>
                 <Star size={11} /> Watching
               </div>
-              <div style={{ fontSize: "0.75rem", color: "#3A3A47" }}>{watches.map((w) => w.name).join(", ")}</div>
+              <div style={{ fontSize: "0.75rem", color: T.textMid }}>{watches.map((w) => w.name).join(", ")}</div>
             </div>
           )}
 
@@ -107,7 +108,7 @@ export default function RequirementsPanel({
               if (currentFilters.maxPrice != null) p.set("budget", String(currentFilters.maxPrice));
               window.open(`/research${p.toString() ? `?${p}` : ""}`, "_blank", "noopener");
             }}
-            style={{ ...rowBtn, marginTop: 10, borderTop: "1px solid #EFEFF3", paddingTop: 12, color: "#B87A00", fontWeight: 700, fontSize: "0.75rem" }}
+            style={{ ...rowBtn, marginTop: 10, borderTop: `1px solid ${T.line}`, paddingTop: 12, color: T.saffronText, fontWeight: 700, fontSize: "0.75rem" }}
           >
             <Plus size={13} /> Save current filters as a requirement
           </button>
@@ -116,13 +117,6 @@ export default function RequirementsPanel({
     </div>
   );
 }
-
-const pillBtn: React.CSSProperties = {
-  display: "inline-flex", alignItems: "center", gap: 6, background: "#fff", border: "none",
-  borderRadius: 999, padding: "0 14px", height: 46, cursor: "pointer",
-  boxShadow: "0 4px 20px rgba(16,16,26,.18)", fontSize: "0.8125rem", fontWeight: 600, color: "#2A2A35",
-  pointerEvents: "auto", whiteSpace: "nowrap",
-};
 
 const rowBtn: React.CSSProperties = {
   display: "flex", alignItems: "center", gap: 8, width: "100%", textAlign: "left",

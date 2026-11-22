@@ -3,7 +3,7 @@ import "./v3.css";
 
 // Design samples under review: never indexed, never linked from the live site.
 export const metadata: Metadata = {
-  title: "Property Tiger — homepage sample",
+  title: "Property Tiger — design sample",
   robots: { index: false, follow: false },
 };
 

@@ -5,11 +5,11 @@
 
 import Link from "next/link";
 import { Map as MapIcon, SearchX, ZoomOut, WifiOff } from "lucide-react";
+import { X, glass, ghostBtn } from "./theme";
 
 const panel: React.CSSProperties = {
-  background: "#fff",
+  ...glass,
   borderRadius: 20,
-  boxShadow: "0 4px 20px rgba(16,16,26,.18)",
   padding: "1.75rem 2rem",
   textAlign: "center",
   maxWidth: 380,
@@ -22,14 +22,14 @@ export function NoPropertiesAnywhere() {
     <div style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", pointerEvents: "none", zIndex: 20 }}>
       <div style={panel}>
         <MapIcon size={30} style={{ color: "var(--color-saffron-deep, #B87A00)" }} />
-        <h3 style={{ fontFamily: "var(--font-jakarta)", fontWeight: 800, fontSize: "1.05rem", color: "var(--color-ink, #0D0D12)", marginTop: 10 }}>
+        <h3 style={{ fontFamily: "var(--font-jakarta)", fontWeight: 800, fontSize: "1.05rem", color: X.text, marginTop: 10 }}>
           No properties on the map yet
         </h3>
-        <p style={{ color: "#5A5A66", fontSize: "0.875rem", marginTop: 6, lineHeight: 1.5 }}>
+        <p style={{ color: X.textMid, fontSize: "0.875rem", marginTop: 6, lineHeight: 1.5 }}>
           Properties will appear here as they&apos;re added.
         </p>
         <div style={{ display: "flex", gap: 8, marginTop: 16, justifyContent: "center", flexWrap: "wrap" }}>
-          <Link href="/market" className="uv-btn uv-btn-ghost" style={{ fontSize: "0.8125rem" }}>Browse corridors</Link>
+          <Link href="/market" style={{ ...ghostBtn, textDecoration: "none" }}>Browse corridors</Link>
           <Link href="/dashboard/selling/new" className="uv-btn uv-btn-primary" style={{ fontSize: "0.8125rem" }}>List your property</Link>
         </div>
       </div>
@@ -42,15 +42,14 @@ const toast: React.CSSProperties = {
   bottom: 24,
   left: "50%",
   transform: "translateX(-50%)",
-  background: "#fff",
+  ...glass,
   borderRadius: 14,
-  boxShadow: "0 4px 20px rgba(16,16,26,.18)",
   padding: "10px 14px",
   display: "flex",
   alignItems: "center",
   gap: 10,
   fontSize: "0.8125rem",
-  color: "#2A2A35",
+  color: X.textMid,
   zIndex: 20,
   pointerEvents: "auto",
   maxWidth: "min(92vw, 520px)",
@@ -60,11 +59,11 @@ const toast: React.CSSProperties = {
 export function NoneInViewport({ onZoomOut, onClearFilters, hasFilters }: { onZoomOut: () => void; onClearFilters: () => void; hasFilters: boolean }) {
   return (
     <div style={toast}>
-      <ZoomOut size={16} style={{ flexShrink: 0, color: "#8A8A99" }} />
+      <ZoomOut size={16} style={{ flexShrink: 0, color: X.textLo }} />
       <span style={{ flex: 1 }}>No properties in this area — try zooming out{hasFilters ? " or adjusting filters" : ""}</span>
-      <button onClick={onZoomOut} className="uv-btn uv-btn-ghost" style={{ fontSize: "0.75rem", padding: "5px 10px" }}>Zoom out</button>
+      <button onClick={onZoomOut} style={{ ...ghostBtn, fontSize: "0.75rem", padding: "5px 10px" }}>Zoom out</button>
       {hasFilters && (
-        <button onClick={onClearFilters} className="uv-btn uv-btn-ghost" style={{ fontSize: "0.75rem", padding: "5px 10px" }}>Clear filters</button>
+        <button onClick={onClearFilters} style={{ ...ghostBtn, fontSize: "0.75rem", padding: "5px 10px" }}>Clear filters</button>
       )}
     </div>
   );
@@ -74,7 +73,7 @@ export function NoneInViewport({ onZoomOut, onClearFilters, hasFilters }: { onZo
 export function NoFilterMatches({ onClearFilters }: { onClearFilters: () => void }) {
   return (
     <div style={toast}>
-      <SearchX size={16} style={{ flexShrink: 0, color: "#8A8A99" }} />
+      <SearchX size={16} style={{ flexShrink: 0, color: X.textLo }} />
       <span style={{ flex: 1 }}>No properties match your filters</span>
       <button onClick={onClearFilters} className="uv-btn uv-btn-primary" style={{ fontSize: "0.75rem", padding: "5px 10px" }}>Clear all filters</button>
     </div>
@@ -85,7 +84,7 @@ export function NoFilterMatches({ onClearFilters }: { onClearFilters: () => void
 export function StaleBanner() {
   return (
     <div style={{ ...toast, bottom: "auto", top: 88 }}>
-      <WifiOff size={15} style={{ flexShrink: 0, color: "#B87A00" }} />
+      <WifiOff size={15} style={{ flexShrink: 0, color: X.saffron }} />
       <span>Couldn&apos;t refresh — retrying…</span>
     </div>
   );

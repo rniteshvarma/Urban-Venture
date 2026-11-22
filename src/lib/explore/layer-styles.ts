@@ -5,6 +5,7 @@ import { NEARBY_CATEGORIES, OSM_CATEGORIES, type OsmCategoryDef } from "@/lib/os
 import type { StyleSpecification } from "maplibre-gl";
 import type { ColorMode } from "./color-modes";
 import { colorExpression } from "./color-modes";
+import { style3D, cityBuildings, OFM_SOURCE, GLYPHS, type BuildingTone } from "./dark-style";
 
 export const SOURCE_ID = "properties";
 export const INFRA_SOURCE_ID = "infrastructure";
@@ -14,12 +15,19 @@ export const INFRA_SOURCE_ID = "infrastructure";
 // stay visible at all times (Constraint 9).
 export const ESRI_ATTRIBUTION = "Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics";
 
-export type BasemapId = "satellite" | "terrain" | "streets";
+export type BasemapId = "dark" | "satellite" | "terrain" | "streets";
 
 const ESRI = (service: string) =>
   `https://server.arcgisonline.com/ArcGIS/rest/services/${service}/MapServer/tile/{z}/{y}/{x}`;
 
 export const BASEMAPS: Record<BasemapId, { label: string; tiles: string; attribution: string; labelsOverlay?: string }> = {
+  // OpenFreeMap vector tiles in the site's ink palette, every OSM building in
+  // 3D (free, no key; built in dark-style.ts — `tiles` is unused here).
+  dark: {
+    label: "Dark 3D",
+    tiles: "",
+    attribution: "OpenFreeMap © OpenStreetMap contributors",
+  },
   satellite: {
     label: "Satellite",
     tiles: ESRI("World_Imagery"),
@@ -40,8 +48,19 @@ export const BASEMAPS: Record<BasemapId, { label: string; tiles: string; attribu
   },
 };
 
-/** A complete MapLibre style for a raster basemap (no glyph server needed). */
+/** The default base map: dark, with 3D buildings. */
+export const DEFAULT_BASEMAP: BasemapId = "dark";
+
+const BUILDING_TONE: Record<BasemapId, BuildingTone> = { dark: "dark", satellite: "sat", terrain: "light", streets: "light" };
+export const buildingTone = (id: BasemapId) => BUILDING_TONE[id];
+
+/**
+ * A complete MapLibre style. Every base map also carries the OpenFreeMap
+ * building layer (3D from street zoom), which the 3D focus view reads to light
+ * the selected listing's real buildings and dim the rest.
+ */
 export function baseStyle(id: BasemapId): StyleSpecification {
+  if (id === "dark") return style3D("dark");
   const b = BASEMAPS[id];
   const sources: Record<string, unknown> = {
     basemap: { type: "raster", tiles: [b.tiles], tileSize: 256, attribution: b.attribution, maxzoom: 19 },
@@ -52,8 +71,10 @@ export function baseStyle(id: BasemapId): StyleSpecification {
     sources.basemapLabels = { type: "raster", tiles: [b.labelsOverlay], tileSize: 256, maxzoom: 19 };
     layers.push({ id: "basemap-labels", type: "raster", source: "basemapLabels" });
   }
+  sources.ofm = OFM_SOURCE;
+  layers.push(...cityBuildings(BUILDING_TONE[id]));
 
-  return { version: 8, sources, layers } as unknown as StyleSpecification;
+  return { version: 8, glyphs: GLYPHS, sources, layers } as unknown as StyleSpecification;
 }
 
 // ── Property layers ──────────────────────────────────────────────────
@@ -61,19 +82,38 @@ export const CLUSTER_LAYER = "clusters";
 export const CLUSTER_COUNT_LAYER = "cluster-count";
 export const DOT_LAYER = "property-dots";
 
+export const CLUSTER_GLOW_LAYER = "clusters-glow";
+export const DOT_GLOW_LAYER = "property-dots-glow";
+
+const CLUSTER_RADIUS = ["step", ["get", "point_count"], 17, 10, 22, 50, 29, 200, 37, 1000, 46];
+
+/** A soft saffron glow behind each cluster bubble. */
+export const clusterGlowLayer = {
+  id: CLUSTER_GLOW_LAYER,
+  type: "circle" as const,
+  source: SOURCE_ID,
+  filter: ["has", "point_count"],
+  paint: {
+    "circle-color": "#FFB400",
+    "circle-radius": ["+", CLUSTER_RADIUS, 10],
+    "circle-blur": 0.9,
+    "circle-opacity": 0.32,
+  },
+};
+
+/** Ink glass bubble with a saffron ring — reads on dark, satellite and streets. */
 export const clusterLayer = {
   id: CLUSTER_LAYER,
   type: "circle" as const,
   source: SOURCE_ID,
   filter: ["has", "point_count"],
   paint: {
-    "circle-color": "#2563EB",
-    "circle-opacity": 0.92,
-    "circle-radius": ["step", ["get", "point_count"], 18, 10, 24, 50, 32, 200, 42, 1000, 54],
-    // The wide translucent stroke is what produces the soft glow ring.
-    "circle-stroke-width": 8,
-    "circle-stroke-color": "#2563EB",
-    "circle-stroke-opacity": 0.25,
+    "circle-color": "#15151C",
+    "circle-opacity": 0.9,
+    "circle-radius": CLUSTER_RADIUS,
+    "circle-stroke-width": 2,
+    "circle-stroke-color": "#FFB400",
+    "circle-stroke-opacity": 0.9,
   },
 };
 
@@ -84,11 +124,28 @@ export const clusterCountLayer = {
   filter: ["has", "point_count"],
   layout: {
     "text-field": ["get", "point_count_abbreviated"],
+    "text-font": ["Noto Sans Bold"],
     "text-size": 13,
     "text-allow-overlap": true,
   },
-  paint: { "text-color": "#FFFFFF" },
+  paint: { "text-color": "#FFE2A0" },
 };
+
+/** The glowing halo under each listing dot, in the dot's own colour. */
+export function dotGlowLayer(mode: ColorMode) {
+  return {
+    id: DOT_GLOW_LAYER,
+    type: "circle" as const,
+    source: SOURCE_ID,
+    filter: ["!", ["has", "point_count"]],
+    paint: {
+      "circle-radius": ["interpolate", ["linear"], ["zoom"], 6, 13, 10, 15, 14, 19, 16, 24],
+      "circle-color": colorExpression(mode),
+      "circle-blur": 1,
+      "circle-opacity": 0.45,
+    },
+  };
+}
 
 export function dotLayer(mode: ColorMode) {
   return {
@@ -100,12 +157,12 @@ export function dotLayer(mode: ColorMode) {
       // A 3px dot on satellite imagery is invisible — the basemap is busy,
       // mid-tone and roughly the same warm hue as the price-band colours. Keep
       // a floor of 7px at the zooms people actually browse at, and ring every
-      // dot in white so it separates from terrain instead of blending into it.
-      "circle-radius": ["interpolate", ["linear"], ["zoom"], 6, 7, 10, 8, 14, 10, 16, 12],
+      // dot in ink with a glow (dotGlowLayer) so it separates from any base map.
+      "circle-radius": ["interpolate", ["linear"], ["zoom"], 6, 6, 10, 7, 14, 9, 16, 11],
       "circle-color": colorExpression(mode),
       "circle-opacity": 1,
-      "circle-stroke-width": 2,
-      "circle-stroke-color": "#FFFFFF",
+      "circle-stroke-width": 1.5,
+      "circle-stroke-color": "#0D0D12",
     },
   };
 }
@@ -128,7 +185,7 @@ export function nearbyLayer() {
       "circle-color": ["match", ["get", "c"], ...colors, "#8A8A99"],
       "circle-radius": ["interpolate", ["linear"], ["zoom"], 11, 3, 14, 5, 16, 7],
       "circle-stroke-width": 1.5,
-      "circle-stroke-color": "#FFFFFF",
+      "circle-stroke-color": "#0D0D12",
       "circle-opacity": 0.95,
     },
   };
@@ -144,7 +201,7 @@ export const ring2kmLayer = {
   type: "line" as const,
   source: RING_SOURCE_ID,
   filter: ["==", ["get", "km"], 2],
-  paint: { "line-color": "#0D0D12", "line-width": 2, "line-opacity": 0.75 },
+  paint: { "line-color": "#FFB400", "line-width": 2, "line-opacity": 0.7 },
 };
 
 export const ring5kmLayer = {
@@ -152,7 +209,7 @@ export const ring5kmLayer = {
   type: "line" as const,
   source: RING_SOURCE_ID,
   filter: ["==", ["get", "km"], 5],
-  paint: { "line-color": "#0D0D12", "line-width": 1.5, "line-opacity": 0.6, "line-dasharray": [3, 2] },
+  paint: { "line-color": "#FFB400", "line-width": 1.5, "line-opacity": 0.5, "line-dasharray": [3, 2] },
 };
 
 // ── Hover / selection marker ─────────────────────────────────────────

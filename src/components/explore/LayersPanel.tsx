@@ -15,6 +15,7 @@ import { useEffect, useState } from "react";
 import { Layers, X, Info } from "lucide-react";
 import { INFRA_CATEGORY_COLORS, BASEMAPS, type BasemapId } from "@/lib/explore/layer-styles";
 import { NEARBY_CATEGORIES, OSM_CATEGORIES, OSM_ATTRIBUTION, type OsmCategoryDef } from "@/lib/osm/categories";
+import { X as T, glass, pillBtn, choicePill, sectionLabel, iconBtn } from "./theme";
 
 export interface InfraLayer {
   id: string;
@@ -75,18 +76,18 @@ export default function LayersPanel({
 
   return (
     <div style={{
-      width: 288, background: "#fff", borderRadius: 14, boxShadow: "0 4px 20px rgba(16,16,26,.18)",
+      ...glass, width: 288, borderRadius: 14,
       maxHeight: "min(70vh, 560px)", display: "flex", flexDirection: "column", pointerEvents: "auto",
     }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", borderBottom: "1px solid #EFEFF3" }}>
-        <span style={{ fontFamily: "var(--font-jakarta)", fontWeight: 800, fontSize: "0.875rem", color: "#0D0D12" }}>Layers</span>
-        <button onClick={onToggleOpen} aria-label="Close layers" style={{ background: "none", border: "none", cursor: "pointer", color: "#8A8A99" }}><X size={16} /></button>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", borderBottom: `1px solid ${T.line}` }}>
+        <span style={{ fontFamily: "var(--font-jakarta)", fontWeight: 800, fontSize: "0.875rem", color: T.text }}>Layers</span>
+        <button onClick={onToggleOpen} aria-label="Close layers" style={iconBtn}><X size={16} /></button>
       </div>
 
       <div style={{ overflowY: "auto", padding: "10px 14px 14px" }}>
         <SectionLabel>Properties</SectionLabel>
-        <Row label="Listings we researched" color="#2563EB" checked={showAdmin} onChange={() => onShowAdmin(!showAdmin)} />
-        <Row label="Owner & agent listings" color="#FFB400" checked={showSeller} onChange={() => onShowSeller(!showSeller)} />
+        <Row label="Listings we researched" color={T.saffron} dot checked={showAdmin} onChange={() => onShowAdmin(!showAdmin)} />
+        <Row label="Owner & agent listings" color="#FFE2A0" dot checked={showSeller} onChange={() => onShowSeller(!showSeller)} />
 
         <SectionLabel>Nearby places</SectionLabel>
         {NEARBY_CATEGORIES.map((c) => (
@@ -100,22 +101,22 @@ export default function LayersPanel({
           />
         ))}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginTop: 4 }}>
-          <span style={{ fontSize: "0.625rem", color: "#A0A0AE", lineHeight: 1.4 }}>Shown when zoomed in · {OSM_ATTRIBUTION}</span>
+          <span style={{ fontSize: "0.625rem", color: T.textFaint, lineHeight: 1.4 }}>Shown when zoomed in · {OSM_ATTRIBUTION}</span>
           {nearby.length > 0 && (
-            <button type="button" onClick={() => onNearby([])} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "0.6875rem", fontWeight: 700, color: "#7A5200", flexShrink: 0 }}>Clear</button>
+            <button type="button" onClick={() => onNearby([])} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "0.6875rem", fontWeight: 700, color: T.saffronText, flexShrink: 0 }}>Clear</button>
           )}
         </div>
 
         <SectionLabel>Infrastructure</SectionLabel>
-        {layers == null && <div style={{ fontSize: "0.75rem", color: "#A0A0AE", padding: "6px 0" }}>Loading…</div>}
-        {layers?.length === 0 && <div style={{ fontSize: "0.75rem", color: "#A0A0AE", padding: "6px 0" }}>No infrastructure records.</div>}
+        {layers == null && <div style={{ fontSize: "0.75rem", color: T.textFaint, padding: "6px 0" }}>Loading…</div>}
+        {layers?.length === 0 && <div style={{ fontSize: "0.75rem", color: T.textFaint, padding: "6px 0" }}>No infrastructure records.</div>}
 
         {layers && CATEGORY_GROUPS.map((g) => {
           const rows = layers.filter((l) => g.categories.includes(l.category));
           if (rows.length === 0) return null;
           return (
             <div key={g.label} style={{ marginTop: 6 }}>
-              <div style={{ fontSize: "0.625rem", color: "#B4B4C0", fontWeight: 700, margin: "6px 0 2px" }}>{g.label}</div>
+              <div style={{ fontSize: "0.625rem", color: T.textFaint, fontWeight: 700, margin: "6px 0 2px" }}>{g.label}</div>
               {rows.map((l) => (
                 <Row
                   key={l.id}
@@ -134,7 +135,7 @@ export default function LayersPanel({
         })}
 
         {layers && layers.length > 0 && layers.every((l) => !l.hasGeometry) && (
-          <p style={{ fontSize: "0.625rem", color: "#B87A00", background: "#FDF3DC", borderRadius: 8, padding: "7px 9px", marginTop: 8, lineHeight: 1.45 }}>
+          <p style={{ fontSize: "0.625rem", color: T.saffronText, background: T.saffronSoft, borderRadius: 8, padding: "7px 9px", marginTop: 8, lineHeight: 1.45 }}>
             These records exist but have no coordinates or route geometry stored, so nothing can be drawn yet.
           </p>
         )}
@@ -142,12 +143,7 @@ export default function LayersPanel({
         <SectionLabel>Basemap</SectionLabel>
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
           {(Object.keys(BASEMAPS) as BasemapId[]).map((b) => (
-            <button key={b} onClick={() => onBasemap(b)} style={{
-              borderRadius: 999, padding: "5px 11px", fontSize: "0.75rem", fontWeight: 600, cursor: "pointer",
-              border: basemap === b ? "1px solid #FFB400" : "1px solid #E4E4EA",
-              background: basemap === b ? "#FFF4D6" : "#fff",
-              color: basemap === b ? "#7A5200" : "#3A3A47",
-            }}>{BASEMAPS[b].label}</button>
+            <button key={b} onClick={() => onBasemap(b)} aria-pressed={basemap === b} style={{ ...choicePill(basemap === b), padding: "5px 11px" }}>{BASEMAPS[b].label}</button>
           ))}
         </div>
       </div>
@@ -155,15 +151,8 @@ export default function LayersPanel({
   );
 }
 
-const pillBtn: React.CSSProperties = {
-  display: "inline-flex", alignItems: "center", gap: 6, background: "#fff", border: "none",
-  borderRadius: 999, padding: "0 14px", height: 46, cursor: "pointer",
-  boxShadow: "0 4px 20px rgba(16,16,26,.18)", fontSize: "0.8125rem", fontWeight: 600, color: "#2A2A35",
-  pointerEvents: "auto",
-};
-
 function SectionLabel({ children }: { children: React.ReactNode }) {
-  return <div style={{ fontSize: "0.625rem", textTransform: "uppercase", letterSpacing: "0.06em", color: "#8A8A99", fontWeight: 700, margin: "12px 0 6px" }}>{children}</div>;
+  return <div style={{ ...sectionLabel, margin: "12px 0 6px" }}>{children}</div>;
 }
 
 function Row({ label, color, checked, onChange, dashed, disabled, disabledReason, note, dot }: {
@@ -180,13 +169,13 @@ function Row({ label, color, checked, onChange, dashed, disabled, disabledReason
       <input type="checkbox" checked={checked && !disabled} disabled={disabled} onChange={onChange} style={{ accentColor: "#FFB400", cursor: disabled ? "not-allowed" : "pointer" }} />
       {/* Swatch mirrors how the layer actually draws: a dot, or a solid / dashed line. */}
       {dot ? (
-        <span style={{ width: 10, height: 10, borderRadius: 999, background: color, border: "1.5px solid #fff", boxShadow: "0 0 0 1px #E4E4EA", margin: "0 3px", flexShrink: 0 }} />
+        <span style={{ width: 10, height: 10, borderRadius: 999, background: color, boxShadow: `0 0 7px ${color}`, margin: "0 3px", flexShrink: 0 }} />
       ) : (
         <span style={{ width: 16, height: 0, borderTop: `3px ${dashed ? "dashed" : "solid"} ${color}`, opacity: dashed ? 0.6 : 1, flexShrink: 0 }} />
       )}
-      <span style={{ flex: 1, fontSize: "0.75rem", color: "#2A2A35", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{label}</span>
-      {dashed && <span title={note} style={{ fontSize: "0.5625rem", color: "#B87A00", fontWeight: 700, flexShrink: 0 }}>PENDING</span>}
-      {(note || disabledReason) && <Info size={11} style={{ color: "#C4C4CE", flexShrink: 0 }} />}
+      <span style={{ flex: 1, fontSize: "0.75rem", color: T.textMid, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{label}</span>
+      {dashed && <span title={note} style={{ fontSize: "0.5625rem", color: T.saffronText, fontWeight: 700, flexShrink: 0 }}>PENDING</span>}
+      {(note || disabledReason) && <Info size={11} style={{ color: T.textFaint, flexShrink: 0 }} />}
     </label>
   );
 }
