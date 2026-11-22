@@ -270,10 +270,11 @@ export function useFocus3D({
 
     overlay.setProps({
       layers: [
-        new ScatterplotLayer({
+        // Open land has no building to show, so only there is the site ringed.
+        ...(drawn.kind === "site-only" ? [new ScatterplotLayer({
           id: "focus-site", data: [c], getPosition: (d: [number, number]) => d, getRadius: drawn.siteRadiusM, radiusUnits: "meters",
-          getFillColor: [255, 180, 0, drawn.kind === "site-only" ? 70 : 38], stroked: true, getLineColor: [255, 180, 0, 230], getLineWidth: 2, lineWidthUnits: "pixels",
-        }),
+          getFillColor: [255, 180, 0, 70], stroked: true, getLineColor: [255, 180, 0, 230], getLineWidth: 2, lineWidthUnits: "pixels",
+        })] : []),
         new ArcLayer<NearestPlace>({
           id: "focus-arcs", data: near, getSourcePosition: () => c, getTargetPosition: (n) => [n.lng, n.lat],
           getSourceColor: [255, 180, 0, 230], getTargetColor: (n) => rgba(n.kind, on(n.kind) ? 240 : 40),

@@ -369,8 +369,19 @@ export default function ExploreMap() {
     if (map.getLayer(DOT_GLOW_LAYER)) map.setPaintProperty(DOT_GLOW_LAYER, "circle-color", colorExpression(color) as never);
   }, [color, ready]);
 
+  // ── 3D focus view of the selected listing ──
+  const focus3d = useFocus3D({
+    mapRef, ready, selectedId: selected, tone: buildingTone(basemap), dimLayers: DIM_LAYERS,
+    // Keep the listing in the part of the map the detail card doesn't cover.
+    padding: () => window.innerWidth < 768
+      ? { top: 70, bottom: Math.round(window.innerHeight * 0.55), left: 20, right: 20 }
+      : { top: 90, bottom: 40, left: 420, right: 80 },
+  });
+
   // Selection + hover marker — from its own unclustered source, so the home
-  // shows even while it sits inside a cluster bubble.
+  // shows even while it sits inside a cluster bubble. In the 3D focus view the
+  // listing stands in 3D, so its flat selection rings are left off.
+  const focusedId = focus3d.focus?.id ?? null;
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !ready) return;
@@ -378,10 +389,11 @@ export default function ExploreMap() {
       const f = id ? visible.find((v) => v.properties.id === id) : undefined;
       return f ? [{ type: "Feature" as const, geometry: f.geometry, properties: { id, kind } }] : [];
     };
-    const features = [...(hoveredId !== selected ? mark(hoveredId, "hover") : []), ...mark(selected, "selected")];
+    const inFocus = selected != null && focusedId === selected;
+    const features = [...(hoveredId !== selected ? mark(hoveredId, "hover") : []), ...(inFocus ? [] : mark(selected, "selected"))];
     (map.getSource(HIGHLIGHT_SOURCE_ID) as GeoJSONSource | undefined)
       ?.setData({ type: "FeatureCollection", features } as GeoJSON.FeatureCollection);
-  }, [selected, hoveredId, visible, ready]);
+  }, [selected, hoveredId, visible, ready, focusedId]);
 
   // ── Nearby places: load a category the first time it is switched on ──
   const commitNearby = useCallback((cats: string[]) => {
@@ -529,15 +541,6 @@ export default function ExploreMap() {
     // Keep the hover / selection marker above any infrastructure just drawn.
     for (const id of [HIGHLIGHT_HALO_LAYER, HIGHLIGHT_RING_LAYER, HIGHLIGHT_PIN_LAYER]) if (map.getLayer(id)) map.moveLayer(id);
   }, [layers, infraCatalog, ready]);
-
-  // ── 3D focus view of the selected listing ──
-  const focus3d = useFocus3D({
-    mapRef, ready, selectedId: selected, tone: buildingTone(basemap), dimLayers: DIM_LAYERS,
-    // Keep the listing in the part of the map the detail card doesn't cover.
-    padding: () => window.innerWidth < 768
-      ? { top: 70, bottom: Math.round(window.innerHeight * 0.55), left: 20, right: 20 }
-      : { top: 90, bottom: 40, left: 420, right: 80 },
-  });
 
   const [pitched, setPitched] = useState(false);
   useEffect(() => {
